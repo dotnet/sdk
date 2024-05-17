@@ -312,7 +312,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2404_DevVersions
+        buildName: $[format('{0}_DevVersions', variables['ubuntuName'])]
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
@@ -324,7 +324,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2404
+        buildName: ${{ variables.ubuntuName }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
