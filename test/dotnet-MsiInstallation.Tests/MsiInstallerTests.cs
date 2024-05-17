@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallSdk();
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
-            
+
             TestWasmWorkload();
 
             //  Second time applying same rollback file shouldn't do anything
@@ -218,6 +218,33 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Execute().Should().Pass();
 
             TestWasmWorkload();
+        }
+
+        [Fact]
+        public void InstallShouldNotUpdatePinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+            
+            InstallWorkload("aspire");
+
+            GetWorkloadVersion().Should().Be(workloadVersion);
+        }
+
+        [Fact]
+        public void UpdateShouldUndoPinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute()
+                .Should().Pass();
+
+            GetWorkloadVersion().Should().NotBe(workloadVersion);
+
         }
 
         [Fact]
