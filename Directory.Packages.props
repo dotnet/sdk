@@ -125,13 +125,13 @@
     <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
          it works in that slightly-older Visual Studio. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
   </ItemGroup>
 </Project>
