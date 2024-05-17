@@ -40,13 +40,13 @@ variables:
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
 
 - name: alpineName
-  value: Alpine3.19
+  value: Alpine319
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
   value: Fedora40
 - name: ubuntuName
-  value: Ubuntu24.04
+  value: Ubuntu2404
 
 - name: alpineX64Rid
   value: alpine.3.19-x64

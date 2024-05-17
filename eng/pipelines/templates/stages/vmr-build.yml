@@ -87,7 +87,7 @@ stages:
     - template: ../jobs/vmr-build.yml
       parameters:
         # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        buildName: $[format('{0}_Online_MsftSdk', variables['centOSStreamName'])]
+        buildName: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
@@ -107,7 +107,7 @@ stages:
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: $[format('{0}_Online_CurrentSourceBuiltSdk', variables['centOSStreamName'])]
+          buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
@@ -120,12 +120,12 @@ stages:
           runOnline: true                    # ✅
           useMonoRuntime: false              # 🚫
           withPreviousSDK: false             # 🚫
-          reuseBuildArtifactsFrom: $[format('{0}_Online_MsftSdk', variables['centOSStreamName'])]
+          reuseBuildArtifactsFrom: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
 
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: $[format('{0}_Offline_PreviousSourceBuiltSdk', variables['alpineName'])]
+          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
@@ -146,7 +146,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Online_MsftSdk', variables['alpineName'])]
+            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -163,7 +163,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Offline_MsftSdk', variables['centOSStreamName'])]
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -180,7 +180,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Online_PreviousSourceBuiltSdk', variables['centOSStreamName'])]
+            buildName: ${{ format('{0}_Online_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -198,7 +198,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Offline_PreviousSourceBuiltSdk', variables['centOSStreamName'])]
+            buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -216,7 +216,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Mono_Offline_MsftSdk', variables['centOSStreamName'])]
+            buildName: ${{ format('{0}_Mono_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -233,7 +233,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Offline_MsftSdk', variables['fedoraName'])]
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -250,7 +250,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Offline_MsftSdk', variables['ubuntuName'])]
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -267,7 +267,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}Arm64_Offline_MsftSdk', variables['ubuntuName'])]
+            buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
@@ -284,7 +284,7 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: $[format('{0}_Offline_CurrentSourceBuiltSdk', variables['fedoraName'])]
+            buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.fedoraName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
@@ -297,7 +297,7 @@ stages:
             runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
-            reuseBuildArtifactsFrom: $[format('{0}_Offline_MsftSdk', variables['fedoraName'])]
+            reuseBuildArtifactsFrom: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
 
 #### VERTICAL BUILD ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -312,7 +312,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: $[format('{0}_DevVersions', variables['ubuntuName'])]
+        buildName: ${{ format('{0}_DevVersions', variables.ubuntuName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
