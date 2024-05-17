@@ -45,10 +45,6 @@ variables:
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-- name: _linuxOsProperties
-  value: /p:OSName=linux /p:IsLinuxPortable=true
-- name: _helixTargetContainerPrefix
-  value: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
 
 resources:
   repositories:
@@ -110,8 +106,8 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/8.0.4xx
-          jobParameterSets:
-          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument) /p:EnableToolsetPublish=true
@@ -164,20 +160,6 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-          - ${{ else }}:
-            ### TESTS ###
-            - categoryName: TestBuild
-              publishRetryConfig: true
-            - categoryName: FullFramework
-              testFullMSBuild: true
-            - categoryName: TestAsTools
-              runTestsAsTool: true
-              # This uses the build step for testing, so the extra test step is not necessary.
-              runTests: false
-            - categoryName: TemplateEngine
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-            - categoryName: AoT
-              runAoTTests: true
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -191,28 +173,28 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          jobParameterSets:
-          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            linuxJobParameterSets:
             ### OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties)
+              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
               buildArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties)
+              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties)
+              osProperties: $(linuxOsPortableProperties)
               runTests: false
             ### PORTABLE ###
             - categoryName: Portable
@@ -220,14 +202,14 @@ extends:
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
               container: cblMariner20Fpm
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
               container: cblMariner20Fpm
@@ -236,7 +218,7 @@ extends:
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             ### MUSL ###
             - categoryName: Musl
@@ -246,7 +228,7 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               # Use HostOSName when running on alpine.
               osProperties: /p:HostOSName=linux-musl
-              # Sbom generation is not supported for alpine.
+              # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
             - categoryName: Musl
@@ -269,7 +251,7 @@ extends:
               pgoInstrument: true
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties)
+              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: PGO
               pgoInstrument: true
@@ -277,63 +259,8 @@ extends:
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(_linuxOsProperties)
+              osProperties: $(linuxOsPortableProperties)
               runTests: false
-          - ${{ else }}:
-            ### TESTS ###
-            - categoryName: TestBuild
-              osProperties: $(_linuxOsProperties)
-            - categoryName: TestBuild
-              buildArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              osProperties: $(_linuxOsProperties)
-              # Don't run the tests on arm64. Only perform the build itself.
-              runTests: false
-            - categoryName: ContainerBased
-              container: ubuntu2204
-              helixTargetContainer: $(_helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
-              osProperties: $(_linuxOsProperties)
-              # Skipping all container-based testing for now.
-              # See: https://github.com/dotnet/sdk/issues/40935
-              runTests: false
-            - categoryName: ContainerBased
-              container: fedora39
-              # No fedora Helix container is available, so use the ubuntu one instead.
-              helixTargetContainer: $(_helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
-              osProperties: $(_linuxOsProperties)
-              # Skipping all container-based testing for now.
-              # See: https://github.com/dotnet/sdk/issues/40935
-              runTests: false
-            - categoryName: ContainerBased
-              # The centosStream9 assets are not published. So, we need to use 8 for the time being.
-              # See: https://github.com/dotnet/runtime/issues/102344
-              container: centosStream8
-              helixTargetContainer: $(_helixTargetContainerPrefix)centos-stream8-helix
-              osProperties: /p:OSName=linux
-              # Skipping all container-based testing for now.
-              # See: https://github.com/dotnet/sdk/issues/40935
-              runTests: false
-            - categoryName: ContainerBased
-              container: debian11Amd64
-              helixTargetContainer: $(_helixTargetContainerPrefix)debian-11-helix-amd64
-              osProperties: /p:OSName=linux /p:BuildSdkDeb=true
-              # Skipping all container-based testing for now.
-              # See: https://github.com/dotnet/sdk/issues/40935
-              runTests: false
-            - categoryName: ContainerBased
-              container: alpine319WithNode
-              helixTargetContainer: $(_helixTargetContainerPrefix)alpine-3.18-helix-amd64
-              runtimeIdentifier: linux-musl-x64
-              # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
-              # Sbom generation is not supported for alpine.
-              enableSbom: false
-              # Skipping all container-based testing for now.
-              # See: https://github.com/dotnet/sdk/issues/40935
-              runTests: false
-            - categoryName: TemplateEngine
-              osProperties: $(_linuxOsProperties)
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
       ############### MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -347,8 +274,8 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          jobParameterSets:
-          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            macOSJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               runtimeIdentifier: osx-x64
@@ -361,13 +288,6 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
-          - ${{ else }}:
-            ### TESTS ###
-            - categoryName: TestBuild
-            - categoryName: TemplateEngine
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-            - categoryName: AoT
-              runAoTTests: true
 
       ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
