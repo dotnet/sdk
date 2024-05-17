@@ -53,7 +53,7 @@ variables:
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
-  value: fedora.39-x64
+  value: fedora.40-x64
 - name: ubuntux64Rid
   value: ubuntu.24.04-x64
 - name: ubuntuArm64Rid
