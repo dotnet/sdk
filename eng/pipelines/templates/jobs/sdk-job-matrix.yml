@@ -16,13 +16,6 @@ parameters:
     testProjects: $(templateEngineTestProjects)
   - categoryName: AoT
     runAoTTests: true
-  ### MACOS ###
-  macOSJobParameterSets:
-  - categoryName: TestBuild
-  - categoryName: TemplateEngine
-    testProjects: $(templateEngineTestProjects)
-  - categoryName: AoT
-    runAoTTests: true
   ### LINUX ###
   linuxJobParameterSets:
   - categoryName: TestBuild
@@ -78,6 +71,13 @@ parameters:
   - categoryName: TemplateEngine
     osProperties: $(linuxOsPortableProperties)
     testProjects: $(templateEngineTestProjects)
+  ### MACOS ###
+  macOSJobParameterSets:
+  - categoryName: TestBuild
+  - categoryName: TemplateEngine
+    testProjects: $(templateEngineTestProjects)
+  - categoryName: AoT
+    runAoTTests: true
 
 jobs:
 ### ONELOCBUILD ###
@@ -98,14 +98,14 @@ jobs:
       parameters:
         ${{ insert }}: ${{ parameters }}
         ${{ insert }}: ${{ jobParameters }}
-- ${{ if eq(parameters.pool.os, 'macOS') }}:
-  - ${{ each jobParameters in parameters.macOSJobParameterSets }}:
+- ${{ if eq(parameters.pool.os, 'linux') }}:
+  - ${{ each jobParameters in parameters.linuxJobParameterSets }}:
     - template: /eng/pipelines/templates/jobs/sdk-build.yml
       parameters:
         ${{ insert }}: ${{ parameters }}
         ${{ insert }}: ${{ jobParameters }}
-- ${{ else }}:
-  - ${{ each jobParameters in parameters.linuxJobParameterSets }}:
+- ${{ if eq(parameters.pool.os, 'macOS') }}:
+  - ${{ each jobParameters in parameters.macOSJobParameterSets }}:
     - template: /eng/pipelines/templates/jobs/sdk-build.yml
       parameters:
         ${{ insert }}: ${{ parameters }}
