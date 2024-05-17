@@ -3,7 +3,6 @@ variables:
   buildConfiguration: Release
   linuxOsPortableProperties: /p:OSName=linux /p:IsLinuxPortable=true
   helixTargetContainerPrefix: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
-  templateEngineTestProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
   ############### ARCADE ###############
   # "Post-build signing" means that this build will NOT sign itself.

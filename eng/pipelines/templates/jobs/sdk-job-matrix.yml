@@ -13,7 +13,7 @@ parameters:
     # This job uses the build step for testing, so the extra test step is not necessary.
     runTests: false
   - categoryName: TemplateEngine
-    testProjects: $(templateEngineTestProjects)
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
   - categoryName: AoT
     runAoTTests: true
   ### LINUX ###
@@ -70,12 +70,12 @@ parameters:
     runTests: false
   - categoryName: TemplateEngine
     osProperties: $(linuxOsPortableProperties)
-    testProjects: $(templateEngineTestProjects)
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
   ### MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild
   - categoryName: TemplateEngine
-    testProjects: $(templateEngineTestProjects)
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
   - categoryName: AoT
     runAoTTests: true
 
