@@ -3,14 +3,19 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Run;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallCommandTests
+    public class ToolInstallCommandTests : SdkTest
     {
         private const string PackageId = "global.tool.console.demo";
+
+        public ToolInstallCommandTests(ITestOutputHelper log) : base(log)
+        {
+        }
 
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
@@ -26,6 +31,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(string.Format(
                     LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
+        }
+
+        [Fact]
+        public void WhenRunWithRoot()
+        {
+            Directory.CreateDirectory("/tmp/folder/sub");
+
+            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
+            var parseResult = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
+            new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+
+            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
+            parseResult = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder/sub {PackageId}");
+            new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+
+            new ToolRunCommand(Parser.Instance.Parse($"dotnet tool run {PackageId} --tool-path /tmp/folder/sub")).Execute().Should().Be(0);
         }
 
         [Fact]
