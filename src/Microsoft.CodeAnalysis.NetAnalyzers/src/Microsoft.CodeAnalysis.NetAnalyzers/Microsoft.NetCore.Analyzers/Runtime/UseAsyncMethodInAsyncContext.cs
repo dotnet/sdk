@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Analyzer.Utilities;
@@ -171,6 +172,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 return false;
             }
+
+            Debug.Assert(!invocation.Arguments.IsEmpty);
 
             IOperation argumentValue = invocation.Arguments[0].Value;
 
