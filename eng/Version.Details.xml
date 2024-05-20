@@ -69,28 +69,28 @@
       <Sha>53c4a109e2abc0112996e2bc4a7f830f572f4efd</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.11.0-preview-24267-02">
+    <Dependency Name="Microsoft.Build" Version="17.11.0-preview-24270-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>ffe4ef22354ca51185ca5b3557e1324ec40c8d81</Sha>
+      <Sha>66e0371a64e08160e63000fc2ced8cb8bbc6739e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.11.0-preview-24267-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.11.0-preview-24270-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>ffe4ef22354ca51185ca5b3557e1324ec40c8d81</Sha>
+      <Sha>66e0371a64e08160e63000fc2ced8cb8bbc6739e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.11.0-preview-24267-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.11.0-preview-24270-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>ffe4ef22354ca51185ca5b3557e1324ec40c8d81</Sha>
+      <Sha>66e0371a64e08160e63000fc2ced8cb8bbc6739e</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24267.3">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24270.4">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>4b36f30312b528e855f514dbedf6cb55b7852208</Sha>
+      <Sha>7d176e9b00021c50338c69d93ba8d326c65db1f1</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24267.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24270.4">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>4b36f30312b528e855f514dbedf6cb55b7852208</Sha>
+      <Sha>7d176e9b00021c50338c69d93ba8d326c65db1f1</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.11.0-2.24269.3">
@@ -371,14 +371,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24263.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24270.2">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>1a39b68e67a00df1be070569c3bcce5f38e8c36a</Sha>
+      <Sha>f57e2c3eb78ac1033d410fde85509100b7512730</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24263.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24270.2">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>1a39b68e67a00df1be070569c3bcce5f38e8c36a</Sha>
+      <Sha>f57e2c3eb78ac1033d410fde85509100b7512730</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
