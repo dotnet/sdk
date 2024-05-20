@@ -52,19 +52,24 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return !Log.HasLoggedErrors;
             }
 
+            var tokenResolver = new StaticWebAssetTokenResolver();
+
             var itemGroup = new XElement("ItemGroup");
             var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
                 .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
             foreach (var element in orderedAssets)
             {
-                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\{Normalize(element.GetMetadata(RelativePath))}))";
+                var asset = StaticWebAsset.FromTaskItem(element);
+                var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
+                var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{packagePath}))";
                 itemGroup.Add(new XElement("StaticWebAsset",
                     new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),
                     new XElement(SourceId, element.GetMetadata(SourceId)),
                     new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                     new XElement(BasePath, element.GetMetadata(BasePath)),
-                    new XElement(RelativePath, element.GetMetadata(RelativePath)),
+                    new XElement(RelativePath, relativePath),
                     new XElement(AssetKind, element.GetMetadata(AssetKind)),
                     new XElement(AssetMode, element.GetMetadata(AssetMode)),
                     new XElement(AssetRole, element.GetMetadata(AssetRole)),
