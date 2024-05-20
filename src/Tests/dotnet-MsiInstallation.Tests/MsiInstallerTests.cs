@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
             var featureBand = new SdkFeatureBand(SdkInstallerVersion);
-            var installStatePath = $@"c:\ProgramData\dotnet\workloads\{featureBand}\InstallState\default.json";
+            var installStatePath = $@"c:\ProgramData\dotnet\workloads\x64\{featureBand}\InstallState\default.json";
             VM.GetRemoteFile(installStatePath).Should().Exist();
             UninstallSdk();
             VM.GetRemoteFile(installStatePath).Should().NotExist();
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallSdk();
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
-            
+
             TestWasmWorkload();
 
             //  Second time applying same rollback file shouldn't do anything
@@ -218,6 +218,33 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Execute().Should().Pass();
 
             TestWasmWorkload();
+        }
+
+        [Fact]
+        public void InstallShouldNotUpdatePinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+            
+            InstallWorkload("aspire");
+
+            GetWorkloadVersion().Should().Be(workloadVersion);
+        }
+
+        [Fact]
+        public void UpdateShouldUndoPinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute()
+                .Should().Pass();
+
+            GetWorkloadVersion().Should().NotBe(workloadVersion);
+
         }
 
         [Fact]
@@ -308,19 +335,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
 
             return installedManifestVersions;
-        }
-
-
-
-        CommandResult InstallWorkload(string workloadName)
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
-                    .WithDescription($"Install {workloadName} workload")
-                    .Execute();
-
-            result.Should().Pass();
-
-            return result;
         }
 
         string ListWorkloads()

@@ -44,5 +44,8 @@
     <UsagePattern IdentityGlob="Microsoft.TemplateSearch.Common/8.0.*" />
     <UsagePattern IdentityGlob="System.Drawing.Common/8.0.*" />
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
+
+    <!-- Transitive dependencies from roslyn -->
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Options/8.0.0" />
   </IgnorePatterns>
 </UsageData>
