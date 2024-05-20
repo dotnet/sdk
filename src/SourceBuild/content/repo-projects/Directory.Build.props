@@ -94,6 +94,17 @@
     <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TestActions>$(FlagParameterPrefix)restore</TestActions>
+    <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
+
+    <TestArgs Condition="'$(UseOfficialBuildVersioning)' != 'false'">$(FlagParameterPrefix)ci</TestArgs>
+    <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
+    <TestArgs>$(TestArgs) /bl:artifacts/log/$(Configuration)/Test.binlog</TestArgs>
+
+    <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(EnableExtraDebugging)' == 'true'">
     <MSBuildDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'msbuild-debug'))</MSBuildDebugPathTargetDir>
     <RoslynDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'roslyn-debug'))</RoslynDebugPathTargetDir>

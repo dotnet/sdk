@@ -138,7 +138,7 @@
   <data name="WorkloadInstallTypeColumn" xml:space="preserve">
     <value>Install Type</value>
   </data>
-  <data name="WorkloadManfiestVersionColumn" xml:space="preserve">
+  <data name="WorkloadManifestVersionColumn" xml:space="preserve">
     <value>Manifest Version</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">

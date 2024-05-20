@@ -122,6 +122,8 @@ jobs:
       value: N/A
   - name: additionalBuildArgs
     value: ''
+  - name: runTestsTimeout
+    value: 30
 
   - ${{ if parameters.isBuiltFromVmr }}:
     - name: vmrPath
@@ -146,12 +148,14 @@ jobs:
       condition: succeededOrFailed()
       targetPath: $(Build.StagingDirectory)/BuildLogs
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+      sbomEnabled: false
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       condition: always()
+      sbomEnabled: true
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
       - output: pipelineArtifact
@@ -159,14 +163,14 @@ jobs:
         condition: failed()
         targetPath: $(Agent.TempDirectory)
         artifactName: $(System.JobDisplayName)_FailedPatches
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
     - template: ../steps/vmr-prepare.yml@self
       parameters:
         ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-          # TODO: Set back to vmrBranch: $(System.PullRequest.TargetBranch)
-          vmrBranch: main-sdk
+          vmrBranch: $(System.PullRequest.TargetBranch)
         ${{ else }}:
           vmrBranch: ${{ parameters.vmrBranch }}
 
@@ -251,6 +255,7 @@ jobs:
       - script: |
           call $(sourcesPath)\build.cmd -ci -prepareMachine -test /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
         displayName: Run Tests
+        timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ else }}:
     - ${{ if eq(parameters.buildSourceOnly, 'true') }}:
@@ -371,7 +376,7 @@ jobs:
           set -ex
 
           dockerVolumeArgs="-v $(sourcesPath):/vmr"
-          sourceOnlyArgs=''
+          customBuildArgs=''
           extraBuildProperties=''
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
@@ -382,11 +387,15 @@ jobs:
             extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
           fi
 
+          if [[ '${{ parameters.useDevVersions }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --dev"
+          fi
+
           if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
             if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
-              sourceOnlyArgs='--poison'
+              customBuildArgs="$customBuildArgs --poison"
             fi
-            sourceOnlyArgs="$sourceOnlyArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+            customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
           fi
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
@@ -395,13 +404,14 @@ jobs:
 
           # Only use Docker when a container is specified
           if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh /bl:artifacts/log/Release/Test.binlog --test $sourceOnlyArgs $extraBuildProperties $(additionalBuildArgs)
+            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh /bl:artifacts/log/Release/Test.binlog --test $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           else
             cd $(sourcesPath)
-            ./build.sh /bl:artifacts/log/Release/Test.binlog --test $sourceOnlyArgs $extraBuildProperties $(additionalBuildArgs)
+            ./build.sh /bl:artifacts/log/Release/Test.binlog --test $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           fi
 
         displayName: Run Tests
+        timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ if eq(parameters.targetOS, 'windows') }}:
 
@@ -424,6 +434,11 @@ jobs:
         CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*.log"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
+
+        if (Test-Path "artifacts/scenario-tests/") {
+            CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
+            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
+        }
 
         if (Test-Path "artifacts/TestResults/*") {
             CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.binlog"
@@ -452,13 +467,14 @@ jobs:
         cd "$(sourcesPath)"
         find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
-
-        if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+        if [ -d "artifacts/scenario-tests/" ]; then 
+          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
+        find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
@@ -490,12 +506,24 @@ jobs:
       condition: succeededOrFailed()
       continueOnError: true
       inputs:
-        testRunner: vSTest
+        testRunner: VSTest
         testResultsFiles: 'artifacts/TestResults/Release/*.trx'
         searchFolder: $(sourcesPath)
         mergeTestResults: true
         publishRunAttachments: true
         testRunTitle: Tests_$(Agent.JobName)
+
+    - task: PublishTestResults@2
+      displayName: Publish Scenario Test Results
+      condition: and(eq(variables['hasScenarioTestResults'], 'true'), succeededOrFailed())
+      continueOnError: true
+      inputs:
+        testRunner: xUnit
+        testResultsFiles: 'artifacts/TestResults/**/scenario-tests/*.xml'
+        searchFolder: $(sourcesPath)
+        mergeTestResults: true
+        publishRunAttachments: true
+        testRunTitle: ScenarioTests_$(Agent.JobName)
 
   - task: CopyFiles@2
     inputs:

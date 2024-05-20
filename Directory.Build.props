@@ -21,6 +21,11 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
+  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
+    <SkipBuildingInstallers>true</SkipBuildingInstallers>
+    <PgoTerm>-pgo</PgoTerm>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Latest</LangVersion>

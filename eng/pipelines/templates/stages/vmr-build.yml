@@ -61,6 +61,15 @@ parameters:
     vmImage: $(poolImage_Mac)
     os: macOS
 
+
+- name: pool_Linux_Shortstack
+  type: object
+  default:
+    name: $(shortStackPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
 #### SOURCE-ONLY BUILD ####
 stages:
 - ${{ if parameters.isSourceOnlyBuild }}:
@@ -78,12 +87,12 @@ stages:
     - template: ../jobs/vmr-build.yml
       parameters:
         # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        buildName: CentOSStream9_Online_MsftSdk
+        buildName: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.centOSStream9Container }}
+        container: ${{ variables.centOSStreamContainer }}
         buildFromArchive: false            # 🚫
         buildSourceOnly: true              # ✅
         enablePoison: false                # 🚫
@@ -98,12 +107,12 @@ stages:
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: CentOSStream9_Online_CurrentSourceBuiltSdk
+          buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
           pool: ${{ parameters.pool_Linux }}
-          container: ${{ variables.centOSStream9Container }}
+          container: ${{ variables.centOSStreamContainer }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: false                # 🚫
@@ -111,18 +120,18 @@ stages:
           runOnline: true                    # ✅
           useMonoRuntime: false              # 🚫
           withPreviousSDK: false             # 🚫
-          reuseBuildArtifactsFrom: centOSStream9_Online_MsftSdk
+          reuseBuildArtifactsFrom: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
 
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: Alpine319_Offline_PreviousSourceBuiltSdk
+          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
-          artifactsRid: alpine.3.19-x64
+          artifactsRid: ${{ variables.alpineX64Rid }}
           pool: ${{ parameters.pool_Linux }}
-          container: ${{ variables.alpine319Container }}
+          container: ${{ variables.alpineContainer }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: true                 # ✅
@@ -137,12 +146,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Alpine319_Online_MsftSdk
+            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.alpine319Container }}
+            container: ${{ variables.alpineContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -154,12 +163,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: CentOSStream9_Offline_MsftSdk
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStream9Container }}
+            container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -171,13 +180,13 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: CentOSStream9_Online_PreviousSourceBuiltSdk
+            buildName: ${{ format('{0}_Online_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            artifactsRid: centos.9-x64
+            artifactsRid: ${{ variables.centOSStreamX64Rid }}
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStream9Container }}
+            container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -189,13 +198,13 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: CentOSStream9_Offline_PreviousSourceBuiltSdk
+            buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            artifactsRid: centos.9-x64
+            artifactsRid: ${{ variables.centOSStreamX64Rid }}
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStream9Container }}
+            container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -207,12 +216,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: CentOSStream9_Mono_Offline_MsftSdk
+            buildName: ${{ format('{0}_Mono_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStream9Container }}
+            container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -224,12 +233,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Fedora39_Offline_MsftSdk
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.fedora39Container }}
+            container: ${{ variables.fedoraContainer }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -241,12 +250,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Ubuntu2204_Offline_MsftSdk
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.ubuntu2204Container }}
+            container: ${{ variables.ubuntuContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -258,12 +267,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Ubuntu2204Arm64_Offline_MsftSdk
+            buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_LinuxArm64 }}
-            container: ${{ variables.ubuntu2204ArmContainer }}
+            container: ${{ variables.ubuntuArmContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -275,12 +284,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Fedora39_Offline_CurrentSourceBuiltSdk
+            buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.fedoraName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.fedora39Container }}
+            container: ${{ variables.fedoraContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -288,7 +297,7 @@ stages:
             runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
-            reuseBuildArtifactsFrom: Fedora39_Offline_MsftSdk
+            reuseBuildArtifactsFrom: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
 
 #### VERTICAL BUILD ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -303,24 +312,24 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2204_DevVersions
+        buildName: ${{ format('{0}_DevVersions', variables.ubuntuName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntu2204Container }}
+        container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2204
+        buildName: ${{ variables.ubuntuName }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntu2204Container }}
+        container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
 
@@ -340,7 +349,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: arm64
-        pool: ${{ parameters.pool_Linux }}
+        pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.androidCrossContainer }}
         targetOS: android
         targetArchitecture: arm64
@@ -352,7 +361,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: wasm
-        pool: ${{ parameters.pool_Linux }}
+        pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.browserCrossContainer }}
         crossRootFs: '/crossrootfs/x64'
         targetOS: browser
@@ -379,7 +388,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: arm
@@ -391,7 +400,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: x64
@@ -403,7 +412,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x86
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: x86
@@ -415,7 +424,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.browserCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: browser
@@ -429,7 +438,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -442,7 +451,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -456,7 +465,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -469,7 +478,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -656,7 +665,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.wasiCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: wasi
@@ -729,7 +738,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
@@ -744,7 +753,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
@@ -876,7 +885,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
@@ -891,7 +900,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
