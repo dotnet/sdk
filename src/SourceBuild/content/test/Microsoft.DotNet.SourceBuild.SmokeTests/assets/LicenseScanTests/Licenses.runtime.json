@@ -1,10 +1,6 @@
 {
   "files": [
     {
-      "path": "src/coreclr/ilasm/prebuilt/asmparse.cpp",
-      "detected_license_expression": "gpl-3.0-plus WITH bison-exception-2.2 AND mit"
-    },
-    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
