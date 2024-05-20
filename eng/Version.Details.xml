@@ -220,21 +220,21 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.6">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>ce2796101b9c2ef41b77f01b1bb7c9455196a48d</Sha>
+      <Sha>e05cb43bf772ccda90d93c1bc1aa6bc96e5ad60a</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.6-servicing.24268.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.7-servicing.24270.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>ce2796101b9c2ef41b77f01b1bb7c9455196a48d</Sha>
+      <Sha>e05cb43bf772ccda90d93c1bc1aa6bc96e5ad60a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.6">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>ce2796101b9c2ef41b77f01b1bb7c9455196a48d</Sha>
+      <Sha>e05cb43bf772ccda90d93c1bc1aa6bc96e5ad60a</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.6-servicing.24268.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.7-servicing.24270.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>ce2796101b9c2ef41b77f01b1bb7c9455196a48d</Sha>
+      <Sha>e05cb43bf772ccda90d93c1bc1aa6bc96e5ad60a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.7-servicing.24268.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
