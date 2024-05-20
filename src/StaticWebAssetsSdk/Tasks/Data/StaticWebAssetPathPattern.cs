@@ -207,12 +207,13 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 
     // Replace the tokens in the path pattern with the values provided in the tokens dictionary
 #if WASM_TASKS
-    internal string ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
+    internal (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
 #else
-    public string ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
+    public (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
 #endif
     {
         var result = new StringBuilder();
+        var dictionary = new Dictionary<string, string>();
         foreach (var segment in Segments)
         {
             if (IsLiteralSegment(segment))
@@ -222,7 +223,6 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
             else
             {
                 var tokenNames = segment.GetTokenNames();
-                var dictionary = new Dictionary<string, string>();
                 var foundAllValues = true;
                 var missingValue = "";
                 foreach (var tokenName in tokenNames)
@@ -236,6 +236,7 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 
                     dictionary[tokenName] = tokenValue;
                 }
+
                 if (!foundAllValues && !segment.IsOptional)
                 {
                     // We are missing a value in the expression for a non-optional segment.
@@ -264,7 +265,7 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
             }
         }
 
-        return result.ToString();
+        return (result.ToString(), dictionary);
     }
 
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings);
+                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings).ToArray();
 
                 foreach (var endpoint in assetEndpoints)
                 {
@@ -84,45 +84,56 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private IEnumerable<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
         {
             var routes = asset.ComputeRoutes();
-            foreach (var route in routes)
+            var result = new List<StaticWebAssetEndpoint>();
+            foreach (var (route, values) in routes)
             {
-                yield return new()
+                List<StaticWebAssetEndpointResponseHeader> headers = [
+                        new()
+                        {
+                            Name = "Accept-Ranges",
+                            Value = "bytes"
+                        },
+                        new()
+                        {
+                            Name = "Content-Length",
+                            Value = GetFileLength(asset),
+                        },
+                        new()
+                        {
+                            Name = "Content-Type",
+                            Value = ResolveContentType(asset, contentTypeMappings)
+                        },
+                        new()
+                        {
+                            Name = "ETag",
+                            Value = $"\"{asset.Integrity}\"",
+                        },
+                        new()
+                        {
+                            Name = "Last-Modified",
+                            Value = GetFileLastModified(asset)
+                        },
+                    ];
+
+                if (values.ContainsKey("fingerprint"))
+                {
+                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=604800, immutable" });
+                }
+
+                var endpoint = new StaticWebAssetEndpoint()
                 {
                     Route = route,
                     AssetFile = asset.Identity,
-                    ResponseHeaders =
-                    [
-                        new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new()
-                    {
-                        Name = "Content-Length",
-                        Value = GetFileLength(asset),
-                    },
-                    new()
-                    {
-                        Name = "Content-Type",
-                        Value = ResolveContentType(asset, contentTypeMappings)
-                    },
-                    new()
-                    {
-                        Name = "ETag",
-                        Value = $"\"{asset.Integrity}\"",
-                    },
-                    new()
-                    {
-                        Name = "Last-Modified",
-                        Value = GetFileLastModified(asset)
-                    },
-                ]
+                    EndpointProperties = [.. values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value })],
+                    ResponseHeaders = [.. headers]
                 };
+                result.Add(endpoint);
             }
+
+            return result;
         }
 
         // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT

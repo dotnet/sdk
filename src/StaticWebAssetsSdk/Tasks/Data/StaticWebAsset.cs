@@ -682,7 +682,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
         {
             var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-            return pattern.ReplaceTokens(this, tokens);
+            return pattern.ReplaceTokens(this, tokens).Path;
         }
 
         public override string ToString() =>
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #endif
         }
 
-        internal IEnumerable<string> ComputeRoutes()
+        internal IEnumerable<(string, Dictionary<string, string>)> ComputeRoutes()
         {
             var tokenResolver = new StaticWebAssetTokenResolver();
             var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);

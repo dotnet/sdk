@@ -346,7 +346,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("css/site.css", path);
     }
@@ -359,7 +359,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("css/site.asdf1234.css", path);
     }
@@ -372,7 +372,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal(".asdf1234.css", path);
     }
@@ -385,7 +385,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("site.asdf1234", path);
     }
@@ -398,7 +398,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal(".asdf1234", path);
     }
@@ -411,7 +411,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234",
         };
-        var path = pattern.ReplaceTokens(
+        var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
@@ -426,7 +426,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234",
         };
-        var path = pattern.ReplaceTokens(
+        var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
@@ -441,7 +441,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("asdf1234.css", path);
     }
@@ -454,7 +454,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("css/siteasdf1234.css", path);
     }
@@ -467,7 +467,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("siteasdf1234", path);
     }
@@ -480,7 +480,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("asdf1234", path);
     }
@@ -493,7 +493,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234",
         };
-        var path = pattern.ReplaceTokens(
+        var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
@@ -508,7 +508,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234",
         };
-        var path = pattern.ReplaceTokens(
+        var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
@@ -523,7 +523,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("asdf1234.css", path);
     }
@@ -554,7 +554,7 @@ public class StaticWebAssetPathPatternTest
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?", "MyApp");
         var tokens = new StaticWebAsset();
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("site", path);
     }
@@ -567,7 +567,7 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var path = pattern.ReplaceTokens(tokens, CreateTestResolver());
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
         Assert.Equal("site", path);
     }
