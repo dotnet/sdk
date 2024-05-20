@@ -682,7 +682,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
         {
             var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-            return pattern.ReplaceTokens(this, tokens).Path;
+            return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
         }
 
         public override string ToString() =>

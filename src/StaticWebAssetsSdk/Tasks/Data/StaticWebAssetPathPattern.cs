@@ -207,9 +207,9 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 
     // Replace the tokens in the path pattern with the values provided in the tokens dictionary
 #if WASM_TASKS
-    internal (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
+    internal (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, bool applyPreferences = false)
 #else
-    public (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens)
+    public (string Path, Dictionary<string, string> PatternValues) ReplaceTokens(StaticWebAsset staticWebAsset, StaticWebAssetTokenResolver tokens, bool applyPreferences = false)
 #endif
     {
         var result = new StringBuilder();
@@ -222,6 +222,11 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
             }
             else
             {
+                if (applyPreferences && segment.IsOptional && !segment.IsPreferred)
+                {
+                    continue;
+                }
+
                 var tokenNames = segment.GetTokenNames();
                 var foundAllValues = true;
                 var missingValue = "";
