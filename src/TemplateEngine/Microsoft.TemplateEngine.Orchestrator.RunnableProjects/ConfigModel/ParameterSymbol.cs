@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 DefaultIfOptionWithoutValue = "true";
             }
 
-            if (DefaultValue == null && IsRequired != true)
+            if (DefaultValue == null && !IsRequired)
             {
                 DefaultValue = ParameterConverter.GetDefault(DataType);
             }
