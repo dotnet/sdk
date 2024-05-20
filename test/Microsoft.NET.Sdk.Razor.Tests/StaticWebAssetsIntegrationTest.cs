@@ -1032,7 +1032,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var pack = new MSBuildCommand(projectDirectory, "Pack", "PackageLibraryDirectDependency");
             pack.WithWorkingDirectory(projectDirectory.Path);
-            var result = pack.Execute();
+            var result = pack.Execute("/bl");
 
             result.Should().Pass();
 
@@ -1040,9 +1040,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 Path.Combine(pack.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),

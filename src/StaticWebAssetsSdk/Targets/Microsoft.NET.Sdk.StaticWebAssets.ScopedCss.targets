@@ -224,7 +224,7 @@ Integration with static web assets:
 
   <ItemGroup>
     <_ScopedCssAppBundleStaticWebAssetCandidate Include="$(_ScopedCssOutputPath)">
-      <RelativePath>$(PackageId)#[.{fingerprint}]!.styles.css</RelativePath>
+      <RelativePath>$(PackageId)#[.{fingerprint}]?.styles.css</RelativePath>
     </_ScopedCssAppBundleStaticWebAssetCandidate>
     <_ScopedCssProjectBundleStaticWebAssetCandidate Include="$(_ScopedCssProjectOutputPath)">
       <RelativePath>$(PackageId)#[.{fingerprint}]!.bundle.scp.css</RelativePath>
