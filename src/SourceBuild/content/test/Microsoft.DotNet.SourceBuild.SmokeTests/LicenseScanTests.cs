@@ -188,7 +188,7 @@ public class LicenseScanTests : TestBase
         // In other words, the baseline will be fully representative of the licenses that apply to the files that are listed there.
 
         // We only care about the license expressions that are in the target repo.
-        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, _targetRepo);
+        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, "^" + Regex.Escape(_relativeRepoPath));
 
         for (int i = scancodeResults.Files.Count - 1; i >= 0; i--)
         {
