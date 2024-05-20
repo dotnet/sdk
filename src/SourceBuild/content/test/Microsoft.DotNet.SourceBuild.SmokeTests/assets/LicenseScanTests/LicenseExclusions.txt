@@ -17,6 +17,7 @@ src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown
 src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
 
 # Doesn't apply to code
+src/arcade/eng/xcopy-msbuild/msbuild.nuspec|ms-visual-2015-sdk
 src/arcade/src/Microsoft.DotNet.Arcade.Sdk/tools/Licenses/*
 
 # Applies to installer, not source
@@ -71,22 +72,8 @@ src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-licen
 # fsharp
 #
 
-# False positive
-
 # Applies to installer, not source
 src/fsharp/setup/resources/eula/*.rtf
-
-#
-# installer
-#
-
-# False positive
-src/installer/src/redist/packaging/osx/resources/en.lproj/welcome.html|cecill-c
-src/installer/THIRD-PARTY-NOTICES|proprietary-license
-
-# Configuration, doesn't apply to source directly
-src/installer/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
-src/installer/src/redist/packaging/**/*.json
 
 #
 # msbuild
@@ -126,6 +113,7 @@ src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 #
 
 # Build asset, not applicable to source
+src/roslyn-analyzers/assets/EULA.txt|ms-net-library
 
 #
 # roslyn
@@ -134,8 +122,6 @@ src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 # Test data
 src/roslyn/src/Analyzers/VisualBasic/Tests/FileHeaders/FileHeaderTests.vb|unknown-license-reference
 src/roslyn/src/EditorFeatures/CSharpTest2/EmbeddedLanguages/RegularExpressions/Regex_RealWorldPatterns.json
-
-# False positive
 
 # Applicable to installer, not source
 src/roslyn/src/Setup/Roslyn.ThirdPartyNotices/ThirdPartyNotices.rtf
@@ -221,6 +207,7 @@ src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.i
 
 # Contains references to licenses which are not applicable to the source
 src/source-build-reference-packages/src/packageSourceGenerator/PackageSourceGeneratorTask/RewriteNuspec.cs|unknown-license-reference,ms-net-library-2018-11
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml|proprietary-license
 
 #
 # sourcelink
