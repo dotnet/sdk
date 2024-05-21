@@ -100,7 +100,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     RunInNewTransaction(context =>
                     {
-                        InstallWorkloads(context, workloadIds, shouldUpdateManifests: true, offlineCache);
+                        UpdateWorkloadManifests(context, offlineCache);
+                        _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
                     });
 
                     WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);

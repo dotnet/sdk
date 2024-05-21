@@ -102,8 +102,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
             _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
 
-            //bool specifiedWorkloadSetVersionInGlobalJson = !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson);
-
             if (SpecifiedWorkloadSetVersionInGlobalJson && (SpecifiedWorkloadSetVersionOnCommandLine || UseRollback))
             {
                 throw new GracefulException(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath), isUserError: true);
@@ -116,7 +114,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                     InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name), isUserError: true);
             }
 
-            //  At this point, at most one of specifiedWorkloadSetVersionOnCommandLine, useRollback, and specifiedWorkloadSetVersionInGlobalJson is true
+            //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, and SpecifiedWorkloadSetVersionInGlobalJson is true
 
         }
 
@@ -127,19 +125,22 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         InstallStateContents GetCurrentInstallState()
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+            return GetCurrentInstallState(_sdkFeatureBand, _dotnetPath);
+        }
+
+        static InstallStateContents GetCurrentInstallState(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
             return installStateContents;
         }
 
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
-            return installStateContents.UseWorkloadSets ?? false;
+            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).UseWorkloadSets ?? false;
         }
 
-        protected void InstallWorkloads(ITransactionContext context, IEnumerable<WorkloadId> workloadsToUpdateOrInstall, bool shouldUpdateManifests, DirectoryPath? offlineCache)
+        protected void UpdateWorkloadManifests(ITransactionContext context, DirectoryPath? offlineCache)
         {
             var updateUsingWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
             if (UseRollback && updateUsingWorkloadSets)
@@ -218,8 +219,6 @@ namespace Microsoft.DotNet.Workloads.Workload
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
-
-                    _workloadInstaller.InstallWorkloads(workloadsToUpdateOrInstall, _sdkFeatureBand, context, offlineCache);
                 },
                 rollback: () =>
                 {

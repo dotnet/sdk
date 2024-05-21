@@ -155,7 +155,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     if (!_skipManifestUpdate)
                     {
                         var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                        if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && File.Exists(installStateFilePath) && InstallStateContents.FromString(File.ReadAllText(installStateFilePath)).Manifests is not null)
+                        if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) &&
+                            File.Exists(installStateFilePath) &&
+                            InstallStateContents.FromString(File.ReadAllText(installStateFilePath)) is InstallStateContents installState &&
+                            (installState.Manifests != null || installState.WorkloadVersion != null))
                         {
                             //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
                             //  To update to a new version, the user would need to run "dotnet workload update"
@@ -168,19 +171,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     RunInNewTransaction(context =>
                     {
-                        if (_skipManifestUpdate)
-                        {
-                            _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
-                        }
-                        else
-                        {
+                       if (!_skipManifestUpdate)
+                       {
                             if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
                             {
                                 //  TODO: Change this message to account for workload set wording
                                 Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                             }
-                            InstallWorkloads(context, workloadIds, shouldUpdateManifests: true, offlineCache);
+                            UpdateWorkloadManifests(context, offlineCache);
                         }
+                        _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
 
                         //  Write workload installation records
                         var recordRepo = _workloadInstaller.GetWorkloadInstallationRecordRepository();
