@@ -3,9 +3,7 @@ From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Tue, 21 May 2024 13:50:09 +0200
 Subject: [PATCH] Add missing System.Memory references (#9140)
 
-* Add missing System.Memory references
-
-* Update WindowsFormsIntegration.csproj
+Backport: https://github.com/dotnet/wpf/commit/f704647788c026d99652b5b3716fab92486841d9
 ---
  .../UIAutomation/UIAutomationClient/UIAutomationClient.csproj    | 1 +
  .../src/WindowsFormsIntegration/WindowsFormsIntegration.csproj   | 1 +
