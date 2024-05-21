@@ -15,8 +15,7 @@ resources:
   - repository: vmr
     type: git
     name: dotnet-dotnet
-    # TODO: Change back to '$(Build.SourceBranch)' when sdk becomes the VMR's origin
-    ref: main-sdk
+    ref: $(Build.SourceBranch)
 
   - repository: 1ESPipelineTemplates
     type: git
@@ -27,7 +26,7 @@ parameters:
 - name: vmrBranch
   displayName: dotnet-dotnet branch to push to
   type: string
-  default: 'main-sdk'
+  default: ' '
 
 variables:
 - template: /eng/common/templates-official/variables/pool-providers.yml@self

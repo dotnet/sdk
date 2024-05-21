@@ -9,6 +9,7 @@ using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -143,13 +144,27 @@ public static class ContainerHelpers
         return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
     }
 
+
     /// <summary>
     /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
+    /// If the domain is localhost, we default to HTTP. Otherwise, we check the Docker config to see if the registry is marked as insecure.
     /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
     /// </summary>
     internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
     {
-        var prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
+        string prefix = "https";
+        if (alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal))
+        {
+            prefix = "http";
+        }
+
+        //check the docker config to see if the registry is marked as insecure
+        else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
+        {
+            prefix = "http";
+        }
+
+
         return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
 
@@ -279,7 +294,7 @@ public static class ContainerHelpers
 
             // normalize the name. a little more complex, but this does all of our checks in a single pass and doesn't require coming back
             // after the normalization to check if our invariants hold
-            var normalizedAllChars = true;
+            var invalidChars = 0;
             var normalizationOccurred = false;
             var builder = new StringBuilder(containerRepository);
             for (int i = 0; i < containerRepository.Length; i++)
@@ -288,7 +303,6 @@ public static class ContainerHelpers
                 if (IsLowerAlpha(current) || IsNumeric(current) || IsAllowedPunctuation(current))
                 {
                     // no need to set the builder's char here, since we preloaded
-                    normalizedAllChars = false;
                 }
                 else if (IsUpperAlpha(current))
                 {
@@ -299,12 +313,13 @@ public static class ContainerHelpers
                 {
                     builder[i] = '-';
                     normalizationOccurred = true;
+                    invalidChars++;
                 }
             }
             var normalizedImageName = builder.ToString();
 
             // check for normalization to useless name
-            if (normalizedAllChars)
+            if (invalidChars == builder.Length)
             {
                 // The name was normalized to all dashes, so there was nothing recoverable. We should throw.
                 var error = (nameof(Strings.InvalidImageName_EntireNameIsInvalidCharacters), new string[] { containerRepository });

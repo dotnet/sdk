@@ -35,8 +35,7 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             // Open the Config Json and read the values into the model
-            TextReader projectFileReader = File.OpenText(ConfigJsonFile);
-            string jsonFileText = projectFileReader.ReadToEnd();
+            string jsonFileText = File.ReadAllText(ConfigJsonFile, Encoding.UTF8);
             ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(jsonFileText);
 
             // Update the Changelog and Copyright files by replacing tokens with values from config json

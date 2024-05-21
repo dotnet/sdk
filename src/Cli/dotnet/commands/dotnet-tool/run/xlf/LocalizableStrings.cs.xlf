@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="needs-review-translation">Spustí místní nástroj.</target>
+        <target state="translated">Spustí místní nástroj. Tento příkaz nejde použít ke spuštění globálního nástroje. </target>
         <note />
       </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
