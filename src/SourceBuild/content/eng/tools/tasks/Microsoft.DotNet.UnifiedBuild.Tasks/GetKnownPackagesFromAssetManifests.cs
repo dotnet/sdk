@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             KnownBlobs = xDocuments
                 .SelectMany(doc => doc.Root!.Descendants("Blob"))
-                .Select(asset => new TaskItem(asset.Attribute("Path")!.Value))
+                .Select(asset => new TaskItem(asset.Attribute("Id")!.Value))
                 .ToArray();
 
             return true;
