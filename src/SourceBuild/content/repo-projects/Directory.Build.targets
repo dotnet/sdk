@@ -467,7 +467,7 @@
   </Target>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <Target Name="GetProducedPackages" DependsOnTargets="GetRepoAssetManifests" Returns="@(ProducedPackage)">
+  <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
     <ItemGroup>
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
