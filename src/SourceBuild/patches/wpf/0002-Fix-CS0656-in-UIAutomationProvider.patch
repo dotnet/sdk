@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Eric StJohn <ericstj@microsoft.com>
+Date: Mon, 20 May 2024 18:58:54 -0700
+Subject: [PATCH 2/2] Fix CS0656 in UIAutomationProvider
+
+---
+ .../UIAutomationProvider/UIAutomationProvider.csproj           | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationProvider/UIAutomationProvider.csproj b/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationProvider/UIAutomationProvider.csproj
+index f9928c367..bd0c444e4 100644
+--- a/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationProvider/UIAutomationProvider.csproj
++++ b/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationProvider/UIAutomationProvider.csproj
+@@ -7,7 +7,7 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    
++
+     <EnableDefaultItems>false</EnableDefaultItems>
+   </PropertyGroup>
+ 
+@@ -52,6 +52,7 @@
+     <NetCoreReference Include="Microsoft.Win32.Primitives" />
+     <NetCoreReference Include="System" />
+     <NetCoreReference Include="System.Drawing.Primitives" />
++    <NetCoreReference Include="System.Memory" />
+     <NetCoreReference Include="System.Runtime" />
+     <NetCoreReference Include="System.Resources.ResourceManager" />
+     <NetCoreReference Include="System.Runtime.InteropServices" />
