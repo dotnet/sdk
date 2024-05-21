@@ -201,6 +201,7 @@
       <!-- Always publish blobs to a suffixed directory. -->
       <SdkAssetsToPushToBlobFeed Include="@(SdkAssetsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
+        <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
       </SdkAssetsToPushToBlobFeed>
 
       <SdkAssetsToPushToBlobFeed Include="@(SdkNonShippingAssetsToPublish)">
@@ -210,6 +211,7 @@
 
       <ChecksumsToPushToBlobFeed Include="@(CheckSumsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
+        <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
       </ChecksumsToPushToBlobFeed>
     </ItemGroup>
 
