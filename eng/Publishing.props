@@ -51,6 +51,13 @@
     <ToolsetAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
   </ItemGroup>
 
+  <!-- Include RID specific packages when globbing for default artifacts is disabled. -->
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <ItemsToPushToBlobFeed Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                                    $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+                           IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))" />
+  </ItemGroup>
+
   <Target Name="ReadToolsetVersion">
     <ReadLinesFromFile File="$(ArtifactsBinDir)version.txt">
       <Output TaskParameter="Lines" ItemName="ToolsetVersion" />
