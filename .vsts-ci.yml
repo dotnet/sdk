@@ -111,7 +111,7 @@ extends:
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
-              publishArgument: $(_publishArgument) /p:EnableToolsetPublish=true
+              publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               enableDefaultArtifacts: true
