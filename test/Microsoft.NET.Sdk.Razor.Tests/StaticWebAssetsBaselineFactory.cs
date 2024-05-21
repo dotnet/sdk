@@ -96,6 +96,23 @@ public class StaticWebAssetsBaselineFactory
                 }
             }
 
+            foreach(var property in endpoint.EndpointProperties)
+            {
+                switch (property.Name)
+                {
+                    case "fingerprint":
+                        property.Value = "__fingerprint__";
+                        break;
+                    case "integrity":
+                        property.Value = "__integrity__";
+                        break;
+                    default:
+                        break;
+                }
+
+                endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
+            }
+
             foreach (var selector in endpoint.Selectors)
             {
                 selector.Quality = "__quality__";
