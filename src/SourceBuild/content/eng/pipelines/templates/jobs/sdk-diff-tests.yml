@@ -51,7 +51,7 @@ jobs:
 
       echo "Sdk build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$sdk_build&view=results"
 
-      echo "##vso[build.addbuildtag]sdk $sdk_sha"
+      echo "##vso[build.addbuildtag]sdk-$sdk_sha"
       echo "##vso[task.setvariable variable=SdkBuildId]$sdk_build"
       echo "##vso[task.setvariable variable=DotnetDotnetBuildId]$dotnet_dotnet_build"
     displayName: Find associated builds
