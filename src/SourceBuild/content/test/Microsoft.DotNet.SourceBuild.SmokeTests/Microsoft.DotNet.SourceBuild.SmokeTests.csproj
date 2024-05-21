@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
@@ -71,7 +72,7 @@
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).MsftSdkTarballPath">
         <Value>$(MsftSdkTarballPath)</Value>
-      </RuntimeHostConfigurationOption>      
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PoisonReportPath"
                                       Condition="'$(EnablePoison)' == 'true'">
         <Value>$(PoisonUsageReportFile)</Value>
