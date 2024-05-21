@@ -243,8 +243,9 @@ jobs:
         versionSpec: 20.x
 
     - script: |
-        call $(sourcesPath)\build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
       displayName: Build
+      workingDirectory: ${{ variables.sourcesPath }}
       env:
         ${{ if eq(parameters.useDevVersions, 'True') }}:
           devArgument: -dev
@@ -253,9 +254,9 @@ jobs:
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          cd $(sourcesPath)
           call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
         displayName: Run Tests
+        workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ else }}:
