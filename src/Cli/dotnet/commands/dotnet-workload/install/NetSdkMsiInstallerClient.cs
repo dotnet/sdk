@@ -258,27 +258,49 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
-        {
-            var workloadSetPath = string.Empty;
-            context.Run(
-                action: () =>
-                {
-                    workloadSetPath = ModifyWorkloadSet(workloadSetVersion, InstallAction.Install, offlineCache);
-                },
-                rollback: () =>
-                {
-                    ModifyWorkloadSet(workloadSetVersion, InstallAction.Uninstall, offlineCache);
-                });
-
-            return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
-        }
-
-        private string ModifyWorkloadSet(string workloadSetVersion, InstallAction requestedAction, DirectoryPath? offlineCache)
         {
             ReportPendingReboot();
 
+            var (msi, msiPackageId, installationFolder) = GetWorkloadSetPayload(workloadSetVersion, offlineCache);
+
+            context.Run(
+                action: () =>
+                {
+                    Elevate();
+
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+
+                    if (plannedAction == InstallAction.Install)
+                    {
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                    }
+                },
+                rollback: () =>
+                {
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
+
+                    if (plannedAction == InstallAction.Uninstall)
+                    {
+                        Elevate();
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
+
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+                    }
+                });
+
+            return WorkloadSet.FromWorkloadSetFolder(installationFolder, workloadSetVersion, _sdkFeatureBand);
+        }
+
+        (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
+        {
             SdkFeatureBand workloadSetFeatureBand;
             string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
@@ -286,32 +308,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
             // Retrieve the payload from the MSI package cache.
-            MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
+            MsiPayload msi;
+            try
+            {
+                msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
+            }
+            //  Unwrap AggregateException caused by switch from async to sync
+            catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
+            {
+                throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex);
+            }
             VerifyPackage(msi);
-            DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
 
-            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
+            string installationFolder = Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
-            if (plannedAction == InstallAction.Uninstall)
-            {
-                Elevate();
-
-                // Update the reference count against the MSI.
-                UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
-
-                ExecutePackage(msi, plannedAction, msiPackageId);
-            }
-            else if (plannedAction != InstallAction.None)
-            {
-                Elevate();
-
-                ExecutePackage(msi, plannedAction, msiPackageId);
-
-                // Update the reference count against the MSI.
-                UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
-            }
-
-            return Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            return (msi, msiPackageId, installationFolder);
         }
 
         /// <summary>
