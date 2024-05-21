@@ -157,9 +157,15 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             return result.StdOut;
         }
 
-        protected CommandResult InstallWorkload(string workloadName)
+        protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
-            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
+            string [] args = { "dotnet", "workload", "install", workloadName};
+            if (skipManifestUpdate)
+            {
+                args = [.. args, "--skip-manifest-update"];
+            }
+
+            var result = VM.CreateRunCommand(args)
                     .WithDescription($"Install {workloadName} workload")
                     .Execute();
 

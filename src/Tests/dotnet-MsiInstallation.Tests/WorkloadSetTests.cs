@@ -137,9 +137,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(versionToInstall);
 
             //  Installing a workload shouldn't update workload version
-            InstallWorkload("aspire");
+            InstallWorkload("aspire", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(versionToInstall);
+
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
         }
 
         [Fact]
@@ -155,8 +162,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Execute()
                 .Should()
                 .Fail()
-                .And
-                .HaveStdErrContaining(unavailableWorkloadSetVersion);
+                .And.HaveStdErrContaining(unavailableWorkloadSetVersion)
+                .And.NotHaveStdOutContaining("Installation rollback failed");
 
             VM.CreateRunCommand("dotnet", "workload", "search")
                 .WithIsReadOnly(true)
