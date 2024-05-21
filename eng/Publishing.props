@@ -69,7 +69,7 @@
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishFSharpNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
 
-  <Target Name="_ResolvePublishFSharpNuGetPackages">
+  <Target Name="_ResolvePublishFSharpNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <PropertyGroup>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
@@ -87,7 +87,7 @@
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
 
-  <Target Name="_ResolvePublishRoslynNuGetPackages">
+  <Target Name="_ResolvePublishRoslynNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <ItemGroup>
       <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
       <ItemsToPushToBlobFeed Include="@(RoslynPackagesToPush)" IsShipping="true" />
@@ -95,7 +95,7 @@
   </Target>
 
   <!-- We use a separate target to publish this to blob storage so that we can push this to a relative path inside the blob storage. -->
-  <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish" Condition="'$(EnableToolsetPublish)' == 'true'">
+  <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <ItemGroup>
       <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
         RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
