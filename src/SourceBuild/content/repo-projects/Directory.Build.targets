@@ -620,6 +620,28 @@
     ExtractToolPackage;
     CleanupRepo" />
 
+  <Target Name="Test">
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
+    <Message Importance="High" Text="Running command:" />
+    <Message Importance="High" Text="  $(TestCommand)" />
+    <Message Importance="High" Text="  With Environment Variables:"/>
+    <Message Importance="High" Text="    %(TestEnvironmentVariable.Identity)" />
+
+    <PropertyGroup>
+      <FullTestCommand>$(TestCommand)</FullTestCommand>
+      <FullTestCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullTestCommand) /v:$(LogVerbosity)</FullTestCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(FullTestCommand)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(TestEnvironmentVariable)">
+      <Output TaskParameter="ExitCode" PropertyName="RepoTestExitCode" />
+    </Exec>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)...done" />
+  </Target>
+  <Target Name="VSTest" DependsOnTargets="Test" />
+
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="WritePrebuiltUsageData"
           Inputs="$(MSBuildProjectFullPath)"
