@@ -909,13 +909,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 Path.Combine(pack.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
@@ -1008,13 +1008,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result2.Should().NuPkgContain(
+            result2.Should().NuPkgContainsPatterns(
                 Path.Combine(pack2.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
@@ -1047,7 +1047,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("staticwebassets", "LICENSE"),
-                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
@@ -1073,13 +1073,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 Path.Combine(buildCommand.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
@@ -1105,13 +1105,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result.Should().NuPkgDoesNotContain(
+            result.Should().NuPkgDoesNotContainPatterns(
                 Path.Combine(buildCommand.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("content", "js", "pkg-direct-dep.js"),
                     Path.Combine("content", "css", "site.css"),
-                    Path.Combine("content", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("content", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("contentFiles", "js", "pkg-direct-dep.js"),
                     Path.Combine("contentFiles", "css", "site.css"),
                     Path.Combine("contentFiles", "PackageLibraryDirectDependency.bundle.scp.css"),
@@ -1383,13 +1383,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
@@ -2234,14 +2234,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
                     Path.Combine("staticwebassets", "Component1.razor.js"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.lib.module.js"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
@@ -2313,14 +2313,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 "Debug",
                 "PackageLibraryTransitiveDependency.1.0.0.nupkg");
 
-            result2.Should().NuPkgContain(
+            result2.Should().NuPkgContainsPatterns(
                 packagePath,
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
                     Path.Combine("staticwebassets", "Component1.razor.js"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.lib.module.js"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
@@ -2511,12 +2511,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
 
-            result.Should().NuPkgContain(
+            result.Should().NuPkgContainsPatterns(
                 Path.Combine(build.GetPackageDirectory().FullName, "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
+                filePatterns: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
-                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),

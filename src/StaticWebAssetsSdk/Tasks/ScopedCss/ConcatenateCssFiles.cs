@@ -59,9 +59,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 for (var i = 0; i < ProjectBundles.Length; i++)
                 {
                     var bundle = ProjectBundles[i];
-                    var bundleBasePath = NormalizePath(bundle.GetMetadata("BasePath"));
-                    var relativePath = NormalizePath(bundle.GetMetadata("RelativePath"));
-                    var importPath = NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
+                    var asset = StaticWebAsset.FromTaskItem(bundle);
+                    var importPath = NormalizePath(asset.ComputeTargetPath(prefix, '/', new StaticWebAssetTokenResolver()));
 
                     builder.AppendLine($"@import '{importPath}';");
                 }
