@@ -250,7 +250,7 @@
   <!-- Before a repository builds, set up the version property files that override the repo's defaults.
        There are 3 files generated -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownPackagesFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
           DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
           Inputs="$(MSBuildProjectFullPath)"
@@ -261,9 +261,9 @@
       <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
 
-    <GetKnownPackagesFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
       <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
-    </GetKnownPackagesFromAssetManifests>
+    </GetKnownArtifactsFromAssetManifests>
 
     <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
       Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
@@ -341,7 +341,6 @@
 
   <Target Name="DiscoverBuiltSdkOverrides"
           DependsOnTargets="BuildRepoReferences;GetProducedPackagesFromTransitiveReferences">
-
     <!--
       Discover the Arcade SDKs built from the live Arcade source and set them as overrides here.
       This will automatically no-op for Arcade and SBRP, as these packages will not have been produced yet.
@@ -451,32 +450,37 @@
     <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
   </Target>
 
-  <Target Name="GetRepoAssetManifests" DependsOnTargets="RepoBuild" Returns="@(RepoAssetManifest)">
+  <!-- Log the new repo artifacts -->
+  <Target Name="LogRepoArtifacts"
+          DependsOnTargets="GetProducedPackages"
+          Inputs="@(RepoAssetManifest)"
+          Outputs="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete"
+          Condition="'$(IsUtilityProject)' != 'true'">
+    <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
+    <Message Importance="High" Text="  -> %(ProducedPackage.Identity)/%(ProducedPackage.Version)" />
+    <Message Importance="High" Text="  -> %(ProducedAsset.Identity)" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GetProducedPackages"
+          Condition="'$(IsUtilityProject)' != 'true'"
+          Returns="@(ProducedPackage)">
     <ItemGroup>
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
-  </Target>
 
-  <!-- Log the new repo artifacts -->
-  <Target Name="LogRepoArtifacts"
-          DependsOnTargets="GetRepoAssetManifests"
-          Condition="'$(IsUtilityProject)' != 'true'">
-    <Error Text="Repo manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
+    <Error Text="Repository asset manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
 
-    <XmlPeek XmlInputPath="%(RepoAssetManifest.Identity)"
-             Query="/Build/*[self::Package | self::Blob]/@Id">
-        <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
-    </XmlPeek>
-
-    <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
-    <Message Importance="High" Text="  -> %(RepoManifestArtifact.Identity)" />
-  </Target>
-
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownPackagesFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <Target Name="GetProducedPackages" DependsOnTargets="GetRepoAssetManifests" Returns="@(ProducedPackage)">
-    <GetKnownPackagesFromAssetManifests AssetManifests="@(RepoAssetManifest)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
-    </GetKnownPackagesFromAssetManifests>
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
+    </GetKnownArtifactsFromAssetManifests>
+
     <ItemGroup>
       <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
     </ItemGroup>
