@@ -1,0 +1,25 @@
+From dc68abb93b33b002324c366cf1235a6ae1977969 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 21 May 2024 16:05:44 +0200
+Subject: [PATCH] Add missing System.Memory references (part 4)
+
+Continuation of https://github.com/dotnet/wpf/commit/f704647788c026d99652b5b3716fab92486841d9
+
+Backport: https://github.com/dotnet/wpf/pull/9143
+
+---
+ .../UIAutomationClientSideProviders.csproj                       | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationClientSideProviders/UIAutomationClientSideProviders.csproj b/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationClientSideProviders/UIAutomationClientSideProviders.csproj
+index f13ff83a098..83473c0a568 100644
+--- a/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationClientSideProviders/UIAutomationClientSideProviders.csproj
++++ b/src/Microsoft.DotNet.Wpf/src/UIAutomation/UIAutomationClientSideProviders/UIAutomationClientSideProviders.csproj
+@@ -122,6 +122,7 @@
+     <NetCoreReference Include="System.Diagnostics.Process" />
+     <NetCoreReference Include="System.Diagnostics.StackTrace" />
+     <NetCoreReference Include="System.Diagnostics.Tools" />
++    <NetCoreReference Include="System.Memory" />
+     <NetCoreReference Include="System.Net.Primitives" />
+     <NetCoreReference Include="System.Resources.ResourceManager" />
+     <NetCoreReference Include="System.Runtime" />
