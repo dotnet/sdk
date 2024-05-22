@@ -56,9 +56,9 @@ public partial class StaticWebAssetsBaselineFactory
             if (asset.AssetTraitName == "Content-Encoding")
             {
                 var basePath = asset.BasePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
-                var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar);
-                var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar);
-                var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar);
+                var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar).Replace(".__fingerprint__","");
+                var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
+                var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
 
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), basePath, relativePath);
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
