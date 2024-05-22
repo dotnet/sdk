@@ -227,7 +227,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [
         {
@@ -364,7 +364,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "Route": "ComponentApp.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
       "Selectors": [
         {
@@ -529,7 +529,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "Route": "ComponentApp.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -594,7 +594,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [

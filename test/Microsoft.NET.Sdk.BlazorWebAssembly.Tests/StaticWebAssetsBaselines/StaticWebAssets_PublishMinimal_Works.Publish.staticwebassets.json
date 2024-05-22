@@ -5696,7 +5696,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.bundle.scp.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm-minimal.bundle.scp.css.gz",
       "Selectors": [
         {
@@ -5833,7 +5833,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.styles.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm-minimal.styles.css.gz",
       "Selectors": [
         {
@@ -17614,7 +17614,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.bundle.scp.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm-minimal.bundle.scp.css.br",
       "Selectors": [
         {
@@ -17751,7 +17751,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.styles.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm-minimal.styles.css.br",
       "Selectors": [
         {
@@ -17998,7 +17998,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.styles.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm-minimal.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -18063,7 +18063,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm-minimal.d22a8gxdyv.bundle.scp.css",
+      "Route": "blazorwasm-minimal.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\blazorwasm-minimal.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [

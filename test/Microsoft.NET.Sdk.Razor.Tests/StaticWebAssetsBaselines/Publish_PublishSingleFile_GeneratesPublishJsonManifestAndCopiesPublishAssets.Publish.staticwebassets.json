@@ -219,7 +219,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [
         {
@@ -356,7 +356,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "Route": "ComponentApp.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
       "Selectors": [
         {
@@ -493,7 +493,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
       "Selectors": [
         {
@@ -630,7 +630,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "Route": "ComponentApp.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
       "Selectors": [
         {
@@ -713,7 +713,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "Route": "ComponentApp.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -778,7 +778,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [

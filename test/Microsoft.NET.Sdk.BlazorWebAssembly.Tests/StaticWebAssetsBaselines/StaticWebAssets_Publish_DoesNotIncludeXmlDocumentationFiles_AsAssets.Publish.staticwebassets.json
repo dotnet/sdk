@@ -6006,7 +6006,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm.qcq8l1gtv4.styles.css",
+      "Route": "blazorwasm.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm.styles.css.gz",
       "Selectors": [
         {
@@ -17951,7 +17951,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm.qcq8l1gtv4.styles.css",
+      "Route": "blazorwasm.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
       "Selectors": [
         {
@@ -18526,7 +18526,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm.qcq8l1gtv4.styles.css",
+      "Route": "blazorwasm.__fingerprint__.styles.css",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
