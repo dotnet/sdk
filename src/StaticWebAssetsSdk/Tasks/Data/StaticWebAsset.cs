@@ -685,6 +685,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
         }
 
+        public string ComputePathWithoutTokens(string pathWithTokens)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
+            return pattern.PathWithoutTokens();
+        }
+
         public override string ToString() =>
             $"Identity: {Identity}, " +
             $"SourceType: {SourceType}, " +

@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class StaticWebAssetTokenResolver(IReadOnlyDictionary<string, string> tokens)
 {
+    public static readonly StaticWebAssetTokenResolver Instance = new();
+
     private static readonly Dictionary<string, string> _empty = [];
 
     public StaticWebAssetTokenResolver() : this(_empty) { }

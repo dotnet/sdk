@@ -230,7 +230,7 @@ namespace Microsoft.NET.TestFramework.Assertions
                 var path = Path.Combine(unzipped, directory);
                 var searchPattern = Path.GetFileName(pattern);
 
-                var condition = Directory.GetFiles(path, searchPattern).Length > 0;
+                var condition = Directory.Exists(path) && Directory.GetFiles(path, searchPattern).Length > 0;
                 Execute.Assertion.ForCondition(!condition)
                     .FailWith(AppendDiagnosticsTo($"NuGet Package contains file {pattern}."));
             }

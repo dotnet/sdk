@@ -137,7 +137,13 @@ public class ApplyCompressionNegotiation : Task
         }
 
         // Add the preserved endpoints to the list of updated endpoints.
-        updatedEndpoints.AddRange(preservedEndpoints.Values);
+        foreach (var preservedEndpoint in preservedEndpoints.Values)
+        {
+            if (!updatedEndpoints.Contains(preservedEndpoint))
+            {
+                updatedEndpoints.Add(preservedEndpoint);
+            }
+        }
 
         // Before we return the updated endpoints we need to capture any other endpoint whose asset is not associated
         // with the compressed asset. This is because we are going to remove the endpoints from the associated item group

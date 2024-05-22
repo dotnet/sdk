@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>
 {
     public string Name { get; set; }
@@ -40,4 +42,6 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
         return HashCode.Combine(Name, Value, Quality);
         #endif
     }
+
+    private string GetDebuggerDisplay() => $"Name: {Name}, Value: {Value}, Quality: {Quality}";
 }

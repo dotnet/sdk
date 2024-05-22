@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -356,6 +357,11 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
             if (file.EndsWith(".br") || file.EndsWith(".gz"))
             {
                 endpointsByAssetFile[file].Should().HaveCount(2);
+            }
+            else if (endpointsByAssetFile[file].Length > 1)
+            {
+                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().Be(1);
+                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Length == 0).Count().Should().Be(1);
             }
             else
             {

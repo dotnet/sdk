@@ -1389,7 +1389,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 {
                     Path.Combine("staticwebassets", "exampleJsInterop.js"),
                     Path.Combine("staticwebassets", "background.png"),
-                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
+                    Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.bundle.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),

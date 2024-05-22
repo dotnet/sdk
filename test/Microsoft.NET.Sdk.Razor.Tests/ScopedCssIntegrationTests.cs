@@ -470,7 +470,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Exist();
 
             appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
-            appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
+            appBundle.Should().Match(""".*_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
         [Fact]
@@ -513,7 +513,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Exist();
 
             appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
-            appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
+            appBundle.Should().Match("""_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css""");
         }
 
         // This test verifies if the targets that VS calls to update scoped css works to update these files
@@ -575,7 +575,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Verify the generated file contains newly added css
             var text = fileInfo.ReadAllText();
             text.Should().Contain("background-color: orangered");
-            text.Should().Contain("@import '_content/ClassLibrary/ClassLibrary.bundle.scp.css");
+            text.Should().MatchRegex(""".*@import '_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
     }
 }

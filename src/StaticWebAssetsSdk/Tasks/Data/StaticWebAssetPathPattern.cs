@@ -37,7 +37,7 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
                 stringBuilder.Append(']');
                 if (segment.IsOptional)
                 {
-                    if(segment.IsPreferred)
+                    if (segment.IsPreferred)
                     {
                         stringBuilder.Append('!');
                     }
@@ -354,6 +354,20 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
         };
     }
 
+    internal string PathWithoutTokens()
+    {
+        var result = new StringBuilder();
+        foreach (var segment in Segments)
+        {
+            if (IsLiteralSegment(segment))
+            {
+                result.Append(segment.Parts[0].Value);
+            }
+            continue;
+        }
+
+        return result.ToString();
+    }
 }
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
