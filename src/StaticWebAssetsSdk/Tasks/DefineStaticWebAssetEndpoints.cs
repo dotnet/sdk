@@ -123,9 +123,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     headers.Add(new() { Name = "Cache-Control", Value = "max-age=604800, immutable" });
                 }
 
+                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+
                 var endpoint = new StaticWebAssetEndpoint()
                 {
-                    Route = route,
+                    Route = finalRoute,
                     AssetFile = asset.Identity,
                     EndpointProperties = [.. values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value })],
                     ResponseHeaders = [.. headers]

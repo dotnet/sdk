@@ -4,14 +4,21 @@
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
-public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
+public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
     : AspNetSdkBaselineTest(log, GenerateBaselines)
 {
+    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.bundle\.scp\.css(?'compress'\.(?:gz|br))?$""")]
+    private static partial Regex ProjectBundleRegex();
+
+    [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.styles\.css(?'compress'\.(?:gz|br))?$""")]
+    private static partial Regex AppBundleRegex();
+
     [Fact]
     public void Build_CreatesEndpointsForAssets()
     {
@@ -34,24 +41,97 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
         var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
 
         var endpoints = manifest.Endpoints;
-        endpoints.Should().HaveCount(9);
+        endpoints.Should().HaveCount(13);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
         appJsGzEndpoints.Should().HaveCount(1);
-
-        var bundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css"));
+        var bundleEndpoints = endpoints.Where(MatchUncompresedProjectBundlesNoFingerprint);
         bundleEndpoints.Should().HaveCount(2);
-        var bundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.gz"));
+
+        var bundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint);
         bundleGzEndpoints.Should().HaveCount(1);
 
-        var appBundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css"));
+        var fingerprintedBundles = endpoints.Where(MatchUncompressedProjectBundlesWithFingerprint);
+        fingerprintedBundles.Should().HaveCount(2);
+
+        var appBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleNoFingerprint);
         appBundleEndpoints.Should().HaveCount(2);
-        var appBundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css.gz"));
+
+        var appBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint);
         appBundleGzEndpoints.Should().HaveCount(1);
+
+        var fingerprintedAppBundle = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
+        fingerprintedAppBundle.Should().HaveCount(2);
 
         AssertManifest(manifest, LoadBuildManifest());
     }
+
+    private bool MatchUncompresedProjectBundlesNoFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                var _,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: "", Success: false }
+            ]
+    };
+
+    private bool MatchCompressedProjectBundlesNoFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                var _,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: var compress, Success: true }
+            ]
+    } && (compress == ".gz" || compress == ".br");
+
+    private bool MatchUncompressedProjectBundlesWithFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                    var m,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: "", Success: false }
+                ]
+    } && fingerprint == ep.EndpointProperties.Single().Value;
+
+    private bool MatchUncompressedAppBundleNoFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                var _,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: "", Success: false }
+            ]
+    };
+
+    private bool MatchCompressedAppBundleNoFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                var _,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: var compress, Success: true }
+            ]
+    } && (compress == ".gz" || compress == ".br");
+
+    private bool MatchUncompressedAppBundleWithFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
+    {
+        Success: true,
+        Groups: [
+                    var m,
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: "", Success: false }
+                ]
+    } && fingerprint == ep.EndpointProperties.Single().Value;
 
     [Fact]
     public void Publish_CreatesEndpointsForAssets()
