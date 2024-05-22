@@ -1,12 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
-public class StaticWebAssetsBaselineFactory
+public partial class StaticWebAssetsBaselineFactory
 {
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})((?:\.[a-zA-Z0-9]{2,6}){1,3})((?:\.gz)|(?:\.br))?$""")]
+    private partial Regex FingerprintingRegex();
+
     public static StaticWebAssetsBaselineFactory Instance { get; } = new();
 
     public IList<string> KnownExtensions { get; } = new List<string>()
@@ -97,7 +101,7 @@ public class StaticWebAssetsBaselineFactory
                 }
             }
 
-            foreach(var property in endpoint.EndpointProperties)
+            foreach (var property in endpoint.EndpointProperties)
             {
                 switch (property.Name)
                 {
@@ -252,8 +256,7 @@ public class StaticWebAssetsBaselineFactory
                     _ => segments[i]
                 })
         };
-
-        return updated.Replace('/', '\\');
+        return FingerprintingRegex().Replace(updated.Replace('/', '\\'), "$1__fingerprint__$3$4");
     }
 
     private string TemplatizeBuildOrPublishPath(string outputPath, string file)

@@ -231,7 +231,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void Publish_PublishesBundleToTheRightLocation()
+        public void Publish_PublishesScopedCssBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
