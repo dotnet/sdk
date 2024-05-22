@@ -271,162 +271,6 @@
   ],
   "Endpoints": [
     {
-      "Route": "ComponentApp.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
       "Route": "ComponentApp.bundle.scp.css.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [],
@@ -436,6 +280,10 @@
           "Value": "bytes"
         },
         {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
         },
@@ -452,10 +300,6 @@
           "Value": "__last-modified__"
         },
         {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
           "Name": "Vary",
           "Value": "Content-Encoding"
         }
@@ -463,8 +307,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.lib.module.js.gz",
+      "Route": "ComponentApp.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -478,8 +322,20 @@
           "Value": "bytes"
         },
         {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -490,31 +346,19 @@
           "Value": "__last-modified__"
         },
         {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
           "Name": "Vary",
           "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         }
       ],
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.lib.module.js.br",
+      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
-          "Value": "br",
+          "Value": "gzip",
           "Quality": "__quality__"
         }
       ],
@@ -524,44 +368,12 @@
           "Value": "bytes"
         },
         {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
+          "Name": "Cache-Control",
+          "Value": "max-age=604800, immutable"
         },
         {
           "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "${ProjectPath}\\wwwroot\\ComponentApp.lib.module.js",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
+          "Value": "gzip"
         },
         {
           "Name": "Content-Length",
@@ -569,7 +381,11 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -578,45 +394,18 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.lib.module.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.lib.module.js.br",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
         },
         {
           "Name": "Vary",
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.lib.module.js.gz",
@@ -628,6 +417,10 @@
           "Value": "bytes"
         },
         {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
         },
@@ -644,8 +437,442 @@
           "Value": "__last-modified__"
         },
         {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.lib.module.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
           "Name": "Content-Encoding",
           "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=604800, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        }
+      ]
+    },
+    {
+      "Route": "ComponentApp.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=604800, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        }
+      ]
+    },
+    {
+      "Route": "ComponentApp.lib.module.js.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.lib.module.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.lib.module.js.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.modules.json.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
@@ -670,8 +897,20 @@
           "Value": "bytes"
         },
         {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -682,12 +921,28 @@
           "Value": "__last-modified__"
         },
         {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
           "Name": "Vary",
           "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -696,6 +951,14 @@
         {
           "Name": "ETag",
           "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
         }
       ],
       "EndpointProperties": []
@@ -716,8 +979,20 @@
           "Value": "bytes"
         },
         {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -728,23 +1003,148 @@
           "Value": "__last-modified__"
         },
         {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
           "Name": "Vary",
           "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
-          "Value": "application/json"
+          "Value": "text/css"
         },
         {
           "Name": "ETag",
           "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
         }
       ],
       "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=604800, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.modules.json",
@@ -775,170 +1175,6 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.modules.json.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.br",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/json"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.modules.json.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/json"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
       "Route": "ComponentApp.styles.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "Selectors": [],
@@ -967,123 +1203,33 @@
       "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.styles.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
+      "Route": "ComponentApp.uwvzqsgimx.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
           "Name": "Accept-Ranges",
           "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "Cache-Control",
           "Value": "max-age=604800, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": [
@@ -1094,62 +1240,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.bundle.scp.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        }
-      ]
-    },
-    {
-      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "Route": "ComponentApp.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1172,53 +1263,26 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
         }
       ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        }
-      ]
+      "EndpointProperties": []
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp.styles.css.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
+      "Route": "ComponentApp.uwvzqsgimx.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+      "Selectors": [],
       "ResponseHeaders": [
         {
           "Name": "Accept-Ranges",
           "Value": "bytes"
         },
         {
+          "Name": "Cache-Control",
+          "Value": "max-age=604800, immutable"
+        },
+        {
           "Name": "Content-Length",
           "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
         },
         {
           "Name": "Content-Type",
@@ -1229,63 +1293,8 @@
           "Value": "__etag__"
         },
         {
-          "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        }
-      ]
-    },
-    {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.styles.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
         }
       ],
       "EndpointProperties": [
@@ -1296,8 +1305,8 @@
       ]
     },
     {
-      "Route": "ComponentApp.uwvzqsgimx.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
+      "Route": "ComponentApp.lib.module.js",
+      "AssetFile": "${ProjectPath}\\wwwroot\\ComponentApp.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1310,7 +1319,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/css"
+          "Value": "text/javascript"
         },
         {
           "Name": "ETag",
@@ -1319,18 +1328,9 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
         }
       ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        }
-      ]
+      "EndpointProperties": []
     }
   ]
 }
