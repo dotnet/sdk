@@ -6,7 +6,7 @@
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
@@ -36,7 +36,7 @@
       <IntermediateSymbol Include="$(IntermediateSymbolsRootDir)**/*" />
     </ItemGroup>
   </Target>
- 
+
   <!-- After building, repackage symbols into a single tarball. -->
   <Target Name="RepackageSymbols"
           AfterTargets="Build"
@@ -171,7 +171,7 @@
     <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
   </Target>
 
-  
+
   <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
           DependsOnTargets="DetermineSourceBuiltSdkVersion;ResolveProjectReferences">
     <!-- Inputs: Packages to include in the tarball -->
@@ -197,11 +197,11 @@
   </Target>
 
   <!-- Discover the produced packages from the merged asset manifest -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownPackagesFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
-    <GetKnownPackagesFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
-    </GetKnownPackagesFromAssetManifests>
+    </GetKnownArtifactsFromAssetManifests>
   </Target>
 
   <!-- Create the SourceBuilt.Private.Artifacts archive when building source-only. -->
