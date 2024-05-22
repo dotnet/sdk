@@ -165,7 +165,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             file.Length.Should().Be(length, $"because {endpoint.Route} {file.FullName}");
         }
 
-        endpoints.Should().HaveCount(15);
+        endpoints.Should().HaveCount(21);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -223,19 +223,25 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var brWeakEtag = brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Value;
         brWeakEtag[2..].Should().Be(eTagHeader.Value);
 
-        var bundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css"));
+        var bundleEndpoints = endpoints.Where(MatchUncompresedProjectBundlesNoFingerprint);
         bundleEndpoints.Should().HaveCount(3);
-        var bundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.gz"));
+        var bundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         bundleGzEndpoints.Should().HaveCount(1);
-        var bundleBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.br"));
+        var bundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         bundleBrEndpoints.Should().HaveCount(1);
 
-        var appBundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css"));
+        var fingerprintedBundleEndpoints = endpoints.Where(MatchUncompressedProjectBundlesWithFingerprint);
+        fingerprintedBundleEndpoints.Should().HaveCount(3);
+
+        var appBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleNoFingerprint);
         appBundleEndpoints.Should().HaveCount(3);
-        var appBundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css.gz"));
+        var appBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         appBundleGzEndpoints.Should().HaveCount(1);
-        var appBundleBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css.br"));
+        var appBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         appBundleBrEndpoints.Should().HaveCount(1);
+
+        var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
+        fingerprintedAppBundleEndpoints.Should().HaveCount(3);
 
         AssertManifest(manifest, LoadPublishManifest());
     }
@@ -316,21 +322,27 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var appJsBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.br"));
         appJsBrEndpoints.Should().HaveCount(1);
 
-        var bundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css"));
+        var bundleEndpoints = endpoints.Where(MatchUncompresedProjectBundlesNoFingerprint);
         bundleEndpoints.Should().HaveCount(3);
-        var bundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.gz"));
+        var bundleGzEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         bundleGzEndpoints.Should().HaveCount(1);
-        var bundleBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.br"));
+        var bundleBrEndpoints = endpoints.Where(MatchCompressedProjectBundlesNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         bundleBrEndpoints.Should().HaveCount(1);
 
-        var appBundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css"));
+        var fingerprintedBundleEndpoints = endpoints.Where(MatchUncompressedProjectBundlesWithFingerprint);
+        fingerprintedBundleEndpoints.Should().HaveCount(3);
+
+        var appBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleNoFingerprint);
         appBundleEndpoints.Should().HaveCount(3);
-        var appBundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css.gz"));
+        var appBundleGzEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".gz"));
         appBundleGzEndpoints.Should().HaveCount(1);
-        var appBundleBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("ComponentApp.styles.css.br"));
+        var appBundleBrEndpoints = endpoints.Where(MatchCompressedAppBundleNoFingerprint).Where(ep => ep.Route.EndsWith(".br"));
         appBundleBrEndpoints.Should().HaveCount(1);
 
-        endpoints.Should().HaveCount(15);
+        var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
+        fingerprintedAppBundleEndpoints.Should().HaveCount(3);
+
+        endpoints.Should().HaveCount(21);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }
