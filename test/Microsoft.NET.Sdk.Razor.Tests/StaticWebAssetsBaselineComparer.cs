@@ -148,6 +148,8 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
     protected virtual void CompareAssetGroup(string group, StaticWebAsset[] manifestAssets, StaticWebAsset[] expectedAssets)
     {
         var comparisonMode = CompareAssetCounts(group, manifestAssets, expectedAssets);
+        Array.Sort(manifestAssets, (a, b) => a.Identity.CompareTo(b.Identity));
+        Array.Sort(expectedAssets, (a, b) => a.Identity.CompareTo(b.Identity));
 
         // Otherwise, do a property level comparison of all assets
         switch (comparisonMode)
@@ -320,6 +322,8 @@ For {expectedAsset.Identity}:
     protected virtual void CompareEndpointGroup(string group, StaticWebAssetEndpoint[] manifestAssets, StaticWebAssetEndpoint[] expectedAssets)
     {
         var comparisonMode = CompareEndpointCounts(group, manifestAssets, expectedAssets);
+        Array.Sort(manifestAssets);
+        Array.Sort(expectedAssets);
 
         // Otherwise, do a property level comparison of all assets
         switch (comparisonMode)
