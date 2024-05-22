@@ -17,7 +17,7 @@ Common project and item templates are found in [template_feed](https://github.co
 ## Installing the SDK
 [Official builds](https://dotnet.microsoft.com/download/dotnet-core)
 
-[Latest builds](documentation/package-table.yaml)
+[Latest builds](documentation/package-table.md)
 
 ## How do I engage and contribute?
 
