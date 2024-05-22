@@ -1,6 +1,8 @@
 parameters:
 - name: vmrBranch
+  displayName: dotnet/dotnet branch to use
   type: string
+  default: ''
 
 variables:
 - ${{ if ne(parameters.vmrBranch, '') }}:
