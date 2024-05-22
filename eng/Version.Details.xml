@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.409">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.410">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>51bb155cb883988d3c52e20be40cfbe0f59e40df</Sha>
+      <Sha>01cc0eb8c1a36914566ee5cdd279b4f53af0b528</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.409-servicing.24214.1">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.410-servicing.24272.8">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>51bb155cb883988d3c52e20be40cfbe0f59e40df</Sha>
+      <Sha>01cc0eb8c1a36914566ee5cdd279b4f53af0b528</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.19">
@@ -313,9 +313,9 @@
       <Sha>740189d758fb3bbdc118c5b6171ef1a7351a8c44</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.409-servicing.24214.1">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.410-servicing.24272.8">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>51bb155cb883988d3c52e20be40cfbe0f59e40df</Sha>
+      <Sha>01cc0eb8c1a36914566ee5cdd279b4f53af0b528</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
