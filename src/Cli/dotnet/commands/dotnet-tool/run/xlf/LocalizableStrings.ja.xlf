@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
+        <target state="translated">ローカル ツールを実行します。このコマンドを使用してグローバル ツールを実行することはできません。 </target>
         <note />
       </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">

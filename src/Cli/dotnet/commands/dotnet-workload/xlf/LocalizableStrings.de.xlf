@@ -57,7 +57,7 @@
         <target state="translated">Problem beim Verifizieren der Workloads. Führen Sie "dotnet workload update" aus, um weitere Informationen zu erhalten.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Manifestversion</target>
         <note />

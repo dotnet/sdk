@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
     /// <summary>
     /// Get a list of MSBuild Items that represent the packages described in the asset manifests.
     /// </summary>
-    public sealed class GetKnownPackagesFromAssetManifests : Task
+    public sealed class GetKnownArtifactsFromAssetManifests : Build.Utilities.Task
     {
         [Required]
         public ITaskItem[] AssetManifests { get; set; }
@@ -21,13 +21,25 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         [Output]
         public ITaskItem[] KnownPackages { get; set; }
 
+        [Output]
+        public ITaskItem[] KnownBlobs { get; set; }
+
         public override bool Execute()
         {
-            var knownPackages = from assetManifest in AssetManifests
-                                let doc = XDocument.Load(assetManifest.ItemSpec)
-                                from package in doc.Root.Descendants("Package")
-                                select new TaskItem(package.Attribute("Id").Value, new Dictionary<string, string>{ { "Version", package.Attribute("Version").Value } });
-            KnownPackages = knownPackages.ToArray();
+            XDocument[] xDocuments = AssetManifests
+                .Select(manifest => XDocument.Load(manifest.ItemSpec))
+                .ToArray();
+
+            KnownPackages = xDocuments
+                .SelectMany(doc => doc.Root!.Descendants("Package"))
+                .Select(package => new TaskItem(package.Attribute("Id")!.Value, new Dictionary<string, string> { { "Version", package.Attribute("Version")!.Value } }))
+                .ToArray();
+
+            KnownBlobs = xDocuments
+                .SelectMany(doc => doc.Root!.Descendants("Blob"))
+                .Select(asset => new TaskItem(asset.Attribute("Id")!.Value))
+                .ToArray();
+
             return true;
         }
     }
