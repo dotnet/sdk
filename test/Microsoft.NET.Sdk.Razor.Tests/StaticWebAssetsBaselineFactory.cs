@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 public class StaticWebAssetsBaselineFactory
@@ -146,6 +147,14 @@ public class StaticWebAssetsBaselineFactory
         // Sor everything now to ensure we produce stable baselines independent of the machine they were generated on.
         Array.Sort(manifest.DiscoveryPatterns, (l, r) => StringComparer.Ordinal.Compare(l.Name, r.Name));
         Array.Sort(manifest.Assets, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
+        foreach (var endpoint in manifest.Endpoints)
+        {
+            Array.Sort(endpoint.Selectors);
+            Array.Sort(endpoint.EndpointProperties);
+            Array.Sort(endpoint.ResponseHeaders);
+        }
+        Array.Sort(manifest.Endpoints);
+
         Array.Sort(manifest.ReferencedProjectsConfiguration, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
     }
 

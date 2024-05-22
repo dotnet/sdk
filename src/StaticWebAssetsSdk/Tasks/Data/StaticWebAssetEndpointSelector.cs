@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>
+public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
 {
     public string Name { get; set; }
 
@@ -24,6 +24,28 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
     public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors)
     {
         return JsonSerializer.Serialize(selectors ?? []);
+    }
+
+    public int CompareTo(StaticWebAssetEndpointSelector other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
+        if (nameComparison != 0)
+        {
+            return nameComparison;
+        }
+
+        var valueComparison = string.Compare(Value, other.Value, StringComparison.Ordinal);
+        if (valueComparison != 0)
+        {
+            return valueComparison;
+        }
+
+        return 0;
     }
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointSelector);
