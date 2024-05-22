@@ -6843,11 +6843,11 @@
     },
     {
       "Route": "_framework/dotnet.native.wasm",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.wasm.gz",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.wasm.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
-          "Value": "gzip",
+          "Value": "br",
           "Quality": "__quality__"
         }
       ],
@@ -6858,7 +6858,7 @@
         },
         {
           "Name": "Content-Encoding",
-          "Value": "gzip"
+          "Value": "br"
         },
         {
           "Name": "Content-Length",
@@ -6889,11 +6889,11 @@
     },
     {
       "Route": "_framework/dotnet.native.wasm",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.wasm.br",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.wasm.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
-          "Value": "br",
+          "Value": "gzip",
           "Quality": "__quality__"
         }
       ],
@@ -6904,7 +6904,7 @@
         },
         {
           "Name": "Content-Encoding",
-          "Value": "br"
+          "Value": "gzip"
         },
         {
           "Name": "Content-Length",

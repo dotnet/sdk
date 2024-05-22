@@ -470,7 +470,7 @@
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm",
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.br",
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.gz",
-  "${OutputPath}\\wwwroot\\blazorwasm.styles.css",
+  "${OutputPath}\\wwwroot\\blazorwasm#[.{fingerprint}]?.styles.css",
   "${OutputPath}\\wwwroot\\blazorwasm.styles.css.br",
   "${OutputPath}\\wwwroot\\blazorwasm.styles.css.gz",
   "${OutputPath}\\wwwroot\\css\\app.css",

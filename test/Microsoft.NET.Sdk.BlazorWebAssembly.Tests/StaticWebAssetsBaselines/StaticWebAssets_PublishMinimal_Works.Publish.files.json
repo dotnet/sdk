@@ -668,7 +668,7 @@
   "${OutputPath}\\wwwroot\\appsettings.development.json",
   "${OutputPath}\\wwwroot\\appsettings.development.json.br",
   "${OutputPath}\\wwwroot\\appsettings.development.json.gz",
-  "${OutputPath}\\wwwroot\\blazorwasm-minimal.styles.css",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal#[.{fingerprint}]?.styles.css",
   "${OutputPath}\\wwwroot\\blazorwasm-minimal.styles.css.br",
   "${OutputPath}\\wwwroot\\blazorwasm-minimal.styles.css.gz",
   "${OutputPath}\\wwwroot\\css\\app.css",
