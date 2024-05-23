@@ -170,7 +170,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet == null && availableWorkloadSets.Any())
             {
-                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) <= 0 ? s1 : s2);
+                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
         }
