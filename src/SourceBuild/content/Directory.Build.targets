@@ -8,7 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)"
+      <SdkTarballItem Condition="'$(SdkTarballPath)' != ''" Include="$(SdkTarballPath)" />
+      <SdkTarballItem Condition="'$(SdkTarballPath)' == ''" Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)"
                       Exclude="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*.wixpack.zip" />
     </ItemGroup>
 
