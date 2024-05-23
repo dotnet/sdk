@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
+using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Run;
@@ -41,17 +43,19 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             try
             {
                 Directory.SetCurrentDirectory("/tmp/folder");
+                var sdkPath = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly()), "dotnet", "sdk"));
+                var ridGraphPath = Path.Combine(sdkPath.EnumerateDirectories().First().FullName, "RuntimeIdentifierGraph.json");
 
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
-                var parseResult = Parser.Instance.Parse("dotnet tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+                var parseResult = Parser.Instance.Parse("tool install dotnetsay");
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
 
                 Directory.SetCurrentDirectory("/tmp/folder/sub");
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
-                parseResult = Parser.Instance.Parse("dotnet tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+                parseResult = Parser.Instance.Parse("tool install dotnetsay");
+                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
 
-                new ToolRunCommand(Parser.Instance.Parse($"dotnet tool run dotnetsay")).Execute().Should().Be(0);
+                new ToolRunCommand(Parser.Instance.Parse($"tool run dotnetsay")).Execute().Should().Be(0);
             }
             finally
             {
