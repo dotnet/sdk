@@ -115,6 +115,7 @@ while [[ $# > 0 ]]; do
       ;;
     -test|-t)
       test=true
+      properties+=("/p:VerifySdkTarballItem=true")
       ;;
 
     # Source-only settings
