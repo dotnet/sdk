@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 {
                     var bundle = ProjectBundles[i];
                     var asset = StaticWebAsset.FromTaskItem(bundle);
-                    var importPath = NormalizePath(asset.ComputeTargetPath(prefix, '/', new StaticWebAssetTokenResolver()));
+                    var importPath = NormalizePath(asset.ComputeTargetPath(prefix, '/', StaticWebAssetTokenResolver.Instance));
 
                     builder.AppendLine($"@import '{importPath}';");
                 }

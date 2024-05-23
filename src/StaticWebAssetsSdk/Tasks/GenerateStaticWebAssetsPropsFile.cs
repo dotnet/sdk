@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return !Log.HasLoggedErrors;
             }
 
-            var tokenResolver = new StaticWebAssetTokenResolver();
+            var tokenResolver = StaticWebAssetTokenResolver.Instance;
 
             var itemGroup = new XElement("ItemGroup");
             var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var asset = StaticWebAsset.FromTaskItem(element);
                 var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
                 var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
-                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{packagePath}))";
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
                 itemGroup.Add(new XElement("StaticWebAsset",
                     new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),

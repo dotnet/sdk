@@ -761,14 +761,33 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #endif
         }
 
-        internal IEnumerable<(string, Dictionary<string, string>)> ComputeRoutes()
+        internal IEnumerable<StaticWebAssetResolvedRoute> ComputeRoutes()
         {
-            var tokenResolver = new StaticWebAssetTokenResolver();
+            var tokenResolver = StaticWebAssetTokenResolver.Instance;
             var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
             foreach (var expandedPattern in pattern.ExpandRoutes())
             {
-                yield return expandedPattern.ReplaceTokens(this, tokenResolver);
+                var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
+                yield return new StaticWebAssetResolvedRoute(pattern.PathWithoutTokens(), path, tokens);
             }
+        }
+
+        [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+        internal class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)
+        {
+            public string PathLabel { get; set; } = pathLabel;
+            public string Path { get; set; } = path;
+            public Dictionary<string, string> Tokens { get; set; } = tokens;
+
+            public void Deconstruct(out string pathLabel, out string path, out Dictionary<string, string> tokens)
+            {
+                pathLabel = PathLabel;
+                path = Path;
+                tokens = Tokens;
+            }
+
+            private string GetDebuggerDisplay() =>
+                $"Label: {PathLabel}, Route: {Path}, Tokens: {string.Join(", ", Tokens.Select(t => $"{t.Key}={t.Value}"))}";
         }
     }
 }

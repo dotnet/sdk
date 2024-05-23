@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             var routes = asset.ComputeRoutes();
             var result = new List<StaticWebAssetEndpoint>();
-            foreach (var (route, values) in routes)
+            foreach (var (label, route, values) in routes)
             {
                 List<StaticWebAssetEndpointResponseHeader> headers = [
                         new()
@@ -118,9 +118,27 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         },
                     ];
 
+                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
                 if (values.ContainsKey("fingerprint"))
                 {
+                    // Immutable or "a week" as per mdn.
                     headers.Add(new() { Name = "Cache-Control", Value = "max-age=604800, immutable" });
+                }
+                else
+                {
+                    // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
+                    // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
+                    // for a longer period of time than scripts or stylesheets.
+                    headers.Add(new() { Name = "Cache-Control", Value = "no-cache" });
+                }
+
+                if (values.Count > 0)
+                {
+                    // If an endpoint has values from its route replaced, we add a label to the endpoint so that it can be easily identified.
+                    // The combination of label and list of values should be unique.
+                    // In this way, we can identify an endpoint resource.fingerprint.ext by its label (for example resource.ext) and its values
+                    // (fingerprint).
+                    properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
                 }
 
                 var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
@@ -129,7 +147,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 {
                     Route = finalRoute,
                     AssetFile = asset.Identity,
-                    EndpointProperties = [.. values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value })],
+                    EndpointProperties = [.. properties],
                     ResponseHeaders = [.. headers]
                 };
                 result.Add(endpoint);
