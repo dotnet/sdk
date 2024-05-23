@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Run;
