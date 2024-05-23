@@ -37,16 +37,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
+            var directory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory("/tmp/folder");
 
-            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
-            var parseResult = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
-            new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+                new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
+                var parseResult = Parser.Instance.Parse("dotnet tool install dotnetsay");
+                new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
 
-            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
-            parseResult = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder/sub {PackageId}");
-            new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
+                Directory.SetCurrentDirectory("/tmp/folder/sub");
+                new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
+                parseResult = Parser.Instance.Parse("dotnet tool install dotnetsay");
+                new ToolInstallLocalCommand(parseResult).Execute().Should().Be(0);
 
-            new ToolRunCommand(Parser.Instance.Parse($"dotnet tool run {PackageId} --tool-path /tmp/folder/sub")).Execute().Should().Be(0);
+                new ToolRunCommand(Parser.Instance.Parse($"dotnet tool run dotnetsay")).Execute().Should().Be(0);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(directory);
+            }
         }
 
         [Fact]
