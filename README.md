@@ -10,9 +10,10 @@ Common project and item templates are found in [template_feed](https://github.co
 
 ## Build status
 
-|Windows x64 |
-|:------:|
-|[![](https://dev.azure.com/dnceng/internal/_apis/build/status/dotnet/sdk/DotNet-Core-Sdk%203.0%20(Windows)%20(YAML)%20(Official))](https://dev.azure.com/dnceng/internal/_build?definitionId=140)|
+Visibility|All jobs|
+|:------|:------|
+|Public|[![Status](https://dev.azure.com/dnceng-public/public/_apis/build/status/101)](https://dev.azure.com/dnceng-public/public/_build?definitionId=101)|
+|Microsoft Internal|[![Status](https://dev.azure.com/dnceng/internal/_apis/build/status/140)](https://dev.azure.com/dnceng/internal/_build?definitionId=140)|
 
 ## Installing the SDK
 
