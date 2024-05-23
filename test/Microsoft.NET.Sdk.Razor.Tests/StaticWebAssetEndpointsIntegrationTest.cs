@@ -93,12 +93,12 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         Success: true,
         Groups: [
-                    var m,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: var fingerprint, Success: true },
-        { Name: "compress", Value: "", Success: false }
-                ]
-    } && fingerprint == ep.EndpointProperties.Single().Value;
+            var m,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: var fingerprint, Success: true },
+            { Name: "compress", Value: "", Success: false }
+        ]
+    } && fingerprint == ep.EndpointProperties.Single(p => p.Name == "fingerprint").Value;
 
     private bool MatchUncompressedAppBundleNoFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
@@ -131,7 +131,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         { Name: "fingerprint", Value: var fingerprint, Success: true },
         { Name: "compress", Value: "", Success: false }
                 ]
-    } && fingerprint == ep.EndpointProperties.Single().Value;
+    } && fingerprint == ep.EndpointProperties.Single(p => p.Name == "fingerprint").Value;
 
     [Fact]
     public void Publish_CreatesEndpointsForAssets()
@@ -178,6 +178,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         uncompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
                 "Accept-Ranges",
+                "Cache-Control",
                 "Content-Length",
                 "Content-Type",
                 "ETag",
@@ -192,6 +193,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
                 "Accept-Ranges",
+                "Cache-Control",
                 "Content-Length",
                 "Content-Type",
                 "ETag",
@@ -210,6 +212,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
                 "Accept-Ranges",
+                "Cache-Control",
                 "Content-Length",
                 "Content-Type",
                 "ETag",

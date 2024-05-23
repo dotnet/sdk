@@ -17,7 +17,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private string _baselinesFolder;
 
-#if !GENERATE_SWA_BASELINES
+#if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
         public static bool GenerateBaselines = bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
