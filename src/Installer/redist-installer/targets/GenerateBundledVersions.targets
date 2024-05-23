@@ -36,19 +36,12 @@
        <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
     </GetDependencyInfo>
 
-    <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
-      DependencyName="Microsoft.NET.Sdk">
-       <Output TaskParameter="DependencyVersion" PropertyName="DepDotNetSdkVersion" />
-       <Output TaskParameter="DependencyCommit" PropertyName="DepDotNetSdkCommit" />
-    </GetDependencyInfo>
-
     <ItemGroup>
       <Line Include="installer" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
       <Line Include="runtime" Version="$(DepRuntimeVersion)" Commit="$(DepRuntimeCommit)" />
       <Line Include="aspnetcore" Version="$(DepAspNetCoreVersion)" Commit="$(DepAspNetCoreCommit)" />
       <Line Include="windowsdesktop" Version="$(DepWindowsDesktopVersion)" Commit="$(DepWindowsDesktopCommit)" />
-      <Line Include="sdk" Version="$(DepDotNetSdkVersion)" Commit="$(DepDotNetSdkCommit)" />
+      <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
     <!-- Format for productCommits-%rid%.txt:

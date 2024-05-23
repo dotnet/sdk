@@ -72,6 +72,11 @@
         <target state="translated">Aktualizacja pakietu roboczego nie powiodła się: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Nie znaleziono wersji obciążenia {0}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

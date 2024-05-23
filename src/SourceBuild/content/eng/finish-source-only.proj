@@ -6,10 +6,11 @@
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" />
     <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
   </ItemGroup>
 
@@ -35,7 +36,7 @@
       <IntermediateSymbol Include="$(IntermediateSymbolsRootDir)**/*" />
     </ItemGroup>
   </Target>
- 
+
   <!-- After building, repackage symbols into a single tarball. -->
   <Target Name="RepackageSymbols"
           AfterTargets="Build"
@@ -59,13 +60,9 @@
           Outputs="$(SdkSymbolsTarball)">
     <PropertyGroup>
       <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
-      <IntermediateSdkLayout>$(BaseIntermediateOutputPath)Sdk</IntermediateSdkLayout>
     </PropertyGroup>
 
-    <MakeDir Directories="$(IntermediateSdkLayout)" />
-    <Exec Command="tar -xzf $(SdkTarballPath) -C $(IntermediateSdkLayout)" />
-
-    <CreateSdkSymbolsLayout SdkLayoutPath="$(IntermediateSdkLayout)"
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(DotNetSdkExtractDir)"
                             AllSymbolsPath="$(IntermediateSymbolsRootDir)"
                             SdkSymbolsLayoutPath="$(IntermediateSdkSymbolsLayout)"
                             FailOnMissingPDBs="false" />
@@ -76,7 +73,6 @@
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
 
     <RemoveDir Directories="$(IntermediateSdkSymbolsLayout)" />
-    <RemoveDir Directories="$(IntermediateSdkLayout)" />
   </Target>
 
   <!--
@@ -175,7 +171,7 @@
     <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
   </Target>
 
-  
+
   <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
           DependsOnTargets="DetermineSourceBuiltSdkVersion;ResolveProjectReferences">
     <!-- Inputs: Packages to include in the tarball -->
@@ -200,11 +196,19 @@
     </PropertyGroup>
   </Target>
 
+  <!-- Discover the produced packages from the merged asset manifest -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+    </GetKnownArtifactsFromAssetManifests>
+  </Target>
+
   <!-- Create the SourceBuilt.Private.Artifacts archive when building source-only. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreatePrivateSourceBuiltArtifactsArchive"
           AfterTargets="Build"
-          DependsOnTargets="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
+          DependsOnTargets="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive;GetProducedPackages"
           Inputs="@(ArtifactsPackageToBundle);@(ReferencePackageToBundle);@(MergedAssetManifest)"
           Outputs="$(SourceBuiltTarballName);$(SourceBuiltVersionName);$(AllPackageVersionsPropsName);$(SourceBuiltMergedAssetManifestName)">
     <!-- Copy packages to layout directory. Since there are a large number of files,
@@ -226,20 +230,12 @@
                       Overwrite="true" />
 
     <!-- Copy the merged asset manifest into the tarball -->
-    <Copy SourceFiles="$(MergedAssetManifestOutputPath)"
+    <Copy SourceFiles="@(MergedAssetManifest)"
           DestinationFolder="$(SourceBuiltLayoutDir)"
           UseSymbolicLinksIfPossible="true" />
 
-    <!-- non-rid-specific versions of RID-specific version variables to use for bootstrapping -->
-    <ItemGroup>
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimeVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppCrossgen2Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />  
-    </ItemGroup>
-
     <!-- Create a PackageVersions.props file that includes entries for all packages. -->
-    <WritePackageVersionsProps NuGetPackages="@(ArtifactsPackageToBundle)"
+    <WritePackageVersionsProps KnownPackages="@(ProducedPackage)"
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="AllPackages"
                                OutputPath="$(AllPackageVersionsPropsName)" />

@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class DotNetFormatTests : SdkTests
 {
+    private const string BaselineSubDir = nameof(DotNetFormatTests);
     private const string TestFileName = "FormatTest.cs";
     private const string UnformattedFileName = "FormatTestUnformatted.cs";
     private const string ExpectedFormattedFileName = "FormatTestFormatted.cs";
@@ -28,7 +29,7 @@ public class DotNetFormatTests : SdkTests
             return;
         }
 
-        string unformattedCsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), UnformattedFileName);
+        string unformattedCsFilePath = BaselineHelper.GetBaselineFilePath(UnformattedFileName, BaselineSubDir);
 
         string projectDirectory = DotNetHelper.ExecuteNew("console", nameof(FormatProject), "C#");
 
@@ -39,6 +40,8 @@ public class DotNetFormatTests : SdkTests
 
         DotNetHelper.ExecuteCmd($"format {projectFilePath}");
 
-        BaselineHelper.CompareFiles(BaselineHelper.GetBaselineFilePath(ExpectedFormattedFileName), testFilePath, OutputHelper);
+        string unexpectedFormatCsFilePath = BaselineHelper.GetBaselineFilePath(ExpectedFormattedFileName, BaselineSubDir);
+
+        BaselineHelper.CompareFiles(unexpectedFormatCsFilePath, testFilePath, OutputHelper);
     }
 }

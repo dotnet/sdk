@@ -9,6 +9,7 @@ using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -143,13 +144,27 @@ public static class ContainerHelpers
         return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
     }
 
+
     /// <summary>
     /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
+    /// If the domain is localhost, we default to HTTP. Otherwise, we check the Docker config to see if the registry is marked as insecure.
     /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
     /// </summary>
     internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
     {
-        var prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
+        string prefix = "https";
+        if (alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal))
+        {
+            prefix = "http";
+        }
+
+        //check the docker config to see if the registry is marked as insecure
+        else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
+        {
+            prefix = "http";
+        }
+
+
         return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
 
