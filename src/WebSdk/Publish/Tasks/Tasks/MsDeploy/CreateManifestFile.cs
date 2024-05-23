@@ -104,10 +104,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 {
                     if (!string.IsNullOrEmpty(ManifestFile))
                     {
-                        if (!File.Exists(ManifestFile))
-                        {
-                            File.Create(ManifestFile);
-                        }
                         WriteManifestsToFile(Log, m_manifests, ManifestFile);
                     }
                 }

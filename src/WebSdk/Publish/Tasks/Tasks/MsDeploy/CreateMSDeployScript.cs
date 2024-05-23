@@ -19,16 +19,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public override bool Execute()
         {
-            if (!File.Exists(ScriptFullPath))
+            var parent = Directory.GetDirectory(ScriptFullPath);
+            if (!Directory.Exists(parent))
             {
-                File.Create(ScriptFullPath);
+                Directory.CreateDirectory(parent);
             }
 
             File.WriteAllLines(ScriptFullPath, GetReplacedFileContents(Resources.MsDeployBatchFile));
 
-            if (!File.Exists(ReadMeFullPath))
+            parent = Directory.GetDirectory(ReadMeFullPath);
+            if (!Directory.Exists(parent))
             {
-                File.Create(ReadMeFullPath);
+                Directory.CreateDirectory(parent);
             }
 
             File.WriteAllLines(ReadMeFullPath, GetReplacedFileContents(Resources.MsDeployReadMe));

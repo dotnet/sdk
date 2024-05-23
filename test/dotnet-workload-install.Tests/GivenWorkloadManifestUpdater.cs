@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater();
 
-            File.Create(sentinelPath);
+            using var _ = File.Create(sentinelPath);
             var createTime = DateTime.Now;
 
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
