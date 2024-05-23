@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
 
@@ -14,8 +13,9 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site.css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site.css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site.css", IsLiteral = true }] }
             ]
         };
         Assert.Equal(expected, pattern);
@@ -27,10 +27,11 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[.{fingerprint}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -43,9 +44,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -58,9 +60,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]", "MyApp");
         var expected = new StaticWebAssetPathPattern("site#[.{fingerprint}]")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] }
                 ]
         };
 
@@ -73,8 +76,9 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}]")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] }
                 ]
         };
 
@@ -87,12 +91,13 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]-#[.{version}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[.{fingerprint}]-#[.{version}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = "-", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = "-", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -105,11 +110,12 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]#[.{version}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[.{fingerprint}]#[.{version}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -122,9 +128,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[{fingerprint}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -137,10 +144,11 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[{fingerprint}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[{fingerprint}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
         };
 
@@ -153,10 +161,11 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[{fingerprint}]", "MyApp");
         var expected = new StaticWebAssetPathPattern("site#[{fingerprint}]")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = "fingerprint", IsLiteral = false }] }
-                ]
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] }
+            ]
         };
 
         Assert.Equal(expected, pattern);
@@ -168,8 +177,24 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}]", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[{fingerprint}]")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "fingerprint", IsLiteral = false }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] }
+            ]
+        };
+
+        Assert.Equal(expected, pattern);
+    }
+
+    [Fact]
+    public void CanParse_SimpleFingerprintExpression_WithEmbeddedValues()
+    {
+        var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint=value}]", "MyApp");
+        var expected = new StaticWebAssetPathPattern("#[{fingerprint=value}]")
+        {
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "fingerprint", Value = "value", IsLiteral = false }] }
                 ]
         };
 
@@ -182,15 +207,16 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}-{version}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[.{fingerprint}-{version}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
                 new (){ Parts = [
-                    new() { Value = ".", IsLiteral = true },
-                    new() { Value = "fingerprint", IsLiteral = false },
-                    new() { Value = "-", IsLiteral = true },
-                    new() { Value = "version", IsLiteral = false }
+                    new() { Name = ".", IsLiteral = true },
+                    new() { Name = "fingerprint", IsLiteral = false },
+                    new() { Name = "-", IsLiteral = true },
+                    new() { Name = "version", IsLiteral = false }
                 ] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
             ]
         };
 
@@ -203,14 +229,15 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}{version}].css", "MyApp");
         var expected = new StaticWebAssetPathPattern("css/site#[.{fingerprint}{version}].css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "css/site", IsLiteral = true }] },
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
                 new (){ Parts = [
-                    new() { Value = ".", IsLiteral = true },
-                    new() { Value = "fingerprint", IsLiteral = false },
-                    new() { Value = "version", IsLiteral = false }
+                    new() { Name = ".", IsLiteral = true },
+                    new() { Name = "fingerprint", IsLiteral = false },
+                    new() { Name = "version", IsLiteral = false }
                 ] },
-                new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
             ]
         };
 
@@ -223,9 +250,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}.]css", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[{fingerprint}.]css")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "fingerprint", IsLiteral = false }, new() { Value = ".", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = "css", IsLiteral = true }] }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }, new() { Name = ".", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "css", IsLiteral = true }] }
             ]
         };
 
@@ -238,9 +266,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?", "MyApp");
         var expected = new StaticWebAssetPathPattern("site#[.{fingerprint}]?")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -253,9 +282,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]!", "MyApp");
         var expected = new StaticWebAssetPathPattern("site#[.{fingerprint}]!")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true, IsPreferred = true }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true, IsPreferred = true }
             ]
         };
 
@@ -268,9 +298,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?site", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}]?site")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }]
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }]
             }]
         };
 
@@ -283,10 +314,11 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?site", "MyApp");
         var expected = new StaticWebAssetPathPattern("site#[.{fingerprint}]?site")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }]
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }]
                            }]
         };
 
@@ -299,8 +331,9 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}]?")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -313,10 +346,11 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?site#[.{version}]?", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}]?site#[.{version}]?")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Value = "site", IsLiteral = true }], IsOptional = false },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }], IsOptional = true }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site", IsLiteral = true }], IsOptional = false },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -329,9 +363,10 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?#[.{version}]?", "MyApp");
         var expected = new StaticWebAssetPathPattern("#[.{fingerprint}]?#[.{version}]?")
         {
-            Segments = [
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }], IsOptional = true }
+            Segments =
+            [
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -486,6 +521,19 @@ public class StaticWebAssetPathPatternTest
     }
 
     [Fact]
+    public void CanReplaceTokens_SimpleFingerprintExpression_WithEmbeddedValues()
+    {
+        var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint=embedded}]", "MyApp");
+        var tokens = new StaticWebAsset
+        {
+            Fingerprint = "asdf1234"
+        };
+        var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
+        Assert.Equal("embedded", path);
+    }
+
+    [Fact]
     public void CanReplaceTokens_ComplexExpression_MultipleVariables()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}-{version}].css", "MyApp");
@@ -602,17 +650,17 @@ public class StaticWebAssetPathPatternTest
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             }
         };
@@ -632,36 +680,36 @@ public class StaticWebAssetPathPatternTest
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{version}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}]#[.{version}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Value = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Value = ".", IsLiteral = true }, new() { Value = "version", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Value = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
                 ]
             }
         };

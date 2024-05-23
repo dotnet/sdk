@@ -772,6 +772,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
         }
 
+        internal string EmbedTokens(string relativePath)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
+            var resolver = StaticWebAssetTokenResolver.Instance;
+            pattern.EmbedTokens(this, resolver);
+            return pattern.RawPattern;
+        }
+
         [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
         internal class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)
         {

@@ -257,7 +257,7 @@ public class ResolveCompressedAssets : Task
         }
 
         var originalItemSpec = asset.OriginalItemSpec;
-        var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
+        var relativePath = asset.EmbedTokens(asset.RelativePath);
 
         var fileName = FileHasher.GetFileHash(originalItemSpec) + fileExtension;
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
