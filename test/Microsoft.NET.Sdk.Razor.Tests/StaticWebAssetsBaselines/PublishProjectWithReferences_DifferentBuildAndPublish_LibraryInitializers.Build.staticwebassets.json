@@ -472,7 +472,7 @@
       "SourceType": "Package",
       "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}",
       "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Primary",

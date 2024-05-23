@@ -60,7 +60,6 @@ public partial class StaticWebAssetsBaselineFactory
                 var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
                 var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
 
-                asset.RelativePath = asset.RelativePath.Replace(".__fingerprint__", "");
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), basePath, relativePath);
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
                 foreach (var endpoint in relatedEndpoints ?? [])
@@ -80,6 +79,7 @@ public partial class StaticWebAssetsBaselineFactory
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), Path.GetFileName(originalItemSpec) + Path.GetExtension(identity))
                     .Replace(Path.DirectorySeparatorChar, '\\');
             }
+            asset.RelativePath = asset.RelativePath.Replace(".__fingerprint__", "").Replace(".fingerprint","");
         }
 
         foreach (var endpoint in manifest.Endpoints)
