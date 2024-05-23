@@ -8,8 +8,18 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 namespace Microsoft.NET.Sdk.Razor.Tests;
 public partial class StaticWebAssetsBaselineFactory
 {
-    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})((?:\.[a-zA-Z0-9]{2,6}){1,3})((?:\.gz)|(?:\.br))?$""")]
-    private partial Regex FingerprintingRegex();
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.bundle\.scp\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ScopedProjectBundleRegex();
+
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.styles\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ScopedAppBundleRegex();
+
+
+    private static IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements = new List<(Regex expression, string replacement)>
+    {
+        (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
+        (ScopedAppBundleRegex(),"$1__fingerprint__$3$4")
+    };
 
     public static StaticWebAssetsBaselineFactory Instance { get; } = new();
 
@@ -56,9 +66,9 @@ public partial class StaticWebAssetsBaselineFactory
             if (asset.AssetTraitName == "Content-Encoding")
             {
                 var basePath = asset.BasePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
-                var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar).Replace(".__fingerprint__","");
-                var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
-                var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar).Replace(".__fingerprint__", "");
+                var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar);
+                var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar);
+                var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar);
 
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), basePath, relativePath);
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
@@ -79,7 +89,6 @@ public partial class StaticWebAssetsBaselineFactory
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), Path.GetFileName(originalItemSpec) + Path.GetExtension(identity))
                     .Replace(Path.DirectorySeparatorChar, '\\');
             }
-            asset.RelativePath = asset.RelativePath.Replace(".__fingerprint__", "").Replace(".fingerprint","");
         }
 
         foreach (var endpoint in manifest.Endpoints)
@@ -117,6 +126,7 @@ public partial class StaticWebAssetsBaselineFactory
                 }
 
                 endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
+                ReplaceFileName(endpoint.Route);
             }
 
             foreach (var selector in endpoint.Selectors)
@@ -257,7 +267,24 @@ public partial class StaticWebAssetsBaselineFactory
                     _ => segments[i]
                 })
         };
-        return FingerprintingRegex().Replace(updated.Replace('/', '\\'), "$1__fingerprint__$3$4");
+
+        return ReplaceFileName(updated).Replace('/', '\\');
+    }
+
+    private string ReplaceFileName(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        var fileName = Path.GetFileName(path);
+        foreach (var (expression, replacement) in WellKnownFileNamePatternsAndReplacements)
+        {
+            if (expression.IsMatch(fileName))
+            {
+                fileName = expression.Replace(fileName, replacement);
+                return Path.Combine(directory, fileName);
+            }
+        }
+
+        return path;
     }
 
     private string TemplatizeBuildOrPublishPath(string outputPath, string file)

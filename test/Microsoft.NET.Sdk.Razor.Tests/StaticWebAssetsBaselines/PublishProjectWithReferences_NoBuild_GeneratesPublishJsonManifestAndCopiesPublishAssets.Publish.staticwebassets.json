@@ -194,12 +194,12 @@
       "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
@@ -212,7 +212,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
@@ -299,12 +299,12 @@
       "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.br"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
       "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css.br",
+      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
@@ -317,7 +317,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
@@ -598,7 +598,7 @@
       "SourceType": "Package",
       "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}",
       "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.bundle.scp.css",
+      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Primary",
@@ -1201,7 +1201,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1237,7 +1237,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1283,7 +1283,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1721,7 +1721,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1757,7 +1757,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1803,7 +1803,7 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
