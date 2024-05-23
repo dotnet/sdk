@@ -53,6 +53,11 @@ public class DefineStaticWebAssetEndpointsTest
                 },
                 new StaticWebAssetEndpointResponseHeader
                 {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
                     Name = "Content-Length",
                     Value = "10"
                 },
@@ -106,9 +111,15 @@ public class DefineStaticWebAssetEndpointsTest
         endpoint.Route.Should().Be("candidate.1234asdf.js");
         endpoint.AssetFile.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
         endpoint.EndpointProperties.Should().BeEquivalentTo([
-            new StaticWebAssetEndpointProperty{
+            new StaticWebAssetEndpointProperty
+            {
                 Name = "fingerprint",
                 Value = "1234asdf"
+            },
+            new StaticWebAssetEndpointProperty
+            {
+                Name = "label",
+                Value = "candidate.js"
             }
             ]);
         endpoint.ResponseHeaders.Should().BeEquivalentTo(
@@ -155,6 +166,11 @@ public class DefineStaticWebAssetEndpointsTest
                     Name = "Accept-Ranges",
                     Value = "bytes"
                 },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Cache-Control", 
+                    Value = "no-cache"
+                }, 
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "Content-Length",
