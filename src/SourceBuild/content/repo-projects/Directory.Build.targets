@@ -457,8 +457,8 @@
           Outputs="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete"
           Condition="'$(IsUtilityProject)' != 'true'">
     <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
-    <Message Importance="High" Text="  -> %(ProducedPackage.Identity)/%(ProducedPackage.Version)" />
-    <Message Importance="High" Text="  -> %(ProducedAsset.Identity)" />
+    <Message Importance="High" Text="  -> %(ProducedPackage.Identity)/%(ProducedPackage.Version)" Condition="'@(ProducedPackage)' != ''" />
+    <Message Importance="High" Text="  -> %(ProducedAsset.Identity)" Condition="'@(ProducedAsset)' != ''" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete" AlwaysCreate="true">
