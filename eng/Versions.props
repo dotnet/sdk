@@ -83,18 +83,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.11.0-preview.2.58</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.11.0-preview.2.58</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.11.0-preview.2.58</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.11.0-preview.2.58</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.11.0-preview.2.58</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.11.0-preview.2.58</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.11.0-preview.2.58</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.11.0-preview.2.58</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.11.0-preview.2.58</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.11.0-preview.2.58</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.11.0-preview.2.58</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.11.0-preview.2.58</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.11.0-preview.2.61</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.11.0-preview.2.61</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.11.0-preview.2.61</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.11.0-preview.2.61</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.11.0-preview.2.61</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.11.0-preview.2.61</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.11.0-preview.2.61</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.11.0-preview.2.61</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.11.0-preview.2.61</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.11.0-preview.2.61</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.11.0-preview.2.61</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.11.0-preview.2.61</NuGetVersioningPackageVersion>
     <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
   </PropertyGroup>
