@@ -132,6 +132,7 @@ stages:
           artifactsRid: ${{ variables.alpineX64Rid }}
           pool: ${{ parameters.pool_Linux }}
           container: ${{ variables.alpineContainer }}
+          extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: true                 # ✅
@@ -152,6 +153,7 @@ stages:
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.alpineContainer }}
+            extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
