@@ -21,8 +21,8 @@ namespace Microsoft.NET.Sdk.Razor.Test
 ";
 
         private static readonly string BundleWithImportsContent = """
-            @import 'TestFiles/Generated/lib.bundle.scp.css';
-            @import 'TestFiles/Generated/package.bundle.scp.css';
+            @import '_content/Test/TestFiles/Generated/lib.bundle.scp.css';
+            @import '_content/Test/TestFiles/Generated/package.bundle.scp.css';
 
             /* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
             .counter {
@@ -103,6 +103,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
             actualContents.Should().Contain(BundleContent);
         }
 
+        private static TaskItem CreateEndpoint(string route) =>
+            new TaskItem(route);
+
         private static TaskItem CreateStaticAsset(string identity, string basePath, string relativePath) =>
             new TaskItem(
                 identity,
@@ -146,14 +149,8 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 },
                 ProjectBundles = new[]
                 {
-                    CreateStaticAsset(
-                        "TestFiles/Generated/lib.bundle.scp.css",
-                        "_content/Test/",
-                        "TestFiles/Generated/lib.bundle.scp.css"),
-                    CreateStaticAsset(
-                        "TestFiles/Generated/package.bundle.scp.css",
-                        "_content/Test/",
-                        "TestFiles/Generated/package.bundle.scp.css"),
+                    CreateEndpoint("_content/Test/TestFiles/Generated/lib.bundle.scp.css"),
+                    CreateEndpoint("_content/Test/TestFiles/Generated/package.bundle.scp.css"),
                 },
                 ScopedCssBundleBasePath = "/",
                 OutputFile = expectedFile
@@ -190,7 +187,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             // Arrange
             var expectedContent = BundleWithImportsContent
                 .Replace("_content/Test/TestFiles/Generated/lib.bundle.scp.css", expectedImport)
-                .Replace("@import 'TestFiles/Generated/package.bundle.scp.css';", "")
+                .Replace("@import '_content/Test/TestFiles/Generated/package.bundle.scp.css';", "")
                 .Replace("\r\n", "\n")
                 .Replace("\n\n", "\n");
 
@@ -210,10 +207,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 },
                 ProjectBundles = new[]
                 {
-                    CreateStaticAsset(
-                        "TestFiles/Generated/lib.bundle.scp.css",
-                        libraryBasePath,
-                        "TestFiles/Generated/lib.bundle.scp.css"),
+                    CreateEndpoint(StaticWebAsset.CombineNormalizedPaths("",libraryBasePath,"TestFiles/Generated/lib.bundle.scp.css", '/'))
                 },
                 ScopedCssBundleBasePath = finalBasePath,
                 OutputFile = expectedFile
