@@ -407,6 +407,7 @@
         linux-musl-arm;
         linux-musl-arm64;
         win-x64;
+        win-x86;
         win-arm64;
         browser-wasm;
         wasi-wasm;
