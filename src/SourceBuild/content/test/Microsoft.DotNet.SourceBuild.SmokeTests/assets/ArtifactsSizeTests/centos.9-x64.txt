@@ -75,8 +75,8 @@ Microsoft.CodeAnalysis.VisualBasic.Features.x.y.z.nupkg: 1844637
 Microsoft.CodeAnalysis.VisualBasic.Workspaces.x.y.z.nupkg: 1034552
 Microsoft.CodeAnalysis.VisualBasic.x.y.z.nupkg: 8001250
 Microsoft.CodeAnalysis.Workspaces.Common.x.y.z.nupkg: 4601721
-Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols.x.y.z.nupkg: 358574
-Microsoft.CodeAnalysis.Workspaces.MSBuild.x.y.z.nupkg: 683719
+Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols.x.y.z.nupkg: 358780
+Microsoft.CodeAnalysis.Workspaces.MSBuild.x.y.z.nupkg: 683863
 Microsoft.CodeAnalysis.x.y.z.nupkg: 5771
 Microsoft.Css.Parser.x.y.z.nupkg: 52964
 Microsoft.Deployment.DotNet.Releases.x.y.z.nupkg: 79562
@@ -4390,7 +4390,7 @@ System.Management.x.y.z.nupkg: 280452
 System.Memory.Data.x.y.z.nupkg: 43989
 System.Net.Http.Json.x.y.z.nupkg: 68035
 System.Net.Http.WinHttpHandler.x.y.z.nupkg: 107061
-System.Numerics.Tensors.x.y.z.nupkg: 172991
+System.Numerics.Tensors.x.y.z.nupkg: 172988
 System.Reflection.Context.x.y.z.nupkg: 88748
 System.Reflection.Metadata.x.y.z.nupkg: 505092
 System.Reflection.MetadataLoadContext.x.y.z.nupkg: 227939
@@ -4414,7 +4414,7 @@ System.Threading.RateLimiting.x.y.z.nupkg: 84681
 System.Threading.Tasks.Dataflow.x.y.z.nupkg: 280825
 System.Windows.Extensions.x.y.z.nupkg: 54282
 templates/x.y.z/Microsoft.DotNet.Common.ItemTemplates.x.y.z.nupkg: 151395
-templates/x.y.z/Microsoft.DotNet.Common.ProjectTemplates.x.y.z.nupkg: 143190
+templates/x.y.z/Microsoft.DotNet.Common.ProjectTemplates.x.y.z.nupkg: 143191
 templates/x.y.z/microsoft.dotnet.test.projecttemplates.x.y.z.nupkg: 125860
 templates/x.y.z/microsoft.dotnet.web.itemtemplates.x.y.z.nupkg: 59574
 templates/x.y.z/microsoft.dotnet.web.projecttemplates.x.y.z.nupkg: 5656137
