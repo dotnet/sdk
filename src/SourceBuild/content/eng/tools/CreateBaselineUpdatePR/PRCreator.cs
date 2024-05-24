@@ -290,17 +290,28 @@ public class PRCreator
 
         // Create the branch name and get the head reference
         string newBranchName = string.Empty;
-        Reference? headReference = null;
+        Reference? headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, $"heads/{targetBranch}");
         if (matchingPullRequest == null)
         {
             string utcTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             newBranchName = $"pr-baseline-{utcTime}";
-            headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, "heads/" + targetBranch);
         }
         else
         {
             newBranchName = matchingPullRequest.Head.Ref;
-            headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, "heads/" + matchingPullRequest.Head.Ref);
+            try
+            {
+                // Update the existing pull request with the latest from the target branch
+                var targetReferenceUpdate = new ReferenceUpdate(headReference.Object.Sha);
+                await _client.Git.Reference.Update(_repoOwner, _repoName, $"heads/{newBranchName}", targetReferenceUpdate);
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning($"Failed to update the existing pull request with the latest from the target branch: {e.Message}");
+                Log.LogWarning("Continuing with PR creation. You may need to manually update the PR branch.");
+            }
+
+            headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, $"heads/{newBranchName}");
         }
 
         // Create the commit
@@ -315,7 +326,7 @@ public class PRCreator
             // Update the existing pull request with the new commit
             var referenceUpdate = new ReferenceUpdate(commitResponse.Sha);
             await _client.Git.Reference.Update(_repoOwner, _repoName, $"heads/{newBranchName}", referenceUpdate);
-
+    
             // Update the body of the pull request
             var pullRequestUpdate = new PullRequestUpdate
             {
@@ -336,7 +347,7 @@ public class PRCreator
             }
 
             // Create a new pull request
-            var newReference = new NewReference("refs/heads/" + newBranchName, commitResponse.Sha);
+            var newReference = new NewReference($"refs/heads/{newBranchName}", commitResponse.Sha);
             await _client.Git.Reference.Create(_repoOwner, _repoName, newReference);
 
             var newPullRequest = new NewPullRequest(title, newBranchName, targetBranch)
