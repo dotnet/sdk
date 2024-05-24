@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="**/*.cs" />
+    <Compile Include="../../../Cli/dotnet/commands/dotnet-test/IPC/**/*.cs" />
+  </ItemGroup>
+  
+</Project>

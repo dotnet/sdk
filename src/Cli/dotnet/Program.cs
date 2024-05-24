@@ -8,11 +8,11 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli
 {
