@@ -28,7 +28,7 @@
           Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''"
           Inputs="$(ExternalTarballsDir)"
           Outputs="$(PrebuiltSourceBuiltPackagesPath)">
-    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
+    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" />
     <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)"
           WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)" />
   </Target>
