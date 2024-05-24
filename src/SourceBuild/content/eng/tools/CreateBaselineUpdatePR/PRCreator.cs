@@ -293,15 +293,17 @@ public class PRCreator
         else
         {
             newBranchName = existingPullRequest.Head.Ref;
+
             try
             {
-                // Update the existing pull request with the latest from the target branch
-                await UpdateReferenceAsync(newBranchName, headSha);
+                // Merge the target branch into the existing pull request
+                var merge = new NewMerge(newBranchName, headSha);
+                var mergeResult = await _client.Repository.Merging.Create(_repoOwner, _repoName, merge);
             }
             catch (Exception e)
             {
-                Log.LogWarning($"Failed to update the existing pull request with the latest from the target branch: {e.Message}");
-                Log.LogWarning("Continuing with PR updates, but you may need to manually merge in the target branch.");
+                Log.LogWarning($"Failed to merge the target branch into the existing pull request: {e.Message}");
+                Log.LogWarning("Continuing with updating the existing pull request. You may need to resolve conflicts manually in the PR.");
             }
 
             headSha = await GetHeadShaAsync(newBranchName);
