@@ -98,6 +98,97 @@ public class UpdateStaticWebAssetEndpointsTest
     }
 
     [Fact]
+    public void CanUpdateEndpoint_RemoveAllResponseHeaders()
+    {
+        // Arrrange
+        var assets = new[] {
+            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
+            CreateAsset("index.js", relativePath: "index#[.{fingerprint}]?.js"),
+            CreateAsset("index.css", relativePath: "index#[.{fingerprint}]?.css"),
+            CreateAsset("other.html", relativePath: "other#[.{fingerprint}]?.html"),
+            CreateAsset("other.js", relativePath: "other#[.{fingerprint}]?.js"),
+            CreateAsset("other.css", relativePath: "other#[.{fingerprint}]?.css"),
+        };
+        Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
+
+        var endpoints = CreateEndpoints(assets);
+        var fingerprintedEndpoints = endpoints.Where(e => e.EndpointProperties.Any(p => string.Equals(p.Name, "fingerprint", StringComparison.Ordinal))).ToArray();
+        foreach (var endpoint in fingerprintedEndpoints)
+        {
+            endpoint.ResponseHeaders = [.. endpoint.ResponseHeaders, new StaticWebAssetEndpointResponseHeader { Name = "ETag", Value = "W/\"integrity\"" }];
+        }
+
+        var filterStaticWebAssetEndpoints = new UpdateStaticWebAssetEndpoints
+        {
+            EndpointsToUpdate = fingerprintedEndpoints.Select(e => e.ToTaskItem()).ToArray(),
+            AllEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            Operations =
+            [
+                CreateOperation("RemoveAll", "Header", "ETag", null)
+            ],
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        // Act
+        var result = filterStaticWebAssetEndpoints.Execute();
+        result.Should().BeTrue();
+
+        // Assert
+        var updatedEndpoints = StaticWebAssetEndpoint.FromItemGroup(filterStaticWebAssetEndpoints.UpdatedEndpoints);
+        updatedEndpoints.Should().HaveCount(fingerprintedEndpoints.Length);
+        foreach (var updatedEndpoint in updatedEndpoints)
+        {
+            updatedEndpoint.ResponseHeaders.Should().NotContain(h => string.Equals(h.Name, "ETag", StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
+    public void CanUpdateEndpoint_RemoveAllResponseHeadersWithValue()
+    {
+        // Arrrange
+        var assets = new[] {
+            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
+            CreateAsset("index.js", relativePath: "index#[.{fingerprint}]?.js"),
+            CreateAsset("index.css", relativePath: "index#[.{fingerprint}]?.css"),
+            CreateAsset("other.html", relativePath: "other#[.{fingerprint}]?.html"),
+            CreateAsset("other.js", relativePath: "other#[.{fingerprint}]?.js"),
+            CreateAsset("other.css", relativePath: "other#[.{fingerprint}]?.css"),
+        };
+        Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
+
+        var endpoints = CreateEndpoints(assets);
+        var fingerprintedEndpoints = endpoints.Where(e => e.EndpointProperties.Any(p => string.Equals(p.Name, "fingerprint", StringComparison.Ordinal))).ToArray();
+        foreach (var endpoint in fingerprintedEndpoints)
+        {
+            endpoint.ResponseHeaders = [.. endpoint.ResponseHeaders, new StaticWebAssetEndpointResponseHeader { Name = "ETag", Value = "W/\"integrity\"" }];
+        }
+
+        var filterStaticWebAssetEndpoints = new UpdateStaticWebAssetEndpoints
+        {
+            EndpointsToUpdate = fingerprintedEndpoints.Select(e => e.ToTaskItem()).ToArray(),
+            AllEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            Operations =
+            [
+                CreateOperation("RemoveAll", "Header", "ETag", "W/\"integrity\"")
+            ],
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        // Act
+        var result = filterStaticWebAssetEndpoints.Execute();
+        result.Should().BeTrue();
+
+        // Assert
+        var updatedEndpoints = StaticWebAssetEndpoint.FromItemGroup(filterStaticWebAssetEndpoints.UpdatedEndpoints);
+        updatedEndpoints.Should().HaveCount(fingerprintedEndpoints.Length);
+        foreach (var updatedEndpoint in updatedEndpoints)
+        {
+            updatedEndpoint.ResponseHeaders.Should().ContainSingle(h => string.Equals(h.Name, "ETag", StringComparison.Ordinal) && string.Equals(h.Value, "\"integrity\"", StringComparison.Ordinal));
+            updatedEndpoint.ResponseHeaders.Should().NotContain(h => string.Equals(h.Name, "ETag", StringComparison.Ordinal) && string.Equals(h.Value, "W/\"integrity\"", StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
     public void CanUpdateEndpoint_ReplaceResponseHeaders()
     {
         // Arrrange
