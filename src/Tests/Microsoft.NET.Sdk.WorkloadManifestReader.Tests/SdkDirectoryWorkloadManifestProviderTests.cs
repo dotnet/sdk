@@ -144,7 +144,7 @@ namespace ManifestReaderTests
         [InlineData("8.0.200-servicing.23015", "8.0.200-preview.7.30301", "8.0.200-servicing.23201", "8.0.200-servicing.23201")]
         public void ItReturnsLatestManifestVersion(string first, string second, string third, string answer)
         {
-            Initialize();
+            Initialize(identifier: answer);
 
             CreateMockManifest(_manifestRoot, "5.0.100-preview.5", "ios", "11.0.3", true);
 
