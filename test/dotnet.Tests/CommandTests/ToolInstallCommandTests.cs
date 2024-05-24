@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             try
             {
                 Directory.SetCurrentDirectory("/tmp/folder");
-                var sdkPath = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly()), "dotnet", "sdk"));
+                var sdkPath = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dotnet", "sdk"));
                 var ridGraphPath = Path.Combine(sdkPath.EnumerateDirectories().First().FullName, "RuntimeIdentifierGraph.json");
 
                 new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
