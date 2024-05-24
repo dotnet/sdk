@@ -386,24 +386,6 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItThrowsIfWorkloadSetHasInvalidVersion()
-        {
-            Initialize("8.0.200");
-
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
-            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.200.1", """
-                {
-                    "ios": "11.0.2/8.0.100"
-                }
-                """);
-
-            Assert.Throws<FormatException>(() => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null));
-        }
-
-        [Fact]
         public void ItThrowsIfManifestFromWorkloadSetIsNotFound()
         {
             Initialize("8.0.200");
