@@ -8,7 +8,7 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
-public class FilterEndpointsTest
+public class FilterStaticWebAssetEndpointsTest
 {
     [Fact]
     public void CanFilterEndpoints_ByAssetFile()
@@ -125,6 +125,38 @@ public class FilterEndpointsTest
         Array.Sort(filteredEndpoints);
         filteredEndpoints.Should().HaveCount(4);
         filteredEndpoints.Should().AllSatisfy(e => e.ResponseHeaders.Should().ContainSingle(p => p.Name == "Content-Type" && p.Value == "text/html"));
+    }
+
+    [Fact]
+    public void CanFilterEndpoints_Standalone()
+    {
+        var assets = new[] {
+            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
+            CreateAsset("other.js", relativePath: "other#[.{fingerprint}]!.js"),
+        };
+        Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
+
+        var endpoints = CreateEndpoints(assets);
+        var filterEndpointsTask = new FilterStaticWebAssetEndpoints()
+        {
+            Endpoints = endpoints.Select(endpoints => endpoints.ToTaskItem()).ToArray(),
+            Assets = [.. assets.Select(a => a.ToTaskItem())],
+            Filters = [
+                new TaskItem("Standalone", new Dictionary<string,string>{ })
+            ],
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        // Act
+        var result = filterEndpointsTask.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var filteredEndpoints = StaticWebAssetEndpoint.FromItemGroup(filterEndpointsTask.FilteredEndpoints);
+        Array.Sort(filteredEndpoints);
+        filteredEndpoints.Should().HaveCount(2);
+        filteredEndpoints.Where(e => e.Route == "index.html").Should().ContainSingle();
+        filteredEndpoints.Where(e => e.Route == "other.fingerprint.js").Should().ContainSingle();
     }
 
     [Fact]

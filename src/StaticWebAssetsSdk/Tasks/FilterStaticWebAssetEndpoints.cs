@@ -26,23 +26,31 @@ public class FilterStaticWebAssetEndpoints : Task
 
     [Output] public ITaskItem[] FilteredEndpoints { get; set; }
 
+    [Output] public ITaskItem[] AssetsWithoutMatchingEndpoints { get; set; }
+
     public override bool Execute()
     {
         var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
-        var assetFiles = (Assets ?? []).Select(a => a.ItemSpec).ToHashSet();
+        var assetFiles = (Assets ?? []).ToDictionary(a => a.ItemSpec, a => StaticWebAsset.FromTaskItem(a));
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
+        var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 
         var filteredEndpoints = new List<StaticWebAssetEndpoint>();
         for (int i = 0; i < endpoints.Length; i++)
         {
+            StaticWebAsset asset = null;
             var endpoint = endpoints[i];
-            if (Assets != null && !assetFiles.Contains(endpoint.AssetFile))
+            if (assetFiles.Count > 0 && !assetFiles.TryGetValue(endpoint.AssetFile, out asset))
             {
                 continue;
             }
 
-            if (MeetsAllCriteria(endpoint, filterCriteria, out var failingCriteria))
+            if (MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
             {
+                if (asset != null && !endpointFoundMatchingAsset.ContainsKey(asset.Identity))
+                {
+                    endpointFoundMatchingAsset.Add(asset.Identity, asset);
+                }
                 filteredEndpoints.Add(endpoint);
             }
             else
@@ -54,10 +62,17 @@ public class FilterStaticWebAssetEndpoints : Task
         }
 
         FilteredEndpoints = filteredEndpoints.Select(e => e.ToTaskItem()).ToArray();
+
+        foreach(var asset in endpointFoundMatchingAsset)
+        {
+            assetFiles.Remove(asset.Key);
+        }
+
+        AssetsWithoutMatchingEndpoints = assetFiles.Values.Select(a => a.ToTaskItem()).ToArray();
         return !Log.HasLoggedErrors;
     }
 
-    private bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
+    private bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, StaticWebAsset asset, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
     {
         for (int i = 0; i < filterCriteria.Length; i++)
         {
@@ -115,6 +130,20 @@ public class FilterStaticWebAssetEndpoints : Task
                         return false;
                     }
                     break;
+                case "Standalone":
+                    if (asset == null)
+                    {
+                        failingCriteria = criteria;
+                        return false;
+                    }
+                    var path = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+                    var route = asset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
+                    if (!string.Equals(route, path, StringComparison.OrdinalIgnoreCase) || criteria.ExcludeOnMatch())
+                    {
+                        failingCriteria = criteria;
+                        return false;
+                    }
+                    break;
                 default:
                     throw new InvalidOperationException($"Unknown criteria type {criteria.Type}");
             }
@@ -127,21 +156,27 @@ public class FilterStaticWebAssetEndpoints : Task
     private static bool MeetsCriteria(
         FilterCriteria criteria,
         string name, string value) =>
-        string.Equals(name, criteria.Name, StringComparison.OrdinalIgnoreCase)
-        && (string.IsNullOrEmpty(criteria.Value) || string.Equals(value, criteria.Value, StringComparison.Ordinal));
+            criteria.ExcludeOnMatch() ? !MeetsCriteriaCore(criteria, name, value) : MeetsCriteriaCore(criteria, name, value);
 
-    private class FilterCriteria(string type, string name, string value)
+    private static bool MeetsCriteriaCore(FilterCriteria criteria, string name, string value) => string.Equals(name, criteria.Name, StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrEmpty(criteria.Value) || string.Equals(value, criteria.Value, StringComparison.Ordinal));
+
+    private class FilterCriteria(string type, string name, string value, string mode)
     {
         public string Type { get; } = type;
         public string Name { get; } = name;
         public string Value { get; } = value;
+        public string Mode { get; } = mode ?? "Include";
+
+        public bool ExcludeOnMatch() => string.Equals(Mode, "Exclude", StringComparison.OrdinalIgnoreCase);
 
         public static FilterCriteria FromTaskItem(ITaskItem item)
         {
             return new FilterCriteria(
                 item.ItemSpec,
                 item.GetMetadata("Name"),
-                item.GetMetadata("Value"));
+                item.GetMetadata("Value"),
+                item.GetMetadata("Mode"));
         }
     }
 }
