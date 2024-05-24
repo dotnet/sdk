@@ -475,7 +475,7 @@ public class StaticWebAssetPathSegment : IEquatable<StaticWebAssetPathSegment>
         var result = new HashSet<string>();
         foreach (var part in Parts)
         {
-            if (!part.IsLiteral && !string.IsNullOrEmpty(part.Value))
+            if (!part.IsLiteral && string.IsNullOrEmpty(part.Value))
             {
                 result.Add(part.Name);
             }

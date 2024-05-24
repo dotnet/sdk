@@ -89,7 +89,10 @@ public class ApplyCompressionNegotiation : Task
                 }
 
                 Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
-                updatedEndpoints.Add(compressedEndpoint);
+                if (!updatedEndpoints.Contains(compressedEndpoint))
+                {
+                    updatedEndpoints.Add(compressedEndpoint);
+                }
 
                 foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
                 {
@@ -189,7 +192,7 @@ public class ApplyCompressionNegotiation : Task
             }
         }
 
-        UpdatedEndpoints = updatedEndpoints.Select(e => e.ToTaskItem()).ToArray();
+        UpdatedEndpoints = updatedEndpoints.Distinct().Select(e => e.ToTaskItem()).ToArray();
 
         return true;
     }
