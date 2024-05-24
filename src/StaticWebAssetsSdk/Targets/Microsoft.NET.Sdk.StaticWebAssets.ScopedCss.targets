@@ -363,7 +363,7 @@ Integration with static web assets:
     </_ScopedCssProjectBundleFiltersNoFingerprint>
   </ItemGroup>
 
-  <FilterStaticWebAssetEndpoints
+  <FilterStaticWebAssetEndpoints Condition="'@(_ScopedCssProjectBundles)' != ''"
     Endpoints="@(StaticWebAssetEndpoint)"
     Assets="@(_ScopedCssProjectBundles)"
     Filters="@(_ScopedCssProjectBundleFilters)"
@@ -381,10 +381,11 @@ Integration with static web assets:
     <Output TaskParameter="AssetsWithoutMatchingEndpoints" ItemName="_ScopedCssBundlesWithoutEndpoints" />
   </FilterStaticWebAssetEndpoints>
 
-  <Error Condition="'@(_ScopedCssProjectBundles)' != '' and @(_ScopedCssBundlesWithoutEndpoints)' != ''"
+  <Error Condition="'@(_ScopedCssProjectBundles)' != '' and '@(_ScopedCssBundlesWithoutEndpoints)' != ''"
     Text="The following scoped css bundles do not have matching endpoints: @(_ScopedCssBundlesWithoutEndpoints->'%(RelativePath)')" />
 
   <ResolveStaticWebAssetEndpointRoutes
+    Condition="'@(_ScopedCssProjectBundles)' != ''"
     Endpoints="@(_FilteredScopedCssBundleEndpoints)"
     Assets="@(_ScopedCssProjectBundles)"
   >

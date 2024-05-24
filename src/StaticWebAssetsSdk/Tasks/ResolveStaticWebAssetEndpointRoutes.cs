@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
 public class ResolveStaticWebAssetEndpointRoutes : Task
 {
     [Required] public ITaskItem[] Endpoints { get; set; } = [];

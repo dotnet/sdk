@@ -32,7 +32,7 @@ public class FilterStaticWebAssetEndpoints : Task
     {
         var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
         var assetFiles = (Assets ?? []).ToDictionary(a => a.ItemSpec, a => StaticWebAsset.FromTaskItem(a));
-        var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints ?? []);
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 
         var filteredEndpoints = new List<StaticWebAssetEndpoint>();
@@ -63,7 +63,7 @@ public class FilterStaticWebAssetEndpoints : Task
 
         FilteredEndpoints = filteredEndpoints.Select(e => e.ToTaskItem()).ToArray();
 
-        foreach(var asset in endpointFoundMatchingAsset)
+        foreach (var asset in endpointFoundMatchingAsset)
         {
             assetFiles.Remove(asset.Key);
         }
@@ -80,13 +80,13 @@ public class FilterStaticWebAssetEndpoints : Task
             switch (criteria.Type)
             {
                 case "Property":
-                    var meetsPropertyCriteria = false;
+                    var meetsPropertyCriteria = criteria.ExcludeOnMatch();
                     for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
                     {
                         var property = endpoint.EndpointProperties[j];
                         if (MeetsCriteria(criteria, property.Name, property.Value))
                         {
-                            meetsPropertyCriteria = true;
+                            meetsPropertyCriteria = !criteria.ExcludeOnMatch();
                             break;
                         }
                     }
@@ -97,13 +97,13 @@ public class FilterStaticWebAssetEndpoints : Task
                     }
                     break;
                 case "Selector":
-                    var meetsSelectorCriteria = false;
+                    var meetsSelectorCriteria = criteria.ExcludeOnMatch();
                     for (var j = 0; j < endpoint.Selectors.Length; j++)
                     {
                         var selector = endpoint.Selectors[j];
                         if (MeetsCriteria(criteria, selector.Name, selector.Value))
                         {
-                            meetsSelectorCriteria = true;
+                            meetsSelectorCriteria = !criteria.ExcludeOnMatch();
                             break;
                         }
                     }
@@ -114,13 +114,13 @@ public class FilterStaticWebAssetEndpoints : Task
                     }
                     break;
                 case "Header":
-                    var meetsHeaderCriteria = false;
+                    var meetsHeaderCriteria = criteria.ExcludeOnMatch();
                     for (var j = 0; j < endpoint.ResponseHeaders.Length; j++)
                     {
                         var header = endpoint.ResponseHeaders[j];
                         if (MeetsCriteria(criteria, header.Name, header.Value))
                         {
-                            meetsHeaderCriteria = true;
+                            meetsHeaderCriteria = !criteria.ExcludeOnMatch();
                             break;
                         }
                     }
@@ -156,10 +156,8 @@ public class FilterStaticWebAssetEndpoints : Task
     private static bool MeetsCriteria(
         FilterCriteria criteria,
         string name, string value) =>
-            criteria.ExcludeOnMatch() ? !MeetsCriteriaCore(criteria, name, value) : MeetsCriteriaCore(criteria, name, value);
-
-    private static bool MeetsCriteriaCore(FilterCriteria criteria, string name, string value) => string.Equals(name, criteria.Name, StringComparison.OrdinalIgnoreCase) &&
-                (string.IsNullOrEmpty(criteria.Value) || string.Equals(value, criteria.Value, StringComparison.Ordinal));
+            string.Equals(name, criteria.Name, StringComparison.OrdinalIgnoreCase) &&
+            (string.IsNullOrEmpty(criteria.Value) || string.Equals(value, criteria.Value, StringComparison.Ordinal));
 
     private class FilterCriteria(string type, string name, string value, string mode)
     {

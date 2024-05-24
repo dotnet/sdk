@@ -146,7 +146,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -933,11 +934,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
+            buildCommand.Execute("/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
 
             // Publish
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute("/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");

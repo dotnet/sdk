@@ -492,7 +492,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var build = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            build.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
