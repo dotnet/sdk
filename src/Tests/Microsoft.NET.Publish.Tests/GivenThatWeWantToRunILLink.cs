@@ -95,7 +95,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/40882")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_links_simple_app_without_analysis_warnings_and_it_runs(string targetFramework)
         {
@@ -105,10 +105,11 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
                 var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+                testProject.AdditionalProperties["PublishTrimmed"] = "true";
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + trimMode);
 
                 var publishCommand = new PublishCommand(testAsset);
-                publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}", "/p:SuppressTrimAnalysisWarnings=true")
+                publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:TrimMode={trimMode}", "/p:SuppressTrimAnalysisWarnings=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("warning IL2075")
                     .And.NotHaveStdOutContaining("warning IL2026");
