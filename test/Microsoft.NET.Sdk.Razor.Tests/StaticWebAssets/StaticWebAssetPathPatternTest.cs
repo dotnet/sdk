@@ -624,7 +624,7 @@ public class StaticWebAssetPathPatternTest
     public void CanExpandRoutes_LiteralPatterns()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
-        var routePatterns = pattern.ExpandRoutes();
+        var routePatterns = pattern.ExpandPatternExpression();
 
         Assert.Equal([pattern], routePatterns);
     }
@@ -633,7 +633,7 @@ public class StaticWebAssetPathPatternTest
     public void CanExpandRoutes_SingleRequiredExpression()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
-        var routePatterns = pattern.ExpandRoutes();
+        var routePatterns = pattern.ExpandPatternExpression();
 
         Assert.Equal([pattern], routePatterns);
     }
@@ -642,7 +642,7 @@ public class StaticWebAssetPathPatternTest
     public void CanExpandRoutes_SingleOptionalExpression()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?.css", "MyApp");
-        var routePatterns = pattern.ExpandRoutes();
+        var routePatterns = pattern.ExpandPatternExpression();
 
         var expected = new[]
         {
@@ -672,7 +672,7 @@ public class StaticWebAssetPathPatternTest
     public void CanExpandRoutes_MultipleOptionalExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?#[.{version}]?.css", "MyApp");
-        var routePatterns = pattern.ExpandRoutes();
+        var routePatterns = pattern.ExpandPatternExpression();
 
         var expected = new[]
         {

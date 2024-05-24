@@ -688,7 +688,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string ComputePathWithoutTokens(string pathWithTokens)
         {
             var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-            return pattern.PathWithoutTokens();
+            return pattern.ComputePatternLabel();
         }
 
         public override string ToString() =>
@@ -765,10 +765,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             var tokenResolver = StaticWebAssetTokenResolver.Instance;
             var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
-            foreach (var expandedPattern in pattern.ExpandRoutes())
+            foreach (var expandedPattern in pattern.ExpandPatternExpression())
             {
                 var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
-                yield return new StaticWebAssetResolvedRoute(pattern.PathWithoutTokens(), path, tokens);
+                yield return new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens);
             }
         }
 
