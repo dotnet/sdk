@@ -110,6 +110,19 @@ public partial class StaticWebAssetsBaselineFactory
                     case "Last-Modified":
                         header.Value = "__last-modified__";
                         break;
+                    case "Link":
+                        var cleaned = new List<string>();
+                        var values = header.Value.Split(',').Select(v => v.Trim());
+                        foreach (var value in values)
+                        {
+                            var segments = value.Split(';').Select(v => v.Trim()).ToArray();
+                            var file = segments[0][1..^1];
+                            segments[0] = $"<{ReplaceFileName(file).Replace('\\','/')}>";
+                            cleaned.Add(string.Join("; ", segments));
+                        }
+                        header.Value = string.Join(", ", cleaned);
+
+                        break;
                     default:
                         break;
                 }

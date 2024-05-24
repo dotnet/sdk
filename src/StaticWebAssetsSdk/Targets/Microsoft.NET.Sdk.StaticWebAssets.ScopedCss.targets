@@ -229,6 +229,12 @@ Integration with static web assets:
     <_ScopedCssProjectBundleStaticWebAssetCandidate Include="$(_ScopedCssProjectOutputPath)">
       <RelativePath>$(PackageId)#[.{fingerprint}]!.bundle.scp.css</RelativePath>
     </_ScopedCssProjectBundleStaticWebAssetCandidate>
+    <!-- Adds a Link: <bundle1>; rel="preload", <bundle2>; rel="preload", <bundle3>; rel="preload" -->
+    <_AddLinkHeaderToAppBundle Include="Append" Condition="'@(_ResolvedScopedCssBundleEndpoints)' != ''">
+      <UpdateTarget>Header</UpdateTarget>
+      <Name>Link</Name>
+      <Value>@(_ResolvedScopedCssBundleEndpoints->'&lt;%(Identity)&gt;; rel="preload"; as="style"', ', ')</Value>
+    </_AddLinkHeaderToAppBundle>
   </ItemGroup>
 
   <DefineStaticWebAssets Condition="@(_AllScopedCss) != ''"
@@ -258,6 +264,20 @@ Integration with static web assets:
   >
     <Output TaskParameter="Endpoints" ItemName="_ScopedCssAppBundleStaticWebAssetEndpoint" />
   </DefineStaticWebAssetEndpoints>
+
+  <UpdateStaticWebAssetEndpoints
+    Condition="'@(_AddLinkHeaderToAppBundle)' != ''"
+    EndpointsToUpdate="@(_ScopedCssAppBundleStaticWebAssetEndpoint)"
+    AllEndpoints="@(_ScopedCssAppBundleStaticWebAssetEndpoint)"
+    Operations="@(_AddLinkHeaderToAppBundle)"
+  >
+    <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedScopedCssAppBundleStaticWebAssetEndpoint" />
+  </UpdateStaticWebAssetEndpoints>
+
+  <ItemGroup Condition="'@(_AddLinkHeaderToAppBundle)' != ''">
+    <_ScopedCssAppBundleStaticWebAssetEndpoint Remove="@(_UpdatedScopedCssAppBundleStaticWebAssetEndpoint)" />
+    <_ScopedCssAppBundleStaticWebAssetEndpoint Include="@(_UpdatedScopedCssAppBundleStaticWebAssetEndpoint)" />
+  </ItemGroup>
 
   <DefineStaticWebAssets Condition="@(_ScopedCss) != ''"
     CandidateAssets="@(_ScopedCssProjectBundleStaticWebAssetCandidate)"

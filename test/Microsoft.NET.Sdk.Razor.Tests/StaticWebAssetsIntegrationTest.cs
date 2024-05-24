@@ -2444,7 +2444,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var pack = new MSBuildCommand(projectDirectory, "Pack", "PackageLibraryDirectDependency");
             pack.WithWorkingDirectory(projectDirectory.TestRoot);
-            var result = pack.Execute();
+            var result = pack.Execute("/bl");
 
             result.Should().Pass();
 

@@ -364,7 +364,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         {
             return new StaticWebAssetEndpointOperation(
                 item.ItemSpec,
-                item.GetMetadata("Target"),
+                item.GetMetadata("UpdateTarget"),
                 item.GetMetadata("Name"),
                 item.GetMetadata("Value"),
                 item.GetMetadata("NewValue"),
