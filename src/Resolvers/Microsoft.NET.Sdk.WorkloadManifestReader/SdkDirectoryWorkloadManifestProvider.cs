@@ -267,10 +267,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             void ProbeDirectory(string manifestDirectory, string featureBand)
             {
-                (string? id, string? finalManifestDirectory, ReleaseVersion? version) = ResolveManifestDirectory(manifestDirectory);
+                (string? id, string? finalManifestDirectory, string? version) = ResolveManifestDirectory(manifestDirectory);
                 if (id != null && finalManifestDirectory != null)
                 {
-                    AddManifest(id, finalManifestDirectory, featureBand, version?.ToString() ?? Path.GetFileName(manifestDirectory));
+                    AddManifest(id, finalManifestDirectory, featureBand, version ?? Path.GetFileName(manifestDirectory));
                 }
             }
 
@@ -375,7 +375,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Given a folder that may directly include a WorkloadManifest.json file, or may have the workload manifests in version subfolders, choose the directory
         /// with the latest workload manifest.
         /// </summary>
-        private (string? id, string? manifestDirectory, ReleaseVersion? version) ResolveManifestDirectory(string manifestDirectory)
+        private (string? id, string? manifestDirectory, string? version) ResolveManifestDirectory(string manifestDirectory)
         {
             string manifestId = Path.GetFileName(manifestDirectory);
             if (_outdatedManifestIds.Contains(manifestId) ||
@@ -388,18 +388,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     .Where(dir => File.Exists(Path.Combine(dir, "WorkloadManifest.json")))
                     .Select(dir =>
                     {
-                        ReleaseVersion? releaseVersion = null;
-                        ReleaseVersion.TryParse(Path.GetFileName(dir), out releaseVersion);
-                        return (directory: dir, version: releaseVersion);
-                    })
-                    .Where(t => t.version != null)
-                    .OrderByDescending(t => t.version)
-                    .ToList();
+                        return (directory: dir, version: Path.GetFileName(dir));
+                    });
 
             //  Assume that if there are any versioned subfolders, they are higher manifest versions than a workload manifest directly in the specified folder, if it exists
             if (manifestVersionDirectories.Any())
             {
-                return (manifestId, manifestVersionDirectories.First().directory, manifestVersionDirectories.First().version);
+                var maxVersionDirectory = manifestVersionDirectories.Aggregate((d1, d2) => VersionCompare(d1.version, d2.version) > 0 ? d1 : d2);
+                return (manifestId, maxVersionDirectory.directory, maxVersionDirectory.version);
             }
             else if (File.Exists(Path.Combine(manifestDirectory, "WorkloadManifest.json")))
             {
@@ -407,7 +403,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 try
                 {
                     var manifestContents = WorkloadManifestReader.ReadWorkloadManifest(manifestId, File.OpenRead(manifestPath), manifestPath);
-                    return (manifestId, manifestDirectory, new ReleaseVersion(manifestContents.Version));
+                    return (manifestId, manifestDirectory, manifestContents.Version);
                 }
                 catch
                 { }
