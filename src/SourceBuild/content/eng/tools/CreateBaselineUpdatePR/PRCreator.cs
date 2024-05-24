@@ -280,83 +280,118 @@ public class PRCreator
 
     private async Task CreateOrUpdatePullRequestAsync(TreeResponse parentTreeResponse, int buildId, string title, string targetBranch)
     {
-        // Look for a pre-existing pull request
-        var request = new PullRequestRequest
-        {
-            Base = targetBranch
-        };
-        var existingPullRequest = await _client.PullRequest.GetAllForRepository(_repoOwner, _repoName, request);
-        var matchingPullRequest = existingPullRequest.FirstOrDefault(pr => pr.Title == title);
+        var existingPullRequest = await GetExistingPullRequestAsync(title, targetBranch);
 
         // Create the branch name and get the head reference
         string newBranchName = string.Empty;
-        Reference? headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, $"heads/{targetBranch}");
-        if (matchingPullRequest == null)
+        string headSha = await GetHeadShaAsync(targetBranch);
+        if (existingPullRequest == null)
         {
             string utcTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             newBranchName = $"pr-baseline-{utcTime}";
         }
         else
         {
-            newBranchName = matchingPullRequest.Head.Ref;
+            newBranchName = existingPullRequest.Head.Ref;
             try
             {
                 // Update the existing pull request with the latest from the target branch
-                var targetReferenceUpdate = new ReferenceUpdate(headReference.Object.Sha);
-                await _client.Git.Reference.Update(_repoOwner, _repoName, $"heads/{newBranchName}", targetReferenceUpdate);
+                await UpdateReferenceAsync(newBranchName, headSha);
             }
             catch (Exception e)
             {
                 Log.LogWarning($"Failed to update the existing pull request with the latest from the target branch: {e.Message}");
-                Log.LogWarning("Continuing with PR creation. You may need to manually update the PR branch.");
+                Log.LogWarning("Continuing with PR updates, but you may need to manually merge in the target branch.");
             }
 
-            headReference = await _client.Git.Reference.Get(_repoOwner, _repoName, $"heads/{newBranchName}");
+            headSha = await GetHeadShaAsync(newBranchName);
         }
 
-        // Create the commit
-        string commitMessage = $"Update baselines for build {BuildLink}{buildId} (internal Microsoft link)";
-        var newCommit = new NewCommit(commitMessage, parentTreeResponse.Sha, headReference.Object.Sha);
-        var commitResponse = await _client.Git.Commit.Create(_repoOwner, _repoName, newCommit);
-
-        string pullRequestBody = $"This PR was created by the `CreateBaselineUpdatePR` tool for build {buildId}. \n\n" +
+        var commitSha = await CreateCommitAsync(parentTreeResponse.Sha, headSha, $"Update baselines for build {BuildLink}{buildId} (internal Microsoft link)");
+        if (await ShouldMakeUpdatesAsync(headSha, commitSha))
+        {
+            string pullRequestBody = $"This PR was created by the `CreateBaselineUpdatePR` tool for build {buildId}. \n\n" +
                                  $"The updated test results can be found at {BuildLink}{buildId} (internal Microsoft link)";
-        if (matchingPullRequest != null)
-        {
-            // Update the existing pull request with the new commit
-            var referenceUpdate = new ReferenceUpdate(commitResponse.Sha);
-            await _client.Git.Reference.Update(_repoOwner, _repoName, $"heads/{newBranchName}", referenceUpdate);
-    
-            // Update the body of the pull request
-            var pullRequestUpdate = new PullRequestUpdate
+            if (existingPullRequest != null)
             {
-                Body = pullRequestBody
-            };
-            await _client.PullRequest.Update(_repoOwner, _repoName, matchingPullRequest.Number, pullRequestUpdate);
-
-            Log.LogInformation($"Updated existing pull request #{matchingPullRequest.Number}. URL: {matchingPullRequest.HtmlUrl}");
-        }
-        else
-        {
-            var comparison = await _client.Repository.Commit.Compare(_repoOwner, _repoName, headReference.Object.Sha, commitResponse.Sha);
-            if (!comparison.Files.Any())
-            {
-                // No changes to commit
-                Log.LogInformation("No changes to commit. Skipping PR creation.");
-                return;
+                await UpdatePullRequestAsync(newBranchName, commitSha, pullRequestBody, existingPullRequest);
             }
-
-            // Create a new pull request
-            var newReference = new NewReference($"refs/heads/{newBranchName}", commitResponse.Sha);
-            await _client.Git.Reference.Create(_repoOwner, _repoName, newReference);
-
-            var newPullRequest = new NewPullRequest(title, newBranchName, targetBranch)
+            else
             {
-                Body = pullRequestBody
-            };
-            var pullRequest = await _client.PullRequest.Create(_repoOwner, _repoName, newPullRequest);
-
-            Log.LogInformation($"Created pull request #{pullRequest.Number}. URL: {pullRequest.HtmlUrl}");
+                await CreatePullRequestAsync(newBranchName, commitSha, targetBranch, title, pullRequestBody);
+            }
         }
+    }
+
+    private async Task<PullRequest?> GetExistingPullRequestAsync(string title, string targetBranch)
+    {
+        var request = new PullRequestRequest
+        {
+            Base = targetBranch
+        };
+        var existingPullRequest = await _client.PullRequest.GetAllForRepository(_repoOwner, _repoName, request);
+        return existingPullRequest.FirstOrDefault(pr => pr.Title == title);
+    }
+
+    private async Task<string> CreateCommitAsync(string newSha, string headSha, string commitMessage)
+    {
+        var newCommit = new NewCommit(commitMessage, newSha, headSha);
+        var commit = await _client.Git.Commit.Create(_repoOwner, _repoName, newCommit);
+        return commit.Sha;
+    }
+
+    private async Task<bool> ShouldMakeUpdatesAsync(string headSha, string commitSha)
+    {
+        var comparison = await _client.Repository.Commit.Compare(_repoOwner, _repoName, headSha, commitSha);
+        if (!comparison.Files.Any())
+        {
+            Log.LogInformation("No changes to commit. Skipping PR creation/updates.");
+            return false;
+        }
+        return true;
+    }
+
+    private async Task UpdatePullRequestAsync(string branchName, string commitSha, string body, PullRequest pullRequest)
+    {
+        await UpdateReferenceAsync(branchName, commitSha);
+
+        var pullRequestUpdate = new PullRequestUpdate
+        {
+            Body = body
+        };
+        await _client.PullRequest.Update(_repoOwner, _repoName, pullRequest.Number, pullRequestUpdate);
+
+        Log.LogInformation($"Updated existing pull request #{pullRequest.Number}. URL: {pullRequest.HtmlUrl}");
+    }
+
+    private async Task CreatePullRequestAsync(string newBranchName, string commitSha, string targetBranch, string title, string body)
+    {
+        await CreateReferenceAsync(newBranchName, commitSha);
+
+        var newPullRequest = new NewPullRequest(title, newBranchName, targetBranch)
+        {
+            Body = body
+        };
+        var pullRequest = await _client.PullRequest.Create(_repoOwner, _repoName, newPullRequest);
+
+        Log.LogInformation($"Created pull request #{pullRequest.Number}. URL: {pullRequest.HtmlUrl}");
+    }
+
+    private async Task<string> GetHeadShaAsync(string branchName)
+    {
+        var reference = await _client.Git.Reference.Get(_repoOwner, _repoName, $"heads/{branchName}");
+        return reference.Object.Sha;
+    }
+
+    private async Task UpdateReferenceAsync(string branchName, string commitSha)
+    {
+        var referenceUpdate = new ReferenceUpdate(commitSha);
+        await _client.Git.Reference.Update(_repoOwner, _repoName, $"heads/{branchName}", referenceUpdate);
+    }
+
+    private async Task CreateReferenceAsync(string branchName, string commitSha)
+    {
+        var newReference = new NewReference($"refs/heads/{branchName}", commitSha);
+        await _client.Git.Reference.Create(_repoOwner, _repoName, newReference);
     }
 }
