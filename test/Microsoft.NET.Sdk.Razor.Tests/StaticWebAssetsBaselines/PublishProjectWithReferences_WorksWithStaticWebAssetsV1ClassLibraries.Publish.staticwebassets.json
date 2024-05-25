@@ -983,6 +983,10 @@
           "Value": "__last-modified__"
         },
         {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+        },
+        {
           "Name": "Vary",
           "Value": "Content-Encoding"
         }
@@ -1031,6 +1035,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1951,6 +1959,10 @@
           "Value": "__last-modified__"
         },
         {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+        },
+        {
           "Name": "Vary",
           "Value": "Content-Encoding"
         }
@@ -1999,6 +2011,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -2643,6 +2659,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": []
@@ -2675,6 +2695,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Link",
+          "Value": "\u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": [
