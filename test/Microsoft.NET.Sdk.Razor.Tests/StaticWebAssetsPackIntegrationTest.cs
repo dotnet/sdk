@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
         }
 
-        public StaticWebAssetsPackIntegrationTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log, restoreNugetPackagePath)
+        internal StaticWebAssetsPackIntegrationTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log, restoreNugetPackagePath)
         {
         }
 

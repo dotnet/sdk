@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public IsolatedNuGetPackageFolderAspNetSdkBaselineTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log)
         {
-            TestContext.Current.NuGetCachePath = Path.GetFullPath(Path.Combine(_testAssetsManager.TestAssetsRoot, restoreNugetPackagePath));
+            TestContext.Current.NuGetCachePath = Path.GetFullPath(Path.Combine(TestContext.Current.TestExecutionDirectory, restoreNugetPackagePath));
         }
     }
 }

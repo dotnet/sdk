@@ -1836,7 +1836,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1876,7 +1876,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "AppWithPackageAndP2PReference.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
