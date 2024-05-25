@@ -2,6 +2,5 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <RestoreAdditionalProjectSources Condition="Exists('$(MSBuildThisFileDirectory)TestPackages\')">$(RestoreAdditionalProjectSources);$(MSBuildThisFileDirectory)TestPackages\</RestoreAdditionalProjectSources>
-    <RestorePackagesPath>$(MSBuildThisFileDirectory).nuget\</RestorePackagesPath>
   </PropertyGroup>
 </Project>
