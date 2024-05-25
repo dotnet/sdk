@@ -295,7 +295,7 @@ public class UpdateStaticWebAssetEndpointsTest
     {
         return new TaskItem(type, new Dictionary<string, string>
         {
-            { "Target", target },
+            { "UpdateTarget", target },
             { "Name", name },
             { "Value", value },
             { "NewValue", newValue }
