@@ -83,7 +83,7 @@ public partial class StaticWebAssetsBaselineFactory
                 asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), basePath, relativePath);
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(Path.DirectorySeparatorChar, '\\');
             }
-            else if ((asset.Identity.EndsWith(".gz") || asset.Identity.EndsWith(".br"))
+            else if ((asset.Identity.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) || asset.Identity.EndsWith(".br", StringComparison.OrdinalIgnoreCase))
                 && asset.AssetTraitName == "" && asset.RelatedAsset == "")
             {
                 // Old .NET 5.0 implementation
@@ -117,7 +117,7 @@ public partial class StaticWebAssetsBaselineFactory
                         {
                             var segments = value.Split(';').Select(v => v.Trim()).ToArray();
                             var file = segments[0][1..^1];
-                            segments[0] = $"<{ReplaceFileName(file).Replace('\\','/')}>";
+                            segments[0] = $"<{ReplaceFileName(file).Replace('\\', '/')}>";
                             cleaned.Add(string.Join("; ", segments));
                         }
                         header.Value = string.Join(", ", cleaned);
@@ -164,7 +164,7 @@ public partial class StaticWebAssetsBaselineFactory
 
         foreach (var discovery in manifest.DiscoveryPatterns)
         {
-            discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectPath}");
+            discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectPath}", StringComparison.OrdinalIgnoreCase);
             discovery.ContentRoot = discovery.ContentRoot.Replace(Path.DirectorySeparatorChar, '\\');
 
             discovery.Name = discovery.Name.Replace(Path.DirectorySeparatorChar, '\\');
@@ -178,7 +178,7 @@ public partial class StaticWebAssetsBaselineFactory
 
         // Sor everything now to ensure we produce stable baselines independent of the machine they were generated on.
         Array.Sort(manifest.DiscoveryPatterns, (l, r) => StringComparer.Ordinal.Compare(l.Name, r.Name));
-        Array.Sort(manifest.Assets, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
+        Array.Sort(manifest.Assets);
         foreach (var endpoint in manifest.Endpoints)
         {
             Array.Sort(endpoint.Selectors);

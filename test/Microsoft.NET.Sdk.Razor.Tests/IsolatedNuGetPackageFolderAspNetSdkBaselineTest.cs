@@ -3,6 +3,7 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [Trait("NugetIsolation", "true")]
     public class IsolatedNuGetPackageFolderAspNetSdkBaselineTest : AspNetSdkBaselineTest
     {
         public IsolatedNuGetPackageFolderAspNetSdkBaselineTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log)

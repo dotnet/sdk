@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #if WASM_TASKS
     internal class StaticWebAsset : IEquatable<StaticWebAsset>
 #else
-    public class StaticWebAsset : IEquatable<StaticWebAsset>
+    public class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #endif
     {
         public StaticWebAsset()
@@ -546,7 +547,140 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return asset.ItemSpec;
         }
 
-        public override bool Equals(object obj) => obj is StaticWebAsset asset && Equals(asset);
+        // Compares all fields in this order
+        // Identity
+        // SourceType
+        // SourceId
+        // ContentRoot
+        // BasePath
+        // RelativePath
+        // AssetKind
+        // AssetMode
+        // AssetRole
+        // AssetMergeSource
+        // AssetMergeBehavior
+        // RelatedAsset
+        // AssetTraitName
+        // AssetTraitValue
+        // Fingerprint
+        // Integrity
+        // CopyToOutputDirectory
+        // CopyToPublishDirectory
+        // OriginalItemSpec
+
+        public int CompareTo(StaticWebAsset other)
+        {
+            var result = string.Compare(Identity, other.Identity, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(SourceId, other.SourceId, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(ContentRoot, other.ContentRoot, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(BasePath, other.BasePath, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(RelativePath, other.RelativePath, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetKind, other.AssetKind, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMode, other.AssetMode, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetRole, other.AssetRole, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMergeSource, other.AssetMergeSource, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMergeBehavior, other.AssetMergeBehavior, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(RelatedAsset, other.RelatedAsset, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetTraitName, other.AssetTraitName, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetTraitValue, other.AssetTraitValue, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(Fingerprint, other.Fingerprint, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(Integrity, other.Integrity, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(CopyToOutputDirectory, other.CopyToOutputDirectory, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(CopyToPublishDirectory, other.CopyToPublishDirectory, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(OriginalItemSpec, other.OriginalItemSpec, StringComparison.Ordinal);
+            return result;
+        }
 
         public bool Equals(StaticWebAsset other) =>
             Identity == other.Identity &&

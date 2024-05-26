@@ -48,11 +48,11 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
             .GroupBy(a => GetAssetGroup(a))
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
         var duplicateAssets = actual.Assets
             .GroupBy(a => a)
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
         var foundDuplicateAssetss = duplicateAssets.Where(a => a.Value.Length > 1).ToArray();
         duplicateAssets.Where(a => a.Value.Length > 1).Should().BeEmpty($@"no duplicate assets should exist. But found:
@@ -63,9 +63,9 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
             .GroupBy(a => GetAssetGroup(a))
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
-        var actualAssetsByIdentity = actual.Assets.GroupBy(a => a.Identity).ToDictionary(a => a.Key, a => a.ToArray());
+        var actualAssetsByIdentity = actual.Assets.GroupBy(a => a.Identity).ToDictionary(a => a.Key, a => a.Order().ToArray());
         foreach (var asset in actual.Assets)
         {
             if (!string.IsNullOrEmpty(asset.RelatedAsset))
@@ -84,13 +84,13 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .OrderBy(a => a.Route)
             .ThenBy(a => a.AssetFile)
             .GroupBy(a => GetEndpointGroup(a))
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
         SortEndpointProperties(actualEndpoints);
 
         var duplicateEndpoints = actual.Endpoints
             .GroupBy(a => a)
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
         var foundDuplicateEndpoints = duplicateEndpoints.Where(a => DuplicatesExist(a)).ToArray();
 
@@ -106,7 +106,7 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .OrderBy(a => a.Route)
             .ThenBy(a => a.AssetFile)
             .GroupBy(a => GetEndpointGroup(a))
-            .ToDictionary(a => a.Key, a => a.ToArray());
+            .ToDictionary(a => a.Key, a => a.Order().ToArray());
 
         SortEndpointProperties(expectedEndpoints);
 
