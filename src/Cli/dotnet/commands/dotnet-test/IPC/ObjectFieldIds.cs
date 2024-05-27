@@ -3,13 +3,13 @@
 
 namespace Microsoft.DotNet.Cli.commands.dotnet_test.IPC
 {
-    internal class CommandLineOptionMessagesFields
+    internal class CommandLineOptionMessagesFieldsId
     {
         internal const int ModuleName = 1;
         internal const int CommandLineOptionMessageList = 2;
     }
 
-    internal class CommandLineOptionMessageFields
+    internal class CommandLineOptionMessageFieldsId
     {
         internal const int Name = 1;
         internal const int Description = 2;

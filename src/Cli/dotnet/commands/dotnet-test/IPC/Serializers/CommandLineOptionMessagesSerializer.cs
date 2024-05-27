@@ -8,6 +8,41 @@ using Microsoft.DotNet.Cli.commands.dotnet_test.IPC;
 
 namespace Microsoft.DotNet.Tools.Test
 {
+    /*
+    |---FieldCount---| 2 bytes
+
+    |---ModuleName Id---| 1 (2 bytes)
+    |---ModuleName Size---| (4 bytes)
+    |---ModuleName Value---| (n bytes)
+
+    |---CommandLineOptionMessageList Id---| 2 (2 bytes)
+    |---CommandLineOptionMessageList Size---| (4 bytes)
+    |---CommandLineOptionMessageList Value---| (n bytes)
+        |---CommandLineOptionMessageList Length---| (4 bytes)
+
+        |---CommandLineOptionMessageList[0] FieldCount---| 2 bytes
+
+        |---CommandLineOptionMessageList[0] Name Id---| 1 (2 bytes)
+        |---CommandLineOptionMessageList[0] Name Size---| (4 bytes)
+        |---CommandLineOptionMessageList[0] Name Value---| (n bytes)
+
+        |---CommandLineOptionMessageList[1] Description Id---| 2 (2 bytes)
+        |---CommandLineOptionMessageList[1] Description Size---| (4 bytes)
+        |---CommandLineOptionMessageList[1] Description Value---| (n bytes)
+
+        |---CommandLineOptionMessageList[2] Arity Id---| 3 (2 bytes)
+        |---CommandLineOptionMessageList[2] Arity Size---| (4 bytes)
+        |---CommandLineOptionMessageList[2] Arity Value---| (n bytes)
+
+        |---CommandLineOptionMessageList[3] IsHidden Id---| 4 (2 bytes)
+        |---CommandLineOptionMessageList[3] IsHidden Size---| (4 bytes)
+        |---CommandLineOptionMessageList[3] IsHidden Value---| (1 byte)
+
+        |---CommandLineOptionMessageList[4] IsBuiltIn Id---| 5 (2 bytes)
+        |---CommandLineOptionMessageList[4] IsBuiltIn Size---| (4 bytes)
+        |---CommandLineOptionMessageList[4] IsBuiltIn Value---| (1 byte)
+    */
+
     internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
         public int Id => 3;
@@ -17,20 +52,20 @@ namespace Microsoft.DotNet.Tools.Test
             string moduleName = string.Empty;
             List<CommandLineOptionMessage>? commandLineOptionMessages = null;
 
-            short fieldCount = ReadShort(stream);
+            ushort fieldCount = ReadShort(stream);
 
             for (int i = 0; i < fieldCount; i++)
             {
                 int fieldId = ReadShort(stream);
-                var fieldSize = ReadInt(stream);
+                int fieldSize = ReadInt(stream);
 
                 switch (fieldId)
                 {
-                    case CommandLineOptionMessagesFields.ModuleName:
+                    case CommandLineOptionMessagesFieldsId.ModuleName:
                         moduleName = ReadString(stream);
                         break;
 
-                    case CommandLineOptionMessagesFields.CommandLineOptionMessageList:
+                    case CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList:
                         commandLineOptionMessages = ReadCommandLineOptionMessagesPayload(stream);
                         break;
 
@@ -59,27 +94,27 @@ namespace Microsoft.DotNet.Tools.Test
                 for (int j = 0; j < fieldCount; j++)
                 {
                     int fieldId = ReadShort(stream);
-                    var fieldSize = ReadInt(stream);
+                    int fieldSize = ReadInt(stream);
 
                     switch (fieldId)
                     {
-                        case CommandLineOptionMessageFields.Name:
+                        case CommandLineOptionMessageFieldsId.Name:
                             name = ReadString(stream);
                             break;
 
-                        case CommandLineOptionMessageFields.Description:
+                        case CommandLineOptionMessageFieldsId.Description:
                             description = ReadString(stream);
                             break;
 
-                        case CommandLineOptionMessageFields.Arity:
+                        case CommandLineOptionMessageFieldsId.Arity:
                             arity = ReadString(stream);
                             break;
 
-                        case CommandLineOptionMessageFields.IsHidden:
+                        case CommandLineOptionMessageFieldsId.IsHidden:
                             isHidden = ReadBool(stream);
                             break;
 
-                        case CommandLineOptionMessageFields.IsBuiltIn:
+                        case CommandLineOptionMessageFieldsId.IsBuiltIn:
                             isBuiltIn = ReadBool(stream);
                             break;
 
@@ -99,22 +134,22 @@ namespace Microsoft.DotNet.Tools.Test
         {
             Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
 
-            CommandLineOptionMessages commandLineOptionMessages = (CommandLineOptionMessages)objectToSerialize;
+            var commandLineOptionMessages = (CommandLineOptionMessages)objectToSerialize;
 
-            WriteShort(stream, (short)GetFieldCount(commandLineOptionMessages));
+            WriteShort(stream, GetFieldCount(commandLineOptionMessages));
 
-            WriteField(stream, CommandLineOptionMessagesFields.ModuleName, commandLineOptionMessages.ModuleName);
-            WriteCommandLineOptionMessagesPayload(stream, CommandLineOptionMessagesFields.CommandLineOptionMessageList, commandLineOptionMessages.CommandLineOptionMessageList);
+            WriteField(stream, CommandLineOptionMessagesFieldsId.ModuleName, commandLineOptionMessages.ModuleName);
+            WriteCommandLineOptionMessagesPayload(stream, commandLineOptionMessages.CommandLineOptionMessageList);
         }
 
-        private static void WriteCommandLineOptionMessagesPayload(Stream stream, short id, CommandLineOptionMessage[] commandLineOptionMessageList)
+        private static void WriteCommandLineOptionMessagesPayload(Stream stream, CommandLineOptionMessage[] commandLineOptionMessageList)
         {
-            if (commandLineOptionMessageList is null)
+            if (IsNull(commandLineOptionMessageList))
             {
                 return;
             }
 
-            WriteShort(stream, id);
+            WriteShort(stream, CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList);
 
             // We will reserve an int (4 bytes)
             // so that we fill the size later, once we write the payload
@@ -124,13 +159,13 @@ namespace Microsoft.DotNet.Tools.Test
             WriteInt(stream, commandLineOptionMessageList.Length);
             foreach (CommandLineOptionMessage commandLineOptionMessage in commandLineOptionMessageList)
             {
-                WriteShort(stream, (short)GetFieldCount(commandLineOptionMessage));
+                WriteShort(stream, GetFieldCount(commandLineOptionMessage));
 
-                WriteField(stream, CommandLineOptionMessageFields.Name, commandLineOptionMessage.Name);
-                WriteField(stream, CommandLineOptionMessageFields.Description, commandLineOptionMessage.Description);
-                WriteField(stream, CommandLineOptionMessageFields.Arity, commandLineOptionMessage.Arity);
-                WriteField(stream, CommandLineOptionMessageFields.IsHidden, commandLineOptionMessage.IsHidden);
-                WriteField(stream, CommandLineOptionMessageFields.IsBuiltIn, commandLineOptionMessage.IsBuiltIn);
+                WriteField(stream, CommandLineOptionMessageFieldsId.Name, commandLineOptionMessage.Name);
+                WriteField(stream, CommandLineOptionMessageFieldsId.Description, commandLineOptionMessage.Description);
+                WriteField(stream, CommandLineOptionMessageFieldsId.Arity, commandLineOptionMessage.Arity);
+                WriteField(stream, CommandLineOptionMessageFieldsId.IsHidden, commandLineOptionMessage.IsHidden);
+                WriteField(stream, CommandLineOptionMessageFieldsId.IsBuiltIn, commandLineOptionMessage.IsBuiltIn);
             }
 
             // NOTE: We are able to seek only if we are using a MemoryStream
@@ -138,24 +173,14 @@ namespace Microsoft.DotNet.Tools.Test
             WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
         }
 
-        private static int GetFieldCount(CommandLineOptionMessages commandLineOptionMessages)
-        {
-            return (IsNull(commandLineOptionMessages.ModuleName) ? 1 : 0) +
-               (commandLineOptionMessages.CommandLineOptionMessageList is null ? 0 : 1);
-        }
+        private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessages.ModuleName) ? 0 : 1) +
+               (commandLineOptionMessages is null ? 0 : 1));
 
-        private static int GetFieldCount(CommandLineOptionMessage commandLineOptionMessage)
-        {
-            return (IsNull(commandLineOptionMessage.Name) ? 1 : 0) +
-                (IsNull(commandLineOptionMessage.Description) ? 1 : 0) +
-                (IsNull(commandLineOptionMessage.Arity) ? 1 : 0) +
-                (IsNull(commandLineOptionMessage.IsHidden) ? 1 : 0) +
-                (IsNull(commandLineOptionMessage.IsBuiltIn) ? 1 : 0);
-        }
+        private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessage.Name) ? 0 : 1) +
+                (string.IsNullOrEmpty(commandLineOptionMessage.Description) ? 0 : 1) +
+                (string.IsNullOrEmpty(commandLineOptionMessage.Arity) ? 0 : 1) +
+                2);
 
-        private static bool IsNull<T>(T field)
-        {
-            return typeof(T) == typeof(string) ? field is not null : true;
-        }
+        private static bool IsNull<T>(T[] items) => items is null || items.Length == 0;
     }
 }

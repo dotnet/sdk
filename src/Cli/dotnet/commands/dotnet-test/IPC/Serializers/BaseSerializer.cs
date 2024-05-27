@@ -11,7 +11,7 @@ internal abstract class BaseSerializer
 {
     protected static string ReadString(Stream stream)
     {
-        Span<byte> len = stackalloc byte[4];
+        Span<byte> len = stackalloc byte[sizeof(int)];
         stream.ReadExactly(len);
         int stringLen = BitConverter.ToInt32(len);
         byte[] bytes = ArrayPool<byte>.Shared.Rent(stringLen);
@@ -32,7 +32,7 @@ internal abstract class BaseSerializer
         byte[] bytes = ArrayPool<byte>.Shared.Rent(stringutf8TotalBytes);
         try
         {
-            Span<byte> len = stackalloc byte[4];
+            Span<byte> len = stackalloc byte[sizeof(int)];
             BitConverter.TryWriteBytes(len, stringutf8TotalBytes);
             stream.Write(len);
 
@@ -45,10 +45,10 @@ internal abstract class BaseSerializer
         }
     }
 
-    protected static void WriteSize(Stream stream, string str)
+    protected static void WriteStringSize(Stream stream, string str)
     {
         int stringutf8TotalBytes = Encoding.UTF8.GetByteCount(str);
-        Span<byte> len = stackalloc byte[4];
+        Span<byte> len = stackalloc byte[sizeof(int)];
 
         if (BitConverter.TryWriteBytes(len, stringutf8TotalBytes))
         {
@@ -60,37 +60,12 @@ internal abstract class BaseSerializer
         where T : struct
     {
         int sizeInBytes = GetSize<T>();
-        Span<byte> len = stackalloc byte[4];
+        Span<byte> len = stackalloc byte[sizeof(int)];
 
         if (BitConverter.TryWriteBytes(len, sizeInBytes))
         {
             stream.Write(len);
         }
-    }
-
-    private static int GetSize<T>()
-        where T : struct
-    {
-        int sizeInBytes = 0;
-
-        if (typeof(T) == typeof(int))
-        {
-            sizeInBytes = sizeof(int);
-        }
-        else if (typeof(T) == typeof(long))
-        {
-            sizeInBytes = sizeof(long);
-        }
-        else if (typeof(T) == typeof(short))
-        {
-            sizeInBytes = sizeof(short);
-        }
-        else if (typeof(T) == typeof(bool))
-        {
-            sizeInBytes = sizeof(bool);
-        }
-
-        return sizeInBytes;
     }
 
     protected static void WriteInt(Stream stream, int value)
@@ -109,9 +84,9 @@ internal abstract class BaseSerializer
         stream.Write(bytes);
     }
 
-    protected static void WriteShort(Stream stream, short value)
+    protected static void WriteShort(Stream stream, ushort value)
     {
-        Span<byte> bytes = stackalloc byte[sizeof(short)];
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
         BitConverter.TryWriteBytes(bytes, value);
 
         stream.Write(bytes);
@@ -139,11 +114,11 @@ internal abstract class BaseSerializer
         return BitConverter.ToInt64(bytes);
     }
 
-    protected static short ReadShort(Stream stream)
+    protected static ushort ReadShort(Stream stream)
     {
-        Span<byte> bytes = stackalloc byte[sizeof(short)];
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
         stream.ReadExactly(bytes);
-        return BitConverter.ToInt16(bytes);
+        return BitConverter.ToUInt16(bytes);
     }
 
     protected static bool ReadBool(Stream stream)
@@ -153,7 +128,7 @@ internal abstract class BaseSerializer
         return BitConverter.ToBoolean(bytes);
     }
 
-    protected static void WriteField(Stream stream, short id, string? value)
+    protected static void WriteField(Stream stream, ushort id, string? value)
     {
         if (value is null)
         {
@@ -161,21 +136,18 @@ internal abstract class BaseSerializer
         }
 
         WriteShort(stream, id);
-        WriteSize(stream, value);
+        WriteStringSize(stream, value);
         WriteString(stream, value);
     }
 
-    protected static void WriteField(Stream stream, short id, bool value)
+    protected static void WriteField(Stream stream, ushort id, bool value)
     {
         WriteShort(stream, id);
         WriteSize<bool>(stream);
         WriteBool(stream, value);
     }
 
-    protected static void SetPosition(Stream stream, long position)
-    {
-        stream.Position = position;
-    }
+    protected static void SetPosition(Stream stream, long position) => stream.Position = position;
 
     protected static void WriteAtPosition(Stream stream, int value, long position)
     {
@@ -184,4 +156,11 @@ internal abstract class BaseSerializer
         WriteInt(stream, value);
         SetPosition(stream, currentPosition);
     }
+
+    private static int GetSize<T>()
+            where T : struct => typeof(T) == typeof(int)
+                ? sizeof(int)
+                : typeof(T) == typeof(long)
+                ? sizeof(long)
+                : typeof(T) == typeof(short) ? sizeof(short) : typeof(T) == typeof(bool) ? sizeof(bool) : 0;
 }
