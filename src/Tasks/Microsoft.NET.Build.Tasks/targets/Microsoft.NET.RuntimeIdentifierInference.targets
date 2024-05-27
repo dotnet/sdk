@@ -286,7 +286,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CheckAndUnsetUnsupportedPreferNativeArm64"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' >= '7.0'">
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
 
     <NETSdkWarning Condition="'$(PreferNativeArm64)' == 'true'"
                     ResourceName="PreferNativeArm64IgnoredForNetCoreApp" />
