@@ -35,6 +35,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             _baselineFactory = CreateBaselineFactory();
         }
 
+        protected void EnsureLocalPackagesExists()
+        {
+            var packTransitiveDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryTransitiveDependency");
+            ExecuteCommand(packTransitiveDependency).Should().Pass();
+
+            var packDirectDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryDirectDependency");
+            ExecuteCommand(packDirectDependency).Should().Pass();
+        }
+
         public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log)
         {
             _generateBaselines = generateBaselines;
