@@ -2057,7 +2057,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "AppWithPackageAndP2PReference.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2097,7 +2097,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3335,7 +3335,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3375,7 +3375,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
