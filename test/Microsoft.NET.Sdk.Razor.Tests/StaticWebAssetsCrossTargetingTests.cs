@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class StaticWebAssetsCrossTargetingTests(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(StaticWebAssetsCrossTargetingTests), ".nuget"))
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsCrossTargetingTests))
     {
         // Build Standalone project
         [Fact]

@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Sdk.Razor.Tests;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorMultitargetIntegrationTest : AspNetSdkTest
+    public class BlazorMultitargetIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorMultitargetIntegrationTest))
     {
-        public BlazorMultitargetIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()

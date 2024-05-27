@@ -4,7 +4,7 @@
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class StaticWebAssetsPackIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(StaticWebAssetsPackIntegrationTest), ".nuget"))
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsPackIntegrationTest))
     {
         [Fact]
         public void Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()

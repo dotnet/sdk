@@ -6,7 +6,7 @@ using Microsoft.NET.Sdk.Razor.Tests;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorLegacyIntegrationTest50(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(BlazorLegacyIntegrationTest50), ".nuget"))
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest50))
     {
         [CoreMSBuildOnlyFact]
         public void Build50Hosted_Works()

@@ -7,7 +7,7 @@ using Microsoft.NET.Sdk.Razor.Tests;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(BlazorLegacyIntegrationTest60), ".nuget"))
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
     {
         [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Build60Hosted_Works()

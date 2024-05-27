@@ -6,10 +6,9 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ScopedCssIntegrationTest : AspNetSdkBaselineTest
+    public class ScopedCssIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(ScopedCssIntegrationTest))
     {
-        public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
-
         [Fact]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
@@ -400,7 +399,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build, "/bl").Should().Pass();
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();

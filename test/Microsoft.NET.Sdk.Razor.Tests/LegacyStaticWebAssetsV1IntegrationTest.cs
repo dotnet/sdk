@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class LegacyStaticWebAssetsV1IntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(LegacyStaticWebAssetsV1IntegrationTest), ".nuget"))
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(LegacyStaticWebAssetsV1IntegrationTest))
     {
         [Fact]
         public void PublishProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
