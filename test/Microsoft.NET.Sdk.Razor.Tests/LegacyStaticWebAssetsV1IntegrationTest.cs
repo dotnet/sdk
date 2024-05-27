@@ -98,6 +98,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Views"), recursive: true);
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Components"), recursive: true);
 
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Pass();
 

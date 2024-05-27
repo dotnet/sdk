@@ -11,7 +11,11 @@
     <Company>Microsoft</Company>
     <Description>PackageLibraryDirectDependency Description</Description>
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\AppWithPackageAndP2PReference\TestPackages</PackageOutputPath>
+    <!-- See Directory.Packages.props for details on $(AspNetTestPackageSource).
+         It essentially creates an additional feed for the tests packages at the root
+         of the test project
+     -->
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>

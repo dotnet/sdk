@@ -179,7 +179,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");
@@ -214,7 +214,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");
@@ -257,7 +257,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib publish')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");

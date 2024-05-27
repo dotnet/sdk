@@ -441,6 +441,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         document.Descendants("TargetFramework").Single().ReplaceNodes("net5.0");
                     }
                 });
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Pass();
 
@@ -484,6 +488,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
             var build = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build, "/bl").Should().Pass();
 
@@ -518,6 +525,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Pass();
@@ -555,6 +565,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var scopedCssFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor.css");
             File.WriteAllText(scopedCssFile, "/* Empty css */");
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Pass();
