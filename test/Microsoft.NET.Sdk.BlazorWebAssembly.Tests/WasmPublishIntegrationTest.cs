@@ -1094,6 +1094,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
+            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             var result = ExecuteCommand(publishCommand, "--no-self-contained");
             result.Should().Pass();
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true, selfContained: false);
@@ -1108,6 +1109,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
+            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             var result = ExecuteCommand(publishCommand, "--self-contained");
 
             result.Should().Pass();

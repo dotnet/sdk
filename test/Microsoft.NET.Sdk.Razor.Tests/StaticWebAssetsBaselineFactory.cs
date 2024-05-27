@@ -384,8 +384,12 @@ public partial class StaticWebAssetsBaselineFactory
         {
             try
             {
-                var frameworkName = new FrameworkName(segment);
-                return true;
+                var tfm = NuGetFramework.ParseFolder(segment);
+
+                return tfm.Framework is FrameworkConstants.FrameworkIdentifiers.NetCoreApp or
+                    FrameworkConstants.FrameworkIdentifiers.NetStandard or
+                    FrameworkConstants.FrameworkIdentifiers.NetCore or
+                    FrameworkConstants.FrameworkIdentifiers.Net;
             }
             catch
             {
