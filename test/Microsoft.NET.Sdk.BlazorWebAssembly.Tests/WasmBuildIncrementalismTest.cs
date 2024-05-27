@@ -6,10 +6,8 @@ using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmBuildIncrementalismTest : AspNetSdkTest
+    public class WasmBuildIncrementalismTest(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public WasmBuildIncrementalismTest(ITestOutputHelper log) : base(log) { }
-
         [Fact]
         public void Build_IsIncremental()
         {

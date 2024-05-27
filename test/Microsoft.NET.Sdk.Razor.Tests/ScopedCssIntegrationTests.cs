@@ -392,38 +392,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        [Fact]
-        public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            AssertManifest(
-                buildManifest,
-                LoadBuildManifest());
-
-            AssertBuildAssets(
-                buildManifest,
-                outputPath,
-                intermediateOutputPath);
-
-            var appBundle = new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css"));
-            appBundle.Should().Exist();
-
-            appBundle.Should().Match(""".*_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
-            appBundle.Should().Match(""".*_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
-        }
-
         // This test verifies if the targets that VS calls to update scoped css works to update these files
         [Fact]
         public void RegeneratingScopedCss_ForProject()
@@ -451,39 +419,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             fileInfo.Should().Exist();
             // Verify the generated file contains newly added css
             fileInfo.ReadAllText().Should().Contain("background-color: orangered");
-        }
-
-        // Regression test for https://github.com/dotnet/aspnetcore/issues/37592
-        [Fact]
-        public void RegeneratingScopedCss_ForProjectWithReferences()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var scopedCssFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor.css");
-            File.WriteAllText(scopedCssFile, "/* Empty css */");
-            File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css");
-
-            new FileInfo(bundlePath).Should().Exist();
-
-            // Make an edit to a scoped css file
-            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
-
-            build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
-
-            var fileInfo = new FileInfo(bundlePath);
-            fileInfo.Should().Exist();
-            // Verify the generated file contains newly added css
-            var text = fileInfo.ReadAllText();
-            text.Should().Contain("background-color: orangered");
-            text.Should().MatchRegex(""".*@import '_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
     }
 
@@ -572,6 +507,75 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
             appBundle.Should().Match("""_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css""");
+        }
+    }
+
+    public class ScopedCssPackageReferences(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(ScopedCssPackageReferences), ".nuget"))
+    {
+        [Fact]
+        public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            AssertManifest(
+                buildManifest,
+                LoadBuildManifest());
+
+            AssertBuildAssets(
+                buildManifest,
+                outputPath,
+                intermediateOutputPath);
+
+            var appBundle = new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css"));
+            appBundle.Should().Exist();
+
+            appBundle.Should().Match(""".*_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
+            appBundle.Should().Match(""".*_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/37592
+        [Fact]
+        public void RegeneratingScopedCss_ForProjectWithReferences()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var scopedCssFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor.css");
+            File.WriteAllText(scopedCssFile, "/* Empty css */");
+            File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css");
+
+            new FileInfo(bundlePath).Should().Exist();
+
+            // Make an edit to a scoped css file
+            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
+
+            build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+
+            var fileInfo = new FileInfo(bundlePath);
+            fileInfo.Should().Exist();
+            // Verify the generated file contains newly added css
+            var text = fileInfo.ReadAllText();
+            text.Should().Contain("background-color: orangered");
+            text.Should().MatchRegex(""".*@import '_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
     }
 }

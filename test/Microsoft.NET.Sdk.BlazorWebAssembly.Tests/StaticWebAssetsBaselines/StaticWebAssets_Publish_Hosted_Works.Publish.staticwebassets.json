@@ -6012,7 +6012,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm.__fingerprint__.styles.css.gz",
+      "Route": "blazorwasm.styles.css.gz",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -6052,7 +6052,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "blazorwasm.styles.css.gz",
+      "Route": "blazorwasm.__fingerprint__.styles.css.gz",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [

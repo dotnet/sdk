@@ -355,7 +355,7 @@ public partial class StaticWebAssetsBaselineFactory
 
     private string TemplatizeNugetPath(string restorePath, string file)
     {
-        file = file.Replace(restorePath, "${RestorePath}")
+        file = file.Replace(restorePath, "${RestorePath}", StringComparison.OrdinalIgnoreCase)
             .Replace('\\', '/');
         if (file.Contains("runtimes"))
         {
@@ -372,7 +372,7 @@ public partial class StaticWebAssetsBaselineFactory
             file = ReplaceSegments(file, (i, segments) => i switch
             {
                 2 => "${PackageVersion}",
-                4 when IsFramework(segments[4])  => "${PackageTfm}",
+                4 when IsFramework(segments[4]) => "${PackageTfm}",
                 _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
                 _ => segments[i],
             });
