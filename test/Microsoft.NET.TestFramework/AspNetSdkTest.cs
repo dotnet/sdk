@@ -4,7 +4,10 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -130,6 +133,15 @@ namespace Microsoft.NET.TestFramework
             {
                 return command.ExecuteWithoutRestore(arguments);
             }
+        }
+
+        protected void EnsureLocalPackagesExists()
+        {
+            var packTransitiveDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryTransitiveDependency");
+            ExecuteCommand(packTransitiveDependency).Should().Pass();
+
+            var packDirectDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryDirectDependency");
+            ExecuteCommand(packDirectDependency).Should().Pass();
         }
     }
 }

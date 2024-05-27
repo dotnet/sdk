@@ -442,6 +442,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -488,6 +490,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -525,6 +529,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
@@ -565,6 +571,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var scopedCssFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor.css");
             File.WriteAllText(scopedCssFile, "/* Empty css */");
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();

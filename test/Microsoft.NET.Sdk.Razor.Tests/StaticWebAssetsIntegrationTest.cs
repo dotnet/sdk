@@ -159,6 +159,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -192,6 +194,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
@@ -490,6 +494,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -530,6 +536,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -568,6 +576,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
@@ -635,6 +645,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
+            EnsureLocalPackagesExists();
+
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
@@ -675,6 +687,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
@@ -753,6 +767,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
             File.WriteAllText(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
+
+            EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
