@@ -17,9 +17,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -45,8 +44,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -66,7 +65,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             originalFile.Should().Exist();
             var binManifestContents = File.ReadAllText(finalPath);
 
-            var secondBuild = new BuildCommand(ProjectDirectory);
+            var secondBuild = CreateBuildCommand(ProjectDirectory);
             secondBuild.Execute().Should().Pass();
 
             var secondPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
@@ -91,8 +90,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -120,7 +119,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.CreateDirectory(Path.Combine(ProjectDirectory.Path, "wwwroot"));
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "wwwroot", "index.html"), "some html");
 
-            var secondBuild = new BuildCommand(ProjectDirectory);
+            var secondBuild = CreateBuildCommand(ProjectDirectory);
             secondBuild.Execute().Should().Pass();
 
             var secondPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
@@ -160,9 +159,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -192,8 +190,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -215,7 +213,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 LoadBuildManifest());
 
             // Second build
-            var secondBuild = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             secondBuild.Execute("/p:BuildProjectReferences=false").Should().Pass();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
@@ -251,8 +249,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -271,8 +269,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var binManifestContents = File.ReadAllText(finalPath);
 
             // rebuild build
-            var rebuild = new RebuildCommand(Log, ProjectDirectory.Path);
-            rebuild.Execute().Should().Pass();
+            var rebuild = CreateRebuildCommand(ProjectDirectory);
+            ExecuteCommand(rebuild).Should().Pass();
 
             var secondPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             var secondObjFile = new FileInfo(secondPath);
@@ -312,8 +310,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -347,8 +345,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.Execute("/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            ExecuteCommand(publish, "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -385,8 +383,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var publishPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -411,8 +409,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Publish no build
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.Execute("/p:NoBuild=true").Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            ExecuteCommand(publish, "/p:NoBuild=true").Should().Pass();
 
             var secondObjTimeStamp = new FileInfo(path).LastWriteTimeUtc;
 
@@ -452,7 +450,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
+            var build = CreateBuildCommand(ProjectDirectory);
             build.Execute("/p:DeployOnBuild=true").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
@@ -489,9 +487,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             restore.Execute().Should().Pass();
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.WithWorkingDirectory(ProjectDirectory.Path);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish).Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -527,8 +524,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.Execute("/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish, "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -563,9 +560,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -591,11 +587,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 LoadBuildManifest());
 
             // Publish no build
-
-            var publish = new PublishCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            var publishResult = publish.Execute("/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false");
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            var publishResult = ExecuteCommand(publish, "/p:NoBuild=true", "/p:ErrorOnDuplicatePublishOutputFiles=false");
             var publishPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
 
             publishResult.Should().Pass();
 
@@ -629,12 +623,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            restore.Execute().Should().Pass();
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.WithWorkingDirectory(ProjectDirectory.Path);
-            publish.Execute("/p:AppendTargetFrameworkToOutputPath=false").Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish, "/p:AppendTargetFrameworkToOutputPath=false").Should().Pass();
 
             //  Hard code output paths here to account for AppendTargetFrameworkToOutputPath=false
             var intermediateOutputPath = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "obj", "Debug");
@@ -671,7 +664,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             build.Execute("/p:DeployOnBuild=true").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
@@ -709,8 +702,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -746,8 +739,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
             File.WriteAllText(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
 
-            var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Fail();
+            var build = CreateBuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Fail();
         }
     }
 }

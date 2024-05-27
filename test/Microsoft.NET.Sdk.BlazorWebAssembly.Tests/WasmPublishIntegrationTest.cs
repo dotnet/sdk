@@ -19,8 +19,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmMinimal";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance);
-            publishCommand.Execute().Should().Pass()
+            var publishCommand = CreatePublishCommand(testInstance);
+            ExecuteCommand(publishCommand).Should().Pass()
                 .And.NotHaveStdOutContaining("warning IL");
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
@@ -51,8 +51,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -113,14 +113,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var buildLibraryCommand = new BuildCommand(testInstance, "razorclasslibrary");
-            buildLibraryCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildLibraryCommand.Execute()
+            var buildLibraryCommand = CreateBuildCommand(testInstance, "razorclasslibrary");
+            ExecuteCommand(buildLibraryCommand)
                 .Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -145,9 +143,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/bl").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -188,8 +185,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:Configuration=Release").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
 
@@ -226,11 +223,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:Configuration=Release").Should().Pass();
 
             // Verify web.config
-            var outputDirectory = new BuildCommand(testInstance, "blazorwasm").GetOutputDirectory(configuration: "Release");
+            var outputDirectory = CreateBuildCommand(testInstance, "blazorwasm").GetOutputDirectory(configuration: "Release");
             var webConfig = outputDirectory.File("web.config");
             webConfig.Should().Exist();
             webConfig.Should().Contain(webConfigContents);
@@ -243,13 +240,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:NoBuild=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -301,8 +297,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -362,8 +358,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -428,8 +424,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -501,8 +497,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -528,9 +524,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/bl").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -616,8 +611,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var buildOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -665,9 +660,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var resxfileInProject = Path.Combine(testInstance.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
             File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -707,12 +701,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildDependencies=false /bl").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:BuildDependencies=false /bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -794,12 +788,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+            ExecuteCommand(buildCommand).Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:NoBuild=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -849,12 +842,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:BuildInsideVisualStudio=true").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true").Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -933,14 +926,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -1041,13 +1032,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var resxfileInProject = Path.Combine(testInstance.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
             File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl:build-msbuild.binlog").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/bl:build-msbuild.binlog").Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:BuildProjectReferences=false", "/bl:publish-msbuild.binlog").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/bl:publish-msbuild.binlog").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -1077,9 +1066,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHostedRID";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:RuntimeIdentifier=linux-x64").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:RuntimeIdentifier=linux-x64").Should().Pass();
 
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
         }
@@ -1106,8 +1094,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
-            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            var result = publishCommand.Execute("--no-self-contained");
+            var result = ExecuteCommand(publishCommand, "--no-self-contained");
             result.Should().Pass();
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true, selfContained: false);
         }
@@ -1120,9 +1107,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
-            var result = publishCommand.Execute("--self-contained");
+            var result = ExecuteCommand(publishCommand, "--self-contained");
 
             result.Should().Pass();
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
@@ -1135,9 +1121,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHostedRID";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
         }
@@ -1320,8 +1305,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var publishCommand = new PublishCommand(testInstance);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance);
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -1348,8 +1333,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorMultiApp";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "BlazorMultipleApps.Server");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "BlazorMultipleApps.Server");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -1400,8 +1385,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary");
 
-            var buildCommand = new BuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
+            ExecuteCommand(buildCommand).Should().Pass();
             var referenceAssemblyPath = new FileInfo(Path.Combine(
                 buildCommand.GetOutputDirectory(DefaultTfm).ToString(),
                 "classlibrarywithsatelliteassemblies.dll"));
@@ -1434,8 +1419,8 @@ public class TestReference
     public void Method() => System.GC.KeepAlive(typeof(classlibrarywithsatelliteassemblies.Class1));
 }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             // Assert
             var outputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();

@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[assembly:CollectionBehavior(DisableTestParallelization = true)]
+
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class LegacyStaticWebAssetsV1IntegrationTest(ITestOutputHelper log)
@@ -35,12 +37,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Views"), recursive: true);
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Components"), recursive: true);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            restore.Execute().Should().Pass();
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.WithWorkingDirectory(ProjectDirectory.Path);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish).Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -97,9 +98,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Views"), recursive: true);
             Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "ClassLibrary", "Components"), recursive: true);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();

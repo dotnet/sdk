@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -69,6 +71,65 @@ namespace Microsoft.NET.TestFramework
                     targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                 });
             return projectDirectory;
+        }
+
+        protected virtual RestoreCommand CreateRestoreCommand(TestAsset asset, string relativePathToProject = null)
+        {
+            var restore = new RestoreCommand(asset, relativePathToProject);
+            restore.WithWorkingDirectory(asset.TestRoot);
+            return restore;
+        }
+
+        protected virtual BuildCommand CreateBuildCommand(TestAsset asset, string relativePathToProject = null)
+        {
+            var build = new BuildCommand(asset, relativePathToProject);
+            build.WithWorkingDirectory(asset.TestRoot);
+            return build;
+        }
+
+        protected virtual RebuildCommand CreateRebuildCommand(TestAsset asset, string relativePathToProject = null)
+        {
+            var rebuild = new RebuildCommand(Log, asset.Path, relativePathToProject);
+            rebuild.WithWorkingDirectory(asset.TestRoot);
+            return rebuild;
+        }
+
+        protected virtual PackCommand CreatePackCommand(TestAsset asset, string relativePathToProject = null)
+        {
+            var pack = new PackCommand(asset, relativePathToProject);
+            pack.WithWorkingDirectory(asset.TestRoot);
+            return pack;
+        }
+
+        protected virtual PublishCommand CreatePublishCommand(TestAsset asset, string relativePathToProject = null)
+        {
+            var publish = new PublishCommand(asset, relativePathToProject);
+            publish.WithWorkingDirectory(asset.TestRoot);
+            return publish;
+        }
+
+        protected virtual CommandResult ExecuteCommand(TestCommand command, params string[] arguments)
+        {
+            if (Debugger.IsAttached)
+            {
+                return command.Execute(["/bl", .. arguments]);
+            }
+            else
+            {
+                return command.Execute(arguments);
+            }
+        }
+
+        protected virtual CommandResult ExecuteCommandWithoutRestore(MSBuildCommand command, params string[] arguments)
+        {
+            if (Debugger.IsAttached)
+            {
+                return command.ExecuteWithoutRestore(["/bl", .. arguments]);
+            }
+            else
+            {
+                return command.ExecuteWithoutRestore(arguments);
+            }
         }
     }
 }

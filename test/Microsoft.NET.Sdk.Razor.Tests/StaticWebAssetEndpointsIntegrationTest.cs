@@ -28,9 +28,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var dir = Directory.CreateDirectory(Path.Combine(root, "wwwroot"));
         File.WriteAllText(Path.Combine(dir.FullName, "app.js"), "console.log('hello world!');");
 
-        var build = new BuildCommand(ProjectDirectory);
-        build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-        build.Execute("/bl").Should().Pass();
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -175,9 +174,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var dir = Directory.CreateDirectory(Path.Combine(root, "wwwroot"));
         File.WriteAllText(Path.Combine(dir.FullName, "app.js"), "console.log('hello world!');");
 
-        var publish = new PublishCommand(ProjectDirectory);
-        publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-        publish.Execute("/bl").Should().Pass();
+        var publish = CreatePublishCommand(ProjectDirectory);
+        ExecuteCommand(publish).Should().Pass();
 
         var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -313,9 +311,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         File.WriteAllText(Path.Combine(dir.FullName, "app.js"), "console.log('hello world!');");
         File.WriteAllText(Path.Combine(dir.FullName, "app.publish.js"), "console.log('publish hello world!');");
 
-        var publish = new PublishCommand(ProjectDirectory);
-        publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-        publish.Execute("/bl").Should().Pass();
+        var publish = CreatePublishCommand(ProjectDirectory);
+        ExecuteCommand(publish).Should().Pass();
 
         var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -417,8 +414,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                 }
             });
 
-        var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-        buildCommand.WithWorkingDirectory(testInstance.TestRoot);
+        var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
         buildCommand.Execute("/bl").Should().Pass();
 
         var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -432,7 +428,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var testAppName = "BlazorHosted";
         var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-        var buildCommand = new BuildCommand(testInstance, "blazorhosted");
+        var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
         buildCommand.Execute()
             .Should().Pass();
 
@@ -448,7 +444,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var testAppName = "BlazorWasmWithLibrary";
         var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-        var publishCommand = new PublishCommand(testInstance, "blazorwasm");
+        var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
         publishCommand.Execute().Should().Pass();
 
         var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -463,7 +459,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var testAppName = "BlazorHosted";
         var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-        var publishCommand = new PublishCommand(testInstance, "blazorhosted");
+        var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
         publishCommand.Execute().Should().Pass();
 
         var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();

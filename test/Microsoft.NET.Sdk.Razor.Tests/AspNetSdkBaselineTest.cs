@@ -61,6 +61,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
+        protected virtual string GetNuGetCachePath() => null;
 
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
@@ -133,7 +134,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToArray(),
-                TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 outputFolder).ToArray();
@@ -229,7 +230,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Concat(copyToPublishDirectoryFiles)
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)],
-                TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 publishFolder);
@@ -277,14 +278,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 _baselineFactory.ToTemplate(
                     actual,
                     ProjectDirectory.Path,
-                    TestContext.Current.NuGetCachePath,
+                    GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                     runtimeIdentifier);
 
                 _comparer.AssertManifest(expected, actual);
             }
             else
             {
-                var template = Templatize(actual, ProjectDirectory.Path, TestContext.Current.NuGetCachePath, runtimeIdentifier);
+                var template = Templatize(actual, ProjectDirectory.Path, GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath, runtimeIdentifier);
                 if (!Directory.Exists(Path.Combine(BaselinesFolder)))
                 {
                     Directory.CreateDirectory(Path.Combine(BaselinesFolder));

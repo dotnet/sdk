@@ -16,8 +16,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:ScopedCssEnabled=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:ScopedCssEnabled=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -33,8 +33,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:ScopedCssEnabled=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:ScopedCssEnabled=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -50,8 +50,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EnableDefaultScopedCssItems=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EnableDefaultScopedCssItems=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -82,8 +82,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var styles = Path.Combine(stylesFolder, "Counter.css");
             File.Move(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"), styles);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EnableDefaultScopedCssItems=false", "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EnableDefaultScopedCssItems=false", "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -102,8 +102,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -120,8 +120,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -138,8 +138,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -167,8 +167,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -205,8 +205,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorMvcWithComponents";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -236,9 +236,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.WithWorkingDirectory(projectDirectory.TestRoot);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -253,13 +252,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.Path);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(projectDirectory);
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.Execute("/p:NoBuild=true").Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:NoBuild=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -277,8 +275,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -291,9 +289,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.WithWorkingDirectory(projectDirectory.TestRoot);
-            publish.Execute("/p:DisableScopedCssBundling=true").Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:DisableScopedCssBundling=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -309,8 +306,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -327,8 +324,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
 
-            build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(generatedCounter).Should().Exist();
@@ -349,8 +346,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -369,8 +366,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             // Act & Assert 1
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
             var directoryPath = Path.Combine(intermediateOutputPath, "scopedcss");
@@ -385,8 +382,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Act & Assert 2
             for (var i = 0; i < 2; i++)
             {
-                build = new BuildCommand(projectDirectory);
-                build.Execute().Should().Pass();
+                build = CreateBuildCommand(projectDirectory);
+                ExecuteCommand(build).Should().Pass();
 
                 foreach (var file in files)
                 {
@@ -402,9 +399,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -437,8 +433,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
@@ -449,8 +445,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var scopedCssFile = Path.Combine(ProjectDirectory.TestRoot, "Components", "Pages", "Index.razor.css");
             File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
-            build = new BuildCommand(ProjectDirectory);
-            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+            build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
             var fileInfo = new FileInfo(bundlePath);
             fileInfo.Should().Exist();
@@ -469,8 +465,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.WriteAllText(scopedCssFile, "/* Empty css */");
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css");
@@ -480,8 +476,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Make an edit to a scoped css file
             File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
-            build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+            build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
             var fileInfo = new FileInfo(bundlePath);
             fileInfo.Should().Exist();
@@ -511,10 +507,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         document.Descendants("TargetFramework").Single().ReplaceNodes("net5.0");
                     }
                 });
-
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -556,9 +550,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
-            var build = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();

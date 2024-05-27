@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 public partial class StaticWebAssetsBaselineFactory
@@ -16,7 +19,6 @@ public partial class StaticWebAssetsBaselineFactory
 
     [GeneratedRegex("""(?:#\[\.{fingerprint=[0123456789abcdefghijklmnopqrstuvwxyz]{10}\}](\?|\!)?)""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex EmbeddedFingerprintExpression();
-
 
     private static IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements = new List<(Regex expression, string replacement)>
     {
@@ -268,13 +270,13 @@ public partial class StaticWebAssetsBaselineFactory
         var updated = file switch
         {
             var processed when file.StartsWith("$") => processed,
-            var fromBuildOrPublishPath when buildOrPublishFolder is not null && file.StartsWith(buildOrPublishFolder) =>
+            var fromBuildOrPublishPath when buildOrPublishFolder is not null && file.StartsWith(buildOrPublishFolder, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeBuildOrPublishPath(buildOrPublishFolder, fromBuildOrPublishPath),
-            var fromIntermediateOutputPath when intermediateOutputPath is not null && file.StartsWith(intermediateOutputPath) =>
+            var fromIntermediateOutputPath when intermediateOutputPath is not null && file.StartsWith(intermediateOutputPath, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeIntermediatePath(intermediateOutputPath, fromIntermediateOutputPath),
-            var fromPackage when restorePath is not null && file.StartsWith(restorePath) =>
+            var fromPackage when restorePath is not null && file.StartsWith(restorePath, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeNugetPath(restorePath, fromPackage),
-            var fromProject when projectPath is not null && file.StartsWith(projectPath) =>
+            var fromProject when projectPath is not null && file.StartsWith(projectPath, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeProjectPath(projectPath, fromProject, runtimeIdentifier),
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
@@ -370,13 +372,26 @@ public partial class StaticWebAssetsBaselineFactory
             file = ReplaceSegments(file, (i, segments) => i switch
             {
                 2 => "${PackageVersion}",
-                4 => "${PackageTfm}",
+                4 when IsFramework(segments[4])  => "${PackageTfm}",
                 _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
                 _ => segments[i],
             });
         }
 
         return file;
+
+        bool IsFramework(string segment)
+        {
+            try
+            {
+                var frameworkName = new FrameworkName(segment);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     private static string ReplaceSegments(string file, Func<int, string[], string> selector)

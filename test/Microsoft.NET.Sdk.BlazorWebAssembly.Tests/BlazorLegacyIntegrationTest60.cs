@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60 : BlazorWasmBaselineTests
+    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(BlazorLegacyIntegrationTest60), ".nuget"))
     {
-        public BlazorLegacyIntegrationTest60(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Build60Hosted_Works()
         {
@@ -19,9 +17,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net6.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(testInstance, "Server");
-            build.WithWorkingDirectory(testInstance.TestRoot);
-            build.Execute("/bl")
+            var build = CreateBuildCommand(testInstance, "Server");
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 
@@ -48,9 +45,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net6.0";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory, "Server");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            publish.Execute("/bl")
+            var publish = CreatePublishCommand(ProjectDirectory, "Server");
+            ExecuteCommand(publish)
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

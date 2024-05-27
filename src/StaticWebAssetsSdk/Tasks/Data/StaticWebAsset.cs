@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 #if WASM_TASKS
-    internal class StaticWebAsset : IEquatable<StaticWebAsset>
+    internal class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #else
     public class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #endif
@@ -681,6 +681,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             result = string.Compare(OriginalItemSpec, other.OriginalItemSpec, StringComparison.Ordinal);
             return result;
         }
+
+        public override bool Equals(object obj) => obj != null && Equals(obj as StaticWebAsset);
 
         public bool Equals(StaticWebAsset other) =>
             Identity == other.Identity &&
