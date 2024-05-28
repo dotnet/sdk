@@ -36,29 +36,34 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
                 return;
             }
 
-            string args = _args.Where(x => x != "--no-build").Count() > 0
-                ? _args.Where(x => x != "--no-build").Aggregate((a, b) => $"{a} {b}")
-                : string.Empty;
-
-            args += $" --{ServerOptionKey} {ServerOptionValue} --{DotNetTestPipeOptionKey} {_pipeName}";
-
-            ProcessStartInfo processStartInfo = new();
-            if (_moduleName.EndsWith(".dll"))
+            bool isDll = _moduleName.EndsWith(".dll");
+            ProcessStartInfo processStartInfo = new()
             {
-                processStartInfo.FileName = Environment.ProcessPath;
-                processStartInfo.Arguments = $"exec {_moduleName} {args}";
+                FileName = isDll ?
+                Environment.ProcessPath :
+                _moduleName,
+                Arguments = BuildArgs(isDll)
+            };
 
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
-            }
-            else
-            {
-                processStartInfo.FileName = _moduleName;
-                processStartInfo.Arguments = args;
-
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {args}");
-            }
+            VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
 
             await Process.Start(processStartInfo).WaitForExitAsync();
+        }
+
+        private string BuildArgs(bool isDll)
+        {
+            StringBuilder builder = new();
+
+            if (isDll)
+                builder.Append($"exec {_moduleName}");
+
+            builder.Append(_args.Any(x => x != "--no-build")
+                ? _args.Where(x => x != "--no-build").Aggregate((a, b) => $"{a} {b}")
+                : string.Empty);
+
+            builder.Append($" --{ServerOptionKey} {ServerOptionValue} --{DotNetTestPipeOptionKey} {_pipeName}");
+
+            return builder.ToString();
         }
 
         public void RunHelp(CommandLineOptionMessages commandLineOptionMessages)

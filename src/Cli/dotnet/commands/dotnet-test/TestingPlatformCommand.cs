@@ -16,12 +16,13 @@ namespace Microsoft.DotNet.Cli
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
         private readonly List<NamedPipeServer> _namedPipeServers = new();
-        private Task _namedPipeConnectionLoop;
         private readonly List<Task> _taskModuleName = [];
         private readonly ConcurrentBag<Task> _testsRun = [];
         private readonly ConcurrentDictionary<string, (CommandLineOptionMessage, string[])> _commandLineOptionNameToModuleNames = [];
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+
+        private Task _namedPipeConnectionLoop;
         private string[] _args;
 
         private const string MSBuildExeName = "MSBuild.dll";
@@ -34,7 +35,9 @@ namespace Microsoft.DotNet.Cli
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationTokenSource.Token));
 
-            if (parseResult.UnmatchedTokens.Count(x => x == "--no-build") == 0)
+            bool containsNoBuild = parseResult.UnmatchedTokens.Any(x => x == "--no-build");
+
+            if (containsNoBuild)
             {
                 BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", "-bl", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
                 int buildResult = buildCommand.Execute();
@@ -112,7 +115,9 @@ namespace Microsoft.DotNet.Cli
             {
                 if (commandLineOptionMessage.IsHidden) continue;
 
-                _commandLineOptionNameToModuleNames.AddOrUpdate(commandLineOptionMessage.Name, (key) => (commandLineOptionMessage, new[] { moduleName }), (key, value) => (value.Item1, value.Item2.Concat([moduleName]).ToArray()));
+                _commandLineOptionNameToModuleNames.AddOrUpdate(
+                    commandLineOptionMessage.Name,
+                    (key) => (commandLineOptionMessage, new[] { moduleName }), (optionName, value) => (value.Item1, value.Item2.Concat([moduleName]).ToArray()));
             }
         }
 
