@@ -113,6 +113,3 @@ index 639ab45af..634ed56a9 100644
    </PropertyGroup>
  
    <ItemGroup Condition="'$(Configuration)' == 'Proto'">
--- 
-2.39.2
-
