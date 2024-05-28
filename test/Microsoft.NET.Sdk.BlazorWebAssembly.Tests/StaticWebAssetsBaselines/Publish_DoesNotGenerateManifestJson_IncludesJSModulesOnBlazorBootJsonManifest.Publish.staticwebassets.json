@@ -35,7 +35,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorMultitarget\\microsoft.aspnetcore.components.webassembly\\5.0.0\\build\\net5.0\\blazor.webassembly.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${Tfm}\\blazor.webassembly.js"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
