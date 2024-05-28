@@ -513,6 +513,8 @@
   </Target>
 
   <Target Name="CleanupRepo"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(ProjectDirectory)artifacts')">
@@ -541,11 +543,9 @@
     <!-- Make a copy of the build logs & project.assets.json files -->
     <Copy SourceFiles="@(LogFilesToCopy)"
           DestinationFolder="$(BuildLogsDir)%(RecursiveDir)"
-          SkipUnchangedFiles="true"
           Condition="'@(LogFilesToCopy)' != ''" />
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
-          SkipUnchangedFiles="true"
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
@@ -564,6 +564,11 @@
 
     <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
     <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)CleanupRepo.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
   </Target>
 
   <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
