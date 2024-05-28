@@ -37,7 +37,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="RazorRazorPackageLibraryDirectDependency" Version="1.0.0" />
+    <PackageReference Include="RazorPackageLibraryDirectDependency" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

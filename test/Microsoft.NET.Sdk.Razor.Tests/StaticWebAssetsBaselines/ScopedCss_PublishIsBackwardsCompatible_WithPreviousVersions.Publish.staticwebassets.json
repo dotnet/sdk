@@ -215,88 +215,88 @@
       "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
+      "RelativePath": "RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "css/site.css.gz",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "js/pkg-direct-dep.js.gz",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
-      "SourceId": "PackageLibraryTransitiveDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
+      "SourceId": "RazorPackageLibraryTransitiveDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
+      "BasePath": "_content/RazorPackageLibraryTransitiveDependency",
       "RelativePath": "js/pkg-transitive-dep.js.gz",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AnotherClassLib\\css\\site.css.br",
@@ -425,88 +425,88 @@
       "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.br"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
+      "RelativePath": "RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.br",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "css/site.css.br",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\PackageLibraryDirectDependency\\css\\site.css.br"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.br"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "js/pkg-direct-dep.js.br",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
-      "SourceId": "PackageLibraryTransitiveDependency",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
+      "SourceId": "RazorPackageLibraryTransitiveDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
+      "BasePath": "_content/RazorPackageLibraryTransitiveDependency",
       "RelativePath": "js/pkg-transitive-dep.js.br",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "RelatedAsset": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
@@ -593,12 +593,12 @@
       "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js"
     },
     {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
-      "RelativePath": "PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "ContentRoot": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
+      "RelativePath": "RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Primary",
@@ -611,14 +611,14 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css"
     },
     {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "ContentRoot": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "css/site.css",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -632,14 +632,14 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css"
     },
     {
-      "Identity": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
-      "SourceId": "PackageLibraryDirectDependency",
+      "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
+      "SourceId": "RazorPackageLibraryDirectDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryDirectDependency",
+      "ContentRoot": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\",
+      "BasePath": "_content/RazorPackageLibraryDirectDependency",
       "RelativePath": "js/pkg-direct-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -653,14 +653,14 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js"
     },
     {
-      "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
-      "SourceId": "PackageLibraryTransitiveDependency",
+      "Identity": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "SourceId": "RazorPackageLibraryTransitiveDependency",
       "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
+      "ContentRoot": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\",
+      "BasePath": "_content/RazorPackageLibraryTransitiveDependency",
       "RelativePath": "js/pkg-transitive-dep.js",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -674,7 +674,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js"
     }
   ],
   "Endpoints": [
@@ -1047,7 +1047,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1101,7 +1101,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1390,8 +1390,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1430,8 +1430,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1480,8 +1480,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1534,13 +1534,13 @@
         },
         {
           "Name": "label",
-          "Value": "PackageLibraryDirectDependency.bundle.scp.css"
+          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1579,8 +1579,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1629,8 +1629,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1669,8 +1669,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
+      "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1719,8 +1719,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
+      "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1759,8 +1759,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
+      "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2113,7 +2113,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -2167,7 +2167,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -2456,8 +2456,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2496,8 +2496,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2546,8 +2546,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2600,13 +2600,13 @@
         },
         {
           "Name": "label",
-          "Value": "PackageLibraryDirectDependency.bundle.scp.css"
+          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2645,8 +2645,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2695,8 +2695,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2735,8 +2735,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
+      "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2785,8 +2785,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
+      "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2825,8 +2825,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
+      "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2905,7 +2905,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": []
@@ -2941,7 +2941,7 @@
         },
         {
           "Name": "Link",
-          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": [
@@ -3052,8 +3052,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3084,8 +3084,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
+      "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3120,13 +3120,13 @@
         },
         {
           "Name": "label",
-          "Value": "PackageLibraryDirectDependency.bundle.scp.css"
+          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
-      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
+      "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3157,8 +3157,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
-      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
+      "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js",
+      "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3189,8 +3189,8 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
-      "AssetFile": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
+      "AssetFile": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
