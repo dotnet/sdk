@@ -12,8 +12,6 @@
     <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:GenerateResourceUsePreserializedResources=true</BuildArgs>
 
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
-
     <!--
       dotnet/fsharp has a custom eng/build.sh script that handles its own sourcebuild arg
       differently from the ArcadeBuildFromSource MSBuild arg. Including both args is fine, but the
