@@ -99,6 +99,7 @@ jobs:
       /p:SmokeTestsWarnOnLicenseScanDiffs=false
       /p:TargetRid=linux-x64
       /p:PortableRid=linux-x64
+      /p:SkipPrepareSdkArchive=true
     displayName: Run Tests
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -167,7 +168,7 @@ jobs:
       artifact: ''
       patterns: '**/Updated*'
       displayName: Download Updated Test Files
-  
+
   - script: |
       find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
     displayName: Move Artifacts to root
