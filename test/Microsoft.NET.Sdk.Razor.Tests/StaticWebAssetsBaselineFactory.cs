@@ -362,7 +362,7 @@ public partial class StaticWebAssetsBaselineFactory
             file = ReplaceSegments(file, (i, segments) => i switch
             {
                 2 => "${RuntimeVersion}",
-                6 when !file.Contains("native") => "${PackageTfm}",
+                6 when !file.Contains("native") => "${Tfm}",
                 _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
                 _ => segments[i],
             });
@@ -372,7 +372,7 @@ public partial class StaticWebAssetsBaselineFactory
             file = ReplaceSegments(file, (i, segments) => i switch
             {
                 2 => "${PackageVersion}",
-                4 when IsFramework(segments[4]) => "${PackageTfm}",
+                4 when IsFramework(segments[4]) => "${Tfm}",
                 _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
                 _ => segments[i],
             });

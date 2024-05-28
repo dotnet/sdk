@@ -4025,7 +4025,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${PackageTfm}\\blazor.webassembly.js"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.aspnetcore.components.webassembly\\5.0.0\\build\\net5.0\\blazor.webassembly.js"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.pdb",
@@ -4088,7 +4088,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.js"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js.map",
@@ -4109,7 +4109,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js.map"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.js.map"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.js",
@@ -4130,7 +4130,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.js"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.native.js"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.wasm",
@@ -4151,7 +4151,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.wasm"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.native.wasm"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.runtime.js",
@@ -4172,7 +4172,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.runtime.js"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.runtime.js"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.runtime.js.map",
@@ -4193,7 +4193,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.runtime.js.map"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\dotnet.runtime.js.map"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
@@ -4214,7 +4214,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_CJK.dat"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\icudt_CJK.dat"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
@@ -4235,7 +4235,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_EFIGS.dat"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\icudt_EFIGS.dat"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
@@ -4256,7 +4256,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat"
+      "OriginalItemSpec": "C:\\work\\sdk\\artifacts\\tmp\\Release\\BlazorLegacy50\\microsoft.netcore.app.runtime.mono.browser-wasm\\9.0.0-preview.5.24272.2\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat"
     },
     {
       "Identity": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\mscorlib.wasm",

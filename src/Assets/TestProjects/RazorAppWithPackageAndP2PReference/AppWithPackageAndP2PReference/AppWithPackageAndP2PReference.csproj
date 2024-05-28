@@ -28,10 +28,11 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <_LocalStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'PackageLibraryDirectDependency' and '%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
+      <_PackageLibraryDirectDependencyAssets Include="$(StaticWebAsset)" Condition="'%(SourceId)' == 'PackageLibraryDirectDependency'" />
+      <_LocalStaticWebAsset Include="@(_PackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
     </ItemGroup>
 
-    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for PackageLibraryDirectDependency not found in expected location. '@(StaticWebAsset->'%(Identity)', ' ')'" />
+    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for PackageLibraryDirectDependency not found in '$(_LocalStaticAssetPath)'. Assets: '@(_PackageLibraryDirectDependencyAssets->'%(Identity) %(ContentRoot)', ' ')'" />
 
   </Target>
 
