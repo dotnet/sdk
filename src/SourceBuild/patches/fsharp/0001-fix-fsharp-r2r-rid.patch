@@ -1,0 +1,180 @@
+From 8ab02969f39c167a0b766e580698aff40169f1de Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 28 May 2024 07:24:18 +0000
+Subject: [PATCH] Fix full source-build product build when running R2R
+
+See https://github.com/dotnet/source-build/issues/4410
+When building from source, we must set the
+RuntimeIdentifier property explicitly as otherwise
+the SDK defaults to the portable RID.
+
+Also make the SDK aware of the R2R build by updating
+the Known* items in Directory.Build.targets and
+remove the AspNetCore framework references.
+
+Backport: https://github.com/dotnet/fsharp/pull/17259
+
+---
+ Directory.Build.targets                       | 26 +++++++++++++++++++
+ azure-pipelines-PR.yml                        |  4 +++
+ azure-pipelines.yml                           |  4 +++
+ buildtools/AssemblyCheck/AssemblyCheck.fsproj |  2 +-
+ buildtools/fslex/fslex.fsproj                 |  2 +-
+ buildtools/fsyacc/fsyacc.fsproj               |  2 +-
+ eng/SourceBuild.props                         |  4 +--
+ src/fsc/fscProject/fsc.fsproj                 |  2 +-
+ src/fsi/fsiProject/fsi.fsproj                 |  2 +-
+ 9 files changed, 41 insertions(+), 7 deletions(-)
+
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index cd863377199..91ccc4be1fa 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -21,4 +21,30 @@
+     <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVersion)" />
+     <PackageReference Include="NunitXml.TestLogger" Version="$(NunitXmlTestLoggerVersion)" />
+   </ItemGroup>
++
++  <!--
++    When .NET gets built from source, make the SDK aware there are bootstrap packages
++    for Microsoft.NETCore.App.Runtime.<rid> and Microsoft.NETCore.App.Crossgen2.<rid>.
++  -->
++  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
++    <KnownFrameworkReference Update="Microsoft.NETCore.App">
++      <RuntimePackRuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
++    </KnownFrameworkReference>
++    <KnownRuntimePack Update="Microsoft.NETCore.App">
++      <RuntimePackRuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(RuntimePackRuntimeIdentifiers);$(TargetRid)</RuntimePackRuntimeIdentifiers>
++    </KnownRuntimePack>
++    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
++      <Crossgen2RuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(Crossgen2RuntimeIdentifiers);$(TargetRid)</Crossgen2RuntimeIdentifiers>
++    </KnownCrossgen2Pack>
++    <KnownAppHostPack Update="Microsoft.NETCore.App">
++      <AppHostRuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(AppHostRuntimeIdentifiers);$(TargetRid)</AppHostRuntimeIdentifiers>
++    </KnownAppHostPack>
++    <!-- Avoid references to Microsoft.AspNetCore.App.Runtime.<rid> -->
++    <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
++  </ItemGroup>
++
+ </Project>
+diff --git a/azure-pipelines-PR.yml b/azure-pipelines-PR.yml
+index be8dc94eca5..ad2f2ce3462 100644
+--- a/azure-pipelines-PR.yml
++++ b/azure-pipelines-PR.yml
+@@ -209,6 +209,10 @@ stages:
+         enablePublishBuildAssets: true
+         enablePublishUsingPipelines: $(_PublishUsingPipelines)
+         enableSourceBuild: true
++        sourceBuildParameters:
++          platforms:
++          - name: Linux_x64
++            targetRid: linux-x64
+         enableTelemetry: true
+         helixRepo: dotnet/fsharp
+         jobs:
+diff --git a/azure-pipelines.yml b/azure-pipelines.yml
+index e0c4349b26b..c1fdd7cfd4d 100644
+--- a/azure-pipelines.yml
++++ b/azure-pipelines.yml
+@@ -100,6 +100,10 @@ extends:
+           enablePublishBuildAssets: true
+           enablePublishUsingPipelines: $(_PublishUsingPipelines)
+           enableSourceBuild: true
++          sourceBuildParameters:
++            platforms:
++            - name: Linux_x64
++              targetRid: linux-x64
+           enableTelemetry: true
+           helixRepo: dotnet/fsharp
+           jobs:
+diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+index 6cfd3b1103f..c09912a3ee8 100644
+--- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
++++ b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+@@ -8,7 +8,7 @@
+ 
+   <PropertyGroup>
+     <PublishReadyToRun>true</PublishReadyToRun>
+-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/buildtools/fslex/fslex.fsproj b/buildtools/fslex/fslex.fsproj
+index 03ed6a77a60..15dd4b61002 100644
+--- a/buildtools/fslex/fslex.fsproj
++++ b/buildtools/fslex/fslex.fsproj
+@@ -9,7 +9,7 @@
+ 
+   <PropertyGroup>
+     <PublishReadyToRun>true</PublishReadyToRun>
+-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/buildtools/fsyacc/fsyacc.fsproj b/buildtools/fsyacc/fsyacc.fsproj
+index 621a2f3c7ca..e2a5f578cf6 100644
+--- a/buildtools/fsyacc/fsyacc.fsproj
++++ b/buildtools/fsyacc/fsyacc.fsproj
+@@ -9,7 +9,7 @@
+ 
+   <PropertyGroup>
+     <PublishReadyToRun>true</PublishReadyToRun>
+-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 3bfd9f80fc4..83037bae417 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -27,7 +27,7 @@
+           DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
+           BeforeTargets="RunInnerSourceBuildCommand"
+           Condition="'$(ArcadeBuildFromSource)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">
+-          
++
+     <PropertyGroup>
+       <SourceBuildBootstrapTfmArg Condition="$(SourceBuildBootstrapTfm) != ''">--tfm $(SourceBuildBootstrapTfm)</SourceBuildBootstrapTfmArg>
+     </PropertyGroup>
+@@ -42,7 +42,7 @@
+     <Exec
+       Command="./build.sh --bootstrap --skipBuild -bl $(SourceBuildBootstrapTfmArg)"
+       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+-      EnvironmentVariables="@(InnerBuildEnv);DotNetBuildFromSource=true" />
++      EnvironmentVariables="@(InnerBuildEnv);DotNetBuildFromSource=true;TargetRid=$(TargetRid)" />
+   </Target>
+ 
+ </Project>
+diff --git a/src/fsc/fscProject/fsc.fsproj b/src/fsc/fscProject/fsc.fsproj
+index 5f30ad30579..e487cf19d96 100644
+--- a/src/fsc/fscProject/fsc.fsproj
++++ b/src/fsc/fscProject/fsc.fsproj
+@@ -11,7 +11,7 @@
+   <PropertyGroup Condition="'$(Configuration)' == 'Proto'">
+     <TargetFramework>$(FSharpNetCoreProductTargetFramework)</TargetFramework>
+     <PublishReadyToRun>true</PublishReadyToRun>
+-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+   </PropertyGroup>
+ 
+   <ItemGroup Condition="'$(Configuration)' == 'Proto'">
+diff --git a/src/fsi/fsiProject/fsi.fsproj b/src/fsi/fsiProject/fsi.fsproj
+index 639ab45af17..cc2183e0bf1 100644
+--- a/src/fsi/fsiProject/fsi.fsproj
++++ b/src/fsi/fsiProject/fsi.fsproj
+@@ -11,7 +11,7 @@
+   <PropertyGroup Condition="'$(Configuration)' == 'Proto'">
+     <TargetFramework>$(FSharpNetCoreProductTargetFramework)</TargetFramework>
+     <PublishReadyToRun>true</PublishReadyToRun>
+-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+   </PropertyGroup>
+ 
+   <ItemGroup Condition="'$(Configuration)' == 'Proto'">
