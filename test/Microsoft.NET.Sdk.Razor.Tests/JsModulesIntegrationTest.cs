@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class JsModulesIntegrationTest(ITestOutputHelper log) : AspNetSdkBaselineTest(log, GenerateBaselines)
+    public class JsModulesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesIntegrationTest))
     {
         [Fact]
         public void Build_NoOps_WhenJsModulesIsDisabled()

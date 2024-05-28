@@ -141,11 +141,12 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private void ApplyDefaults(MSBuildCommand restore)
+        private void ApplyDefaults(MSBuildCommand command)
         {
             if (GetNuGetCachePath() is { } cache)
             {
-                restore.WithEnvironmentVariable("NUGET_PACKAGES", cache);
+                command.WithEnvironmentVariable("NUGET_PACKAGES", cache);
+                command.WithEnvironmentVariable("AspNetNugetIsolationPath", cache);
             }
         }
 

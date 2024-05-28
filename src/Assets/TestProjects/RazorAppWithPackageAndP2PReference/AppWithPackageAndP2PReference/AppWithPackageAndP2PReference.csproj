@@ -17,6 +17,9 @@
 
     <Error Condition="!Exists('%(LocalPackages.Identity)')" 
       Text="Package %(LocalPackages.Identity) does not exist. Ensure the test calls CreatePackCommand(ProjectDirectory, &quot;PackageLibraryDirectDependency&quot;)" />
+
+    <Error Condition="'$(RestorePackagesPath)' != '$(AspNetNugetIsolationPath)'"
+      Text="Packages are not being restored into the expected directory. Ensure that NUGET_PACKAGES and AspNetNugetIsolationPath are set as environment variables. The test should extend IsolatedNuGetPackageFolderAspNetSdkBaselineTest" />
   </Target>
 
   <ItemGroup>
