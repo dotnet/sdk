@@ -763,17 +763,17 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
+            Directory.CreateDirectory(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
+            File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
 
             EnsureLocalPackagesExists();
 
             var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(restore).Should().Pass();
 
-            var build = CreateBuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Fail();
         }
     }

@@ -185,7 +185,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
             var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
-            var buildResult = build.Execute();
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
