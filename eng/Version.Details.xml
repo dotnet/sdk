@@ -69,28 +69,28 @@
       <Sha>53c4a109e2abc0112996e2bc4a7f830f572f4efd</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.11.0-preview-24275-01">
+    <Dependency Name="Microsoft.Build" Version="17.11.0-preview-24277-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>6c748718699a44476ca68fd7ec424bae1bdab153</Sha>
+      <Sha>2d924ca8c28f63e3b562f05525a4fd4cb8c792aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.11.0-preview-24275-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.11.0-preview-24277-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>6c748718699a44476ca68fd7ec424bae1bdab153</Sha>
+      <Sha>2d924ca8c28f63e3b562f05525a4fd4cb8c792aa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.11.0-preview-24275-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.11.0-preview-24277-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>6c748718699a44476ca68fd7ec424bae1bdab153</Sha>
+      <Sha>2d924ca8c28f63e3b562f05525a4fd4cb8c792aa</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24274.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24277.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>ac872b5a1751457431f37ad2488e5279f8e80caf</Sha>
+      <Sha>77bb9c63cd7a6c21f8a0e40478a80babb476eea8</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24274.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24277.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>ac872b5a1751457431f37ad2488e5279f8e80caf</Sha>
+      <Sha>77bb9c63cd7a6c21f8a0e40478a80babb476eea8</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.11.0-2.24274.2">
@@ -317,22 +317,22 @@
       <Sha>808be46a63a3f93e703c22d67e1759ddf7eceb1a</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24271.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24277.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a3cc018a9ede83197ca406ff847cdfb22095c411</Sha>
+      <Sha>6ada92f5fc25f916afccc41d3dce2c618d9fcd11</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24271.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24277.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a3cc018a9ede83197ca406ff847cdfb22095c411</Sha>
+      <Sha>6ada92f5fc25f916afccc41d3dce2c618d9fcd11</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24271.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24277.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a3cc018a9ede83197ca406ff847cdfb22095c411</Sha>
+      <Sha>6ada92f5fc25f916afccc41d3dce2c618d9fcd11</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24271.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24277.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a3cc018a9ede83197ca406ff847cdfb22095c411</Sha>
+      <Sha>6ada92f5fc25f916afccc41d3dce2c618d9fcd11</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.5.24271.5">
