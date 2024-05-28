@@ -1,4 +1,4 @@
-From 626c01676f58503743463270213b405949f8f9e6 Mon Sep 17 00:00:00 2001
+From fce21126577f80d2c06db54ac3be4cba5329b33c Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Tue, 28 May 2024 07:24:18 +0000
 Subject: [PATCH] Fix full source-build product build when running R2R
@@ -15,13 +15,39 @@ remove the AspNetCore framework references.
 Backport: https://github.com/dotnet/fsharp/pull/17259
 
 ---
- buildtools/AssemblyCheck/AssemblyCheck.fsproj | 2 +-
- buildtools/fslex/fslex.fsproj                 | 2 +-
- buildtools/fsyacc/fsyacc.fsproj               | 2 +-
- src/fsc/fscProject/fsc.fsproj                 | 2 +-
- src/fsi/fsiProject/fsi.fsproj                 | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ Directory.Build.targets                       | 16 ++++++++++++++++
+ buildtools/AssemblyCheck/AssemblyCheck.fsproj |  2 +-
+ buildtools/fslex/fslex.fsproj                 |  2 +-
+ buildtools/fsyacc/fsyacc.fsproj               |  2 +-
+ src/fsc/fscProject/fsc.fsproj                 |  2 +-
+ src/fsi/fsiProject/fsi.fsproj                 |  2 +-
+ 6 files changed, 21 insertions(+), 5 deletions(-)
 
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index cd8633771..8a1a1fa4a 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -21,4 +21,20 @@
+     <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVersion)" />
+     <PackageReference Include="NunitXml.TestLogger" Version="$(NunitXmlTestLoggerVersion)" />
+   </ItemGroup>
++
++  <!--
++    When .NET gets built from source, make the SDK aware there are bootstrap packages
++    for Microsoft.NETCore.App.Runtime.<rid> and Microsoft.NETCore.App.Crossgen2.<rid>.
++  -->
++  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
++    <KnownRuntimePack Update="Microsoft.NETCore.App">
++      <RuntimePackRuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(RuntimePackRuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
++    </KnownRuntimePack>
++    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
++      <Crossgen2RuntimeIdentifiers
++        Condition="'%(TargetFramework)' == '$(NetCurrent)'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
++    </KnownCrossgen2Pack>
++  </ItemGroup>
++
+ </Project>
 diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
 index 6cfd3b110..bb4b9dd2b 100644
 --- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
@@ -87,3 +113,6 @@ index 639ab45af..634ed56a9 100644
    </PropertyGroup>
  
    <ItemGroup Condition="'$(Configuration)' == 'Proto'">
+-- 
+2.39.2
+
