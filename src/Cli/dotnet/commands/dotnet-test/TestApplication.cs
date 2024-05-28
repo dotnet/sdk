@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
             StringBuilder builder = new();
 
             if (isDll)
-                builder.Append($"exec {_moduleName}");
+                builder.Append($"exec {_moduleName} ");
 
             builder.Append(_args.Any(x => x != "--no-build")
                 ? _args.Where(x => x != "--no-build").Aggregate((a, b) => $"{a} {b}")

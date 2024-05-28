@@ -22,66 +22,106 @@ namespace Microsoft.DotNet.Cli
                     return;
                 }
 
-                Dictionary<bool, Dictionary<string, string[]>> missingOptionToModules = [];
+                var allOptions = GetAllOptions();
+                WriteOptionsToConsole(allOptions);
 
-                int maxOptionNameLength = _commandLineOptionNameToModuleNames.Keys.ToArray().Max(option => option.Length);
-                var moduleNames = _testApplications.Keys;
+                Console.ForegroundColor = ConsoleColor.Yellow;
 
-                IEnumerable<IGrouping<bool, KeyValuePair<string, (CommandLineOptionMessage optionMessage, string[] modules)>>> optionsByBuiltIn = _commandLineOptionNameToModuleNames.GroupBy(option => option.Value.Item1.IsBuiltIn);
-                foreach (IGrouping<bool, KeyValuePair<string, (CommandLineOptionMessage optionMessage, string[] modules)>> option in optionsByBuiltIn)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine(option.Key ? "Options:" : "Extension options:");
-
-                    foreach (KeyValuePair<string, (CommandLineOptionMessage optionMessage, string[] modules)> optionDetail in option)
-                    {
-                        string optionName = optionDetail.Key;
-                        Console.WriteLine($"{new string(' ', 2)}--{optionName}{new string(' ', maxOptionNameLength - optionName.Length)} {optionDetail.Value.optionMessage.Description}");
-
-                        string[] modules = optionDetail.Value.modules;
-                        if (modules.Length != moduleNames.Count)
-                        {
-                            if (missingOptionToModules.TryGetValue(option.Key, out Dictionary<string, string[]> value))
-                            {
-                                value.Add(optionName, moduleNames.Except(modules).ToArray());
-                            }
-                            else
-                            {
-                                missingOptionToModules.Add(option.Key, new Dictionary<string, string[]>
-                                {
-                                    { optionName, moduleNames.Except(modules).ToArray() }
-                                });
-                            }
-                        }
-                    }
-                }
-
-                foreach (var option in missingOptionToModules)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine();
-                    Console.WriteLine(option.Key ? "Unavailable options:" : "Unavailable extension options:");
-
-                    foreach (var module in option.Value)
-                    {
-                        StringBuilder line = new();
-
-                        for (int i = 0; i < module.Value.Length; i++)
-                        {
-                            if (i == module.Value.Length - 1)
-                                line.Append($"{module.Value[i]}");
-                            else
-                                line.Append($"{module.Value[i]},");
-                        }
-
-                        string verb = module.Value.Length == 1 ? "is" : "are";
-                        Console.WriteLine($"{line} {verb} missing the option --{module.Key}");
-                    }
-                }
+                Dictionary<bool, Dictionary<string, string[]>> missingOptionToModules = GetMissingOptionsToModules(allOptions);
+                WriteMissingOptionsToConsole(missingOptionToModules);
 
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.White;
             };
+        }
+
+        private Dictionary<bool, List<(CommandLineOptionMessage, string[])>> GetAllOptions()
+        {
+            Dictionary<bool, List<(CommandLineOptionMessage, string[])>> builtInToOptions = [];
+
+            foreach (KeyValuePair<string, (CommandLineOptionMessage, string[])> option in _commandLineOptionNameToModuleNames)
+            {
+                if (!builtInToOptions.TryGetValue(option.Value.Item1.IsBuiltIn, out List<(CommandLineOptionMessage, string[])> value))
+                {
+                    builtInToOptions.Add(option.Value.Item1.IsBuiltIn, [(option.Value.Item1, option.Value.Item2)]);
+                }
+                else
+                {
+                    value.Add((option.Value.Item1, option.Value.Item2));
+                }
+            }
+            return builtInToOptions;
+        }
+
+        private Dictionary<bool, Dictionary<string, string[]>> GetMissingOptionsToModules(Dictionary<bool, List<(CommandLineOptionMessage, string[])>> options)
+        {
+            Dictionary<bool, Dictionary<string, string[]>> missingOptionToModules = [];
+            var allModuleNames = _testApplications.Keys;
+
+            foreach (KeyValuePair<bool, List<(CommandLineOptionMessage, string[])>> option in options)
+            {
+                foreach ((CommandLineOptionMessage detail, string[] modules) in option.Value)
+                {
+                    string optionName = detail.Name;
+
+                    if (modules.Length != allModuleNames.Count)
+                    {
+                        if (missingOptionToModules.TryGetValue(option.Key, out Dictionary<string, string[]> value))
+                        {
+                            value.Add(optionName, allModuleNames.Except(modules).ToArray());
+                        }
+                        else
+                        {
+                            missingOptionToModules.Add(option.Key, new Dictionary<string, string[]>
+                            {
+                                { optionName, allModuleNames.Except(modules).ToArray() }
+                            });
+                        }
+                    }
+                }
+            }
+            return missingOptionToModules;
+        }
+
+        private void WriteOptionsToConsole(Dictionary<bool, List<(CommandLineOptionMessage, string[])>> allOptions)
+        {
+            int maxOptionNameLength = _commandLineOptionNameToModuleNames.Keys.ToArray().Max(option => option.Length);
+
+            foreach (KeyValuePair<bool, List<(CommandLineOptionMessage, string[])>> option in allOptions)
+            {
+                Console.WriteLine();
+                Console.WriteLine(option.Key ? "Options:" : "Extension options:");
+
+                foreach ((CommandLineOptionMessage optionDetail, string[] modules) in option.Value)
+                {
+                    Console.WriteLine($"{new string(' ', 2)}--{optionDetail.Name}{new string(' ', maxOptionNameLength - optionDetail.Name.Length)} {optionDetail.Description}");
+                }
+            }
+        }
+
+        private static void WriteMissingOptionsToConsole(Dictionary<bool, Dictionary<string, string[]>> missingOptionToModules)
+        {
+            foreach (KeyValuePair<bool, Dictionary<string, string[]>> option in missingOptionToModules)
+            {
+                Console.WriteLine();
+                Console.WriteLine(option.Key ? "Unavailable options:" : "Unavailable extension options:");
+
+                foreach (KeyValuePair<string, string[]> module in option.Value)
+                {
+                    StringBuilder line = new();
+
+                    for (int i = 0; i < module.Value.Length; i++)
+                    {
+                        if (i == module.Value.Length - 1)
+                            line.Append($"{module.Value[i]}");
+                        else
+                            line.Append($"{module.Value[i]},");
+                    }
+
+                    string verb = module.Value.Length == 1 ? "is" : "are";
+                    Console.WriteLine($"{line} {verb} missing the option --{module.Key}");
+                }
+            }
         }
     }
 }
