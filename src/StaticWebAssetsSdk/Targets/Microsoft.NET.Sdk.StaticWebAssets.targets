@@ -418,6 +418,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
       <StaticWebAssetEndpointMode Condition="'$(StaticWebAssetEndpointMode)' == ''" >Hosted</StaticWebAssetEndpointMode>
+      <StaticWebAssetsFingerprintContent Condition="'$(StaticWebAssetsFingerprintContent)' == ''">true</StaticWebAssetsFingerprintContent>
       <StaticWebAssetFingerprintingEnabled Condition="'$(StaticWebAssetFingerprintingEnabled)' == ''">true</StaticWebAssetFingerprintingEnabled>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
@@ -612,6 +613,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(Content)"
+      FingerprintContent="$(StaticWebAssetsFingerprintContent)"
       RelativePathPattern="wwwroot/**"
       SourceType="Discovered"
       SourceId="$(PackageId)"

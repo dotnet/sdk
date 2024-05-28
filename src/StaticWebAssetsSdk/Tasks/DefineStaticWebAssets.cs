@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string RelativePathPattern { get; set; }
 
+        public bool FingerprintContent { get; set; }
+
         public string RelativePathFilter { get; set; }
 
         public string AssetKind { get; set; } = StaticWebAsset.AssetKinds.All;
@@ -197,6 +199,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         }
                     }
 
+                    relativePathCandidate = FingerprintContent ? AppendFingerprintPattern(relativePathCandidate, identity) : relativePathCandidate;
+
                     var asset = StaticWebAsset.FromProperties(
                         identity,
                         sourceId,
@@ -237,6 +241,30 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             return !Log.HasLoggedErrors;
+        }
+
+        private string AppendFingerprintPattern(string relativePathCandidate, string identity)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(relativePathCandidate, identity);
+            foreach (var segment in pattern.Segments)
+            {
+                foreach (var part in segment.Parts)
+                {
+                    foreach (var name in segment.GetTokenNames())
+                    {
+                        if (string.Equals(name, "fingerprint", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return relativePathCandidate;
+                        }
+                    }
+                }
+            }
+
+            var extension = Path.GetExtension(relativePathCandidate);
+            var stem = Path.GetFileNameWithoutExtension(relativePathCandidate);
+            relativePathCandidate = stem + "#[.{fingerprint}]?" + extension;
+
+            return relativePathCandidate;
         }
 
         private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
