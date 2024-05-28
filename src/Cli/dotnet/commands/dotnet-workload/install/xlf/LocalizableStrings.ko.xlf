@@ -82,6 +82,11 @@
         <target state="translated">매니페스트 {0} 버전 {1}: {2}을 설치하지 못했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload set version {0}: {1}</source>
+        <target state="new">Failed to install workload set version {0}: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">디렉터리</target>

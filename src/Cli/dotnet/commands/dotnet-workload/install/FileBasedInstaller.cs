@@ -107,11 +107,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         RemoveWorkloadSetInstallationRecord(workloadSetVersion, workloadSetFeatureBand, _sdkFeatureBand);
                     });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //  TODO: Add workload set specific message
-                throw;
-                //throw new Exception(string.Format(LocalizableStrings.FailedToInstallWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion, e.Message), e);
+                throw new Exception(string.Format(LocalizableStrings.FailedToInstallWorkloadSet, workloadSetVersion, ex.Message), ex);
             }
 
             return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);

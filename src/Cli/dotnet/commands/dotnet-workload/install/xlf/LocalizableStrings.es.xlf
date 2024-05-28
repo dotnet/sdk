@@ -82,6 +82,11 @@
         <target state="translated">No se pudo instalar el manifiesto {0}, versión {1}: {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload set version {0}: {1}</source>
+        <target state="new">Failed to install workload set version {0}: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">DIRECTORIO</target>

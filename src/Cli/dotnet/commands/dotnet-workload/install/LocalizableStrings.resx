@@ -355,4 +355,7 @@
   <data name="UpdatedWorkloadMode" xml:space="preserve">
     <value>Successfully updated workload install mode to use {0}.</value>
   </data>
+  <data name="FailedToInstallWorkloadSet" xml:space="preserve">
+    <value>Failed to install workload set version {0}: {1}</value>
+  </data>
 </root>

@@ -82,6 +82,11 @@
         <target state="translated">未能安装清单 {0} 版本 {1}: {2}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload set version {0}: {1}</source>
+        <target state="new">Failed to install workload set version {0}: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">目录</target>
