@@ -28,7 +28,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <_PackageLibraryDirectDependencyAssets Include="$(StaticWebAsset)" Condition="'%(SourceId)' == 'PackageLibraryDirectDependency'" />
+      <_PackageLibraryDirectDependencyAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'PackageLibraryDirectDependency'" />
       <_LocalStaticWebAsset Include="@(_PackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
     </ItemGroup>
 

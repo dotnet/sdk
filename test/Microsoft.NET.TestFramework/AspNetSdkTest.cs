@@ -13,6 +13,14 @@ namespace Microsoft.NET.TestFramework
     {
         public readonly string DefaultTfm;
 
+#if !GENERATE_MSBUILD_LOGS
+        public static bool GenerateMSbuildLogs = true;
+#else
+        public static bool GenerateMSbuildLogs = bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_GENERATE_BINLOG"), out var result) && result || Debugger.IsAttached;
+#endif
+
+        private bool _generateMSbuildLogs = GenerateMSbuildLogs;
+
         protected AspNetSdkTest(ITestOutputHelper log) : base(log)
         {
             var assembly = Assembly.GetCallingAssembly();
@@ -119,9 +127,13 @@ namespace Microsoft.NET.TestFramework
 
         protected virtual CommandResult ExecuteCommand(TestCommand command, params string[] arguments)
         {
-            if (Debugger.IsAttached)
+            if (_generateMSbuildLogs)
             {
-                return command.Execute(["/bl", .. arguments]);
+                var i = 0;
+                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                var log = $"msbuild{i}.binlog";
+
+                return command.Execute([$"/bl:{log}", .. arguments]);
             }
             else
             {
@@ -131,9 +143,12 @@ namespace Microsoft.NET.TestFramework
 
         protected virtual CommandResult ExecuteCommandWithoutRestore(MSBuildCommand command, params string[] arguments)
         {
-            if (Debugger.IsAttached)
+            if (_generateMSbuildLogs)
             {
-                return command.ExecuteWithoutRestore(["/bl", .. arguments]);
+                var i = 0;
+                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                var log = $"msbuild{i}.binlog";
+                return command.ExecuteWithoutRestore([$"/bl:{log}", .. arguments]);
             }
             else
             {

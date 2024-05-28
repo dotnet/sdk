@@ -2785,7 +2785,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2825,7 +2825,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
