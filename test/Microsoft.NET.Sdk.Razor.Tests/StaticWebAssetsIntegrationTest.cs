@@ -151,107 +151,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 "Updated");
         }
 
-        // Project with references
-
-        [Fact]
-        public void BuildProjectWithReferences_GeneratesJsonManifestAndCopiesItToOutputFolder()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            EnsureLocalPackagesExists();
-
-            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(path).Should().Exist();
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(
-                manifest,
-                LoadBuildManifest());
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-
-            AssertBuildAssets(
-                manifest,
-                outputPath,
-                intermediateOutputPath);
-        }
-
-        // Build no dependencies
-        [Fact]
-        public void BuildProjectWithReferences_NoDependencies_GeneratesJsonManifestAndCopiesItToOutputFolder()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            EnsureLocalPackagesExists();
-
-            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(path).Should().Exist();
-            AssertManifest(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
-                LoadBuildManifest());
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-            var manifestContents = File.ReadAllText(finalPath);
-            var initialManifest = StaticWebAssetsManifest.FromJsonString(File.ReadAllText(path));
-            AssertManifest(
-                initialManifest,
-                LoadBuildManifest());
-
-            // Second build
-            var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            secondBuild.Execute("/p:BuildProjectReferences=false").Should().Pass();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            new FileInfo(path).Should().Exist();
-            var manifestNoDeps = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(
-                manifestNoDeps,
-                LoadBuildManifest("NoDependencies"),
-                "NoDependencies");
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            new FileInfo(finalPath).Should().Exist();
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            AssertManifest(
-                manifest,
-                LoadBuildManifest("NoDependencies"),
-                "NoDependencies");
-
-            AssertBuildAssets(
-                manifest,
-                outputPath,
-                intermediateOutputPath,
-                "NoDependencies");
-
-            // Check that the two manifests are the same
-            manifestContents.Should().Be(File.ReadAllText(finalPath));
-        }
-
         // Rebuild
         [Fact]
         public void Rebuild_RegeneratesJsonManifestAndCopiesItToOutputFolder()
@@ -488,6 +387,203 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
+        // Clean
+        [Fact]
+        public void Clean_RemovesManifestFrom_BuildAndIntermediateOutput()
+        {
+            var expectedManifest = LoadBuildManifest();
+            var testAsset = "RazorComponentApp";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, expectedManifest);
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+            var finalManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            AssertManifest(finalManifest, expectedManifest);
+
+            var clean = new CleanCommand(Log, ProjectDirectory.Path);
+            clean.Execute().Should().Pass();
+
+            // Obj folder manifest does not exist
+            new FileInfo(path).Should().NotExist();
+
+            // Bin folder manifest does not exist
+            new FileInfo(finalPath).Should().NotExist();
+        }
+
+        [Fact]
+        public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            Directory.CreateDirectory(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
+            File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
+
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Fail();
+        }
+    }
+
+    public class StaticWebAssetsAppWithPackagesIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsAppWithPackagesIntegrationTest))
+    {
+        [Fact]
+        public void BuildProjectWithReferences_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            build.Execute("/p:DeployOnBuild=true").Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+
+            // GenerateStaticWebAssetsManifest should generate the publish manifest file.
+            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
+            AssertManifest(publishManifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                publishManifest,
+                Path.Combine(outputPath, "publish"),
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void BuildProjectWithReferences_GeneratesJsonManifestAndCopiesItToOutputFolder()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(
+                manifest,
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+
+            AssertBuildAssets(
+                manifest,
+                outputPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void BuildProjectWithReferences_NoDependencies_GeneratesJsonManifestAndCopiesItToOutputFolder()
+        {
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+            var manifestContents = File.ReadAllText(finalPath);
+            var initialManifest = StaticWebAssetsManifest.FromJsonString(File.ReadAllText(path));
+            AssertManifest(
+                initialManifest,
+                LoadBuildManifest());
+
+            // Second build
+            var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            secondBuild.Execute("/p:BuildProjectReferences=false").Should().Pass();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            new FileInfo(path).Should().Exist();
+            var manifestNoDeps = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(
+                manifestNoDeps,
+                LoadBuildManifest("NoDependencies"),
+                "NoDependencies");
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            new FileInfo(finalPath).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            AssertManifest(
+                manifest,
+                LoadBuildManifest("NoDependencies"),
+                "NoDependencies");
+
+            AssertBuildAssets(
+                manifest,
+                outputPath,
+                intermediateOutputPath,
+                "NoDependencies");
+
+            // Check that the two manifests are the same
+            manifestContents.Should().Be(File.ReadAllText(finalPath));
+        }
+
         [Fact]
         public void PublishProjectWithReferences_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
@@ -680,101 +776,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 publishManifest,
                 publishPath,
                 intermediateOutputPath);
-        }
-
-        [Fact]
-        public void BuildProjectWithReferences_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            EnsureLocalPackagesExists();
-
-            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute("/p:DeployOnBuild=true").Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(path).Should().Exist();
-
-            AssertManifest(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
-                LoadBuildManifest());
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-
-            // GenerateStaticWebAssetsManifest should generate the publish manifest file.
-            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
-            new FileInfo(path).Should().Exist();
-            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
-            AssertManifest(publishManifest, LoadPublishManifest());
-
-            AssertPublishAssets(
-                publishManifest,
-                Path.Combine(outputPath, "publish"),
-                intermediateOutputPath);
-        }
-
-        // Clean
-        [Fact]
-        public void Clean_RemovesManifestFrom_BuildAndIntermediateOutput()
-        {
-            var expectedManifest = LoadBuildManifest();
-            var testAsset = "RazorComponentApp";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(path).Should().Exist();
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(manifest, expectedManifest);
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-            var finalManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            AssertManifest(finalManifest, expectedManifest);
-
-            var clean = new CleanCommand(Log, ProjectDirectory.Path);
-            clean.Execute().Should().Pass();
-
-            // Obj folder manifest does not exist
-            new FileInfo(path).Should().NotExist();
-
-            // Bin folder manifest does not exist
-            new FileInfo(finalPath).Should().NotExist();
-        }
-
-        [Fact]
-        public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
-        {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            Directory.CreateDirectory(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
-            File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
-
-            EnsureLocalPackagesExists();
-
-            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(build).Should().Fail();
         }
     }
 }

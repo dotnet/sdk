@@ -173,6 +173,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
+        private void CreateFile(string content, params string[] path)
+        {
+            Directory.CreateDirectory(Path.Combine(path[..^1].Prepend(ProjectDirectory.TestRoot).ToArray()));
+            File.WriteAllText(Path.Combine(path.Prepend(ProjectDirectory.TestRoot).ToArray()), content);
+        }
+    }
+
+    public class JsModulesPackagesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesPackagesIntegrationTest))
+    {
         [Fact]
         public void BuildProjectWithReferences_IncorporatesInitializersFromClassLibraries()
         {
@@ -316,7 +325,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             moduleFile.Should().Exist();
             moduleFile.Should().Contain("console.log('Hello world AnotherClassLib publish')");
         }
-
 
         private void CreateFile(string content, params string[] path)
         {
