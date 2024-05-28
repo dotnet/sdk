@@ -166,4 +166,7 @@
   <data name="WriteCLIRecordForVisualStudioWorkloadMessage" xml:space="preserve">
     <value>Writing install records for Visual Studio workloads: '{0}'</value>
   </data>
+  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
+    <value>Configured to use {0} when installing new manifests.</value>
+  </data>
 </root>
