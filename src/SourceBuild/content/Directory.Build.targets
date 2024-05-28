@@ -8,12 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <SdkTarballItem Condition="'$(SdkTarballPath)' != ''" Include="$(SdkTarballPath) and '$(SmokeTestsLicenseScanPath)' == ''" />
+      <SdkTarballItem Condition="'$(SdkTarballPath)' != ''" Include="$(SdkTarballPath)" />
       <SdkTarballItem Condition="'$(SdkTarballPath)' == ''" Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)"
                       Exclude="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*.wixpack.zip" />
     </ItemGroup>
 
-    <Error Text="Didn't find an SDK archive." Condition="'@(SdkTarballItem)' == ''" />
+    <Error Text="Didn't find an SDK archive." Condition="'@(SdkTarballItem)' == '' and '$(SmokeTestsLicenseScanPath)' == ''" />
     <Error Text="Found more than one SDK archive." Condition="@(SdkTarballItem->Count()) &gt; 1" />
 
     <!--
