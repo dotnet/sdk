@@ -37,10 +37,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         protected void EnsureLocalPackagesExists()
         {
-            var packTransitiveDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryTransitiveDependency");
+            var packTransitiveDependency = CreatePackCommand(ProjectDirectory, "RazorPackageLibraryTransitiveDependency");
             ExecuteCommand(packTransitiveDependency).Should().Pass();
 
-            var packDirectDependency = CreatePackCommand(ProjectDirectory, "PackageLibraryDirectDependency");
+            var packDirectDependency = CreatePackCommand(ProjectDirectory, "RazorPackageLibraryDirectDependency");
             ExecuteCommand(packDirectDependency).Should().Pass();
         }
 

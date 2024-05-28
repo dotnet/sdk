@@ -11,8 +11,8 @@
 
   <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
     <ItemGroup>
-      <LocalPackages Include="$(AspNetTestPackageSource)\PackageLibraryDirectDependency.1.0.0.nupkg" />
-      <LocalPackages Include="$(AspNetTestPackageSource)\PackageLibraryTransitiveDependency.1.0.0.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryDirectDependency.1.0.0.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryTransitiveDependency.1.0.0.nupkg" />
     </ItemGroup>
 
     <Error Condition="!Exists('%(LocalPackages.Identity)')" 
@@ -24,20 +24,20 @@
 
   <Target Name="EnsureLocalPackageStaticWebAssets" BeforeTargets="UpdateExistingPackageStaticWebAssets">
     <PropertyGroup>
-      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\packagelibrarydirectdependency\1.0.0\build\..\staticwebassets\</_LocalStaticAssetPath>
+      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\razorpackagelibrarydirectdependency\1.0.0\build\..\staticwebassets\</_LocalStaticAssetPath>
     </PropertyGroup>
     
     <ItemGroup>
-      <_PackageLibraryDirectDependencyAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'PackageLibraryDirectDependency'" />
-      <_LocalStaticWebAsset Include="@(_PackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
+      <_RazorPackageLibraryDirectDependencyAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'RazorPackageLibraryDirectDependency'" />
+      <_LocalStaticWebAsset Include="@(_RazorPackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
     </ItemGroup>
 
-    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for PackageLibraryDirectDependency not found in '$(_LocalStaticAssetPath)'. Assets: '@(_PackageLibraryDirectDependencyAssets->'%(Identity) %(ContentRoot)', ' ')'" />
+    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for RazorPackageLibraryDirectDependency not found in '$(_LocalStaticAssetPath)'. Assets: '@(_RazorPackageLibraryDirectDependencyAssets->'%(Identity) %(ContentRoot)', ' ')'" />
 
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="PackageLibraryDirectDependency" Version="1.0.0" />
+    <PackageReference Include="RazorRazorPackageLibraryDirectDependency" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
