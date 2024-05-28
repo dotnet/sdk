@@ -6,7 +6,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
-    public class ConcatenateCssFiles : Task
+    public class ConcatenateCssFiles50 : Task
     {
         private static readonly IComparer<ITaskItem> _fullPathComparer =
             Comparer<ITaskItem>.Create((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.GetMetadata("FullPath"), y.GetMetadata("FullPath")));
@@ -58,7 +58,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var prefix = string.Join("/", Enumerable.Repeat("..", currentBasePathSegments.Length));
                 for (var i = 0; i < ProjectBundles.Length; i++)
                 {
-                    var importPath = NormalizePath(Path.Combine(prefix, ProjectBundles[i].ItemSpec));
+                    var bundle = ProjectBundles[i];
+                    var bundleBasePath = NormalizePath(bundle.GetMetadata("BasePath"));
+                    var relativePath = NormalizePath(bundle.GetMetadata("RelativePath"));
+                    var importPath = NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
 
                     builder.AppendLine($"@import '{importPath}';");
                 }
@@ -109,8 +112,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             static byte[] GetContentHash(string content)
             {
+#if NET472_OR_GREATER
                 using var sha256 = SHA256.Create();
                 return sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+#else
+                return SHA256.HashData(Encoding.UTF8.GetBytes(content));
+#endif
             }
         }
     }

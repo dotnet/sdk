@@ -55,26 +55,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             foreach (var kvp in staticWebAssets)
             {
                 var asset = kvp.Value;
-                StaticWebAssetEndpoint endpoint = null;
 
                 // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                 // package or a referenced project and ignored if it comes from the current project.
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                endpoint = CreateEndpoint(asset, contentTypeMappings);
+                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings).ToArray();
 
-                // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
-                // during the build will have already defined endpoints and we only want to add new ones.
-                if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
-                    set.TryGetValue(endpoint, out var existingEndpoint))
+                foreach (var endpoint in assetEndpoints)
                 {
-                    Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
-                    continue;
-                }
+                    // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
+                    // during the build will have already defined endpoints and we only want to add new ones.
+                    if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
+                        set.TryGetValue(endpoint, out var existingEndpoint))
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
+                        continue;
+                    }
 
-                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
-                endpoints.Add(endpoint);
+                    Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
+                    endpoints.Add(endpoint);
+                }
             }
 
             Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
@@ -82,40 +84,77 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings) =>
-            new()
+        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        {
+            var routes = asset.ComputeRoutes();
+            var result = new List<StaticWebAssetEndpoint>();
+            foreach (var (label, route, values) in routes)
             {
-                Route = asset.ComputeTargetPath("", '/'),
-                AssetFile = asset.Identity,
-                ResponseHeaders =
-                [
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new()
-                    {
-                        Name = "Content-Length",
-                        Value = GetFileLength(asset),
-                    },
-                    new()
-                    {
-                        Name = "Content-Type",
-                        Value = ResolveContentType(asset, contentTypeMappings)
-                    },
-                    new()
-                    {
-                        Name = "ETag",
-                        Value = $"\"{asset.Integrity}\"",
-                    },
-                    new()
-                    {
-                        Name = "Last-Modified",
-                        Value = GetFileLastModified(asset)
-                    },
-                ]
-            };
+                List<StaticWebAssetEndpointResponseHeader> headers = [
+                        new()
+                        {
+                            Name = "Accept-Ranges",
+                            Value = "bytes"
+                        },
+                        new()
+                        {
+                            Name = "Content-Length",
+                            Value = GetFileLength(asset),
+                        },
+                        new()
+                        {
+                            Name = "Content-Type",
+                            Value = ResolveContentType(asset, contentTypeMappings)
+                        },
+                        new()
+                        {
+                            Name = "ETag",
+                            Value = $"\"{asset.Integrity}\"",
+                        },
+                        new()
+                        {
+                            Name = "Last-Modified",
+                            Value = GetFileLastModified(asset)
+                        },
+                    ];
+
+                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
+                if (values.ContainsKey("fingerprint"))
+                {
+                    // Immutable or "a week" as per mdn.
+                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=604800, immutable" });
+                }
+                else
+                {
+                    // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
+                    // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
+                    // for a longer period of time than scripts or stylesheets.
+                    headers.Add(new() { Name = "Cache-Control", Value = "no-cache" });
+                }
+
+                if (values.Count > 0)
+                {
+                    // If an endpoint has values from its route replaced, we add a label to the endpoint so that it can be easily identified.
+                    // The combination of label and list of values should be unique.
+                    // In this way, we can identify an endpoint resource.fingerprint.ext by its label (for example resource.ext) and its values
+                    // (fingerprint).
+                    properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
+                }
+
+                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+
+                var endpoint = new StaticWebAssetEndpoint()
+                {
+                    Route = finalRoute,
+                    AssetFile = asset.Identity,
+                    EndpointProperties = [.. properties],
+                    ResponseHeaders = [.. headers]
+                };
+                result.Add(endpoint);
+            }
+
+            return result;
+        }
 
         // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
         // Directives
