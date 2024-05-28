@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ??_workloadSetVersionFromCommandLine;
-            if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback /* TODO && !specifiedWorkloadManifestsInInstallState */)
+            if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback)
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateUsingWorkloadSets, offlineCache).Wait();
                 if (updateUsingWorkloadSets)
@@ -207,15 +207,17 @@ namespace Microsoft.DotNet.Workloads.Workload
                         {
                             _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                         }
+                        else if (SpecifiedWorkloadSetVersionOnCommandLine)
+                        {
+                            _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, resolvedWorkloadSetVersion);
+                        }
                         else if (this is WorkloadUpdateCommand)
                         {
-                            //  For workload updates, if you don't specify a rollback file, then we should update to a new version of the manifests or workload set, and
+                            //  For workload updates, if you don't specify a rollback file, or a workload version then we should update to a new version of the manifests or workload set, and
                             //  should remove the install state that pins to the other version
-                            //  TODO: Do we need to do something similar if the workload set version is pinned in the install state?
                             _workloadInstaller.RemoveManifestsFromInstallState(_sdkFeatureBand);
+                            _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, null);
                         }
-
-                        _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, resolvedWorkloadSetVersion);
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
