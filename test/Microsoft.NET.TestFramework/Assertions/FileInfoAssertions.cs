@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using FluentAssertions.Execution;
 
 namespace Microsoft.NET.TestFramework.Assertions
@@ -62,6 +64,22 @@ namespace Microsoft.NET.TestFramework.Assertions
             Execute.Assertion
                 .ForCondition(actualContent.Contains(expectedContent))
                 .FailWith($"File {_fileInfo.FullName} did not have content: {expectedContent}.");
+
+            return new AndConstraint<FileInfoAssertions>(this);
+        }
+
+#if NET47_OR_GREATER
+        public AndConstraint<FileInfoAssertions> Match(string pattern)
+#else
+        public AndConstraint<FileInfoAssertions> Match([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
+#endif
+        {
+            var regex = new Regex(pattern, RegexOptions.Multiline | RegexOptions.CultureInvariant);
+            var actualContent = File.ReadAllText(_fileInfo.FullName);
+
+            Execute.Assertion
+                .ForCondition(regex.IsMatch(actualContent))
+                .FailWith($"File {_fileInfo.FullName} did not match pattern: {pattern}.");
 
             return new AndConstraint<FileInfoAssertions>(this);
         }

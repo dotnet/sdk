@@ -6,18 +6,17 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ScopedCssIntegrationTest : AspNetSdkBaselineTest
+    public class ScopedCssIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(ScopedCssIntegrationTest))
     {
-        public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
-
         [Fact]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:ScopedCssEnabled=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:ScopedCssEnabled=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -33,8 +32,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:ScopedCssEnabled=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:ScopedCssEnabled=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -50,8 +49,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EnableDefaultScopedCssItems=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EnableDefaultScopedCssItems=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -82,8 +81,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var styles = Path.Combine(stylesFolder, "Counter.css");
             File.Move(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"), styles);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EnableDefaultScopedCssItems=false", "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EnableDefaultScopedCssItems=false", "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -102,8 +101,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -120,8 +119,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -138,8 +137,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -167,8 +166,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -205,8 +204,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorMvcWithComponents";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -231,14 +230,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void Publish_PublishesBundleToTheRightLocation()
+        public void Publish_PublishesScopedCssBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.WithWorkingDirectory(projectDirectory.TestRoot);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -253,13 +251,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.Path);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(projectDirectory);
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.Execute("/p:NoBuild=true").Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:NoBuild=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -277,8 +274,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -291,9 +288,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(projectDirectory);
-            publish.WithWorkingDirectory(projectDirectory.TestRoot);
-            publish.Execute("/p:DisableScopedCssBundling=true").Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:DisableScopedCssBundling=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -309,8 +305,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -327,8 +323,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
 
-            build = new BuildCommand(projectDirectory);
-            build.Execute("/p:EmitCompilerGeneratedFiles=true").Should().Pass();
+            build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:EmitCompilerGeneratedFiles=true").Should().Pass();
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(generatedCounter).Should().Exist();
@@ -349,8 +345,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
 
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -369,8 +365,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             // Act & Assert 1
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
             var directoryPath = Path.Combine(intermediateOutputPath, "scopedcss");
@@ -385,8 +381,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Act & Assert 2
             for (var i = 0; i < 2; i++)
             {
-                build = new BuildCommand(projectDirectory);
-                build.Execute().Should().Pass();
+                build = CreateBuildCommand(projectDirectory);
+                ExecuteCommand(build).Should().Pass();
 
                 foreach (var file in files)
                 {
@@ -396,39 +392,39 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
+        // This test verifies if the targets that VS calls to update scoped css works to update these files
         [Fact]
-        public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
+        public void RegeneratingScopedCss_ForProject()
         {
-            var testAsset = "RazorAppWithPackageAndP2PReference";
+            // Arrange
+            var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
 
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            AssertManifest(
-                buildManifest,
-                LoadBuildManifest());
+            new FileInfo(bundlePath).Should().Exist();
 
-            AssertBuildAssets(
-                buildManifest,
-                outputPath,
-                intermediateOutputPath);
+            // Make an edit
+            var scopedCssFile = Path.Combine(ProjectDirectory.TestRoot, "Components", "Pages", "Index.razor.css");
+            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
-            var appBundle = new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css"));
-            appBundle.Should().Exist();
+            build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
-            appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
-            appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
+            var fileInfo = new FileInfo(bundlePath);
+            fileInfo.Should().Exist();
+            // Verify the generated file contains newly added css
+            fileInfo.ReadAllText().Should().Contain("background-color: orangered");
         }
+    }
 
+    public class ScopedCssCompatibilityIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget"))
+    {
         [Fact]
         public void ScopedCss_IsBackwardsCompatible_WithPreviousVersions()
         {
@@ -446,9 +442,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -470,7 +470,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Exist();
 
             appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
-            appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
+            appBundle.Should().Match(""".*_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
         [Fact]
@@ -490,9 +490,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     }
                 });
 
-            var build = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -513,36 +517,48 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Exist();
 
             appBundle.Should().Contain("_content/ClassLibrary/ClassLibrary.bundle.scp.css");
-            appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
+            appBundle.Should().Match("""_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css""");
         }
+    }
 
-        // This test verifies if the targets that VS calls to update scoped css works to update these files
+    public class ScopedCssPackageReferences(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(ScopedCssPackageReferences), ".nuget"))
+    {
         [Fact]
-        public void RegeneratingScopedCss_ForProject()
+        public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
         {
-            // Arrange
-            var testAsset = "RazorComponentApp";
+            var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
-            new FileInfo(bundlePath).Should().Exist();
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            AssertManifest(
+                buildManifest,
+                LoadBuildManifest());
 
-            // Make an edit
-            var scopedCssFile = Path.Combine(ProjectDirectory.TestRoot, "Components", "Pages", "Index.razor.css");
-            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
+            AssertBuildAssets(
+                buildManifest,
+                outputPath,
+                intermediateOutputPath);
 
-            build = new BuildCommand(ProjectDirectory);
-            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+            var appBundle = new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css"));
+            appBundle.Should().Exist();
 
-            var fileInfo = new FileInfo(bundlePath);
-            fileInfo.Should().Exist();
-            // Verify the generated file contains newly added css
-            fileInfo.ReadAllText().Should().Contain("background-color: orangered");
+            appBundle.Should().Match(""".*_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
+            appBundle.Should().Match(""".*_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
         // Regression test for https://github.com/dotnet/aspnetcore/issues/37592
@@ -556,8 +572,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.WriteAllText(scopedCssFile, "/* Empty css */");
             File.WriteAllText(Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "Index.razor"), "This is a test razor component.");
 
-            var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var bundlePath = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "AppWithPackageAndP2PReference.styles.css");
@@ -567,15 +588,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Make an edit to a scoped css file
             File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
-            build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+            build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
             var fileInfo = new FileInfo(bundlePath);
             fileInfo.Should().Exist();
             // Verify the generated file contains newly added css
             var text = fileInfo.ReadAllText();
             text.Should().Contain("background-color: orangered");
-            text.Should().Contain("@import '_content/ClassLibrary/ClassLibrary.bundle.scp.css");
+            text.Should().MatchRegex(""".*@import '_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
     }
 }

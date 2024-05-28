@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(AspNetTestTfm)</TargetFramework>
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);./TestPackages</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -10,19 +9,35 @@
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
 
-  <Target Name="BuildLocalNuget" BeforeTargets="Restore">
-    <MSBuild
-      Projects="..\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj"
-      Targets="Restore;Pack"
-    />
-    <MSBuild
-      Projects="..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj"
-      Targets="Restore;Pack"
-    />
+  <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
+    <ItemGroup>
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryDirectDependency.1.0.0.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryTransitiveDependency.1.0.0.nupkg" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(LocalPackages.Identity)')" 
+      Text="Package %(LocalPackages.Identity) does not exist. Ensure the test calls CreatePackCommand(ProjectDirectory, &quot;PackageLibraryDirectDependency&quot;)" />
+
+    <Error Condition="'$(RestorePackagesPath)' != '$(AspNetNugetIsolationPath)'"
+      Text="Packages are not being restored into the expected directory. Ensure that NUGET_PACKAGES and AspNetNugetIsolationPath are set as environment variables. The test should extend IsolatedNuGetPackageFolderAspNetSdkBaselineTest. RestorePackagesPath = '$(RestorePackagesPath)', AspNetNugetIsolationPath = '$(AspNetNugetIsolationPath)'" />
+  </Target>
+
+  <Target Name="EnsureLocalPackageStaticWebAssets" BeforeTargets="UpdateExistingPackageStaticWebAssets">
+    <PropertyGroup>
+      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\razorpackagelibrarydirectdependency\1.0.0\build\..\staticwebassets\</_LocalStaticAssetPath>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <_RazorPackageLibraryDirectDependencyAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'RazorPackageLibraryDirectDependency'" />
+      <_LocalStaticWebAsset Include="@(_RazorPackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
+    </ItemGroup>
+
+    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for RazorPackageLibraryDirectDependency not found in '$(_LocalStaticAssetPath)'. Assets: '@(_RazorPackageLibraryDirectDependencyAssets->'%(Identity) %(ContentRoot)', ' ')'" />
+
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="PackageLibraryDirectDependency" Version="1.0.0" />
+    <PackageReference Include="RazorPackageLibraryDirectDependency" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
