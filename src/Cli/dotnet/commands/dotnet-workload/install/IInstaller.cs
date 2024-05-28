@@ -21,8 +21,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null);
 
-        //  TODO: isRollback parameter seems unused / unnecessary
-        void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false);
+        void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
         IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository();
 

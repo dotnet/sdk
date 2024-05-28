@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 {
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
-                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, UseRollback);
+                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache);
                     }
 
                     if (!SpecifiedWorkloadSetVersionInGlobalJson)

@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return manifestInstallDir;
         }
 
-        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
+        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
 

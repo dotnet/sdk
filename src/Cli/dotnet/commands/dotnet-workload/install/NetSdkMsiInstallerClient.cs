@@ -464,18 +464,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
 
-        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
+        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             try
             {
                 transactionContext.Run(
                     action: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache, isRollback);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache);
                     },
                     rollback: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, action: InstallAction.Uninstall);
                     });
             }
             catch (Exception e)
@@ -485,14 +485,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false, InstallAction action = InstallAction.Install)
+        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, InstallAction action = InstallAction.Install)
         {
             ReportPendingReboot();
 
             // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
             // treat it as a special case and is different from the install failing and rolling that back, though depending where the install
             // failed, it may have removed the old product already.
-            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}, rollback: {isRollback}.");
+            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}.");
 
             // Resolve the package ID for the manifest payload package
             string msiPackageId = GetManifestPackageId(manifestUpdate.ManifestId, new SdkFeatureBand(manifestUpdate.NewFeatureBand)).ToString();
