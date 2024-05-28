@@ -147,6 +147,7 @@ namespace Microsoft.NET.TestFramework
             {
                 command.WithEnvironmentVariable("NUGET_PACKAGES", cache);
                 command.WithEnvironmentVariable("AspNetNugetIsolationPath", cache);
+                command.WithEnvironmentVariable("RestorePackagesPath", cache);
             }
         }
 
