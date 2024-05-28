@@ -77,6 +77,7 @@ namespace Microsoft.NET.TestFramework
         {
             var restore = new RestoreCommand(asset, relativePathToProject);
             restore.WithWorkingDirectory(asset.TestRoot);
+            ApplyDefaults(restore);
             return restore;
         }
 
@@ -84,6 +85,8 @@ namespace Microsoft.NET.TestFramework
         {
             var build = new BuildCommand(asset, relativePathToProject);
             build.WithWorkingDirectory(asset.TestRoot);
+            ApplyDefaults(build);
+
             return build;
         }
 
@@ -91,6 +94,8 @@ namespace Microsoft.NET.TestFramework
         {
             var rebuild = new RebuildCommand(Log, asset.Path, relativePathToProject);
             rebuild.WithWorkingDirectory(asset.TestRoot);
+            ApplyDefaults(rebuild);
+
             return rebuild;
         }
 
@@ -98,6 +103,8 @@ namespace Microsoft.NET.TestFramework
         {
             var pack = new PackCommand(asset, relativePathToProject);
             pack.WithWorkingDirectory(asset.TestRoot);
+            ApplyDefaults(pack);
+
             return pack;
         }
 
@@ -105,6 +112,8 @@ namespace Microsoft.NET.TestFramework
         {
             var publish = new PublishCommand(asset, relativePathToProject);
             publish.WithWorkingDirectory(asset.TestRoot);
+            ApplyDefaults(publish);
+
             return publish;
         }
 
@@ -131,5 +140,15 @@ namespace Microsoft.NET.TestFramework
                 return command.ExecuteWithoutRestore(arguments);
             }
         }
+
+        private void ApplyDefaults(MSBuildCommand restore)
+        {
+            if (GetNuGetCachePath() is { } cache)
+            {
+                restore.WithEnvironmentVariable("NUGET_PACKAGES", cache);
+            }
+        }
+
+        protected virtual string GetNuGetCachePath() => null;
     }
 }

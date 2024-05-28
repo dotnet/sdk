@@ -70,8 +70,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
-        protected virtual string GetNuGetCachePath() => null;
-
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
             if (_generateBaselines)
