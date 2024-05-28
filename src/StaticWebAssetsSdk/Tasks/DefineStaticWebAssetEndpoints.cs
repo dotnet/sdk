@@ -118,7 +118,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         },
                     ];
 
-                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
                 if (values.ContainsKey("fingerprint"))
                 {
                     // Immutable or "a week" as per mdn.
@@ -132,6 +131,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     headers.Add(new() { Name = "Cache-Control", Value = "no-cache" });
                 }
 
+                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
                 if (values.Count > 0)
                 {
                     // If an endpoint has values from its route replaced, we add a label to the endpoint so that it can be easily identified.
@@ -140,6 +140,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     // (fingerprint).
                     properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
                 }
+
+                properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "integrity", Value = asset.Integrity });
 
                 var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
