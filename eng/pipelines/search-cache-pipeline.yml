@@ -160,7 +160,9 @@ extends:
             displayName: Upload to blob storage
             inputs:
               SourcePath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/*.json
+              # Service connection: https://dnceng.visualstudio.com/internal/_settings/adminservices?resourceId=010b0bdc-9487-484f-af2d-ca3ae3235b84
               azureSubscription: DOTNET-Templating - PME
               Destination: AzureBlob
+              # These variables are defined in the pipeline's Variables UI.
               storage: $(CacheFileStorageAccount)
               ContainerName: $(CacheFileStorageContainer)
