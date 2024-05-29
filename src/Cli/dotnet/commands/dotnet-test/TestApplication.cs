@@ -15,8 +15,6 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         public event EventHandler<CommandLineOptionMessages> HelpOptionsEvent;
         public event EventHandler<string> ErrorEvent;
 
-        private const string MSBuildExeName = "MSBuild.dll";
-
         private const string ServerOptionKey = "server";
         private const string ServerOptionValue = "dotnettestcli";
 
