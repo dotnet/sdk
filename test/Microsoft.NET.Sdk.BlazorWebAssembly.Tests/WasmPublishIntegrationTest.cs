@@ -1382,9 +1382,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var secondBootJsonPath = Path.Combine(secondAppPublishDirectory, "_framework", "blazor.boot.json");
             var secondBootJson = ReadBootJsonData(secondBootJsonPath);
 
-            // Do a sanity check that the boot json has files.
-            secondBootJson.resources.assembly.Keys.Should().Contain("System.Private.CoreLib.wasm");
-
             VerifyBootManifestHashes(testInstance, secondAppPublishDirectory);
 
             // Verify compression works

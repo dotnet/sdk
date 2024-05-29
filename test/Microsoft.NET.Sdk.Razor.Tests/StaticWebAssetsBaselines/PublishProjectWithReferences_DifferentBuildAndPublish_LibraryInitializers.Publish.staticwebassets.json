@@ -1986,52 +1986,6 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/css/site.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
       "Selectors": [
         {
@@ -2060,6 +2014,52 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\css\\site.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
         },
         {
           "Name": "Vary",
@@ -2370,52 +2370,6 @@
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        }
-      ],
-      "EndpointProperties": []
-    },
-    {
-      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
       "Selectors": [
         {
@@ -2444,6 +2398,52 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.br",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "br",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "br"
         },
         {
           "Name": "Vary",

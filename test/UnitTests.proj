@@ -50,8 +50,8 @@
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(_CustomHelixTargetQueue)' != '' ">
-    <HelixTargetQueue Include="$(_CustomHelixTargetQueue)" />
+  <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
+    <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
 
   <Import Project="xunit-runner\XUnitRunner.targets" />

@@ -11,7 +11,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="NuGet.Protocol" />
-    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

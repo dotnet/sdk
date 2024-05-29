@@ -243,8 +243,9 @@ jobs:
         versionSpec: 20.x
 
     - script: |
-        call $(sourcesPath)\build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
       displayName: Build
+      workingDirectory: ${{ variables.sourcesPath }}
       env:
         ${{ if eq(parameters.useDevVersions, 'True') }}:
           devArgument: -dev
@@ -253,8 +254,9 @@ jobs:
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call $(sourcesPath)\build.cmd -ci -prepareMachine -test /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
         displayName: Run Tests
+        workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ else }}:
@@ -404,10 +406,10 @@ jobs:
 
           # Only use Docker when a container is specified
           if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh /bl:artifacts/log/Release/Test.binlog --test $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           else
             cd $(sourcesPath)
-            ./build.sh /bl:artifacts/log/Release/Test.binlog --test $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+            ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           fi
 
         displayName: Run Tests
@@ -422,6 +424,7 @@ jobs:
             $targetPath = Join-Path $targetFolder (Resolve-Path -Relative $_.FullName)
             New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force | Out-Null
             Copy-Item $_.FullName -Destination $targetPath -Force
+            Write-Host "Copied $_ to $targetPath"
           }
         }
 
@@ -437,6 +440,7 @@ jobs:
 
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
+            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         }
 
         if (Test-Path "artifacts/TestResults/*") {
@@ -466,7 +470,10 @@ jobs:
         cd "$(sourcesPath)"
         find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
-        [ -d "artifacts/scenario-tests/" ] && find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+        if [ -d "artifacts/scenario-tests/" ]; then
+          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
+        fi
         find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
@@ -511,7 +518,7 @@ jobs:
 
     - task: PublishTestResults@2
       displayName: Publish Scenario Test Results
-      condition: and(${{ ne(parameters.useDevVersions, 'True') }}, succeededOrFailed())
+      condition: and(eq(variables['hasScenarioTestResults'], 'true'), succeededOrFailed())
       continueOnError: true
       inputs:
         testRunner: xUnit
