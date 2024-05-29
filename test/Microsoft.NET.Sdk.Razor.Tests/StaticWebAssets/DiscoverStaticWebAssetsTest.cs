@@ -57,6 +57,103 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
+        public void FingerprintsContentWhenEnabled()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets =
+                [
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"))
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                FingerprintCandidates = true,
+                SourceType = "Discovered",
+                SourceId = "MyProject",
+                ContentRoot = "wwwroot",
+                BasePath = "_content/Path"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
+            asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+            asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
+            asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
+            asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar);
+            asset.GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Path");
+            asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("candidate#[.{fingerprint}]?.js");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetKind)).Should().Be("All");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetMode)).Should().Be("All");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetRole)).Should().Be("Primary");
+            asset.GetMetadata(nameof(StaticWebAsset.RelatedAsset)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetTraitName)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
+            asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", "candidate.js"));
+        }
+
+        [Theory]
+        [InlineData("candidate.lib.module.js", "candidate#[.{fingerprint}]?.lib.module.js")]
+        [InlineData("library.candidate.lib.module.js", "library.candidate#[.{fingerprint}]?.lib.module.js")]
+        public void FingerprintsContentUsingPatternsWhenMoreThanOneExtension(string fileName, string expectedRelativePath)
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets =
+                [
+                    CreateCandidate(Path.Combine("wwwroot", fileName))
+                ],
+                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js" })],
+                FingerprintCandidates = true,
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
+                SourceId = "MyProject",
+                ContentRoot = "wwwroot",
+                BasePath = "_content/Path"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
+            asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", fileName)));
+            asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
+            asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
+            asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar);
+            asset.GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Path");
+            asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be(expectedRelativePath);
+            asset.GetMetadata(nameof(StaticWebAsset.AssetKind)).Should().Be("All");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetMode)).Should().Be("All");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetRole)).Should().Be("Primary");
+            asset.GetMetadata(nameof(StaticWebAsset.RelatedAsset)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetTraitName)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.AssetTraitValue)).Should().Be("");
+            asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
+            asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().Be("PreserveNewest");
+            asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", fileName));
+        }
+
+        [Fact]
         public void RespectsItemRelativePathWhenExplicitlySpecified()
         {
             var errorMessages = new List<string>();

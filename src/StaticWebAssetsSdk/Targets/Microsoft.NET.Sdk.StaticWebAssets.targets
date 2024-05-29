@@ -613,7 +613,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(Content)"
-      FingerprintContent="$(StaticWebAssetsFingerprintContent)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
       SourceType="Discovered"
       SourceId="$(PackageId)"
