@@ -138,44 +138,11 @@ extends:
               nonTemplatePacks.json
             TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
         - ${{ if eq(parameters.publishToBlob, true) }}:
-          - script: '$(Build.SourcesDirectory)/eng/SearchCache/InstallAzureCLI.sh'
-            displayName: Install Azure CLI
-
-          - bash: az config set extension.use_dynamic_install=yes_without_prompt
-            displayName: Disable Azure CLI prompts
-
-          - bash: >
-              az storage azcopy blob upload
-              -c $(CacheFileStorageContainer)
-              --account-name $(CacheFileStorageAccount)
-              -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfoVer2.json'
-              --sas-token "$(CacheFileStorageSasToken)"
-              -d NuGetTemplateSearchInfoVer2.json
-              --verbose
-              | tee upload.log
-              && grep ".*Number of Transfers Completed: 1" upload.log || (echo ; echo "Cache file upload failed"; false)
+          - task: AzureFileCopy@6
             displayName: Upload to blob storage
-
-          - bash: >
-              az storage azcopy blob upload
-              -c $(LegacyCacheFileStorageContainer)
-              --account-name $(LegacyCacheFileStorageAccount)
-              -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfo.json'
-              --sas-token "$(LegacyCacheFileStorageSasToken)"
-              -d NuGetTemplateSearchInfo.json
-              --verbose
-              | tee upload-legacy.log
-              && grep ".*Number of Transfers Completed: 1" upload-legacy.log || (echo ; echo "Legacy cache file upload failed"; false)
-            displayName: Upload legacy file to blob storage
-
-          - bash: >
-              az storage azcopy blob upload
-              -c $(NonTemplatePacksFileStorageContainer)
-              --account-name $(NonTemplatePacksFileStorageAccount)
-              -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/nonTemplatePacks.json'
-              --sas-token "$(NonTemplatePacksFileStorageSasToken)"
-              -d nonTemplatePacks.json
-              --verbose
-              | tee upload-non-template-packs.log
-              && grep ".*Number of Transfers Completed: 1" upload-non-template-packs.log || (echo ; echo "Legacy cache file upload failed"; false)
-            displayName: Upload non template packages file to blob storage
+            inputs:
+              SourcePath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/*.json
+              azureSubscription: DOTNET-Templating - PME
+              Destination: AzureBlob
+              storage: $(CacheFileStorageAccount)
+              ContainerName: $(CacheFileStorageContainer)
