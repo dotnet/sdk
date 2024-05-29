@@ -3,7 +3,6 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
 internal sealed class VoidResponseSerializer : INamedPipeSerializer
 {
     public int Id => 0;
