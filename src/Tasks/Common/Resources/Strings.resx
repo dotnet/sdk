@@ -949,7 +949,7 @@ You may need to build the project on another operating system or architecture, o
     <comment>{StrBegin="NETSDK1213: "}</comment>
   </data>
   <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
-    <value>NETSDK1214: PreferNativeArm64 is not supported and has no effect for netcoreapp target.</value>
+    <value>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
     <comment>{StrBegin="NETSDK1214: "}</comment>
   </data>
   <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
