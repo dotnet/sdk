@@ -82,6 +82,11 @@
         <target state="translated">Pisanie rekordów instalacji dla obciążeń w usłudze Visual Studio: „{0}”</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="new">Configured to use {0} when installing new manifests.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
