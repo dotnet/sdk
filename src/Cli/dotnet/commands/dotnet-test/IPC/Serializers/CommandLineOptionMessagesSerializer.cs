@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Diagnostics;
-using Microsoft.DotNet.Cli.commands.dotnet_test.IPC;
 
 namespace Microsoft.DotNet.Tools.Test
 {

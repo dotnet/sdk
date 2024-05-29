@@ -166,15 +166,6 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
         }
     }
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _namedPipeClientStream.Dispose();
-            _disposed = true;
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
         if (!_disposed)

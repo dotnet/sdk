@@ -223,34 +223,6 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 : Path.Combine(directoryId, ".p"), true);
     }
 
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        if (WasConnected)
-        {
-            // If the loop task is null at this point we have race condition, means that the task didn't start yet and we already dispose.
-            // This is unexpected and we throw an exception.
-
-            // To close gracefully we need to ensure that the client closed the stream line 103.
-            if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "'{0}' didn't exit as expected",
-                    nameof(InternalLoopAsync)));
-            }
-        }
-
-        _namedPipeServerStream.Dispose();
-        PipeName.Dispose();
-
-        _disposed = true;
-    }
-
 #if NET
     public async ValueTask DisposeAsync()
     {

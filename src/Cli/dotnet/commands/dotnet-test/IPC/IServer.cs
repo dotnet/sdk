@@ -3,8 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal interface IServer : INamedPipeBase, IDisposable
-    , IAsyncDisposable
+internal interface IServer : INamedPipeBase, IAsyncDisposable
 {
     PipeNameDescription PipeName { get; }
 

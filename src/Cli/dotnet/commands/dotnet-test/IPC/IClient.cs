@@ -3,8 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal interface IClient : IDisposable
-    , IAsyncDisposable
+internal interface IClient : IAsyncDisposable
 {
     bool IsConnected { get; }
 
