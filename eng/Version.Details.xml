@@ -226,7 +226,7 @@
       <Sha>2588f022c1c4a12e159e0ed07f5a5ea3f3c9eaa8</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.5.24278.5">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.5.24272.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d89832aaf3616212c6ffa32ed1320f5117907056</Sha>
     </Dependency>
