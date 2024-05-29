@@ -18,6 +18,10 @@ parameters:
   type: boolean
   default: true
 
+variables:
+# Variables used: DncEngInternalBuildPool
+- template: /eng/common/templates-official/variables/pool-providers.yml
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -30,32 +34,27 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool:
-        name: NetCore1ESPool-Internal
+        name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-    pool:
-      name: NetCore1ESPool-Internal
-      image: 1es-ubuntu-2204
-      os: linux
     stages:
     - stage: stage
       jobs:
-      - job: jobs
+      - job: Create
+        pool:
+          name: $(DncEngInternalBuildPool)
+          image: 1es-ubuntu-2204
+          os: linux
         templateContext:
           outputs:
           - output: pipelineArtifact
-            displayName: 'Publish Test Log and Results'
-            condition: always()
-            targetPath: '$(Build.ArtifactStagingDirectory)'
+            targetPath: $(Build.ArtifactStagingDirectory)
             artifactName: Test_LogResults
-            publishLocation: Container
           - output: pipelineArtifact
-            displayName: 'Publish Artifacts'
             targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
-            artifactName: outputs
+            artifactName: ArtifactsToPublish
 
         steps:
-        - checkout: self
         - script: '$(Build.SourcesDirectory)/build.sh'
         - task: CopyFiles@2
           displayName: Gather Test Log and Results
@@ -131,13 +130,30 @@ extends:
           displayName: Run Cache Updater
 
         - task: CopyFiles@2
+          displayName: Copy artifacts to publish
           inputs:
             SourceFolder: $(System.DefaultWorkingDirectory)/NugetDownloadDirectory/SearchCache/
             Contents: |
               NuGetTemplateSearchInfo*.json
               nonTemplatePacks.json
             TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
-        - ${{ if eq(parameters.publishToBlob, true) }}:
+
+      - ${{ if eq(parameters.publishToBlob, true) }}:
+        # An entirely separate job is required to run AzureFileCopy@6, which is a Windows-only task.
+        # If the Create job was rewritten to use PowerShell instead of Bash, Create and Publish could be combined into a single Windows job.
+        - job: Publish
+          dependsOn: Create
+          pool:
+            name: $(DncEngInternalBuildPool)
+            image: 1es-windows-2022
+            os: windows
+          templateContext:
+            inputs:
+            - input: pipelineArtifact
+              targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
+              artifactName: ArtifactsToPublish
+
+          steps:
           - task: AzureFileCopy@6
             displayName: Upload to blob storage
             inputs:
