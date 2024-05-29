@@ -286,10 +286,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CheckAndUnsetUnsupportedPreferNativeArm64"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(PreferNativeArm64)' == 'true'">
 
-    <NETSdkWarning Condition="'$(PreferNativeArm64)' == 'true'"
-                    ResourceName="PreferNativeArm64IgnoredForNetCoreApp" />
+    <NETSdkWarning ResourceName="PreferNativeArm64IgnoredForNetCoreApp" />
 
     <PropertyGroup>
       <PreferNativeArm64>false</PreferNativeArm64>
