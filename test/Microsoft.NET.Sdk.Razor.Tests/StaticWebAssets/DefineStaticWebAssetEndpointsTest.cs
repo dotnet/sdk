@@ -92,7 +92,7 @@ public class DefineStaticWebAssetEndpointsTest
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate#[.{fingerprint}]?.js", "All", "All", fingerprint: "1234asdf")],
+            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate#[.{fingerprint}]?.js", "All", "All", fingerprint: "1234asdf", integrity: "asdf1234")],
             ExistingEndpoints = [],
             ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
             TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
@@ -115,6 +115,11 @@ public class DefineStaticWebAssetEndpointsTest
             {
                 Name = "fingerprint",
                 Value = "1234asdf"
+            },
+            new StaticWebAssetEndpointProperty
+            {
+                Name = "integrity",
+                Value = "asdf1234"
             },
             new StaticWebAssetEndpointProperty
             {
@@ -142,7 +147,7 @@ public class DefineStaticWebAssetEndpointsTest
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "ETag",
-                    Value = "\"integrity\""
+                    Value = "\"asdf1234\""
                 },
                 new StaticWebAssetEndpointResponseHeader
                 {
@@ -184,7 +189,7 @@ public class DefineStaticWebAssetEndpointsTest
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "ETag",
-                    Value = "\"integrity\""
+                    Value = "\"asdf1234\""
                 },
                 new StaticWebAssetEndpointResponseHeader
                 {
@@ -257,7 +262,8 @@ public class DefineStaticWebAssetEndpointsTest
         string relativePath,
         string assetKind,
         string assetMode,
-        string fingerprint = null)
+        string fingerprint = null,
+        string integrity = null)
     {
         var result = new StaticWebAsset()
         {
@@ -277,7 +283,7 @@ public class DefineStaticWebAssetEndpointsTest
             CopyToPublishDirectory = "",
             OriginalItemSpec = itemSpec,
             // Add these to avoid accessing the disk to compute them
-            Integrity = "integrity",
+            Integrity = integrity ?? "integrity",
             Fingerprint = fingerprint ?? "fingerprint",
         };
 

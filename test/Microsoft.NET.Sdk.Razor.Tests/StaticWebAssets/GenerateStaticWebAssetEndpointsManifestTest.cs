@@ -55,6 +55,10 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                         Value = "fingerprint"
                     },
                     new() {
+                        Name = "integrity",
+                        Value = "integrity"
+                    },
+                    new() {
                         Name = "label",
                         Value = "index.html"
                     }
@@ -98,6 +102,10 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                         Value = "fingerprint"
                     },
                     new() {
+                        Name = "integrity",
+                        Value = "integrity"
+                    },
+                    new() {
                         Name = "label",
                         Value = "index.js"
                     }
@@ -134,7 +142,11 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                         Value = "Sat, 01 Jan 2000 00:00:01 GMT"
                     }
                 ],
-                EndpointProperties = []
+                EndpointProperties = [
+                    new() {
+                        Name = "integrity",
+                        Value = "integrity"
+                    }]
             },
             new() {
                 Route = "index.js",
@@ -167,7 +179,11 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                         Value = "Sat, 01 Jan 2000 00:00:01 GMT"
                     }
                 ],
-                EndpointProperties = []
+                EndpointProperties = [
+                    new() {
+                        Name = "integrity",
+                        Value = "integrity"
+                    }]
             }
         ];
         Array.Sort(expectedEndpoints);
