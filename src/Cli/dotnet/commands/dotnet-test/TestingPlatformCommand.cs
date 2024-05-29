@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentDictionary<string, (CommandLineOptionMessage, string[])> _commandLineOptionNameToModuleNames = [];
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        private readonly CancellationTokenSource _cancellationToken = new();
 
         private Task _namedPipeConnectionLoop;
         private string[] _args;
@@ -30,28 +31,27 @@ namespace Microsoft.DotNet.Cli
         public int Run(ParseResult parseResult)
         {
             _args = parseResult.GetArguments();
-            CancellationTokenSource cancellationTokenSource = new();
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
-            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationTokenSource.Token));
+            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(x => x == "--no-build");
 
             if (containsNoBuild)
             {
-                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", "-bl", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
-                int buildResult = buildCommand.Execute();
+                ForwardingAppImplementation mSBuildForwardingApp = new(GetMSBuildExePath(), ["-t:_GetTestsProject", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
+                int getTestsProjectResult = mSBuildForwardingApp.Execute();
             }
             else
             {
-                ForwardingAppImplementation mSBuildForwardingApp = new(GetMSBuildExePath(), ["-t:_GetTestsProject", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
-                int getTestsProjectResult = mSBuildForwardingApp.Execute();
+                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", "-bl", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
+                int buildResult = buildCommand.Execute();
             }
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             Task.WaitAll([.. _taskModuleName]);
             Task.WaitAll([.. _testsRun]);
-            cancellationTokenSource.Cancel();
+            _cancellationToken.Cancel();
             _namedPipeConnectionLoop.Wait();
 
             return 0;
