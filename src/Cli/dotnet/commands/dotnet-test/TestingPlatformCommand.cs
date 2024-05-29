@@ -27,6 +27,11 @@ namespace Microsoft.DotNet.Cli
 
         private const string MSBuildExeName = "MSBuild.dll";
 
+        public TestingPlatformCommand(string name, string description = null) : base(name, description)
+        {
+            TreatUnmatchedTokensAsErrors = false;
+        }
+
         public int Run(ParseResult parseResult)
         {
             _args = parseResult.GetArguments();
@@ -131,11 +136,6 @@ namespace Microsoft.DotNet.Cli
             return Path.Combine(
                 AppContext.BaseDirectory,
                 MSBuildExeName);
-        }
-
-        public TestingPlatformCommand(string name, string description = null) : base(name, description)
-        {
-            TreatUnmatchedTokensAsErrors = false;
         }
     }
 }
