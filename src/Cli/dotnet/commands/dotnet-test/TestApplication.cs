@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         private readonly string[] _args;
 
         public event EventHandler<CommandLineOptionMessages> HelpOptionsEvent;
+        public event EventHandler<string> ErrorEvent;
 
         private const string MSBuildExeName = "MSBuild.dll";
 
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         {
             if (!File.Exists(_moduleName))
             {
-                LockedConsoleWrite($"Test module '{_moduleName}' not found. Build the test application before or run 'dotnet test'.", ConsoleColor.Yellow);
+                ErrorEvent.Invoke(this, _moduleName);
                 return;
             }
 
@@ -69,23 +70,6 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         public void RunHelp(CommandLineOptionMessages commandLineOptionMessages)
         {
             HelpOptionsEvent?.Invoke(this, commandLineOptionMessages);
-        }
-
-        private void LockedConsoleWrite(string message, ConsoleColor consoleColor)
-        {
-            lock (MSBuildExeName)
-            {
-                ConsoleColor currentColor = Console.ForegroundColor;
-                try
-                {
-                    Console.ForegroundColor = consoleColor;
-                    Console.WriteLine(message);
-                }
-                finally
-                {
-                    Console.ForegroundColor = currentColor;
-                }
-            }
         }
     }
 }

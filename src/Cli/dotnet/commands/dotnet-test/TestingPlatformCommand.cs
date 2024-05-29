@@ -91,6 +91,7 @@ namespace Microsoft.DotNet.Cli
                 var testApplication = new TestApplication(module.Name.Trim(), _pipeNameDescription.Name, _args);
                 _testApplications[Path.GetFileName(module.Name)] = testApplication;
                 testApplication.HelpOptionsEvent += OnHelpOptionsEvent;
+                testApplication.ErrorEvent += OnErrorEvent;
 
                 _testsRun.Add(Task.Run(async () => await testApplication.Run()));
             }
@@ -119,6 +120,11 @@ namespace Microsoft.DotNet.Cli
                     commandLineOptionMessage.Name,
                     (key) => (commandLineOptionMessage, new[] { moduleName }), (optionName, value) => (value.Item1, value.Item2.Concat([moduleName]).ToArray()));
             }
+        }
+
+        private void OnErrorEvent(object sender, string moduleName)
+        {
+            VSTestTrace.SafeWriteTrace(() => $"Test module '{moduleName}' not found. Build the test application before or run 'dotnet test'.");
         }
 
         private static string GetMSBuildExePath()
