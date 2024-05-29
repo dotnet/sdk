@@ -38,7 +38,7 @@ extends:
         image: 1es-windows-2022
         os: windows
     stages:
-    - stage: stage
+    - stage: Build
       jobs:
       - job: Create
         pool:
@@ -55,55 +55,57 @@ extends:
             artifactName: ArtifactsToPublish
 
         steps:
-        - script: '$(Build.SourcesDirectory)/build.sh'
+        - script: $(Build.SourcesDirectory)/build.sh
+          displayName: Build
+
         - task: CopyFiles@2
           displayName: Gather Test Log and Results
           inputs:
-            SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+            SourceFolder: $(Build.SourcesDirectory)/artifacts
             Contents: |
               log/**/*
               TestResults/**/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+            TargetFolder: $(Build.ArtifactStagingDirectory)
           continueOnError: true
           condition: always()
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 6.0.100'
+          displayName: Use .NET 6.0.100
           inputs:
             packageType: sdk
             version: 6.0.100
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 6.0.300'
+          displayName: Use .NET 6.0.300
           inputs:
             packageType: sdk
             version: 6.0.300
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 6.0.400'
+          displayName: Use .NET 6.0.400
           inputs:
             packageType: sdk
             version: 6.0.400
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 7.0.100'
+          displayName: Use .NET 7.0.100
           inputs:
             packageType: sdk
             version: 7.0.100
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 7.0.200'
+          displayName: Use .NET 7.0.200
           inputs:
             packageType: sdk
             version: 7.0.200
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 8.0.200'
+          displayName: Use .NET 8.0.200
           inputs:
             packageType: sdk
             version: 8.0.200
