@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli
 
         private static bool IsTestingPlatformEnabled()
         {
-            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORMALPHA_ENABLE");
+            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
             var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
             return isTestingPlatformEnabled;
         }
