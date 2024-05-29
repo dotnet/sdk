@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli.commands.dotnet_test
+namespace Microsoft.DotNet.Cli
 {
     internal class TestApplication
     {

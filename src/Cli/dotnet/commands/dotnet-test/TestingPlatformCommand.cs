@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
-using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Build;
 using Microsoft.DotNet.Tools.Test;
@@ -88,7 +87,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (request is Module module)
             {
-                var testApplication = new TestApplication(module.Name.Trim(), _pipeNameDescription.Name, _args);
+                var testApplication = new TestApplication(module.Name, _pipeNameDescription.Name, _args);
                 _testApplications[Path.GetFileName(module.Name)] = testApplication;
                 testApplication.HelpOptionsEvent += OnHelpOptionsEvent;
                 testApplication.ErrorEvent += OnErrorEvent;
