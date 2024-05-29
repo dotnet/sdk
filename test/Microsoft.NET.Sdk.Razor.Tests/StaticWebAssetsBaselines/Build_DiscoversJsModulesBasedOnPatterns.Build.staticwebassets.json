@@ -208,7 +208,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "Pages/Index.cshtml.js",
@@ -240,7 +245,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css.gz",
@@ -280,7 +290,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.bundle.scp.css.gz",
@@ -320,7 +335,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.bundle.scp.css",
@@ -370,7 +390,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
@@ -426,6 +451,10 @@
           "Value": "__fingerprint__"
         },
         {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
           "Name": "label",
           "Value": "ComponentApp.bundle.scp.css"
         }
@@ -469,7 +498,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css.gz",
@@ -509,7 +543,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.styles.css",
@@ -559,7 +598,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css",
@@ -615,6 +659,10 @@
           "Value": "__fingerprint__"
         },
         {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
           "Name": "label",
           "Value": "ComponentApp.styles.css"
         }
@@ -658,7 +706,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "Components/Pages/Counter.razor.js",
@@ -708,7 +761,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "Pages/Index.cshtml.js.gz",
@@ -748,7 +806,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "Pages/Index.cshtml.js",
@@ -798,7 +861,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.styles.css",
@@ -830,7 +898,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css",
@@ -868,6 +941,10 @@
           "Value": "__fingerprint__"
         },
         {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
           "Name": "label",
           "Value": "ComponentApp.styles.css"
         }
@@ -903,7 +980,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
@@ -939,6 +1021,10 @@
         {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         },
         {
           "Name": "label",

@@ -590,7 +590,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js",
@@ -640,7 +645,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/css/site.css.gz",
@@ -680,7 +690,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/css/site.css",
@@ -730,7 +745,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js.gz",
@@ -770,7 +790,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
@@ -820,7 +845,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js",
@@ -852,7 +882,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/css/site.css",
@@ -884,7 +919,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
@@ -916,7 +956,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.gz",
@@ -956,7 +1001,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.gz",
@@ -996,7 +1046,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css",
@@ -1050,7 +1105,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css",
@@ -1108,6 +1168,10 @@
         {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         },
         {
           "Name": "label",
@@ -1153,7 +1217,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.modules.json",
@@ -1203,7 +1272,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
@@ -1243,7 +1317,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css",
@@ -1293,7 +1372,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
@@ -1347,6 +1431,10 @@
         {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         },
         {
           "Name": "label",
@@ -1392,7 +1480,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/css/site.css",
@@ -1442,7 +1535,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js.gz",
@@ -1482,7 +1580,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js",
@@ -1532,7 +1635,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.gz",
@@ -1572,7 +1680,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
@@ -1622,7 +1735,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.modules.json",
@@ -1654,7 +1772,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css",
@@ -1690,7 +1813,12 @@
           "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css",
@@ -1730,6 +1858,10 @@
         {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         },
         {
           "Name": "label",
@@ -1775,7 +1907,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.gz",
@@ -1815,7 +1952,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
@@ -1865,7 +2007,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css",
@@ -1919,6 +2066,10 @@
         {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
         },
         {
           "Name": "label",
@@ -1964,7 +2115,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.js",
@@ -2014,7 +2170,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
@@ -2054,7 +2215,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
@@ -2104,7 +2270,12 @@
           "Value": "Content-Encoding"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
@@ -2136,7 +2307,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css",
@@ -2174,6 +2350,10 @@
           "Value": "__fingerprint__"
         },
         {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
           "Name": "label",
           "Value": "ClassLibrary.bundle.scp.css"
         }
@@ -2209,7 +2389,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
@@ -2241,7 +2426,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css",
@@ -2273,7 +2463,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
@@ -2311,6 +2506,10 @@
           "Value": "__fingerprint__"
         },
         {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
           "Name": "label",
           "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
@@ -2346,7 +2545,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryDirectDependency/js/pkg-direct-dep.js",
@@ -2378,7 +2582,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     },
     {
       "Route": "_content/RazorPackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
@@ -2410,7 +2619,12 @@
           "Value": "__last-modified__"
         }
       ],
-      "EndpointProperties": []
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
     }
   ]
 }
