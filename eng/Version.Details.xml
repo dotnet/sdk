@@ -228,7 +228,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.5.24272.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d89832aaf3616212c6ffa32ed1320f5117907056</Sha>
+      <Sha>5c06e5d01fa0ea4122e7202cefb921a779f9843a</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="9.0.0-preview.5.24278.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
