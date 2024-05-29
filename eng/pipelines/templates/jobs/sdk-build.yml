@@ -70,6 +70,7 @@ jobs:
           displayName: Setup Private Feeds Credentials
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - task: NugetAuthenticate@1
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
