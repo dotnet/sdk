@@ -59,12 +59,12 @@
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "_content/ComponentApp",
-      "RelativePath": "fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "RelativePath": "css/fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -77,7 +77,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\css\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\css\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
@@ -127,7 +127,7 @@
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\wwwroot\\",
       "BasePath": "_content/ComponentApp",
-      "RelativePath": "fingerprint-site#[.{fingerprint}]?.css",
+      "RelativePath": "css/fingerprint-site#[.{fingerprint}]?.css",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -561,8 +561,8 @@
       ]
     },
     {
-      "Route": "fingerprint-site.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "Route": "css/fingerprint-site.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -606,8 +606,8 @@
       ]
     },
     {
-      "Route": "fingerprint-site.__fingerprint__.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "Route": "css/fingerprint-site.__fingerprint__.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -651,8 +651,8 @@
       ]
     },
     {
-      "Route": "fingerprint-site.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "Route": "css/fingerprint-site.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -706,8 +706,8 @@
       ]
     },
     {
-      "Route": "fingerprint-site.__fingerprint__.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
+      "Route": "css/fingerprint-site.__fingerprint__.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\css\\fingerprint-site#[.{fingerprint=__fingerprint__}]?.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -764,7 +764,7 @@
         },
         {
           "Name": "label",
-          "Value": "fingerprint-site.css"
+          "Value": "css/fingerprint-site.css"
         }
       ]
     },
@@ -933,7 +933,7 @@
       ]
     },
     {
-      "Route": "fingerprint-site.css",
+      "Route": "css/fingerprint-site.css",
       "AssetFile": "${ProjectPath}\\wwwroot\\css\\fingerprint-site.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -970,7 +970,7 @@
       ]
     },
     {
-      "Route": "fingerprint-site.__fingerprint__.css",
+      "Route": "css/fingerprint-site.__fingerprint__.css",
       "AssetFile": "${ProjectPath}\\wwwroot\\css\\fingerprint-site.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1010,7 +1010,7 @@
         },
         {
           "Name": "label",
-          "Value": "fingerprint-site.css"
+          "Value": "css/fingerprint-site.css"
         }
       ]
     }
