@@ -111,8 +111,8 @@
 
   <Target Name="GetRepoTemplates" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
-      <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
+      <RepoTemplate Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
+      <RepoTemplate Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
     </ItemGroup>
   </Target>
 
@@ -131,8 +131,8 @@
       <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
     </PropertyGroup>
 
-    <Copy SourceFiles="%(RepoTemplates.Identity)"
-          DestinationFolder="$(RedistLayoutPath)templates\$(CurrentTemplateInstallPath)" />
+    <Copy SourceFiles="@(RepoTemplate)"
+          DestinationFiles="$(RedistLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
   </Target>
 
   <Target Name="LayoutTemplatesForMSI" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
@@ -144,8 +144,8 @@
       <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
       <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
-    <Copy SourceFiles="%(RepoTemplates.Identity)"
-          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)" />
+    <Copy SourceFiles="@(RepoTemplate)"
+          DestinationFiles="$(BaseOutputPath)$(Configuration)\templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
   </Target>
 
 </Project>
