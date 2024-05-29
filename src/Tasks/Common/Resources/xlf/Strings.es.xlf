@@ -751,6 +751,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1189: Prefer32Bit no se admite y no tiene efecto para el destino netcoreapp.</target>
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
         <target state="translated">NETSDK1011: Los recursos se consumen desde el proyecto "{0}", pero no se ha encontrado la ruta de acceso de proyecto de MSBuild correspondiente en "{1}".</target>

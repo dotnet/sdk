@@ -948,5 +948,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
     <comment>{StrBegin="NETSDK1213: "}</comment>
   </data>
+  <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
+    <value>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
+    <comment>{StrBegin="NETSDK1214: "}</comment>
+  </data>
   <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
