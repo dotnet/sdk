@@ -82,6 +82,11 @@
         <target state="translated">正在寫入 Visual Studio 工作負載的安裝紀錄：'{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="new">Configured to use {0} when installing new manifests.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
