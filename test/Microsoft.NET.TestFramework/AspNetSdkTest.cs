@@ -46,12 +46,14 @@ namespace Microsoft.NET.TestFramework
                     if (targetFramework?.Value == "$(AspNetTestTfm)")
                     {
                         targetFramework.Value = overrideTfm ?? DefaultTfm;
+                        targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     }
                     var targetFrameworks = project.Descendants()
                         .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
                     if (targetFrameworks != null)
                     {
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
+                        targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     }
                 });
 

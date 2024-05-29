@@ -17,6 +17,9 @@ public partial class StaticWebAssetsBaselineFactory
     [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.styles\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ScopedAppBundleRegex();
 
+    [GeneratedRegex("""fingerprint-site(\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex FingerprintedSiteCssRegex();
+
     [GeneratedRegex("""(?:#\[\.{fingerprint=[0123456789abcdefghijklmnopqrstuvwxyz]{10}\}](\?|\!)?)""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex EmbeddedFingerprintExpression();
 
@@ -25,6 +28,7 @@ public partial class StaticWebAssetsBaselineFactory
         (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
         (ScopedAppBundleRegex(),"$1__fingerprint__$3$4"),
         (EmbeddedFingerprintExpression(), "#[.{fingerprint=__fingerprint__}]$1"),
+        (FingerprintedSiteCssRegex(), "fingerprint-site$1__fingerprint__$3$4"),
     };
 
     public static StaticWebAssetsBaselineFactory Instance { get; } = new();

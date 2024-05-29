@@ -5,8 +5,13 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+#if WASM_TASKS
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+internal class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+#else
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+#endif
 {
     public StaticWebAssetPathPattern(string path) => RawPattern = path;
 
