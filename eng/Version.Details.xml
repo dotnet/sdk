@@ -581,14 +581,14 @@
       aren't shipping, or those extensions packages depend on aspnetcore packages that won't ship. However, given the cost
       of maintaining this coherency path is high. This being toolset means that aspire is responsible for its own coherency.
     -->
-    <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-9.0.100-preview.1" Version="9.0.0-preview.4.24229.9">
+    <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-9.0.100-preview.1" Version="9.0.0-preview.2.24163.9">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>0514ea9e12ece4dd764824ce925ae0eae6fcbd86</Sha>
+      <Sha>9faf59f870abdeb427c51c1380fce84d8163f2f0</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="9.0.0-preview.4.24229.9">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="9.0.0-preview.2.24163.9">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>0514ea9e12ece4dd764824ce925ae0eae6fcbd86</Sha>
+      <Sha>9faf59f870abdeb427c51c1380fce84d8163f2f0</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
