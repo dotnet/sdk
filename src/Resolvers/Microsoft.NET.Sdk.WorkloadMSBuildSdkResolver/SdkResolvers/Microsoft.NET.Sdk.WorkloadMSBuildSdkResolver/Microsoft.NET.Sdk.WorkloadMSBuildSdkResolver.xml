@@ -1,3 +1,4 @@
 <SdkResolver>
 <Path>..\..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.dll</Path>
+<ResolvableSdkPattern>Microsoft.NET.SDK.WorkloadAutoImportPropsLocator|Microsoft.NET.SDK.WorkloadManifestTargetsLocator</ResolvableSdkPattern>
 </SdkResolver>
