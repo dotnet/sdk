@@ -156,18 +156,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
                         if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) &&
-                            File.Exists(installStateFilePath) &&
-                            InstallStateContents.FromString(File.ReadAllText(installStateFilePath)) is InstallStateContents installState &&
+                            InstallStateContents.FromPath(installStateFilePath) is InstallStateContents installState &&
                             (installState.Manifests != null || installState.WorkloadVersion != null))
                         {
-                            //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
+                            //  If the workload version is pinned in the install state, then we don't want to automatically update workloads when a workload is installed
                             //  To update to a new version, the user would need to run "dotnet workload update"
-                            //  TODO: We should also skip the update if a workload set version is pinned in install state or in global.json
                             _skipManifestUpdate = true;
                         }
                     }
-
-                    //  TODO: Should we still install a workload specified in global.json even if we are skipping updates?
 
                     RunInNewTransaction(context =>
                     {
@@ -175,7 +171,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                        {
                             if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
                             {
-                                //  TODO: Change this message to account for workload set wording
                                 Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                             }
                             UpdateWorkloadManifests(context, offlineCache);
@@ -203,9 +198,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                         TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
-                        //  TODO: Update this to only print the newly installed workload IDs?
                         Reporter.WriteLine();
-                        Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
                         Reporter.WriteLine();
 
                     });

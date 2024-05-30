@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">Проверка обновленных манифестов рабочей нагрузки.</target>
+        <source>Checking for updated workload version.</source>
+        <target state="needs-review-translation">Проверка обновленных манифестов рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
