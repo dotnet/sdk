@@ -37,11 +37,15 @@ namespace Microsoft.TemplateEngine.Edge
             loggerFactory ??= NullLoggerFactory.Instance;
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
+
+            WorkingDirectory = Environment.CurrentDirectory;
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }
 
         public string HostIdentifier { get; }
+
+        public string WorkingDirectory { get; }
 
         public IReadOnlyList<string> FallbackHostTemplateConfigNames { get; }
 
@@ -60,6 +64,9 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 case "HostIdentifier":
                     value = HostIdentifier;
+                    return true;
+                case "WorkingDirectory":
+                    value = WorkingDirectory;
                     return true;
             }
 
