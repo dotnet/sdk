@@ -99,6 +99,7 @@ jobs:
       /p:SmokeTestsWarnOnLicenseScanDiffs=false
       /p:TargetRid=linux-x64
       /p:PortableRid=linux-x64
+      /p:SkipPrepareSdkArchive=true
     displayName: Run Tests
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -138,8 +139,8 @@ jobs:
     continueOnError: true
     inputs:
       testRunner: vSTest
-      testResultsFiles: '*.trx'
-      searchFolder: $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
@@ -167,7 +168,7 @@ jobs:
       artifact: ''
       patterns: '**/Updated*'
       displayName: Download Updated Test Files
-  
+
   - script: |
       find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
     displayName: Move Artifacts to root
