@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             watcher.OnFileChange += (_, f) =>
             {
+                Assert.True(f.newFile);
                 filesChanged.Add(f.filePath);
                 changedEv.TrySetResult();
             };
@@ -60,13 +61,15 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<(string, bool)> handler = null;
+            EventHandler<(string path, bool newFile)> handler = null;
             handler = (_, f) =>
             {
+                Assert.False(f.newFile);
+
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
 
-                filesChanged.Add(f.Item1);
+                filesChanged.Add(f.path);
                 changedEv.TrySetResult();
             };
 
@@ -100,12 +103,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new Dictionary<string, bool>();
 
-            EventHandler<(string, bool)> handler = null;
+            EventHandler<(string path, bool newFile)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f.Item1);
+                filesChanged.Add(f.path, f.newFile);
 
                 if (filesChanged.Count >= 2)
                 {
@@ -122,8 +125,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.Move(srcFile, dstFile);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.Contains(srcFile, filesChanged);
-            Assert.Contains(dstFile, filesChanged);
+            Assert.False(filesChanged[srcFile]);
+            Assert.True(filesChanged[dstFile]);
         }
 
         [Fact]
