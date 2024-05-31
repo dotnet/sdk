@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
+            App.Start(testAsset, [], testFlags: TestFlags.BrowserRequired);
 
             // Verify we launched the browser.
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: https://localhost:5001/");
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
 
-            await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
+            App.Start(testAsset, [], testFlags: TestFlags.BrowserRequired);
 
             // Verify we launched the browser.
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: mycustombrowser.bat https://localhost:5001/");

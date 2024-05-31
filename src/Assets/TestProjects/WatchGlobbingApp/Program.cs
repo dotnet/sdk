@@ -15,7 +15,7 @@ namespace ConsoleApplication
         {
             Console.WriteLine("Started");
             // Process ID is insufficient because PID's may be reused.
-            Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
+            Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Guid.NewGuid()}");
             Console.WriteLine("Defined types = " + typeof(Program).GetTypeInfo().Assembly.DefinedTypes.Count());
             Thread.Sleep(Timeout.Infinite);
         }

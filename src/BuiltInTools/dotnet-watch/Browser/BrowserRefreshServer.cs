@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private IHost? _refreshServer;
         private string? _serverUrls;
 
-        private BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
+        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
             _options = options;
@@ -49,30 +50,25 @@ namespace Microsoft.DotNet.Watcher.Tools
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
         }
 
-        public static async ValueTask<BrowserRefreshServer> CreateAsync(EnvironmentOptions options, IReporter reporter, CancellationToken cancellationToken)
-        {
-            var server = new BrowserRefreshServer(options, reporter);
-            await server.StartAsync(cancellationToken);
-            return server;
-        }
-
         public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
         {
             Debug.Assert(_refreshServer != null);
             Debug.Assert(_serverUrls != null);
 
-            environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint] = _serverUrls;
-            environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey] = GetServerKey();
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _serverUrls);
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey, GetServerKey());
 
-            environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
-            environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+            environmentBuilder.DotNetStartupHookDirective.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
+            environmentBuilder.AspNetCoreHostingStartupAssembliesVariable.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
         }
 
         public string GetServerKey()
             => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
 
-        private async ValueTask StartAsync(CancellationToken cancellationToken)
+        public async ValueTask StartAsync(CancellationToken cancellationToken)
         {
+            Debug.Assert(_refreshServer == null);
+
             var hostName = _environmentHostName ?? "127.0.0.1";
 
             var supportsTLS = await SupportsTLS();
@@ -298,6 +294,34 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 return false;
             }
+        }
+
+        public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
+            => SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+
+        public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
+        {
+            _reporter.Verbose($"Updating diagnostics in the browser.");
+            if (compilationErrors.IsEmpty)
+            {
+                return SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+            }
+            else
+            {
+                return SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
+            }
+        }
+
+        private readonly struct AspNetCoreHotReloadApplied
+        {
+            public string Type => "AspNetCoreHotReloadApplied";
+        }
+
+        private readonly struct HotReloadDiagnostics
+        {
+            public string Type => "HotReloadDiagnosticsv1";
+
+            public IEnumerable<string> Diagnostics { get; init; }
         }
     }
 }

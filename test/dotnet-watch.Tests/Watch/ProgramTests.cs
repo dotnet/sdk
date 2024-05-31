@@ -14,27 +14,38 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux, Skip = "https://github.com/dotnet/aspnetcore/issues/23394")]
+        [Fact]
         public async Task ConsoleCancelKey()
         {
-            var console = new TestConsole(Logger);
             var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
-                .WithSource()
-                .Path;
+                .WithSource();
 
-            var reporter = new ConsoleReporter(console, verbose: true, quiet: false, suppressEmojis: false);
-            var options = CommandLineOptions.Parse(["run"], reporter, console.Out, out var _);
-            var app = new Program(console, reporter, options, new EnvironmentOptions(WorkingDirectory: testAsset, MuxerPath: ""));
+            var console = new TestConsole(Logger);
+            var reporter = new TestReporter(Logger);
 
-            var run = app.RunAsync();
+            var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
+            var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
 
-            await console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
-            console.ConsoleCancelKey();
+            var program = Program.TryCreate(
+                TestOptions.GetCommandLineOptions(["--verbose"]),
+                console,
+                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+                reporter,
+                out var errorCode);
 
-            var exitCode = await run.TimeoutAfter(TimeSpan.FromSeconds(30));
+            Assert.Equal(0, errorCode);
+            Assert.NotNull(program);
 
-            Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", console.GetOutput());
+            var run = program.RunAsync();
+
+            await watching.WaitAsync();
+
+            console.PressCancelKey();
+
+            var exitCode = await run;
             Assert.Equal(0, exitCode);
+
+            await shutdownRequested.WaitAsync();
         }
 
         [Theory]

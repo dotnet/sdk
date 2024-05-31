@@ -74,7 +74,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             using var cancellationOnFailure = new CancellationTokenSource();
 
-            cancellationOnFailure.CancelAfter(s_timeout);
+            if (!Debugger.IsAttached)
+            {
+                cancellationOnFailure.CancelAfter(s_timeout);
+            }
 
             var failedLineCount = 0;
             while (!_source.Completion.IsCompleted && failedLineCount == 0)

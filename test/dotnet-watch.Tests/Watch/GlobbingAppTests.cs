@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.UsePollingWatcher = usePollingWatcher;
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, []);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             File.WriteAllText(fileToChange, programCs);
 
             await App.AssertFileChanged();
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 2);
         }
 
@@ -42,14 +42,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, []);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
             File.Delete(fileToChange);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
@@ -59,14 +59,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, []);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var folderToDelete = Path.Combine(testAsset.Path, "include");
             Directory.Delete(folderToDelete, recursive: true);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
@@ -76,13 +76,15 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, []);
+
+            await App.AssertStarted();
 
             var oldFile = Path.Combine(testAsset.Path, "include", "Foo.cs");
             var newFile = Path.Combine(testAsset.Path, "include", "Foo_new.cs");
             File.Move(oldFile, newFile);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
         }
 
         [Fact]
@@ -91,7 +93,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, []);
+
+            await App.AssertStarted();
 
             var changedFile = Path.Combine(testAsset.Path, "exclude", "Baz.cs");
             File.WriteAllText(changedFile, "");

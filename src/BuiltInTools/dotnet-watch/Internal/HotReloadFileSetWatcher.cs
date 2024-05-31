@@ -7,23 +7,31 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class HotReloadFileSetWatcher : IDisposable
+    internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter) : IDisposable
     {
-        private static readonly TimeSpan DebounceInterval = TimeSpan.FromMilliseconds(50);
-        private readonly FileWatcher _fileWatcher;
-        private readonly FileSet _fileSet;
+        private static readonly TimeSpan s_debounceInterval = TimeSpan.FromMilliseconds(50);
+
+        private readonly FileWatcher _fileWatcher = new(fileSet, reporter);
         private readonly object _changedFilesLock = new();
-        private volatile ConcurrentDictionary<string, FileItem> _changedFiles = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, FileItem> _changedFiles = new(StringComparer.Ordinal);
+
         private TaskCompletionSource<FileItem[]?>? _tcs;
         private bool _initialized;
         private bool _disposed;
 
-        public HotReloadFileSetWatcher(FileSet fileSet, IReporter reporter)
+        public void Dispose()
         {
-            Ensure.NotNull(fileSet, nameof(fileSet));
+            _disposed = true;
+            _fileWatcher.Dispose();
+        }
 
-            _fileSet = fileSet;
-            _fileWatcher = new FileWatcher(reporter);
+        public void UpdateBuildCompletionTime(DateTime value)
+        {
+            lock (_changedFilesLock)
+            {
+                buildCompletionTime = value;
+                _changedFiles.Clear();
+            }
         }
 
         private void EnsureInitialized()
@@ -35,19 +43,17 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             _initialized = true;
 
-            foreach (var file in _fileSet)
-            {
-                _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
-            }
-
+            _fileWatcher.StartWatching();
             _fileWatcher.OnFileChange += FileChangedCallback;
+
+            reporter.Report(MessageDescriptor.WaitingForChanges);
 
             Task.Factory.StartNew(async () =>
             {
                 // Debounce / polling loop
                 while (!_disposed)
                 {
-                    await Task.Delay(DebounceInterval);
+                    await Task.Delay(s_debounceInterval);
                     if (_changedFiles.IsEmpty)
                     {
                         continue;
@@ -59,12 +65,16 @@ namespace Microsoft.DotNet.Watcher.Internal
                         continue;
                     }
 
-
                     FileItem[] changedFiles;
                     lock (_changedFilesLock)
                     {
                         changedFiles = _changedFiles.Values.ToArray();
                         _changedFiles.Clear();
+                    }
+
+                    if (changedFiles is [])
+                    {
+                        continue;
                     }
 
                     tcs.TrySetResult(changedFiles);
@@ -74,6 +84,21 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
+                try
+                {
+                    // Do not report changes to files that happened during build:
+                    if (Math.Max(File.GetCreationTimeUtc(path).Ticks, File.GetLastWriteTimeUtc(path).Ticks) < buildCompletionTime.Ticks)
+                    {
+                        reporter.Verbose($"Ignoring file updated during build: '{path}'.");
+                        return;
+                    }
+                }
+                catch (Exception e)
+                {
+                    reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
+                    return;
+                }
+
                 if (newFile)
                 {
                     lock (_changedFilesLock)
@@ -81,7 +106,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         _changedFiles.TryAdd(path, new FileItem { FilePath = path, IsNewFile = newFile });
                     }
                 }
-                else if (_fileSet.TryGetValue(path, out var fileItem))
+                else if (fileSet.TryGetValue(path, out var fileItem))
                 {
                     lock (_changedFilesLock)
                     {
@@ -104,12 +129,6 @@ namespace Microsoft.DotNet.Watcher.Internal
             _tcs = tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => tcs.TrySetResult(null));
             return tcs.Task;
-        }
-
-        public void Dispose()
-        {
-            _disposed = true;
-            _fileWatcher.Dispose();
         }
     }
 }
