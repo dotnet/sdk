@@ -35,6 +35,21 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
+        private void OnHelpRequested(object sender, HelpEventArgs args)
+        {
+            CommandLineOptionMessages commandLineOptionMessages = args.CommandLineOptionMessages;
+            string moduleName = commandLineOptionMessages.ModuleName;
+
+            foreach (CommandLineOptionMessage commandLineOptionMessage in commandLineOptionMessages.CommandLineOptionMessageList)
+            {
+                if (commandLineOptionMessage.IsHidden) continue;
+
+                _commandLineOptionNameToModuleNames.AddOrUpdate(
+                    commandLineOptionMessage.Name,
+                    (key) => (commandLineOptionMessage, new[] { moduleName }), (optionName, value) => (value.Item1, value.Item2.Concat([moduleName]).ToArray()));
+            }
+        }
+
         private Dictionary<bool, List<(CommandLineOptionMessage, string[])>> GetAllOptions()
         {
             Dictionary<bool, List<(CommandLineOptionMessage, string[])>> builtInToOptions = [];

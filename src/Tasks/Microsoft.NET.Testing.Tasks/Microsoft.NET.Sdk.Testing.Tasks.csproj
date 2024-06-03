@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Compile Include="**/*.cs" />
-    <Compile Include="../../../Cli/dotnet/commands/dotnet-test/IPC/**/*.cs" />
+    <Compile Include="../../Cli/dotnet/commands/dotnet-test/IPC/**/*.cs" />
   </ItemGroup>
   
 </Project>

@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
-using Microsoft.TemplateEngine.Cli;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -188,7 +187,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
-            TestingPlatformCommand command = (TestingPlatformCommand)TestCommandFactory.Create("test");
+            var command = new TestingPlatformCommand("test");
             command.SetAction((parseResult) => command.Run(parseResult));
 
             return command;

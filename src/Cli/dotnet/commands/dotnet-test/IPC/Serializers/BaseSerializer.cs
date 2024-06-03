@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NETCOREAPP
 #nullable enable
+#endif
 
 using System.Buffers;
 
@@ -157,10 +159,12 @@ internal abstract class BaseSerializer
         SetPosition(stream, currentPosition);
     }
 
-    private static int GetSize<T>()
-            where T : struct => typeof(T) == typeof(int)
-                ? sizeof(int)
-                : typeof(T) == typeof(long)
-                ? sizeof(long)
-                : typeof(T) == typeof(short) ? sizeof(short) : typeof(T) == typeof(bool) ? sizeof(bool) : 0;
+    private static int GetSize<T>() => typeof(T) switch
+    {
+        Type type when type == typeof(int) => sizeof(int),
+        Type type when type == typeof(long) => sizeof(long),
+        Type type when type == typeof(short) => sizeof(short),
+        Type type when type == typeof(bool) => sizeof(bool),
+        _ => 0,
+    };
 }

@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NETCOREAPP
 #nullable enable
+#endif
 
 using System.Diagnostics;
 
@@ -28,10 +30,6 @@ namespace Microsoft.DotNet.Tools.Test
         |---CommandLineOptionMessageList[1] Description Id---| 2 (2 bytes)
         |---CommandLineOptionMessageList[1] Description Size---| (4 bytes)
         |---CommandLineOptionMessageList[1] Description Value---| (n bytes)
-
-        |---CommandLineOptionMessageList[2] Arity Id---| 3 (2 bytes)
-        |---CommandLineOptionMessageList[2] Arity Size---| (4 bytes)
-        |---CommandLineOptionMessageList[2] Arity Value---| (n bytes)
 
         |---CommandLineOptionMessageList[3] IsHidden Id---| 4 (2 bytes)
         |---CommandLineOptionMessageList[3] IsHidden Size---| (4 bytes)
@@ -105,10 +103,6 @@ namespace Microsoft.DotNet.Tools.Test
                             description = ReadString(stream);
                             break;
 
-                        case CommandLineOptionMessageFieldsId.Arity:
-                            arity = ReadString(stream);
-                            break;
-
                         case CommandLineOptionMessageFieldsId.IsHidden:
                             isHidden = ReadBool(stream);
                             break;
@@ -123,7 +117,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                commandLineOptionMessages.Add(new CommandLineOptionMessage(name, description, arity, isHidden, isBuiltIn));
+                commandLineOptionMessages.Add(new CommandLineOptionMessage(name, description, isHidden, isBuiltIn));
             }
 
             return commandLineOptionMessages;
@@ -162,7 +156,6 @@ namespace Microsoft.DotNet.Tools.Test
 
                 WriteField(stream, CommandLineOptionMessageFieldsId.Name, commandLineOptionMessage.Name);
                 WriteField(stream, CommandLineOptionMessageFieldsId.Description, commandLineOptionMessage.Description);
-                WriteField(stream, CommandLineOptionMessageFieldsId.Arity, commandLineOptionMessage.Arity);
                 WriteField(stream, CommandLineOptionMessageFieldsId.IsHidden, commandLineOptionMessage.IsHidden);
                 WriteField(stream, CommandLineOptionMessageFieldsId.IsBuiltIn, commandLineOptionMessage.IsBuiltIn);
             }
@@ -177,7 +170,6 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessage.Name) ? 0 : 1) +
                 (string.IsNullOrEmpty(commandLineOptionMessage.Description) ? 0 : 1) +
-                (string.IsNullOrEmpty(commandLineOptionMessage.Arity) ? 0 : 1) +
                 2);
 
         private static bool IsNull<T>(T[] items) => items is null || items.Length == 0;

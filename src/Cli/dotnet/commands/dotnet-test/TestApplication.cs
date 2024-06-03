@@ -12,13 +12,15 @@ namespace Microsoft.DotNet.Cli
         private readonly string _pipeName;
         private readonly string[] _args;
 
-        public event EventHandler<CommandLineOptionMessages> HelpOptionsEvent;
-        public event EventHandler<string> ErrorEvent;
+        public event EventHandler<HelpEventArgs> HelpRequested;
+        public event EventHandler<ErrorEventArgs> ErrorReceived;
 
         private const string ServerOptionKey = "server";
         private const string ServerOptionValue = "dotnettestcli";
 
         private const string DotNetTestPipeOptionKey = "dotnet-test-pipe";
+
+        public string ModuleName => _moduleName;
 
         public TestApplication(string moduleName, string pipeName, string[] args)
         {
@@ -27,11 +29,11 @@ namespace Microsoft.DotNet.Cli
             _args = args;
         }
 
-        public async Task Run()
+        public async Task RunAsync()
         {
             if (!File.Exists(_moduleName))
             {
-                ErrorEvent.Invoke(this, _moduleName);
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_moduleName}' not found. Build the test application before or run 'dotnet test'." });
                 return;
             }
 
@@ -65,9 +67,9 @@ namespace Microsoft.DotNet.Cli
             return builder.ToString();
         }
 
-        public void RunHelp(CommandLineOptionMessages commandLineOptionMessages)
+        public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
-            HelpOptionsEvent?.Invoke(this, commandLineOptionMessages);
+            HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
         }
     }
 }

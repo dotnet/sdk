@@ -223,7 +223,6 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 : Path.Combine(directoryId, ".p"), true);
     }
 
-#if NET
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -252,5 +251,4 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
 
         _disposed = true;
     }
-#endif
 }

@@ -23,13 +23,13 @@ namespace Microsoft.NET.Sdk.Testing.Tasks
             {
                 Log.LogMessage(MessageImportance.Low, $"Target path: {TargetPath}");
 
-                using NamedPipeClient namedPipeClient = new(GetTestsProjectPipeName.ItemSpec);
+                NamedPipeClient dotnetTestPipeClient = new(GetTestsProjectPipeName.ItemSpec);
 
-                namedPipeClient.RegisterSerializer<Module>(new ModuleSerializer());
-                namedPipeClient.RegisterSerializer<VoidResponse>(new VoidResponseSerializer());
+                dotnetTestPipeClient.RegisterSerializer<Module>(new ModuleSerializer());
+                dotnetTestPipeClient.RegisterSerializer<VoidResponse>(new VoidResponseSerializer());
 
-                namedPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
-                namedPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

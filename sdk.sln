@@ -505,7 +505,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EndToEnd-Installer.Tests", "test\EndToEnd-Installer.Tests\EndToEnd-Installer.Tests.csproj", "{149E3D40-8115-4965-9305-5A1ADBF04899}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Testing.Tasks", "src\Tasks\Microsoft.NET.Testing.Tasks\Microsoft.NET.Testing.Tasks.csproj", "{0714792F-A8EB-4A88-AE4C-5A2EF6C883CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Testing.Tasks", "src\Tasks\Microsoft.NET.Testing.Tasks\Microsoft.NET.Sdk.Testing.Tasks.csproj", "{0714792F-A8EB-4A88-AE4C-5A2EF6C883CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

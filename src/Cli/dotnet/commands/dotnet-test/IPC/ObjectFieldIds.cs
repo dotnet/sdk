@@ -17,8 +17,7 @@ namespace Microsoft.DotNet.Tools.Test
     {
         internal const int Name = 1;
         internal const int Description = 2;
-        internal const int Arity = 3;
-        internal const int IsHidden = 4;
-        internal const int IsBuiltIn = 5;
+        internal const int IsHidden = 3;
+        internal const int IsBuiltIn = 4;
     }
 }

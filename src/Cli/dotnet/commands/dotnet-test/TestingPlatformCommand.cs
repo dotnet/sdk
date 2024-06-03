@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
@@ -67,10 +66,8 @@ namespace Microsoft.DotNet.Cli
             {
                 while (true)
                 {
-                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, Callback, NamedPipeServerStream.MaxAllowedServerInstances, token);
-                    namedPipeServer.RegisterSerializer<Module>(new ModuleSerializer());
-                    namedPipeServer.RegisterSerializer<CommandLineOptionMessages>(new CommandLineOptionMessagesSerializer());
-                    namedPipeServer.RegisterSerializer<VoidResponse>(new VoidResponseSerializer());
+                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token);
+                    namedPipeServer.RegisterAllSerializers();
 
                     await namedPipeServer.WaitConnectionAsync(token);
 
@@ -88,21 +85,25 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private Task<IResponse> Callback(IRequest request)
+        private Task<IResponse> OnRequest(IRequest request)
         {
             if (request is Module module)
             {
                 var testApplication = new TestApplication(module.Name, _pipeNameDescription.Name, _args);
                 _testApplications[Path.GetFileName(module.Name)] = testApplication;
-                testApplication.HelpOptionsEvent += OnHelpOptionsEvent;
-                testApplication.ErrorEvent += OnErrorEvent;
 
-                _testsRun.Add(Task.Run(async () => await testApplication.Run()));
+                if (_args.Contains("--help") || _args.Contains("-h"))
+                {
+                    testApplication.HelpRequested += OnHelpRequested;
+                }
+                testApplication.ErrorReceived += OnErrorReceived;
+
+                _testsRun.Add(Task.Run(async () => await testApplication.RunAsync()));
             }
             else if (request is CommandLineOptionMessages commandLineOptionMessages)
             {
                 var testApplication = _testApplications[commandLineOptionMessages.ModuleName];
-                testApplication?.RunHelp(commandLineOptionMessages);
+                testApplication?.OnCommandLineOptionMessages(commandLineOptionMessages);
             }
             else
             {
@@ -112,23 +113,9 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
-        private void OnHelpOptionsEvent(object sender, CommandLineOptionMessages commandLineOptionMessages)
+        private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            string moduleName = commandLineOptionMessages.ModuleName;
-
-            foreach (CommandLineOptionMessage commandLineOptionMessage in commandLineOptionMessages.CommandLineOptionMessageList)
-            {
-                if (commandLineOptionMessage.IsHidden) continue;
-
-                _commandLineOptionNameToModuleNames.AddOrUpdate(
-                    commandLineOptionMessage.Name,
-                    (key) => (commandLineOptionMessage, new[] { moduleName }), (optionName, value) => (value.Item1, value.Item2.Concat([moduleName]).ToArray()));
-            }
-        }
-
-        private void OnErrorEvent(object sender, string moduleName)
-        {
-            VSTestTrace.SafeWriteTrace(() => $"Test module '{moduleName}' not found. Build the test application before or run 'dotnet test'.");
+            VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
         }
 
         private static string GetMSBuildExePath()
