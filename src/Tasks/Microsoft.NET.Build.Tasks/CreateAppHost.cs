@@ -46,6 +46,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool EnableMacOSCodeSign { get; set; } = false;
 
+        public bool DisableCetCompat { get; set; } = false;
+
         protected override void ExecuteCore()
         {
             try
@@ -64,12 +66,12 @@ namespace Microsoft.NET.Build.Tasks
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
-                                                enableMacOSCodeSign: EnableMacOSCodeSign);
+                                                enableMacOSCodeSign: EnableMacOSCodeSign,
+                                                disableCetCompat: DisableCetCompat);
                         return;
                     }
                     catch (Exception ex) when (ex is IOException ||
                                                ex is UnauthorizedAccessException ||
-                                               ex is HResultException ||
                                                (ex is AggregateException && (ex.InnerException is IOException || ex.InnerException is UnauthorizedAccessException)))
                     {
                         if (Retries < 0 || attempts == Retries)
