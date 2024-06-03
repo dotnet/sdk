@@ -149,15 +149,6 @@
     <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
     <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
     <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
-
-    <!-- Give build access to commit info without necessarily requiring git queries. -->
-    <EnvironmentVariables Include="GitCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="GitInfoCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="SourceRevisionId=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="RepositoryCommit=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="COMMIT_SHA=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="GIT_COMMIT=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="RepositoryType=Git" />
   </ItemGroup>
 
   <ItemGroup>
