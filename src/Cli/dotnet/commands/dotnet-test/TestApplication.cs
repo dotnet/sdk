@@ -15,11 +15,6 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<HelpEventArgs> HelpRequested;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
-        private const string ServerOptionKey = "server";
-        private const string ServerOptionValue = "dotnettestcli";
-
-        private const string DotNetTestPipeOptionKey = "dotnet-test-pipe";
-
         public string ModuleName => _moduleName;
 
         public TestApplication(string moduleName, string pipeName, string[] args)
@@ -58,11 +53,11 @@ namespace Microsoft.DotNet.Cli
             if (isDll)
                 builder.Append($"exec {_moduleName} ");
 
-            builder.Append(_args.Any(x => x != "--no-build")
-                ? _args.Where(x => x != "--no-build").Aggregate((a, b) => $"{a} {b}")
+            builder.Append(_args.Length != 0
+                ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
-            builder.Append($" --{ServerOptionKey} {ServerOptionValue} --{DotNetTestPipeOptionKey} {_pipeName}");
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
 
             return builder.ToString();
         }

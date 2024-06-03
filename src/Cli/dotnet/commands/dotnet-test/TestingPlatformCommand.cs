@@ -24,8 +24,6 @@ namespace Microsoft.DotNet.Cli
         private Task _namedPipeConnectionLoop;
         private string[] _args;
 
-        private const string MSBuildExeName = "MSBuild.dll";
-
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
             TreatUnmatchedTokensAsErrors = false;
@@ -33,12 +31,14 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = parseResult.GetArguments();
+            _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
+
+            DebuggerUtility.AttachCurrentProcessToVSProcessPID(38184);
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
-            bool containsNoBuild = parseResult.UnmatchedTokens.Any(x => x == "--no-build");
+            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
 
             if (containsNoBuild)
             {
@@ -47,7 +47,11 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", "-bl", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
+                string msBuildArgs = TryGetMSBuildArgs(parseResult, out string[] result) ?
+                    string.Join(" ", result) :
+                    string.Empty;
+
+                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", msBuildArgs, $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
                 int buildResult = buildCommand.Execute();
             }
 
@@ -58,6 +62,13 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop.Wait();
 
             return 0;
+        }
+
+        private static bool TryGetMSBuildArgs(ParseResult parseResult, out string[] msbuildArgs)
+        {
+            var hasMSBuildArgs = parseResult.UnmatchedTokens.Any(token => token == CliConstants.MSBuildOptionKey);
+            msbuildArgs = hasMSBuildArgs ? parseResult.UnmatchedTokens.SkipWhile(token => token != CliConstants.MSBuildOptionKey).Skip(1).ToArray() : [];
+            return hasMSBuildArgs;
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
@@ -87,42 +98,76 @@ namespace Microsoft.DotNet.Cli
 
         private Task<IResponse> OnRequest(IRequest request)
         {
-            if (request is Module module)
+            if (TryGetModuleName(request, out string moduleName))
             {
-                var testApplication = new TestApplication(module.Name, _pipeNameDescription.Name, _args);
-                _testApplications[Path.GetFileName(module.Name)] = testApplication;
-
-                if (_args.Contains("--help") || _args.Contains("-h"))
-                {
-                    testApplication.HelpRequested += OnHelpRequested;
-                }
-                testApplication.ErrorReceived += OnErrorReceived;
-
+                TestApplication testApplication = GenerateTestApplication(moduleName);
                 _testsRun.Add(Task.Run(async () => await testApplication.RunAsync()));
+
+                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
-            else if (request is CommandLineOptionMessages commandLineOptionMessages)
+
+            if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
             {
                 var testApplication = _testApplications[commandLineOptionMessages.ModuleName];
                 testApplication?.OnCommandLineOptionMessages(commandLineOptionMessages);
-            }
-            else
-            {
-                throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+
+                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
 
-            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+            throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
         }
+
+        private static bool TryGetModuleName(IRequest request, out string moduleName)
+        {
+            if (request is Module module)
+            {
+                moduleName = module.Name;
+                return true;
+            }
+
+            moduleName = null;
+            return false;
+        }
+
+        private static bool TryGetHelpResponse(IRequest request, out CommandLineOptionMessages commandLineOptionMessages)
+        {
+            if (request is CommandLineOptionMessages result)
+            {
+                commandLineOptionMessages = result;
+                return true;
+            }
+
+            commandLineOptionMessages = null;
+            return false;
+        }
+
+        private TestApplication GenerateTestApplication(string moduleName)
+        {
+            var testApplication = new TestApplication(moduleName, _pipeNameDescription.Name, _args);
+            _testApplications[Path.GetFileName(moduleName)] = testApplication;
+
+            if (ContainsHelpOption(_args))
+            {
+                testApplication.HelpRequested += OnHelpRequested;
+            }
+            testApplication.ErrorReceived += OnErrorReceived;
+
+            return testApplication;
+        }
+
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
             VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
         }
 
+        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOption) || args.Contains(CliConstants.HelpOption.Substring(0, 2));
+
         private static string GetMSBuildExePath()
         {
             return Path.Combine(
                 AppContext.BaseDirectory,
-                MSBuildExeName);
+                CliConstants.MSBuildExeName);
         }
     }
 }
