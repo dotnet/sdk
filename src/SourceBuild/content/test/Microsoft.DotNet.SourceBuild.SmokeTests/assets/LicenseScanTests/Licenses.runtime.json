@@ -1,22 +1,6 @@
 {
   "files": [
     {
-      "path": "src/native/external/zlib-ng/cmake/detect-arch.cmake",
-      "detected_license_expression": "zlib AND unknown-license-reference"
-    },
-    {
-      "path": "src/native/external/zlib-ng/cmake/detect-coverage.cmake",
-      "detected_license_expression": "(apache-2.0 OR other-permissive OR tsl-2020) AND unknown-license-reference"
-    },
-    {
-      "path": "src/native/external/zlib-ng/cmake/detect-intrinsics.cmake",
-      "detected_license_expression": "zlib AND unknown-license-reference"
-    },
-    {
-      "path": "src/native/external/zlib-ng/cmake/detect-sanitizer.cmake",
-      "detected_license_expression": "zlib AND unknown-license-reference"
-    },
-    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
