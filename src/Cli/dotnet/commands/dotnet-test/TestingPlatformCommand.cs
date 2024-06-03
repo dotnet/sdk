@@ -33,8 +33,6 @@ namespace Microsoft.DotNet.Cli
         {
             _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
 
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(38184);
-
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
