@@ -34,7 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
   <!-- This file runs before user csproj is evaluated and thus the switch here is just for completeness - SWA props file will always be imported. -->
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyPropsFile)" Condition="'$(_WebAssemblyPropsFile)' != ''" />
