@@ -10,6 +10,7 @@ parameters:
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
+  publishXunitResults: false
   enableSbom: true
   ### ENV VARS ###
   testFullMSBuild: false
@@ -160,6 +161,19 @@ jobs:
             RunAoTTests: ${{ parameters.runAoTTests }}
 
     ############### POST ###############
+    - ${{ if eq(parameters.publishXunitResults, true) }}:
+      # This is only necessary for non-Helix tests.
+      - task: PublishTestResults@2
+        displayName: Publish xUnit Test Results
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.xml
+          testRunTitle: $(System.PhaseName)
+          buildPlatform: ${{ parameters.buildArchitecture }}
+          buildConfiguration: $(buildConfiguration)
+        continueOnError: true
+        condition: always()
+
     - task: CopyFiles@2
       displayName: Copy Logs
       inputs:
