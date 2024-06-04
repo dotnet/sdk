@@ -153,7 +153,6 @@ namespace Microsoft.DotNet.Cli
             return testApplication;
         }
 
-
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
             VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
