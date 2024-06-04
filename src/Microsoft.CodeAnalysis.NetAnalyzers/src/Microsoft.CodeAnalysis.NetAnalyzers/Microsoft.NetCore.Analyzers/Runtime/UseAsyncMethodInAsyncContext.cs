@@ -4,7 +4,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -83,6 +85,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
+                INamedTypeSymbol? semaphoreSlimType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingSemaphoreSlim);
+                INamedTypeSymbol? timeSpanType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan);
+                INamedTypeSymbol intType = context.Compilation.GetSpecialType(SpecialType.System_Int32);
+                IFieldSymbol? timeSpanZero = timeSpanType?.GetMembers(nameof(TimeSpan.Zero))
+                    .OfType<IFieldSymbol>()
+                    .FirstOrDefault();
+                ImmutableArray<IMethodSymbol> semaphoreSlimWaitWithTimeoutMethods = semaphoreSlimType
+                    ?.GetMembers(nameof(SemaphoreSlim.Wait))
+                    .OfType<IMethodSymbol>()
+                    .Where(m => m.Parameters.Length > 0
+                                && (SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, intType)
+                                    || SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, timeSpanType)))
+                    .ToImmutableArray() ?? ImmutableArray<IMethodSymbol>.Empty;
+
                 ImmutableArray<IMethodSymbol> excludedMethods = GetExcludedMethods(wellKnownTypeProvider);
                 context.RegisterOperationAction(context =>
                 {
@@ -91,7 +107,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (context.Operation is IInvocationOperation invocationOperation)
                         {
                             var methodSymbol = invocationOperation.TargetMethod;
-                            if (excludedMethods.Contains(methodSymbol.OriginalDefinition, SymbolEqualityComparer.Default) || InspectAndReportBlockingMemberAccess(context, methodSymbol, syncBlockingSymbols, SymbolKind.Method))
+                            if (excludedMethods.Contains(methodSymbol.OriginalDefinition, SymbolEqualityComparer.Default)
+                                || InspectAndReportBlockingMemberAccess(context, methodSymbol, syncBlockingSymbols, SymbolKind.Method)
+                                || IsSemaphoreSlimWaitWithZeroArgumentInvocation(invocationOperation, timeSpanZero, semaphoreSlimWaitWithTimeoutMethods))
                             {
                                 // Don't return double-diagnostics.
                                 return;
@@ -146,6 +164,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }, OperationKind.Invocation, OperationKind.PropertyReference);
             });
+        }
+
+        private static bool IsSemaphoreSlimWaitWithZeroArgumentInvocation(IInvocationOperation invocation, IFieldSymbol? timeSpanZero, ImmutableArray<IMethodSymbol> semaphoreSlimWaitWithTimeoutMethods)
+        {
+            if (!semaphoreSlimWaitWithTimeoutMethods.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default))
+            {
+                return false;
+            }
+
+            Debug.Assert(!invocation.Arguments.IsEmpty);
+
+            IOperation argumentValue = invocation.Arguments[0].Value;
+
+            return argumentValue.HasConstantValue(0)
+                   || timeSpanZero is not null
+                   && argumentValue is IFieldReferenceOperation fieldReference
+                   && SymbolEqualityComparer.Default.Equals(fieldReference.Field, timeSpanZero);
         }
 
         private static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>

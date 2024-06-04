@@ -1343,6 +1343,218 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
+        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        public Task WhenPassingZeroToSemaphoreSlimWait_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+                                using System.Threading.Tasks;
+
+                                class Test
+                                {
+                                    async Task M()
+                                    {
+                                        SemaphoreSlim s = new SemaphoreSlim(0);
+                                        s.Wait(0);
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        public Task WhenPassingZeroWithCancellationTokenToSemaphoreSlimWait_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+                                using System.Threading.Tasks;
+
+                                class Test
+                                {
+                                    async Task M()
+                                    {
+                                        SemaphoreSlim s = new SemaphoreSlim(0);
+                                        s.Wait(0, CancellationToken.None);
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        public Task WhenPassingTimeSpanZeroToSemaphoreSlimWait_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+                                using System.Threading.Tasks;
+
+                                class Test
+                                {
+                                    async Task M()
+                                    {
+                                        SemaphoreSlim s = new SemaphoreSlim(0);
+                                        s.Wait(TimeSpan.Zero);
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        public Task WhenPassingTimeSpanZeroWithCancellationTokenToSemaphoreSlimWait_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+                                using System.Threading.Tasks;
+
+                                class Test
+                                {
+                                    async Task M()
+                                    {
+                                        SemaphoreSlim s = new SemaphoreSlim(0);
+                                        s.Wait(TimeSpan.Zero, CancellationToken.None);
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [InlineData("1")]
+        [InlineData("500")]
+        public Task WhenPassingNonZeroToSemaphoreSlimWait_Diagnostic(string nonZero)
+        {
+            var code = $$"""
+                         using System;
+                         using System.Threading;
+                         using System.Threading.Tasks;
+
+                         class Test
+                         {
+                             async Task M()
+                             {
+                                 SemaphoreSlim s = new SemaphoreSlim(0);
+                                 {|#0:s.Wait({{nonZero}})|};
+                             }
+                         }
+                         """;
+            var result = new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor)
+                .WithLocation(0)
+                .WithArguments("SemaphoreSlim.Wait(int)", "SemaphoreSlim.WaitAsync()");
+
+            return VerifyCS.VerifyAnalyzerAsync(code, result);
+        }
+
+        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [InlineData("1")]
+        [InlineData("500")]
+        public Task WhenPassingNonZeroWithCancellationTokenToSemaphoreSlimWait_Diagnostic(string nonZero)
+        {
+            var code = $$"""
+                         using System;
+                         using System.Threading;
+                         using System.Threading.Tasks;
+
+                         class Test
+                         {
+                             async Task M()
+                             {
+                                 SemaphoreSlim s = new SemaphoreSlim(0);
+                                 {|#0:s.Wait({{nonZero}}, CancellationToken.None)|};
+                             }
+                         }
+                         """;
+            var result = new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor)
+                .WithLocation(0)
+                .WithArguments("SemaphoreSlim.Wait(int, CancellationToken)", "SemaphoreSlim.WaitAsync()");
+
+            return VerifyCS.VerifyAnalyzerAsync(code, result);
+        }
+
+        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [InlineData("TimeSpan.FromSeconds(30)")]
+        [InlineData("TimeSpan.Parse(\"0:32:0\")")]
+        public Task WhenPassingNonZeroTimeSpanToSemaphoreSlimWait_Diagnostic(string nonZero)
+        {
+            var code = $$"""
+                         using System;
+                         using System.Threading;
+                         using System.Threading.Tasks;
+
+                         class Test
+                         {
+                             async Task M()
+                             {
+                                 SemaphoreSlim s = new SemaphoreSlim(0);
+                                 {|#0:s.Wait({{nonZero}})|};
+                             }
+                         }
+                         """;
+            var result = new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor)
+                .WithLocation(0)
+                .WithArguments("SemaphoreSlim.Wait(TimeSpan)", "SemaphoreSlim.WaitAsync()");
+
+            return VerifyCS.VerifyAnalyzerAsync(code, result);
+        }
+
+        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [InlineData("TimeSpan.FromSeconds(30)")]
+        [InlineData("TimeSpan.Parse(\"0:32:0\")")]
+        public Task WhenPassingNonZeroTimeSpanWithCancellationTokenToSemaphoreSlimWait_Diagnostic(string nonZero)
+        {
+            var code = $$"""
+                         using System;
+                         using System.Threading;
+                         using System.Threading.Tasks;
+
+                         class Test
+                         {
+                             async Task M()
+                             {
+                                 SemaphoreSlim s = new SemaphoreSlim(0);
+                                 {|#0:s.Wait({{nonZero}}, CancellationToken.None)|};
+                             }
+                         }
+                         """;
+            var result = new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor)
+                .WithLocation(0)
+                .WithArguments("SemaphoreSlim.Wait(TimeSpan, CancellationToken)", "SemaphoreSlim.WaitAsync()");
+
+            return VerifyCS.VerifyAnalyzerAsync(code, result);
+        }
+
+        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        public Task WhenPassingCancellationTokenToSemaphoreSlimWait_Diagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+                                using System.Threading.Tasks;
+
+                                class Test
+                                {
+                                    async Task M()
+                                    {
+                                        SemaphoreSlim s = new SemaphoreSlim(0);
+                                        {|#0:s.Wait(CancellationToken.None)|};
+                                    }
+                                }
+                                """;
+            var result = new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor)
+                .WithLocation(0)
+                .WithArguments("SemaphoreSlim.Wait(CancellationToken)", "SemaphoreSlim.WaitAsync()");
+
+            return VerifyCS.VerifyAnalyzerAsync(code, result);
+        }
+
         private static async Task CreateCSTestAndRunAsync(string testCS)
         {
             var csTestVerify = new VerifyCS.Test
