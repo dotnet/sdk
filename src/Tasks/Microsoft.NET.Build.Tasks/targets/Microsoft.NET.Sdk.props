@@ -94,6 +94,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <DebugType Condition="'$(DebugSymbols)' == 'false'">None</DebugType>
     <DebugType Condition=" '$(DebugType)' == '' ">portable</DebugType>
 
     <!-- This will turn off the base UWP-specific 'ResolveNuGetPackages' target -->
