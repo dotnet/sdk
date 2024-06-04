@@ -26,10 +26,12 @@ parameters:
 
 steps:
   - script: |
-     restoreSources="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"
-     restoreSources+="%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries/nuget/v3/index.json"
+      restoreSources="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"
+      restoreSources+="%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries/nuget/v3/index.json"
 
-     .dotnet/dotnet run \
+      branchName=$(echo "$(Build.SourceBranch)" | sed 's/refs\/heads\///g')
+
+      .dotnet/dotnet run \
         --project eng/tools/CreateBaselineUpdatePR/ \
         --property:RestoreSources="$restoreSources" \
         "${{ parameters.pipeline }}" \
@@ -38,7 +40,7 @@ steps:
         "${{ parameters.updatedFilesDirectory }}" \
         "$(Build.BuildId)" \
         --title "${{ parameters.pullRequestTitle }}" \
-        --branch "$(Build.SourceBranchName)"
+        --branch "$branchName"
     displayName: Publish Test Results PR
     workingDirectory: $(Build.SourcesDirectory)
     condition: succeededOrFailed()
