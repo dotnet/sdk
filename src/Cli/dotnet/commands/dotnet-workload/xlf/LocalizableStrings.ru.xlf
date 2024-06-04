@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfiguration">
         <source>Configured to use {0} when installing new manifests.</source>
-        <target state="new">Configured to use {0} when installing new manifests.</target>
+        <target state="translated">Настроено на использование {0} при установке новых манифестов.</target>
         <note />
       </trans-unit>
     </body>
