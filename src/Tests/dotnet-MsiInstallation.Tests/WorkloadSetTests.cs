@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(unavailableWorkloadSetVersion);
+                .HaveStdErrContaining(unavailableWorkloadSetVersion);
 
             VM.CreateRunCommand("dotnet", "workload", "search")
                 .WithIsReadOnly(true)

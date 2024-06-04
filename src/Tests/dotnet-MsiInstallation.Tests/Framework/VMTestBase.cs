@@ -94,14 +94,22 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 return;
             }
 
-            var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}";
+            var result = VM.CreateRunCommand("dotnet", "--version")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            string existingVersionToOverwrite = result.StdOut;
+
+            var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{existingVersionToOverwrite}";
 
             Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
 
             //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
             VM.CreateActionGroup("Deploy Stage 2 SDK",
                     VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
-                    ChangeVersionFileContents(SdkInstallerVersion))
+                    ChangeVersionFileContents(existingVersionToOverwrite))
                 .Execute()
                 .Should()
                 .Pass();
@@ -179,6 +187,26 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .Except(["==workloadRollbackDefinitionJsonOutputStart==", "==workloadRollbackDefinitionJsonOutputEnd=="]));
 
             return WorkloadSet.FromJson(filteredOutput, defaultFeatureBand: new SdkFeatureBand(SdkInstallerVersion));
+        }
+
+        protected string GetWorkloadVersion()
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return result.StdOut;
+        }
+
+        protected void AddNuGetSource(string source)
+        {
+            VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
+                .WithDescription($"Add {source} to NuGet.config")
+                .Execute()
+                .Should()
+                .Pass();
         }
     }
 }
