@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var rollback = GetRollback(directory);
 
-            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo""}}}").Execute().Should().Pass();
+            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo""}}}}}").Execute().Should().Pass();
 
             GetWorkloadVersion(directory).Should().Be(versionToUpdateTo);
 
