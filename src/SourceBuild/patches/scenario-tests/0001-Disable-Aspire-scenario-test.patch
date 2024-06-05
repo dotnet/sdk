@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Tue, 30 Apr 2024 08:34:08 -0500
+Subject: [PATCH] Disable Aspire scenario test
+
+Backport: https://github.com/dotnet/sdk/pull/40485
+---
+ .../SdkTemplateTests.cs                                         | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
+index c43fdd6..bb5c52d 100644
+--- a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
++++ b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
+@@ -217,7 +217,7 @@ public class SdkTemplateTests : IClassFixture<ScenarioTestFixture>
+         newTest.Execute(_sdkHelper, _scenarioTestInput.TestRoot, "wasm-tools");
+     }
+ 
+-    [Fact]
++    //[Fact]
+     [Trait("Category", "Workload")]
+     [Trait("Category", "InProgress")]
+     public void VerifyAspireTemplate()

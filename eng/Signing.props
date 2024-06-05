@@ -35,7 +35,7 @@
     <!-- Third party DLLs used by tests -->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
-    
+
     <!-- Binary test asset -->
     <FileSignInfo Include="testwpf.dll" CertificateName="None" />
 
@@ -85,12 +85,6 @@
   <ItemGroup>
     <ItemsToSignPostBuild Remove="*tests*.nupkg" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Remove the wixpacks from items to sign post build. These will be added explicitly by the
-         custom publishing target. And should not be picked up by arcade's default publishing logic. -->
-    <ItemsToSignPostBuild Remove="*.wixpack.zip" />
   </ItemGroup>
 
 </Project>

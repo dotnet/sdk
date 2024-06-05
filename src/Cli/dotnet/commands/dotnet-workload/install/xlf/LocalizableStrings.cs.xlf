@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
-        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <target state="translated">Na příkazovém řádku nelze pomocí možnosti --version nebo --from-history zadat konkrétní verzi úlohy, pokud je již verze zadána v souboru global.json {0}. Pokud chcete aktualizovat globálně nainstalovanou verzi úlohy, spusťte příkaz mimo cestu obsahující daný soubor global.json nebo aktualizujte verzi uvedenou v souboru global.json a spusťte příkaz dotnet workload update.</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -289,7 +289,7 @@
       </trans-unit>
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
-        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <target state="translated">Režim instalace úlohy se úspěšně aktualizoval na {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
@@ -375,11 +375,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">CESTA</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Aktualizuje se verze úlohy z {0} na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

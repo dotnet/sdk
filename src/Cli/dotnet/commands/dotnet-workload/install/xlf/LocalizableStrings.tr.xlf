@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
-        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <target state="translated">{0} global.json dosyasında zaten belirtilen bir sürüm varsa, “--version” veya “--from-history” aracılığıyla komut satırında belirli bir iş yükü sürümü belirtilemez. Genel olarak yüklenen iş yükü sürümünü güncelleştirmek için, komutu global.json dosyasını içeren yolun dışında çalıştırın veya global.json dosyasında belirtilen sürümü güncelleştirin ve “dotnet workload update” komutunu çalıştırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -289,7 +289,7 @@
       </trans-unit>
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
-        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <target state="translated">İş yükü yükleme modu {0} kullanacak şekilde başarıyla güncelleştirildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
@@ -375,11 +375,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">YOL</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">İş yükü {0} sürümünden {1} sürümüne güncelleştiriliyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

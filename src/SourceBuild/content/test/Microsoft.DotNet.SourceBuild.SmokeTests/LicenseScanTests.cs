@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </remarks>
 public class LicenseScanTests : TestBase
 {
-    private const string BaselineSubDir = "licenses";
+    private const string BaselineSubDir = nameof(LicenseScanTests);
 
     private static readonly string[] s_allowedLicenseExpressions = new string[]
     {
@@ -73,6 +73,7 @@ public class LicenseScanTests : TestBase
         "ietf", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/ietf.LICENSE
         "gpl-2.0-plus WITH autoconf-simple-exception-2.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-2.0-plus_with_autoconf-simple-exception-2.0_8.RULE
         "gpl-2.0 WITH gcc-linking-exception-2.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-2.0_with_gcc-linking-exception-2.0_6.RULE
+        "gpl-3.0-plus WITH bison-exception-2.2", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-3.0-plus_with_bison-exception-2.2_7.RULE
         "isc", // https://opensource.org/license/isc-license-txt/
         "iso-8879", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/iso-8879.LICENSE
         "lgpl-2.0-plus", // https://opensource.org/license/lgpl-2-0/
@@ -188,7 +189,7 @@ public class LicenseScanTests : TestBase
         // In other words, the baseline will be fully representative of the licenses that apply to the files that are listed there.
 
         // We only care about the license expressions that are in the target repo.
-        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", _targetRepo);
+        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, "^" + Regex.Escape(_relativeRepoPath) + "/");
 
         for (int i = scancodeResults.Files.Count - 1; i >= 0; i--)
         {
