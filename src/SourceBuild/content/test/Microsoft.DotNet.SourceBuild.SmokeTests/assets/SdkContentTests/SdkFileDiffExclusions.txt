@@ -41,7 +41,6 @@
 
 # nuget localization is not available for Linux builds - https://github.com/NuGet/Home/issues/12440
 ./sdk/x.y.z/*/NuGet.*.resources.dll|msft
-./sdk/x.y.z/*/Test.Utility.resources.dll|msft
 
 # ILMerge is not supported in Linux builds - excluding the whole NuGet.Build.Tasks.Pack directory, to avoid a noisy diff
 ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/
@@ -79,7 +78,6 @@
 ./sdk/x.y.z/*/dump/|msft
 
 # netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
-./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll|msft
 
 # runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/4016
 ./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll|sb
@@ -93,8 +91,6 @@
 ./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll|sb
 
 # https://github.com/dotnet/source-build/issues/3510
-./sdk/x.y.z/Containers/containerize/|msft
-./sdk/x.y.z/Containers/tasks/net472/|msft
 
 # https://github.com/dotnet/source-build/issues/4351
 ./sdk/x.y.z/*/Microsoft.Build.NuGetSdkResolver.resources.dll|msft
