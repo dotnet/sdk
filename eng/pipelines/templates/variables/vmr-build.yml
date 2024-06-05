@@ -39,9 +39,9 @@ variables:
 - name: linuxBionicCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
 - name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
 - name: wasiCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
 
 - name: alpineName
   value: Alpine319
