@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Wed, 5 Jun 2024 22:44:37 +0000
+Subject: [PATCH] Suppress IDE0036 errors
+
+Backport: https://github.com/dotnet/winforms/issues/11493
+---
+ src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs | 2 ++
+ .../src/System/Drawing/Imaging/Effects/Effect.cs               | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs b/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs
+index 7e5a4cb14..68b48ce6c 100644
+--- a/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs
++++ b/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs
+@@ -39,6 +39,7 @@ public partial class ImageConverter : TypeConverter
+         }
+     }
+ 
++#pragma warning disable IDE0036
+     public unsafe override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+     {
+         if (destinationType == typeof(string))
+@@ -69,6 +70,7 @@ public partial class ImageConverter : TypeConverter
+ 
+         throw GetConvertFromException(value);
+     }
++#pragma warning restore IDE0036
+ 
+     [RequiresUnreferencedCode("The Type of value cannot be statically discovered. The public parameterless constructor or the 'Default' static field may be trimmed from the Attribute's Type.")]
+     public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext? context, object? value, Attribute[]? attributes)
+diff --git a/src/System.Drawing.Common/src/System/Drawing/Imaging/Effects/Effect.cs b/src/System.Drawing.Common/src/System/Drawing/Imaging/Effects/Effect.cs
+index 5510ee888..f540d7d1f 100644
+--- a/src/System.Drawing.Common/src/System/Drawing/Imaging/Effects/Effect.cs
++++ b/src/System.Drawing.Common/src/System/Drawing/Imaging/Effects/Effect.cs
+@@ -5,6 +5,8 @@
+ 
+ namespace System.Drawing.Imaging.Effects;
+ 
++#pragma warning disable IDE0036
++
+ /// <summary>
+ ///  Base class for all effects.
+ /// </summary>
+@@ -47,4 +49,5 @@ public unsafe abstract class Effect : IDisposable
+         }
+     }
+ }
++#pragma warning restore IDE0036
+ #endif
