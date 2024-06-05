@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Cli
             VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
         }
 
-        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOption) || args.Contains(CliConstants.HelpOption.Substring(0, 2));
+        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 
         private static string GetMSBuildExePath()
         {
