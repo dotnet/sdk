@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: El paquete Microsoft.Net.Compilers.Toolset.Framework no debe establecerse directamente. Establezca la propiedad "BuildWithNetFrameworkHostedCompiler" en "true" en su lugar si la necesita.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: No se puede insertar CLSIDMap en el host COM porque para agregar recursos es necesario que la compilación se realice en Windows (excepto Nano Server).</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: No se encuentra el host de la aplicación {0}. {0} puede ser un identificador de tiempo de ejecución no válido. Para obtener más información al respecto, consulte https://aka.ms/rid-catalog.</target>
