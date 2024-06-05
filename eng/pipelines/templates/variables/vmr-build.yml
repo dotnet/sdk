@@ -22,24 +22,26 @@ variables:
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
 - name: ubuntuArmContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
-- name: marinerX64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64
-- name: marinerArmCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
-- name: marinerArm64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm64
-- name: marinerX64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64-alpine
-- name: marinerArmAlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm-alpine
-- name: marinerArm64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm64-alpine
+- name: azurelinuxX64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-net9.0
+- name: azurelinuxArmCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-net9.0
+- name: azurelinuxArm64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-net9.0
+- name: azurelinuxX64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-alpine-net9.0
+- name: azurelinuxArmAlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-alpine-net9.0
+- name: azurelinuxArm64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-alpine-net9.0
 - name: androidCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-android-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-android-amd64-net9.0
+- name: linuxBionicCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
 - name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-net9.0
 - name: wasiCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-net9.0
 
 - name: alpineName
   value: Alpine319
