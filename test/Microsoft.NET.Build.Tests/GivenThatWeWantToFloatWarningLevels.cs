@@ -58,6 +58,53 @@ namespace Microsoft.NET.Build.Tests
             computedWarningLevel.Should().Be(parsedWarningLevel.ToString());
         }
 
+        [InlineData(targetFrameworkNet6, "6", "6")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "12", "12")]
+        [InlineData(targetFrameworkNetFramework472, "4", "4")]
+        [Theory]
+        public void It_Defaults_WarningLevel_To_AnalysisLevel_When_That_Is_Provided(string tfm, string analysisLevel, string expectedWarningLevel)
+        {
+            var testProject = new TestProject
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = tfm,
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = @"
+                        using System;
+
+                        namespace ConsoleCore
+                        {
+                            class Program
+                            {
+                                static void Main()
+                                {
+                                }
+                            }
+                        }
+                    ",
+                }
+            };
+            testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(testProject, identifier: "warningLevelAnalysisLevelConsoleApp" + tfm, targetExtension: ".csproj");
+
+            var buildCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.TestRoot, testProject.Name),
+                tfm, "WarningLevel")
+            {
+                DependsOnTargets = "Build"
+            };
+            var buildResult = buildCommand.Execute();
+            var computedWarningLevel = buildCommand.GetValues()[0];
+            buildResult.StdErr.Should().Be(string.Empty);
+            computedWarningLevel.Should().Be(expectedWarningLevel.ToString());
+        }
+
         [InlineData(1, "1")]
         [InlineData(null, ToolsetInfo.CurrentTargetFrameworkVersion)]
         [RequiresMSBuildVersionTheory("16.8")]
