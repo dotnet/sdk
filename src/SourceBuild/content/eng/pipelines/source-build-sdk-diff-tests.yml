@@ -14,8 +14,8 @@ resources:
     trigger:
       branches:
         include:
-          - release/*.0.1xx*
-          - internal/release/*.0.1xx*
+          - refs/heads/release/*.0.1xx*
+          - refs/heads/internal/release/*.0.1xx*
 
 pr: none
 trigger: none
