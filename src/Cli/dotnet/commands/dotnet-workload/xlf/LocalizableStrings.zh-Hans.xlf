@@ -82,6 +82,11 @@
         <target state="translated">写入 Visual Studio 工作负载的安装记录:“{0}”</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">配置为在安装新清单时使用 {0}。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
