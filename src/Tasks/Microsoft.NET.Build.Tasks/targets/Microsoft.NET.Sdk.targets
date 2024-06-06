@@ -1191,13 +1191,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
-      <SatelliteAssemblyReferences Include="@(ReferencePath)" Condition="'%(Filename)' == 'mscorlib' or '%(Filename)' == 'netstandard' or '%(Filename)' == 'System.Runtime' " />
+      <_SatelliteAssemblyReferences Remove="@(_SatelliteAssemblyReferences)" />
+      <_SatelliteAssemblyReferences Include="@(ReferencePath)" Condition="'%(Filename)' == 'mscorlib' or '%(Filename)' == 'netstandard' or '%(Filename)' == 'System.Runtime' " />
     </ItemGroup>
 
     <Csc Resources="@(_SatelliteAssemblyResourceInputs)"
          Sources="$(_AssemblyInfoFile)"
          OutputAssembly="$(_OutputAssembly)"
-         References="@(SatelliteAssemblyReferences)"
+         References="@(_SatelliteAssemblyReferences)"
          KeyContainer="$(KeyContainerName)"
          KeyFile="$(KeyOriginatorFile)"
          NoConfig="true"
