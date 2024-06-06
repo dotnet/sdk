@@ -7,7 +7,9 @@ Backport: https://github.com/dotnet/winforms/issues/11493
 ---
  src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs | 2 ++
  .../src/System/Drawing/Imaging/Effects/Effect.cs               | 3 +++
- 2 files changed, 5 insertions(+)
+ .../System/Windows/Forms/Application.ComponentThreadContext.cs | 2 ++
+ .../src/System/Windows/Forms/Application.LightThreadContext.cs | 2 ++
+ 4 files changed, 9 insertions(+)
 
 diff --git a/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs b/src/System.Drawing.Common/src/System/Drawing/ImageConverter.cs
 index 7e5a4cb14..68b48ce6c 100644
@@ -48,3 +50,34 @@ index 5510ee888..f540d7d1f 100644
  }
 +#pragma warning restore IDE0036
  #endif
+diff --git a/src/System.Windows.Forms/src/System/Windows/Forms/Application.ComponentThreadContext.cs b/src/System.Windows.Forms/src/System/Windows/Forms/Application.ComponentThreadContext.cs
+index 548f346b0..9cd2b0752 100644
+--- a/src/System.Windows.Forms/src/System/Windows/Forms/Application.ComponentThreadContext.cs
++++ b/src/System.Windows.Forms/src/System/Windows/Forms/Application.ComponentThreadContext.cs
+@@ -14,10 +14,12 @@ public sealed partial class Application
+     /// <summary>
+     ///  <see cref="ThreadContext"/> that supports <see cref="IMsoComponent"/>.
+     /// </summary>
++#pragma warning disable IDE0036
+     internal unsafe sealed class ComponentThreadContext :
+         ThreadContext,
+         IMsoComponent.Interface,
+         IManagedWrapper<IMsoComponent>
++#pragma warning restore IDE0036
+     {
+         private bool _trackingComponent;
+ 
+diff --git a/src/System.Windows.Forms/src/System/Windows/Forms/Application.LightThreadContext.cs b/src/System.Windows.Forms/src/System/Windows/Forms/Application.LightThreadContext.cs
+index 2b78f04c0..55b470312 100644
+--- a/src/System.Windows.Forms/src/System/Windows/Forms/Application.LightThreadContext.cs
++++ b/src/System.Windows.Forms/src/System/Windows/Forms/Application.LightThreadContext.cs
+@@ -10,7 +10,9 @@ public sealed partial class Application
+     /// <summary>
+     ///  Lighter weight <see cref="ThreadContext"/> that doesn't support <see cref="IMsoComponent"/>.
+     /// </summary>
++#pragma warning disable IDE0036
+     internal unsafe sealed class LightThreadContext : ThreadContext
++#pragma warning restore IDE0036
+     {
+         protected override bool? GetMessageLoopInternal(bool mustBeActive, int loopCount)
+         {
