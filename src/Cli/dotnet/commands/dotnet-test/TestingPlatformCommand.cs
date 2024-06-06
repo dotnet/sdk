@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli
                     string.Join(" ", result) :
                     string.Empty;
 
-                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", msBuildArgs, $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
+                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_BuildTestsProject;_GetTestsProject", "-bl", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
                 int buildResult = buildCommand.Execute();
             }
 

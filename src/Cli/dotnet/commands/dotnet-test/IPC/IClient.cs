@@ -3,7 +3,12 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal interface IClient : IAsyncDisposable
+internal interface IClient : IDisposable
+#if NETCOREAPP
+#pragma warning disable SA1001 // Commas should be spaced correctly
+    , IAsyncDisposable
+#pragma warning restore SA1001 // Commas should be spaced correctly
+#endif
 {
     bool IsConnected { get; }
 

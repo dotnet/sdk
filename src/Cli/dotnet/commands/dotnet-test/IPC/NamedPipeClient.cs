@@ -54,6 +54,7 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             sizeOfTheWholeMessage += sizeof(int);
 
             // Write the message size
+#if NETCOREAPP
             byte[] bytes = ArrayPool<byte>.Shared.Rent(sizeof(int));
             try
             {
@@ -64,8 +65,12 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             {
                 ArrayPool<byte>.Shared.Return(bytes);
             }
+#else
+            await _messageBuffer.WriteAsync(BitConverter.GetBytes(sizeOfTheWholeMessage), 0, sizeof(int), cancellationToken);
+#endif
 
             // Write the serializer id
+#if NETCOREAPP
             bytes = ArrayPool<byte>.Shared.Rent(sizeof(int));
             try
             {
@@ -76,11 +81,18 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             {
                 ArrayPool<byte>.Shared.Return(bytes);
             }
+#else
+            await _messageBuffer.WriteAsync(BitConverter.GetBytes(requestNamedPipeSerializer.Id), 0, sizeof(int), cancellationToken);
+#endif
 
             try
             {
                 // Write the message
+#if NETCOREAPP
                 await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer().AsMemory(0, (int)_serializationBuffer.Position), cancellationToken);
+#else
+                await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer(), 0, (int)_serializationBuffer.Position, cancellationToken);
+#endif
             }
             finally
             {
@@ -91,7 +103,11 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             // Send the message
             try
             {
+#if NETCOREAPP
                 await _namedPipeClientStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
+#else
+                await _namedPipeClientStream.WriteAsync(_messageBuffer.GetBuffer(), 0, (int)_messageBuffer.Position, cancellationToken);
+#endif
                 await _namedPipeClientStream.FlushAsync(cancellationToken);
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -112,8 +128,11 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             {
                 int missingBytesToReadOfCurrentChunk = 0;
                 int currentReadIndex = 0;
+#if NETCOREAPP
                 int currentReadBytes = await _namedPipeClientStream.ReadAsync(_readBuffer.AsMemory(currentReadIndex, _readBuffer.Length), cancellationToken);
-
+#else
+                int currentReadBytes = await _namedPipeClientStream.ReadAsync(_readBuffer, currentReadIndex, _readBuffer.Length, cancellationToken);
+#endif
                 // Reset the current chunk size
                 missingBytesToReadOfCurrentChunk = currentReadBytes;
 
@@ -130,7 +149,11 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
                 if (missingBytesToReadOfCurrentChunk > 0)
                 {
                     // We need to read the rest of the message
+#if NETCOREAPP
                     await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, missingBytesToReadOfCurrentChunk), cancellationToken);
+#else
+                    await _messageBuffer.WriteAsync(_readBuffer, currentReadIndex, missingBytesToReadOfCurrentChunk, cancellationToken);
+#endif
                     missingBytesToReadOfWholeMessage -= missingBytesToReadOfCurrentChunk;
                 }
 
@@ -165,7 +188,16 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             _lock.Release();
         }
     }
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _namedPipeClientStream.Dispose();
+            _disposed = true;
+        }
+    }
 
+#if NETCOREAPP
     public async ValueTask DisposeAsync()
     {
         if (!_disposed)
@@ -174,4 +206,5 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             _disposed = true;
         }
     }
+#endif
 }

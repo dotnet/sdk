@@ -90,8 +90,11 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
         {
             int missingBytesToReadOfCurrentChunk = 0;
             int currentReadIndex = 0;
-
+#if NET
             int currentReadBytes = await _namedPipeServerStream.ReadAsync(_readBuffer.AsMemory(currentReadIndex, _readBuffer.Length), cancellationToken);
+#else
+            int currentReadBytes = await _namedPipeServerStream.ReadAsync(_readBuffer, currentReadIndex, _readBuffer.Length, cancellationToken);
+#endif
             if (currentReadBytes == 0)
             {
                 // The client has disconnected
@@ -114,7 +117,11 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
             if (missingBytesToReadOfCurrentChunk > 0)
             {
                 // We need to read the rest of the message
+#if NET
                 await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, missingBytesToReadOfCurrentChunk), cancellationToken);
+#else
+                await _messageBuffer.WriteAsync(_readBuffer, currentReadIndex, missingBytesToReadOfCurrentChunk, cancellationToken);
+#endif
                 missingBytesToReadOfWholeMessage -= missingBytesToReadOfCurrentChunk;
             }
 
@@ -154,6 +161,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 sizeOfTheWholeMessage += sizeof(int);
 
                 // Write the message size
+#if NET
                 byte[] bytes = ArrayPool<byte>.Shared.Rent(sizeof(int));
                 try
                 {
@@ -165,7 +173,12 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 {
                     ArrayPool<byte>.Shared.Return(bytes);
                 }
+#else
+                await _messageBuffer.WriteAsync(BitConverter.GetBytes(sizeOfTheWholeMessage), 0, sizeof(int), cancellationToken);
+#endif
+
                 // Write the serializer id
+#if NET
                 bytes = ArrayPool<byte>.Shared.Rent(sizeof(int));
                 try
                 {
@@ -177,14 +190,25 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 {
                     ArrayPool<byte>.Shared.Return(bytes);
                 }
+#else
+                await _messageBuffer.WriteAsync(BitConverter.GetBytes(responseNamedPipeSerializer.Id), 0, sizeof(int), cancellationToken);
+#endif
+
                 // Write the message
+#if NET
                 await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer().AsMemory(0, (int)_serializationBuffer.Position), cancellationToken);
+#else
+                await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer(), 0, (int)_serializationBuffer.Position, cancellationToken);
+#endif
 
                 // Send the message
                 try
                 {
+#if NET
                     await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
-
+#else
+                    await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer(), 0, (int)_messageBuffer.Position, cancellationToken);
+#endif
                     await _namedPipeServerStream.FlushAsync(cancellationToken);
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
@@ -223,6 +247,32 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 : Path.Combine(directoryId, ".p"), true);
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (WasConnected)
+        {
+            // If the loop task is null at this point we have race condition, means that the task didn't start yet and we already dispose.
+            // This is unexpected and we throw an exception.
+
+            // To close gracefully we need to ensure that the client closed the stream line 103.
+            if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
+            {
+                throw new InvalidOperationException("InternalLoopAsyncDidNotExitSuccessfullyErrorMessage");
+            }
+        }
+
+        _namedPipeServerStream.Dispose();
+        PipeName.Dispose();
+
+        _disposed = true;
+    }
+
+#if NET
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -251,4 +301,5 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
 
         _disposed = true;
     }
+#endif
 }

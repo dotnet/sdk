@@ -3,14 +3,14 @@
 
 #if NETCOREAPP
 #nullable enable
-#endif
-
 using System.Buffers;
+#endif
 
 namespace Microsoft.DotNet.Tools.Test;
 
 internal abstract class BaseSerializer
 {
+#if NETCOREAPP
     protected static string ReadString(Stream stream)
     {
         Span<byte> len = stackalloc byte[sizeof(int)];
@@ -51,7 +51,6 @@ internal abstract class BaseSerializer
     {
         int stringutf8TotalBytes = Encoding.UTF8.GetByteCount(str);
         Span<byte> len = stackalloc byte[sizeof(int)];
-
         if (BitConverter.TryWriteBytes(len, stringutf8TotalBytes))
         {
             stream.Write(len);
@@ -130,6 +129,93 @@ internal abstract class BaseSerializer
         return BitConverter.ToBoolean(bytes);
     }
 
+#else
+    protected static string ReadString(Stream stream)
+    {
+        byte[] len = new byte[sizeof(int)];
+        stream.Read(len, 0, len.Length);
+        int length = BitConverter.ToInt32(len, 0);
+        byte[] bytes = new byte[length];
+        stream.Read(bytes, 0, bytes.Length);
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    protected static void WriteString(Stream stream, string str)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(str);
+        byte[] len = BitConverter.GetBytes(bytes.Length);
+        stream.Write(len, 0, len.Length);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static void WriteStringSize(Stream stream, string str)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(str);
+        byte[] len = BitConverter.GetBytes(bytes.Length);
+        stream.Write(len, 0, len.Length);
+    }
+
+    protected static void WriteSize<T>(Stream stream)
+        where T : struct
+    {
+        int sizeInBytes = GetSize<T>();
+        byte[] len = BitConverter.GetBytes(sizeInBytes);
+        stream.Write(len, 0, sizeInBytes);
+    }
+
+    protected static void WriteInt(Stream stream, int value)
+    {
+        byte[] bytes = BitConverter.GetBytes(value);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static int ReadInt(Stream stream)
+    {
+        byte[] bytes = new byte[sizeof(int)];
+        stream.Read(bytes, 0, bytes.Length);
+        return BitConverter.ToInt32(bytes, 0);
+    }
+
+    protected static void WriteLong(Stream stream, long value)
+    {
+        byte[] bytes = BitConverter.GetBytes(value);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static void WriteShort(Stream stream, ushort value)
+    {
+        byte[] bytes = BitConverter.GetBytes(value);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static long ReadLong(Stream stream)
+    {
+        byte[] bytes = new byte[sizeof(long)];
+        stream.Read(bytes, 0, bytes.Length);
+        return BitConverter.ToInt64(bytes, 0);
+    }
+
+    protected static ushort ReadShort(Stream stream)
+    {
+        byte[] bytes = new byte[sizeof(ushort)];
+        stream.Read(bytes, 0, bytes.Length);
+        return BitConverter.ToUInt16(bytes, 0);
+    }
+
+    protected static void WriteBool(Stream stream, bool value)
+    {
+        byte[] bytes = BitConverter.GetBytes(value);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static bool ReadBool(Stream stream)
+    {
+        byte[] bytes = new byte[sizeof(bool)];
+        stream.Read(bytes, 0, bytes.Length);
+        return BitConverter.ToBoolean(bytes, 0);
+    }
+#endif
+
     protected static void WriteField(Stream stream, ushort id, string? value)
     {
         if (value is null)
@@ -153,7 +239,7 @@ internal abstract class BaseSerializer
 
     protected static void WriteAtPosition(Stream stream, int value, long position)
     {
-        var currentPosition = stream.Position;
+        long currentPosition = stream.Position;
         SetPosition(stream, position);
         WriteInt(stream, value);
         SetPosition(stream, currentPosition);
