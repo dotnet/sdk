@@ -51,6 +51,13 @@
     <ToolsetAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
   </ItemGroup>
 
+  <!-- Include RID specific packages when globbing for default artifacts is disabled. -->
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <ItemsToPushToBlobFeed Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                                    $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+                           IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))" />
+  </ItemGroup>
+
   <Target Name="ReadToolsetVersion">
     <ReadLinesFromFile File="$(ArtifactsBinDir)version.txt">
       <Output TaskParameter="Lines" ItemName="ToolsetVersion" />
@@ -69,15 +76,15 @@
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishFSharpNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
 
-  <Target Name="_ResolvePublishFSharpNuGetPackages">
+  <Target Name="_ResolvePublishFSharpNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <PropertyGroup>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
+      <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
+      <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
     </PropertyGroup>
     <ItemGroup>
-        <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg" />
-        <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
+      <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg" />
+      <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
+      <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
     </ItemGroup>
   </Target>
 
@@ -87,7 +94,7 @@
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
 
-  <Target Name="_ResolvePublishRoslynNuGetPackages">
+  <Target Name="_ResolvePublishRoslynNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <ItemGroup>
       <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
       <ItemsToPushToBlobFeed Include="@(RoslynPackagesToPush)" IsShipping="true" />
@@ -95,7 +102,7 @@
   </Target>
 
   <!-- We use a separate target to publish this to blob storage so that we can push this to a relative path inside the blob storage. -->
-  <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
+  <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <ItemGroup>
       <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
         RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
@@ -142,13 +149,13 @@
   <PropertyGroup>
       <!--
         Because we may be building in a container, we should use an asset manifest file path that exists in the container. Disambiguate the manifests via available properties.
-        AGENT_OS and AGENT_JOBNAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
+        AGENT_OS and SYSTEM_PHASENAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
       -->
       <AssetManifestOS Condition="'$(AGENT_OS)' != ''">$(AGENT_OS)</AssetManifestOS>
       <AssetManifestOS Condition="'$(AGENT_OS)' == ''">$(OS)</AssetManifestOS>
-      <AssetManifestOS Condition="'$(AGENT_JOBNAME)' != ''">$(AssetManifestOS)-$(AGENT_JOBNAME)</AssetManifestOS>
+      <AssetManifestOS Condition="'$(SYSTEM_PHASENAME)' != ''">$(AssetManifestOS)-$(SYSTEM_PHASENAME)</AssetManifestOS>
       <BaseAssetManifestFileName>$(AssetManifestOS)</BaseAssetManifestFileName>
-      <BaseAssetManifestFileName Condition="'$(AGENT_JOBNAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
+      <BaseAssetManifestFileName Condition="'$(SYSTEM_PHASENAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
       <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers</InstallersAssetManifestFileName>
       <!-- Property AssetManifestFilePath would be reassigned by the Arcade SDK, so use a different name (InstallersAssetManifestFilePath) -->
       <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>
@@ -177,24 +184,19 @@
     <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.swr" />
     <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.msi" />
     <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" />
-    <WixPacksToPublish Include="$(ArtifactsNonShippingPackagesDir)*.wixpack.zip" />
     <!-- dotnet-toolset zips are published in the PublishToolsetAssets target. -->
     <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.zip" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
-    <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
-    <SdkNonShippingAssetsToPublish Remove="@(WixPacksToPublish)" Condition="'$(PostBuildSign)' != 'true'" />
     <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.pkg" />
     <CheckSumsToPublish Include="$(ArtifactsShippingPackagesDir)*.sha512" />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.json.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false'" />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.txt.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false'" />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64'" />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64'" />
+    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.json.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.txt.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
+    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
     <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.zip.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
     <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
   </ItemGroup>
 
-  <!-- In non-VMR builds, don't push the installer manifest until the dotnet/installer build is turned off. In VMR builds,
-       push the manifest to switching to the sdk repo for the full build.  -->
-  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines) and '$(DotNetBuildOrchestrator)' == 'true'">
+  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines)">
     <ReadLinesFromFile File="$(ArtifactsTmpDir)FullNugetVersion.version">
       <Output TaskParameter="Lines" PropertyName="FullNugetVersion" />
     </ReadLinesFromFile>
@@ -203,6 +205,7 @@
       <!-- Always publish blobs to a suffixed directory. -->
       <SdkAssetsToPushToBlobFeed Include="@(SdkAssetsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
+        <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
       </SdkAssetsToPushToBlobFeed>
 
       <SdkAssetsToPushToBlobFeed Include="@(SdkNonShippingAssetsToPublish)">
@@ -212,6 +215,7 @@
 
       <ChecksumsToPushToBlobFeed Include="@(CheckSumsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
+        <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
       </ChecksumsToPushToBlobFeed>
     </ItemGroup>
 

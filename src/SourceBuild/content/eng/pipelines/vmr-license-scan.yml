@@ -20,7 +20,10 @@ parameters:
   default: " " # Set it to an empty string to allow it be an optional parameter
 
 variables:
-  sdkRoot: '$(Build.SourcesDirectory)/src/sdk'
+  # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
+- group: DotNet-Source-Build-Bot-Secrets-MVP
+- name: sdkRoot
+  value: '$(Build.SourcesDirectory)/src/sdk'
 
 jobs:
 - job: Setup
@@ -96,6 +99,7 @@ jobs:
       /p:SmokeTestsWarnOnLicenseScanDiffs=false
       /p:TargetRid=linux-x64
       /p:PortableRid=linux-x64
+      /p:SkipPrepareSdkArchive=true
     displayName: Run Tests
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -135,8 +139,44 @@ jobs:
     continueOnError: true
     inputs:
       testRunner: vSTest
-      testResultsFiles: '*.trx'
-      searchFolder: $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
+
+- job: Publish_Test_Results_PR
+  dependsOn: LicenseScan
+  condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+  pool:
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals 1es-ubuntu-2004
+  variables:
+  - template: templates/variables/pipelines.yml
+  steps:
+
+  - script: |
+      source ./eng/common/tools.sh
+      InitializeDotNetCli true
+    displayName: Install .NET SDK
+    workingDirectory: $(Build.SourcesDirectory)
+
+  - template: templates/steps/download-pipeline-artifact.yml
+    parameters:
+      pipeline: $(SOURCE_BUILD_LICENSE_SCAN_PIPELINE_ID)
+      buildId: $(Build.BuildId)
+      artifact: ''
+      patterns: '**/Updated*'
+      displayName: Download Updated Test Files
+
+  - script: |
+      find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
+    displayName: Move Artifacts to root
+
+  - template: templates/steps/create-baseline-update-pr.yml
+    parameters:
+      pipeline: license
+      repo: dotnet/sdk
+      originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
+      updatedFilesDirectory: $(Pipeline.Workspace)/Artifacts
+      pullRequestTitle: Update Source-Build License Scan Baselines and Exclusions
