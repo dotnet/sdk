@@ -58,13 +58,14 @@ namespace Microsoft.NET.Build.Tests
             computedWarningLevel.Should().Be(parsedWarningLevel.ToString());
         }
 
-        [InlineData(targetFrameworkNet6, "6", "6")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion, ToolsetInfo.CurrentTargetFrameworkVersion)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "12", "12")]
-        [InlineData(targetFrameworkNetFramework472, "4", "4")]
+        [InlineData(targetFrameworkNet6, "6")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "9")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "12")]
+        [InlineData(targetFrameworkNetFramework472, "4")]
         [Theory]
-        public void It_Defaults_WarningLevel_To_AnalysisLevel_When_That_Is_Provided(string tfm, string analysisLevel, string expectedWarningLevel)
+        public void It_Defaults_WarningLevel_To_AnalysisLevel_When_That_Is_Provided(string tfm, string analysisLevel)
         {
+            var intLevel = int.Parse(analysisLevel);
             var testProject = new TestProject
             {
                 Name = "HelloWorld",
@@ -87,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
                     ",
                 }
             };
-            testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
+            testProject.AdditionalProperties.Add("AnalysisLevel", intLevel.ToString());
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(testProject, identifier: "warningLevelAnalysisLevelConsoleApp" + tfm, targetExtension: ".csproj");
@@ -102,7 +103,7 @@ namespace Microsoft.NET.Build.Tests
             var buildResult = buildCommand.Execute();
             var computedWarningLevel = buildCommand.GetValues()[0];
             buildResult.StdErr.Should().Be(string.Empty);
-            computedWarningLevel.Should().Be(expectedWarningLevel.ToString());
+            computedWarningLevel.Should().Be(intLevel.ToString());
         }
 
         [InlineData(1, "1")]

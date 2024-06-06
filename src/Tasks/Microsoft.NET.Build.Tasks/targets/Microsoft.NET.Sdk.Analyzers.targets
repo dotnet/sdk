@@ -62,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- The CSharp.props used to hard-code WarningLevel to 4, so to maintain parity with .NET Framework projects we do that here. -->
     <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETFramework' ">4</WarningLevel>
     <!-- .NET projects, however, infer their WarningLevel from AnalysisLevel (which itself infers from TFM) -->
-    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(EffectiveAnalysisLevel)' != ''  And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$(EffectiveAnalysisLevel.Substring(0, 1))</WarningLevel>
+    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(EffectiveAnalysisLevel)' != ''  And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$([System.Text.RegularExpressions.Regex]::Replace($(EffectiveAnalysisLevel), '\.\d+', ''))</WarningLevel>
   </PropertyGroup>
 
   <!-- Enable Analyzers based on EffectiveAnalysisLevel -->
