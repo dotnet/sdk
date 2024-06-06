@@ -16,6 +16,7 @@
          of the test project
      -->
     <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageVersion>1.0.2</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>

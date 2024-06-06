@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings).ToArray();
+                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings);
 
                 foreach (var endpoint in assetEndpoints)
                 {
@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var result = new List<StaticWebAssetEndpoint>();
             foreach (var (label, route, values) in routes)
             {
+                var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);
                 List<StaticWebAssetEndpointResponseHeader> headers = [
                         new()
                         {
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         new()
                         {
                             Name = "Content-Type",
-                            Value = ResolveContentType(asset, contentTypeMappings)
+                            Value = mimeType,
                         },
                         new()
                         {
@@ -120,15 +121,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 if (values.ContainsKey("fingerprint"))
                 {
-                    // Immutable or "a week" as per mdn.
-                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=604800, immutable" });
+                    // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
+                    // max-age is for browsers that do not support immutable.
+                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" });
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers.Add(new() { Name = "Cache-Control", Value = "no-cache" });
+                    headers.Add(new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" });
                 }
 
                 var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
@@ -141,7 +143,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
                 }
 
-                properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "integrity", Value = asset.Integrity });
+                // We append the integrity in the format expected by the browser so that it can be opaque to the runtime.
+                // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
+                properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" });
 
                 var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
@@ -215,14 +219,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
         }
 
-        private string ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
         {
             foreach (var mapping in contentTypeMappings)
             {
                 if (mapping.Matches(Path.GetFileName(asset.RelativePath)))
                 {
                     Log.LogMessage(MessageImportance.Low, $"Matched {asset.RelativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
-                    return mapping.MimeType;
+                    return (mapping.MimeType, mapping.Cache);
                 }
                 else
                 {
@@ -232,17 +236,18 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             Log.LogMessage(MessageImportance.Low, $"No match for {asset.RelativePath}. Using default content type 'application/octet-stream'");
 
-            return "application/octet-stream";
+            return ("application/octet-stream", null);
         }
 
         private class ContentTypeMapping
         {
             private readonly Matcher _matcher;
 
-            public ContentTypeMapping(string mimeType, string pattern, int priority)
+            public ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
             {
                 Pattern = pattern;
                 MimeType = mimeType;
+                Cache = cache;
                 Priority = priority;
                 _matcher = new Matcher();
                 _matcher.AddInclude(pattern);
@@ -252,10 +257,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             public string MimeType { get; set; }
 
+            public string Cache { get; set; }
+
             public int Priority { get; }
 
             internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings) => new(
                     contentTypeMappings.ItemSpec,
+                    contentTypeMappings.GetMetadata(nameof(Cache)),
                     contentTypeMappings.GetMetadata(nameof(Pattern)),
                     int.Parse(contentTypeMappings.GetMetadata(nameof(Priority))));
 

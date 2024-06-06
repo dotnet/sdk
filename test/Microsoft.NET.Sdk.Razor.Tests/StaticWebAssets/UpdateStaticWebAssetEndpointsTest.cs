@@ -211,7 +211,7 @@ public class UpdateStaticWebAssetEndpointsTest
             AllEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
             Operations =
             [
-                CreateOperation("Replace", "Header", "Cache-Control", "max-age=604800, immutable", "immutable")
+                CreateOperation("Replace", "Header", "Cache-Control", "max-age=31536000, immutable", "immutable")
             ],
             BuildEngine = Mock.Of<IBuildEngine>()
         };

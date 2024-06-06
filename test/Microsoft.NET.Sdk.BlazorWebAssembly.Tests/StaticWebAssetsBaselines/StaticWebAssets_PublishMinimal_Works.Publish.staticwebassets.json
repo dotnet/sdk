@@ -21082,7 +21082,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Length",
@@ -21164,7 +21164,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "max-age=604800, immutable"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Length",

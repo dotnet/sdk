@@ -119,7 +119,7 @@ public class DefineStaticWebAssetEndpointsTest
             new StaticWebAssetEndpointProperty
             {
                 Name = "integrity",
-                Value = "asdf1234"
+                Value = "sha256-asdf1234"
             },
             new StaticWebAssetEndpointProperty
             {
@@ -157,7 +157,7 @@ public class DefineStaticWebAssetEndpointsTest
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "Cache-Control",
-                    Value = "max-age=604800, immutable"
+                    Value = "max-age=31536000, immutable"
                 }
             ]);
 

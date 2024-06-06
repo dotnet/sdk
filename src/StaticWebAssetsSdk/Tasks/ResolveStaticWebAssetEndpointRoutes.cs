@@ -20,7 +20,6 @@ public class ResolveStaticWebAssetEndpointRoutes : Task
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
         var assets = Assets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
 
-        var resolvedEndpoints = new List<StaticWebAssetEndpoint>();
         foreach (var endpoint in endpoints)
         {
             if (!assets.TryGetValue(endpoint.AssetFile, out var asset))

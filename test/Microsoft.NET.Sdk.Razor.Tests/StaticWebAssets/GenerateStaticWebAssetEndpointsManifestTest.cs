@@ -29,7 +29,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "Cache-Control",
-                        Value = "max-age=604800, immutable"
+                        Value = "max-age=31536000, immutable"
                     },
                     new() {
                         Name = "Content-Length",
@@ -56,7 +56,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "integrity",
-                        Value = "integrity"
+                        Value = "sha256-integrity"
                     },
                     new() {
                         Name = "label",
@@ -76,7 +76,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "Cache-Control",
-                        Value = "max-age=604800, immutable"
+                        Value = "max-age=31536000, immutable"
                     },
                     new() {
                         Name = "Content-Length",
@@ -103,7 +103,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "integrity",
-                        Value = "integrity"
+                        Value = "sha256-integrity"
                     },
                     new() {
                         Name = "label",
@@ -145,7 +145,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 EndpointProperties = [
                     new() {
                         Name = "integrity",
-                        Value = "integrity"
+                        Value = "sha256-integrity"
                     }]
             },
             new() {
@@ -182,7 +182,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 EndpointProperties = [
                     new() {
                         Name = "integrity",
-                        Value = "integrity"
+                        Value = "sha256-integrity"
                     }]
             }
         ];
@@ -190,9 +190,9 @@ public class GenerateStaticWebAssetEndpointsManifestTest
 
         var assets = new[]
         {
-                CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
-                CreateAsset("index.js", relativePath: "index#[.{fingerprint}]!.js"),
-            };
+            CreateAsset("index.html", relativePath: "index#[.{fingerprint}]?.html"),
+            CreateAsset("index.js", relativePath: "index#[.{fingerprint}]!.js"),
+        };
         Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
 
         var endpoints = CreateEndpoints(assets);

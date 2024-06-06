@@ -11,8 +11,8 @@
 
   <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
     <ItemGroup>
-      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryDirectDependency.1.0.0.nupkg" />
-      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryTransitiveDependency.1.0.0.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryDirectDependency.1.0.2.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryTransitiveDependency.1.0.2.nupkg" />
     </ItemGroup>
 
     <Error Condition="!Exists('%(LocalPackages.Identity)')" 
@@ -24,7 +24,7 @@
 
   <Target Name="EnsureLocalPackageStaticWebAssets" BeforeTargets="UpdateExistingPackageStaticWebAssets">
     <PropertyGroup>
-      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\razorpackagelibrarydirectdependency\1.0.0\build\..\staticwebassets\</_LocalStaticAssetPath>
+      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\razorpackagelibrarydirectdependency\1.0.2\build\..\staticwebassets\</_LocalStaticAssetPath>
     </PropertyGroup>
     
     <ItemGroup>
@@ -37,7 +37,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="RazorPackageLibraryDirectDependency" Version="1.0.0" />
+    <PackageReference Include="RazorPackageLibraryDirectDependency" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -79,22 +79,22 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         Success: true,
         Groups: [
-                var _,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: "", Success: false },
-        { Name: "compress", Value: "", Success: false }
-            ]
+            var _,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: "", Success: false },
+            { Name: "compress", Value: "", Success: false }
+        ]
     };
 
     private bool MatchCompressedProjectBundlesNoFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
     {
         Success: true,
         Groups: [
-                var _,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: "", Success: false },
-        { Name: "compress", Value: var compress, Success: true }
-            ]
+            var _,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: "", Success: false },
+            { Name: "compress", Value: var compress, Success: true }
+        ]
     } && (compress == ".gz" || compress == ".br");
 
     private bool MatchUncompressedProjectBundlesWithFingerprint(StaticWebAssetEndpoint ep) => ProjectBundleRegex().Match(ep.Route) is
@@ -112,11 +112,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         Success: true,
         Groups: [
-        var m,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: var fingerprint, Success: true },
-        { Name: "compress", Value: var compress, Success: true }
-    ]
+            var m,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: var fingerprint, Success: true },
+            { Name: "compress", Value: var compress, Success: true }
+        ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");
 
@@ -124,44 +124,44 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         Success: true,
         Groups: [
-                var _,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: "", Success: false },
-        { Name: "compress", Value: "", Success: false }
-            ]
+            var _,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: "", Success: false },
+            { Name: "compress", Value: "", Success: false }
+        ]
     };
 
     private bool MatchCompressedAppBundleNoFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
         Success: true,
         Groups: [
-                var _,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: "", Success: false },
-        { Name: "compress", Value: var compress, Success: true }
-            ]
+            var _,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: "", Success: false },
+            { Name: "compress", Value: var compress, Success: true }
+        ]
     } && (compress == ".gz" || compress == ".br");
 
     private bool MatchUncompressedAppBundleWithFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
         Success: true,
         Groups: [
-                    var m,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: var fingerprint, Success: true },
-        { Name: "compress", Value: "", Success: false }
-                ]
+            var m,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: var fingerprint, Success: true },
+            { Name: "compress", Value: "", Success: false }
+        ]
     } && fingerprint == ep.EndpointProperties.Single(p => p.Name == "fingerprint").Value;
 
     private bool MatchCompressedAppBundleWithFingerprint(StaticWebAssetEndpoint ep) => AppBundleRegex().Match(ep.Route) is
     {
         Success: true,
         Groups: [
-                    var m,
-        { Name: "project", Value: "ComponentApp", Success: true, },
-        { Name: "fingerprint", Value: var fingerprint, Success: true },
-        { Name: "compress", Value: var compress, Success: true }
-                ]
+            var m,
+            { Name: "project", Value: "ComponentApp", Success: true, },
+            { Name: "fingerprint", Value: var fingerprint, Success: true },
+            { Name: "compress", Value: var compress, Success: true }
+        ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");
 
