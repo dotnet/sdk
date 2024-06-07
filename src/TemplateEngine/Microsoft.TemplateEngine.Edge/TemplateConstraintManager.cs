@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             try
             {
-                _logger.LogDebug($"Waiting for {constraintsToInitialize.Count()} to be initialized initialized.");
+                _logger.LogDebug($"Waiting for {constraintsToInitialize.Count()} to be initialized.");
                 await CancellableWhenAll(constraintsToInitialize.Select(c => c.Task), cancellationToken).ConfigureAwait(false);
                 _logger.LogDebug($"{constraintsToInitialize.Count()} constraints were initialized.");
                 return constraintsToInitialize.Select(c => c.Task.Result).ToList();
