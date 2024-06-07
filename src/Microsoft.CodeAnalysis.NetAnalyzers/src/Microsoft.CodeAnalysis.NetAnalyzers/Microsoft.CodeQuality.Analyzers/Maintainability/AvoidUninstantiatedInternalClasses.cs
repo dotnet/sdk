@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -78,12 +79,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 startContext.RegisterOperationAction(context =>
                 {
-                    var expr = (IObjectCreationOperation)context.Operation;
-                    if (expr.Type is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(context.ContainingSymbol.ContainingAssembly))
+                    if (context.Operation.Type is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(context.ContainingSymbol.ContainingAssembly))
                     {
                         instantiatedTypes.TryAdd(namedType, null);
                     }
-                }, OperationKind.ObjectCreation);
+                }, OperationKind.ObjectCreation, OperationKindEx.CollectionExpression);
 
                 startContext.RegisterSymbolAction(context =>
                 {

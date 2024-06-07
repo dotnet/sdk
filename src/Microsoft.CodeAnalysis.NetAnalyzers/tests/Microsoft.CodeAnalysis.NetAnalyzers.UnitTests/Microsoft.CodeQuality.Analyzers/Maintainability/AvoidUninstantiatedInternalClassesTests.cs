@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 
@@ -1654,6 +1655,47 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             }
 
             await test.RunAsync();
+        }
+
+        [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
+        public Task CA1812_CollectionExpressionsInField_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Collections.ObjectModel;
+
+                                public class Class1
+                                {
+                                    private readonly MyCollection _items = [];
+                                }
+                                internal sealed class MyCollection : Collection<int>;
+                                """;
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp12
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
+        public Task CA1812_CollectionExpressionsInLocalVariable_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Collections.ObjectModel;
+
+                                public class Class1
+                                {
+                                    private void M()
+                                    {
+                                        MyCollection c = [];
+                                    }
+                                }
+                                internal sealed class MyCollection : Collection<int>;
+                                """;
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp12
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
