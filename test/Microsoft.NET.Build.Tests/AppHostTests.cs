@@ -310,7 +310,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: rid);
-            string apphostPath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
+            string apphostPath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}.exe");
             bool isCetCompatible = PeReaderUtils.IsCetCompatible(apphostPath);
 
             // CetCompat not set : enabled

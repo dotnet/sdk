@@ -826,12 +826,14 @@ class C
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute(PublishSingleFile, RuntimeIdentifier)
+            publishCommand.Execute(PublishSingleFile)
                 .Should()
                 .Pass();
 
-            string publishDir = GetPublishDirectory(publishCommand).FullName;
-            string singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+            DirectoryInfo publishDir = publishCommand.GetOutputDirectory(
+                targetFramework: testProject.TargetFrameworks,
+                runtimeIdentifier: rid);
+            string singleFilePath = Path.Combine(publishDir.FullName, $"{testProject.Name}.exe");
             bool isCetCompatible = PeReaderUtils.IsCetCompatible(singleFilePath);
 
             // CetCompat not set : enabled
