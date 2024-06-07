@@ -56,7 +56,7 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
     // to be embedded in other contexts.     
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
-    public static StaticWebAssetPathPattern Parse(string rawPath, string assetIdentity)
+    public static StaticWebAssetPathPattern Parse(string rawPath, string assetIdentity = null)
     {
         var pattern = new StaticWebAssetPathPattern(rawPath);
         var nextToken = rawPath.IndexOf("#[", StringComparison.OrdinalIgnoreCase);
@@ -79,8 +79,15 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
             var tokenEnd = rawPath.IndexOf(']', nextToken);
             if (tokenEnd == -1)
             {
-                // We don't have a closing token, this is likely an error, so throw
-                throw new InvalidOperationException($"Invalid relative path '{rawPath}' for asset '{assetIdentity}'. Missing ']' token.");
+                if (assetIdentity != null)
+                {
+                    // We don't have a closing token, this is likely an error, so throw
+                    throw new InvalidOperationException($"Invalid relative path '{rawPath}' for asset '{assetIdentity}'. Missing ']' token.");
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Invalid token expression '{rawPath}'. Missing ']' token.");
+                }
             }
 
             var tokenExpression = rawPath.Substring(nextToken + 2, tokenEnd - nextToken - 2);
@@ -456,4 +463,8 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
     private string GetDebuggerDisplay() => string.Concat(Segments.Select(s => s.GetDebuggerDisplay()));
 
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
+    internal static string PathWithoutTokens(string path)
+    {
+        return Parse(path).ComputePatternLabel();
+    }
 }
