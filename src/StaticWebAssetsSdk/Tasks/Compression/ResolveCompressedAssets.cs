@@ -78,7 +78,7 @@ public class ResolveCompressedAssets : Task
                 continue;
             }
 
-            var relativePath = asset.RelativePath;
+            var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
             var match = matcher.Match(relativePath);
 
             if (!match.HasMatches)
