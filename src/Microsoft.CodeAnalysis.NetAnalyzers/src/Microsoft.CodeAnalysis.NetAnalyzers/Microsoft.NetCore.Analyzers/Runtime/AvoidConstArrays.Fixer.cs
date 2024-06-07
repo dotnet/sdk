@@ -74,6 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Get method containing the symbol that is being diagnosed
             IOperation? methodContext = arrayArgument.GetAncestor<IMethodBodyOperation>(OperationKind.MethodBody);
             methodContext ??= arrayArgument.GetAncestor<IBlockOperation>(OperationKind.Block); // VB methods have a different structure than CS methods
+            methodContext ??= arrayArgument.GetAncestor<IConstructorBodyOperation>(OperationKind.ConstructorBody);
 
             // Create the new member
             SyntaxNode newMember = generator.FieldDeclaration(

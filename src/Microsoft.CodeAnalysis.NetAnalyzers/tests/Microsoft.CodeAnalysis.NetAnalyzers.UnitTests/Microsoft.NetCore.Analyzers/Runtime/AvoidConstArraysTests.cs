@@ -1053,5 +1053,38 @@ public class MyClass
                 }
             }.RunAsync();
         }
+
+        [Fact, WorkItem(7216, "https://github.com/dotnet/roslyn-analyzers/issues/7216")]
+        public Task BaseDeclaration_Diagnostic()
+        {
+            const string code = """
+                                public class Class1
+                                {
+                                    public Class1(int[] arr) { }
+                                }
+
+                                public class Class2 : Class1
+                                {
+                                    public Class2()
+                                        : base([|new int[] { 1, 2, 3 }|]) { }
+                                }
+                                """;
+            const string fixedCode = """
+                                     public class Class1
+                                     {
+                                         public Class1(int[] arr) { }
+                                     }
+                                     
+                                     public class Class2 : Class1
+                                     {
+                                         private static readonly int[] arr = new int[] { 1, 2, 3 };
+                                     
+                                         public Class2()
+                                             : base(arr) { }
+                                     }
+                                     """;
+
+            return VerifyCS.VerifyCodeFixAsync(code, fixedCode);
+        }
     }
 }
