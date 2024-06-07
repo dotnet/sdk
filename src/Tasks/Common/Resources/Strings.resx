@@ -471,10 +471,6 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1091: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</value>
     <comment>{StrBegin="NETSDK1091: "}</comment>
   </data>
-  <data name="CannotEmbedClsidMapIntoComhost" xml:space="preserve">
-    <value>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</value>
-    <comment>{StrBegin="NETSDK1092: "}</comment>
-  </data>
   <data name="ProjectToolOnlySupportTFMLowerThanNetcoreapp22" xml:space="preserve">
     <value>NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</value>
     <comment>{StrBegin="NETSDK1093: "}</comment>

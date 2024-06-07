@@ -1,6 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq.Expressions;
+using System.Net.Http.Headers;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -22,6 +30,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     // path of the assets and so on.
     public class DefineStaticWebAssets : Task
     {
+        private const string DefaultFingerprintExpression = "#[.{fingerprint}]?";
+
         [Required]
         public ITaskItem[] CandidateAssets { get; set; }
 
@@ -36,6 +46,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string ContentRoot { get; set; }
 
         public string RelativePathPattern { get; set; }
+
+        public ITaskItem[] FingerprintPatterns { get; set; }
+
+        public bool FingerprintCandidates { get; set; }
 
         public string RelativePathFilter { get; set; }
 
@@ -75,6 +89,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
                 var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
+                var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
+                Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
                 for (var i = 0; i < CandidateAssets.Length; i++)
                 {
@@ -197,6 +213,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         }
                     }
 
+                    relativePathCandidate = FingerprintCandidates ?
+                        StaticWebAsset.Normalize(AppendFingerprintPattern(relativePathCandidate, identity, fingerprintPatterns)) :
+                        relativePathCandidate;
+
                     var asset = StaticWebAsset.FromProperties(
                         identity,
                         sourceId,
@@ -237,6 +257,87 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             return !Log.HasLoggedErrors;
+        }
+
+        private string AppendFingerprintPattern(
+            string relativePathCandidate,
+            string identity,
+            FingerprintPattern[] fingerprintPatterns)
+        {
+            if (relativePathCandidate.Contains("#["))
+            {
+                var pattern = StaticWebAssetPathPattern.Parse(relativePathCandidate, identity);
+                foreach (var segment in pattern.Segments)
+                {
+                    foreach (var part in segment.Parts)
+                    {
+                        foreach (var name in segment.GetTokenNames())
+                        {
+                            if (string.Equals(name, "fingerprint", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return relativePathCandidate;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fingerprinting patterns for content.By default(most common case), we check for a single extension, like.js or.css.
+            // In that situation we apply the fingerprint expression directly to the file name, like app.js->app#[.{fingerprint}].js.
+            // If we detect more than one extension, for example, Rcl.lib.module.js or Rcl.Razor.js, we retrieve the last extension and
+            // check for a mapping in the list below.If we find a match, we apply the fingerprint expression to the file name, like
+            // Rcl.lib.module.js->Rcl#[.{fingerprint}].lib.module.js. If we don't find a match, we add the extension to the name and
+            // continue matching against the next segment, like Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js.
+            // If we don't find a match, we apply the fingerprint before the first extension, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
+            var directoryName = Path.GetDirectoryName(relativePathCandidate);
+            relativePathCandidate = Path.GetFileName(relativePathCandidate);
+            var extensionCount = 0;
+            var stem = relativePathCandidate;
+            var extension = Path.GetExtension(relativePathCandidate);
+            while (!string.IsNullOrEmpty(extension) || extensionCount < 2)
+            {
+                extensionCount++;
+                stem = stem.Substring(0, stem.Length - extension.Length);
+                extension = Path.GetExtension(stem);
+            }
+
+            // Simple case, single extension or no extension
+            // For example:
+            // app.js->app#[.{fingerprint}]?.js
+            // app->README#[.{fingerprint}]?
+            if (extensionCount < 2)
+            {
+                var simpleExtensionResult = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
+                Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}'", relativePathCandidate, simpleExtensionResult);
+                return simpleExtensionResult;
+            }
+
+            // Complex case, multiple extensions, try matching against known patterns
+            // For example:
+            // Rcl.lib.module.js->Rcl#[.{fingerprint}].lib.module.js
+            // Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js
+            foreach (var pattern in fingerprintPatterns)
+            {
+                var matchResult = pattern.Matcher.Match(relativePathCandidate);
+                if (matchResult.HasMatches)
+                {
+                    stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
+                    extension = relativePathCandidate.Substring(stem.Length);
+                    var patternResult = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
+                    Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}' because it matched pattern '{2}'", relativePathCandidate, patternResult, pattern.Pattern);
+                    return patternResult;
+                }
+            }
+
+            // Multiple extensions and no match, apply the fingerprint before the first extension
+            // For example:
+            // Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js
+            stem = Path.GetFileNameWithoutExtension(relativePathCandidate);
+            extension = Path.GetExtension(relativePathCandidate);
+            var result = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
+            Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}' because it didn't match any pattern", relativePathCandidate, result);
+
+            return result;
         }
 
         private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
@@ -477,5 +578,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return computedPath;
         }
 
+        private class FingerprintPattern(ITaskItem pattern)
+        {
+            Matcher _matcher;
+            public string Name { get; set; } = pattern.ItemSpec;
+
+            public string Pattern { get; set; } = pattern.GetMetadata(nameof(Pattern));
+
+            public Matcher Matcher => _matcher ??= new Matcher().AddInclude(Pattern);
+        }
     }
 }

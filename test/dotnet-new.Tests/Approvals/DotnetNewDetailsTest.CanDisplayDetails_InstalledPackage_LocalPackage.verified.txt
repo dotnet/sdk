@@ -25,6 +25,8 @@
       TestAssets.PostActions.AddPackageReference.B...  TestAssets.PostActions.AddPackageReference.BasicWithFiles                                 Test Asset          
       TestAssets.PostActions.AddPackageReference.B...  TestAssets.PostActions.AddPackageReference.Basic                                          Test Asset          
       TestAssets.PostActions.AddProjectReference.B...  TestAssets.PostActions.AddProjectReference.Basic                                          Test Asset          
+      TestAssets.PostActions.AddProjectReference.E...  TestAssets.PostActions.AddProjectReference.Existing                                       Test Asset          
+      TestAssets.PostActions.AddProjectReference.E...  TestAssets.PostActions.AddProjectReference.ExistingWithRename                             Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicInSolutionRoot                           Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithFiles                                Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithIndexes                              Test Asset          

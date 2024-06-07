@@ -4413,8 +4413,8 @@ System.Threading.Channels.x.y.z.nupkg: 99095
 System.Threading.RateLimiting.x.y.z.nupkg: 84681
 System.Threading.Tasks.Dataflow.x.y.z.nupkg: 280825
 System.Windows.Extensions.x.y.z.nupkg: 54282
-templates/x.y.z/Microsoft.DotNet.Common.ItemTemplates.x.y.z.nupkg: 151394
-templates/x.y.z/Microsoft.DotNet.Common.ProjectTemplates.x.y.z.nupkg: 143189
+templates/x.y.z/microsoft.dotnet.common.itemtemplates.x.y.z.nupkg: 151394
+templates/x.y.z/microsoft.dotnet.common.projecttemplates.x.y.z.nupkg: 143187
 templates/x.y.z/microsoft.dotnet.test.projecttemplates.x.y.z.nupkg: 125860
 templates/x.y.z/microsoft.dotnet.web.itemtemplates.x.y.z.nupkg: 59574
 templates/x.y.z/microsoft.dotnet.web.projecttemplates.x.y.z.nupkg: 5656137
