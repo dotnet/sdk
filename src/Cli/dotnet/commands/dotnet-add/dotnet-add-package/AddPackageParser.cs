@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli
 
         public static IEnumerable<string> QueryNuGet(string match)
         {
-            var httpClient = new HttpClient();
+            using var httpClient = new HttpClient();
 
             Stream result;
 
@@ -104,6 +104,8 @@ namespace Microsoft.DotNet.Cli
             {
                 yield return packageId;
             }
+
+            stream.Dispose();
         }
 
         internal static IEnumerable<string> EnumerablePackageIdFromQueryResponse(Stream result)
