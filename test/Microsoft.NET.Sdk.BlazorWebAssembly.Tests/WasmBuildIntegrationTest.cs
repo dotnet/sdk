@@ -7,10 +7,8 @@ using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmBuildIntegrationTest : BlazorWasmBaselineTests
+    public class WasmBuildIntegrationTest(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public WasmBuildIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
-
         private static string customIcuFilename = "icudt_custom.dat";
         private static string fullIcuFilename = "icudt.dat";
         private static string hybridIcuFilename = "icudt_hybrid.dat";
@@ -29,8 +27,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var build = new BuildCommand(testInstance);
-            build.Execute()
+            var build = CreateBuildCommand(testInstance);
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 
@@ -52,8 +50,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: identifier);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -97,14 +95,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var buildLibraryCommand = new BuildCommand(testInstance, "razorclasslibrary");
-            buildLibraryCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildLibraryCommand.Execute()
+            var buildLibraryCommand = CreateBuildCommand(testInstance, "razorclasslibrary");
+            ExecuteCommand(buildLibraryCommand)
                 .Should().Pass();
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -131,8 +127,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:Configuration=Release")
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand,"/p:Configuration=Release")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
@@ -163,9 +159,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -201,9 +196,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/p:Configuration=Release")
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/p:Configuration=Release")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
@@ -241,8 +235,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -272,8 +266,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -309,9 +303,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute()
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand)
                 .Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -347,8 +340,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -389,9 +382,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute()
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand)
                 .Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -433,8 +425,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -476,9 +468,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute()
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand)
                 .Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -512,9 +503,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -545,9 +535,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var resxfileInProject = Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
             File.Move(resxfileInProject, Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var buildCommand = new BuildCommand(ProjectDirectory, "blazorwasm");
-            buildCommand.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            buildCommand.Execute("/bl").Should().Pass();
+            var buildCommand = CreateBuildCommand(ProjectDirectory, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             var outputPath = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = buildCommand.GetIntermediateDirectory(DefaultTfm).ToString();
@@ -597,8 +586,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
         }
 
         [Fact]
@@ -607,8 +596,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary");
 
-            var buildCommand = new BuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
+            ExecuteCommand(buildCommand).Should().Pass();
             var referenceAssemblyPath = new FileInfo(Path.Combine(
                 buildCommand.GetOutputDirectory(DefaultTfm).ToString(),
                 "classlibrarywithsatelliteassemblies.dll"));
@@ -641,8 +630,8 @@ public class TestReference
     public void Method() => System.GC.KeepAlive(typeof(classlibrarywithsatelliteassemblies.Class1));
 }");
 
-            buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute().Should().Pass();
+            buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -656,8 +645,8 @@ public class TestReference
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary");
 
-            var buildCommand = new BuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
+            ExecuteCommand(buildCommand).Should().Pass();
             var referenceAssemblyPath = new FileInfo(Path.Combine(
                 buildCommand.GetOutputDirectory(DefaultTfm).ToString(),
                 "classlibrarywithsatelliteassemblies.dll"));
@@ -690,8 +679,8 @@ public class TestReference
     public void Method() => System.GC.KeepAlive(typeof(classlibrarywithsatelliteassemblies.Class1));
 }");
 
-            buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute().Should().Pass();
+            buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -755,8 +744,8 @@ public class TestReference
                 }
             }
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
