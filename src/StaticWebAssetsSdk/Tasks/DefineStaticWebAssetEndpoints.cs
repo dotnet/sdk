@@ -221,20 +221,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
         {
+            var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
             foreach (var mapping in contentTypeMappings)
             {
-                if (mapping.Matches(Path.GetFileName(asset.RelativePath)))
+                if (mapping.Matches(Path.GetFileName(relativePath)))
                 {
-                    Log.LogMessage(MessageImportance.Low, $"Matched {asset.RelativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
+                    Log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
                     return (mapping.MimeType, mapping.Cache);
                 }
                 else
                 {
-                    Log.LogMessage(MessageImportance.Low, $"No match for {asset.RelativePath} using pattern {mapping.Pattern}");
+                    Log.LogMessage(MessageImportance.Low, $"No match for {relativePath} using pattern {mapping.Pattern}");
                 }
             }
 
-            Log.LogMessage(MessageImportance.Low, $"No match for {asset.RelativePath}. Using default content type 'application/octet-stream'");
+            Log.LogMessage(MessageImportance.Low, $"No match for {relativePath}. Using default content type 'application/octet-stream'");
 
             return ("application/octet-stream", null);
         }
