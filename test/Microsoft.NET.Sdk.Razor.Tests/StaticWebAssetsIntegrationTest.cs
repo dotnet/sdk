@@ -422,7 +422,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Bin folder manifest does not exist
             new FileInfo(finalPath).Should().NotExist();
         }
+    }
 
+    public class StaticWebAssetsAppWithPackagesIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsAppWithPackagesIntegrationTest))
+    {
         [Fact]
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
@@ -440,11 +444,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             ExecuteCommand(build).Should().Fail();
         }
-    }
 
-    public class StaticWebAssetsAppWithPackagesIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsAppWithPackagesIntegrationTest))
-    {
         [Fact]
         public void BuildProjectWithReferences_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
