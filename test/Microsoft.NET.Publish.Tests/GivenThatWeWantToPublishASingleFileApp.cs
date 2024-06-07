@@ -805,6 +805,41 @@ class C
                 .HaveStdOutContaining("Hello World");
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            string publishDir = GetPublishDirectory(publishCommand).FullName;
+            string singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(singleFilePath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
+        }
+
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData(false)]
         [InlineData(true)]

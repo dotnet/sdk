@@ -284,6 +284,41 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: rid);
+            string apphostPath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(apphostPath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
+        }
+
         [WindowsOnlyFact]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
