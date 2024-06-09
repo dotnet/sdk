@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;

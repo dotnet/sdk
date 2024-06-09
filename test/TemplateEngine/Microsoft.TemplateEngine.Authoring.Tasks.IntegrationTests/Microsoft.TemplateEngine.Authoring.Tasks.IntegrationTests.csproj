@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Resources\**\*">
@@ -18,7 +17,7 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <Exec Command="dotnet pack $(SolutionDir)tools\Microsoft.TemplateEngine.Authoring.Tasks" />
   </Target>
-  
+
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

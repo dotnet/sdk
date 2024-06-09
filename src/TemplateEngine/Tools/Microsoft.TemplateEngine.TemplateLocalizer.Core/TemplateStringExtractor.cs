@@ -3,9 +3,6 @@
 
 #pragma warning disable SA1114 // Comments on parameters be allowed https://github.com/DotNetAnalyzers/StyleCopAnalyzers/issues/2917
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
