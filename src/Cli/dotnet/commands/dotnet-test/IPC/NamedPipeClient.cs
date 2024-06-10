@@ -15,6 +15,7 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
     private readonly MemoryStream _messageBuffer = new();
     private readonly byte[] _readBuffer = new byte[250000];
     private readonly string _pipeName;
+
     private bool _disposed;
 
     public NamedPipeClient(string name)

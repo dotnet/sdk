@@ -16,8 +16,8 @@ internal static class RegisterSerializers
 {
     public static void RegisterAllSerializers(this NamedPipeBase namedPipeBase)
     {
-        namedPipeBase.RegisterSerializer<VoidResponse>(new VoidResponseSerializer());
-        namedPipeBase.RegisterSerializer<Module>(new ModuleSerializer());
-        namedPipeBase.RegisterSerializer<CommandLineOptionMessages>(new CommandLineOptionMessagesSerializer());
+        namedPipeBase.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
+        namedPipeBase.RegisterSerializer(new ModuleSerializer(), typeof(Module));
+        namedPipeBase.RegisterSerializer(new CommandLineOptionMessagesSerializer(), typeof(CommandLineOptionMessages));
     }
 }

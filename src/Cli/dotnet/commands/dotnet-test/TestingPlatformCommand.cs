@@ -7,7 +7,6 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -33,8 +32,6 @@ namespace Microsoft.DotNet.Cli
         public int Run(ParseResult parseResult)
         {
             _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
-
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(2468);
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));

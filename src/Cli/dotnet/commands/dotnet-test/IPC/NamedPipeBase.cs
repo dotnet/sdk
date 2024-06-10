@@ -23,16 +23,24 @@ internal abstract class NamedPipeBase
     protected INamedPipeSerializer GetSerializer(int id)
         => _idSerializer.TryGetValue(id, out object serializer)
             ? (INamedPipeSerializer)serializer
-            : throw new InvalidOperationException(string.Format(
+            : throw new InvalidOperationException((string.Format(
                 CultureInfo.InvariantCulture,
-                "No serializer registered with id '{0}'",
-                id));
+#if dotnet
+                 LocalizableStrings.NoSerializerRegisteredWithIdErrorMessage,
+#else
+                "No serializer registered with ID '{0}'",
+#endif
+                id)));
 
     protected INamedPipeSerializer GetSerializer(Type type)
         => _typeSerializer.TryGetValue(type, out object serializer)
             ? (INamedPipeSerializer)serializer
             : throw new ArgumentException(string.Format(
                 CultureInfo.InvariantCulture,
+#if dotnet
+                 LocalizableStrings.NoSerializerRegisteredWithTypeErrorMessage,
+#else
                 "No serializer registered with type '{0}'",
+#endif
                 type));
 }
