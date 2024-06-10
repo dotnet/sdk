@@ -16,7 +16,8 @@ namespace Microsoft.DotNet.Cli
         private readonly List<NamedPipeServer> _namedPipeServers = new();
         private readonly List<Task> _taskModuleName = [];
         private readonly ConcurrentBag<Task> _testsRun = [];
-        private readonly ConcurrentDictionary<string, (CommandLineOptionMessage, string[])> _commandLineOptionNameToModuleNames = [];
+        private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
+        private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
@@ -99,6 +100,8 @@ namespace Microsoft.DotNet.Cli
             if (TryGetModuleName(request, out string moduleName))
             {
                 TestApplication testApplication = GenerateTestApplication(moduleName);
+                _testApplications[moduleName] = testApplication;
+
                 _testsRun.Add(Task.Run(async () => await testApplication.RunAsync()));
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
@@ -142,7 +145,6 @@ namespace Microsoft.DotNet.Cli
         private TestApplication GenerateTestApplication(string moduleName)
         {
             var testApplication = new TestApplication(moduleName, _pipeNameDescription.Name, _args);
-            _testApplications[Path.GetFileName(moduleName)] = testApplication;
 
             if (ContainsHelpOption(_args))
             {
