@@ -12,15 +12,13 @@ namespace Microsoft.TemplateEngine.Edge
     /// </summary>
     public class TemplateConstraintManager : IDisposable
     {
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly ILogger<TemplateConstraintManager> _logger;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Dictionary<string, Task<ITemplateConstraint>> _templateConstrains = new Dictionary<string, Task<ITemplateConstraint>>();
 
         public TemplateConstraintManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
-            _engineEnvironmentSettings = engineEnvironmentSettings;
-            _logger = _engineEnvironmentSettings.Host.LoggerFactory.CreateLogger<TemplateConstraintManager>();
+            _logger = engineEnvironmentSettings.Host.LoggerFactory.CreateLogger<TemplateConstraintManager>();
 
             var constraintFactories = engineEnvironmentSettings.Components.OfType<ITemplateConstraintFactory>();
             _logger.LogDebug($"Found {constraintFactories.Count()} constraints factories, initializing.");

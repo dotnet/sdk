@@ -11,10 +11,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
     internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable
     {
         private const string DebugLogCategory = "Installer";
-        private readonly string _globalSettingsFilePath;
-        private readonly string _packagesFolder;
 
-        private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _logger;
         private readonly Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private readonly Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
@@ -23,17 +20,17 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         public GlobalSettingsTemplatePackageProvider(GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
+            IEngineEnvironmentSettings environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
             _logger = settings.Host.LoggerFactory.CreateLogger<GlobalSettingsTemplatePackageProvider>();
 
-            _packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
-            if (!settings.Host.FileSystem.DirectoryExists(_packagesFolder))
+            string packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
+            if (!settings.Host.FileSystem.DirectoryExists(packagesFolder))
             {
-                settings.Host.FileSystem.CreateDirectory(_packagesFolder);
+                settings.Host.FileSystem.CreateDirectory(packagesFolder);
             }
             foreach (var installerFactory in settings.Components.OfType<IInstallerFactory>())
             {
-                var installer = installerFactory.CreateInstaller(settings, _packagesFolder);
+                var installer = installerFactory.CreateInstaller(settings, packagesFolder);
 
                 //this provider cannot work with installers that do not implement ISerializableInstaller
                 if (installer is ISerializableInstaller)
@@ -43,8 +40,8 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
             }
 
-            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.GlobalSettingsDir, "packages.json");
-            _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
+            string globalSettingsFilePath = Path.Combine(environmentSettings.Paths.GlobalSettingsDir, "packages.json");
+            _globalSettings = new GlobalSettings(environmentSettings, globalSettingsFilePath);
             // We can't just add "SettingsChanged+=TemplatePackagesChanged", because TemplatePackagesChanged is null at this time.
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
         }

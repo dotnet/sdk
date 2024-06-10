@@ -22,7 +22,6 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         private static readonly IJsonKeyCreator DefaultArrayKeyExtractor = new IndexBasedKeyCreator();
         private static readonly IJsonKeyCreator DefaultObjectKeyExtractor = new NameKeyCreator();
 
-        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private readonly JsonDocument _jsonDocument;
 
@@ -70,8 +69,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         public TemplateStringExtractor(JsonDocument document, ILoggerFactory? loggerFactory = null)
         {
             _jsonDocument = document;
-            _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-            _logger = _loggerFactory.CreateLogger<TemplateStringExtractor>();
+            ILoggerFactory loggerFactory1 = loggerFactory ?? NullLoggerFactory.Instance;
+            _logger = loggerFactory1.CreateLogger<TemplateStringExtractor>();
         }
 
         /// <summary>

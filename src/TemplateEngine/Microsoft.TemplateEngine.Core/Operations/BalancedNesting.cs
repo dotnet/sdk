@@ -54,7 +54,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             private const int RealEndTokenIndex = 1;
             private const int PseudoEndTokenIndex = 2;
-            private readonly IToken _startToken;
             private readonly IToken _realEndToken;
             private readonly IToken _pseudoEndToken;
             private readonly string? _id;
@@ -63,12 +62,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public Implementation(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
             {
-                _startToken = start;
                 _realEndToken = realEnd;
                 _pseudoEndToken = pseudoEnd;
                 _id = id;
                 _resetFlag = resetFlag;
-                Tokens = new[] { _startToken, _realEndToken, _pseudoEndToken };
+                Tokens = new[] { start, _realEndToken, _pseudoEndToken };
                 _depth = 0;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }

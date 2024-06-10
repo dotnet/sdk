@@ -13,7 +13,6 @@ namespace Microsoft.TemplateSearch.Common
     public sealed class TemplateSearchCoordinator
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly IReadOnlyDictionary<string, Func<object, object>> _additionalDataReaders;
         private readonly IReadOnlyDictionary<string, ITemplateSearchProvider> _providers;
 
         public TemplateSearchCoordinator(
@@ -21,11 +20,11 @@ namespace Microsoft.TemplateSearch.Common
             IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
         {
             _environmentSettings = environmentSettings ?? throw new ArgumentNullException(nameof(environmentSettings));
-            _additionalDataReaders = additionalDataReaders ?? new Dictionary<string, Func<object, object>>();
+            IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders1 = additionalDataReaders ?? new Dictionary<string, Func<object, object>>();
             Dictionary<string, ITemplateSearchProvider> configuredProviders = new Dictionary<string, ITemplateSearchProvider>();
             foreach (ITemplateSearchProviderFactory factory in _environmentSettings.Components.OfType<ITemplateSearchProviderFactory>())
             {
-                configuredProviders.Add(factory.DisplayName, factory.CreateProvider(_environmentSettings, _additionalDataReaders));
+                configuredProviders.Add(factory.DisplayName, factory.CreateProvider(_environmentSettings, additionalDataReaders1));
             }
             _providers = configuredProviders;
         }
