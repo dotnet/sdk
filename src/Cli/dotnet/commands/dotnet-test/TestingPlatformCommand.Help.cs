@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Cli
                     }
 
                     string verb = missingOptions.Length == 1 ? "" : "(s)";
-                    Console.WriteLine($"{module} is missing the option{verb} below\n{line}");
+                    Console.WriteLine($"{module} is missing the option{verb} below\n{line}\n");
                 }
             }
         }

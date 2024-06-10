@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Build;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -38,21 +37,16 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
+            string msBuildArgs = TryGetMSBuildArgs(parseResult, out string[] result) ?
+                string.Join(" ", result) :
+                string.Empty;
 
-            if (containsNoBuild)
-            {
-                ForwardingAppImplementation mSBuildForwardingApp = new(GetMSBuildExePath(), ["-t:_GetTestsProject", $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
-                int getTestsProjectResult = mSBuildForwardingApp.Execute();
-            }
-            else
-            {
-                string msBuildArgs = TryGetMSBuildArgs(parseResult, out string[] result) ?
-                    string.Join(" ", result) :
-                    string.Empty;
-
-                BuildCommand buildCommand = BuildCommand.FromArgs(["-t:_GetTestsProject", msBuildArgs, $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}", "-verbosity:q"]);
-                int buildResult = buildCommand.Execute();
-            }
+            ForwardingAppImplementation msBuildForwardingApp = new(
+                GetMSBuildExePath(),
+                [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                        $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                        "-verbosity:q"]);
+            int getTestsProjectResult = msBuildForwardingApp.Execute();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             Task.WaitAll([.. _taskModuleName]);
