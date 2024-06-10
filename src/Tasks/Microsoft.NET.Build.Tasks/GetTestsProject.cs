@@ -25,8 +25,8 @@ namespace Microsoft.NET.Sdk.Testing.Tasks
 
                 NamedPipeClient dotnetTestPipeClient = new(GetTestsProjectPipeName.ItemSpec);
 
-                dotnetTestPipeClient.RegisterSerializer<Module>(new ModuleSerializer());
-                dotnetTestPipeClient.RegisterSerializer<VoidResponse>(new VoidResponseSerializer());
+                dotnetTestPipeClient.RegisterSerializer(new ModuleSerializer(), typeof(Module));
+                dotnetTestPipeClient.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
 
                 dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
                 dotnetTestPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();

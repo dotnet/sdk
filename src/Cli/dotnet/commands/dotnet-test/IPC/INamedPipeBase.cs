@@ -5,5 +5,5 @@ namespace Microsoft.DotNet.Tools.Test;
 
 internal interface INamedPipeBase
 {
-    void RegisterSerializer<T>(INamedPipeSerializer namedPipeSerializer);
+    void RegisterSerializer(INamedPipeSerializer namedPipeSerializer, Type type);
 }

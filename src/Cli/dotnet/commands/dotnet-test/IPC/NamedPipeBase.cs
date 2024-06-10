@@ -14,9 +14,9 @@ internal abstract class NamedPipeBase
     private readonly Dictionary<Type, object> _typeSerializer = [];
     private readonly Dictionary<int, object> _idSerializer = [];
 
-    public void RegisterSerializer<T>(INamedPipeSerializer namedPipeSerializer)
+    public void RegisterSerializer(INamedPipeSerializer namedPipeSerializer, Type type)
     {
-        _typeSerializer.Add(typeof(T), namedPipeSerializer);
+        _typeSerializer.Add(type, namedPipeSerializer);
         _idSerializer.Add(namedPipeSerializer.Id, namedPipeSerializer);
     }
 
@@ -31,7 +31,7 @@ internal abstract class NamedPipeBase
     protected INamedPipeSerializer GetSerializer(Type type)
         => _typeSerializer.TryGetValue(type, out object serializer)
             ? (INamedPipeSerializer)serializer
-            : throw new InvalidOperationException(string.Format(
+            : throw new ArgumentException(string.Format(
                 CultureInfo.InvariantCulture,
                 "No serializer registered with type '{0}'",
                 type));

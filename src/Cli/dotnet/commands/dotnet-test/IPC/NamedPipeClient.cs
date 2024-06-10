@@ -14,16 +14,16 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
     private readonly MemoryStream _serializationBuffer = new();
     private readonly MemoryStream _messageBuffer = new();
     private readonly byte[] _readBuffer = new byte[250000];
-
+    private readonly string _pipeName;
     private bool _disposed;
 
     public NamedPipeClient(string name)
     {
         _namedPipeClientStream = new(".", name, PipeDirection.InOut);
-        PipeName = name;
+        _pipeName = name;
     }
 
-    public string PipeName { get; }
+    public string PipeName => _pipeName;
 
     public bool IsConnected => _namedPipeClientStream.IsConnected;
 
