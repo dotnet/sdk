@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <IsShippingPackage>true</IsShippingPackage>
-    <NoWarn>2008;NU5105</NoWarn>
+    <NoWarn>$(NoWarn);2008;NU5105</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageId>Microsoft.TemplateEngine.Samples</PackageId>
     <Authors>Microsoft</Authors>
