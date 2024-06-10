@@ -59,21 +59,21 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
         WasConnected = true;
         _loopTask = Task.Run(
             async () =>
-        {
-            try
             {
-                await InternalLoopAsync(_cancellationToken);
-            }
-            catch (OperationCanceledException ex) when (ex.CancellationToken == _cancellationToken)
-            {
-                // We are being cancelled, so we don't need to wait anymore
-                return;
-            }
-            catch (Exception ex)
-            {
-                Environment.FailFast($"[NamedPipeServer] Unhandled exception:{Environment.NewLine}{ex}", ex);
-            }
-        }, cancellationToken);
+                try
+                {
+                    await InternalLoopAsync(_cancellationToken);
+                }
+                catch (OperationCanceledException ex) when (ex.CancellationToken == _cancellationToken)
+                {
+                    // We are being cancelled, so we don't need to wait anymore
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Environment.FailFast($"[NamedPipeServer] Unhandled exception:{Environment.NewLine}{ex}", ex);
+                }
+            }, cancellationToken);
     }
 
     /// <summary>
