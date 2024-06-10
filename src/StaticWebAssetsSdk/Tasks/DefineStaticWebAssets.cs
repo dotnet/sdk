@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         relativePathCandidate = candidateMatchPath;
                         if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                         {
-                            var match = matcher.Match(candidateMatchPath);
+                            var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(candidateMatchPath));
                             if (!match.HasMatches)
                             {
                                 Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, RelativePathPattern);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         relativePathCandidate = GetCandidateMatchPath(candidate);
                         if (matcher != null)
                         {
-                            var match = matcher.Match(relativePathCandidate);
+                            var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
                             if (match.HasMatches)
                             {
                                 var newRelativePathCandidate = match.Files.Single().Stem;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             }
                         }
 
-                        if (filter != null && !filter.Match(relativePathCandidate).HasMatches)
+                        if (filter != null && !filter.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate)).HasMatches)
                         {
                             Log.LogMessage(
                                 MessageImportance.Low,
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             // Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js
             foreach (var pattern in fingerprintPatterns)
             {
-                var matchResult = pattern.Matcher.Match(relativePathCandidate);
+                var matchResult = pattern.Matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
                 if (matchResult.HasMatches)
                 {
                     stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
@@ -361,7 +361,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // publish processes, so we want to allow defining these assets by setting up a different content root path from their
                 // original location in the project. For example the asset can be wwwroot\my-prod-asset.js, the content root can be
                 // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
-                var matchResult = matcher?.Match(candidate.ItemSpec);
+
+                var matchResult = matcher?.Match(StaticWebAssetPathPattern.PathWithoutTokens(candidate.ItemSpec));
                 if (matcher == null)
                 {
                     // If no relative path pattern was specified, we are going to suggest that the identity is `%(ContentRoot)\RelativePath\OriginalFileName`
