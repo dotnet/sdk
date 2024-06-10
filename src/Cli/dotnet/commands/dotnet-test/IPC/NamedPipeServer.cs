@@ -86,7 +86,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
     {
         int currentMessageSize = 0;
         int missingBytesToReadOfWholeMessage = 0;
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             int missingBytesToReadOfCurrentChunk = 0;
             int currentReadIndex = 0;
