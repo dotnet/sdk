@@ -22,9 +22,12 @@
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Credentials" />
     <PackageReference Include="NuGet.Protocol" />
-    <PackageReference Include="System.IO.Compression" />
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'" />
+    <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>

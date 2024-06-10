@@ -10,7 +10,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
-    [UsesVerify]
     public class VerifyCommandTests : TestBase
     {
         private readonly ITestOutputHelper _log;

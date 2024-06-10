@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         [InlineData("13-constant-value", "sample13", null, "replacing of constant value")]
         [InlineData("15-computed-symbol", "sample15", null, "usage computed symbols")]
         [InlineData("16-string-value-transform", "sample16", null, "usage of derived parameter")]
-        public async void TemplateEngineSamplesProjectTest(
+        public async Task TemplateEngineSamplesProjectTest(
             string folderName,
             string shortName,
             string[]? args,

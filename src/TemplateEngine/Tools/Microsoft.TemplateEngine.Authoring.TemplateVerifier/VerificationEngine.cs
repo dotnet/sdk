@@ -429,7 +429,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
         private async Task VerifyResult(TemplateVerifierOptions args, IInstantiationResult commandResultData, CallerInfo callerInfo)
         {
-            UsesVerifyAttribute a = new UsesVerifyAttribute();
+            UseVerifyAttribute a = new UseVerifyAttribute();
+
             // https://github.com/VerifyTests/Verify/blob/d8cbe38f527d6788ecadd6205c82803bec3cdfa6/src/Verify.Xunit/Verifier.cs#L10
             //  need to simulate execution from tests
             var v = DummyMethod;
