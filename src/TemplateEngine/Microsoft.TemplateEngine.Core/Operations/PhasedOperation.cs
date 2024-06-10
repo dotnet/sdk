@@ -145,12 +145,5 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public List<int> ResetsWith { get; }
         }
-
-        private class SpecializedPhasedOperationConfig
-        {
-            public IReadOnlyList<SpecializedPhase>? EntryPoints { get; set; }
-
-            public IReadOnlyList<ITokenConfig>? Tokens { get; set; }
-        }
     }
 }

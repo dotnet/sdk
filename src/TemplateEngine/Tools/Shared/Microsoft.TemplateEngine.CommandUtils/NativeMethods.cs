@@ -72,21 +72,10 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 public UIntPtr PeakJobMemoryUsed;
             }
 
-            [StructLayout(LayoutKind.Sequential)]
-            internal struct PROCESS_BASIC_INFORMATION
-            {
-                public uint ExitStatus;
-                public IntPtr PebBaseAddress;
-                public UIntPtr AffinityMask;
-                public int BasePriority;
-                public UIntPtr UniqueProcessId;
-                public UIntPtr InheritedFromUniqueProcessId;
-            }
         }
 
         internal static class Posix
         {
-            internal const int SIGINT = 2;
             internal const int SIGTERM = 15;
 
             [DllImport("libc", SetLastError = true)]
