@@ -188,6 +188,7 @@ internal sealed class NamedPipeClient : NamedPipeBase, IClient
             _lock.Release();
         }
     }
+
     public void Dispose()
     {
         if (!_disposed)
