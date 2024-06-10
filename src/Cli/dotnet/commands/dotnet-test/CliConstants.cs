@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Cli
     internal static class CliConstants
     {
         public const string HelpOptionKey = "--help";
-        public const string MSBuildOptionKey = "--additional-msbuild-params";
+        public const string MSBuildOptionKey = "--msbuild-params";
         public const string NoBuildOptionKey = "--no-build";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
