@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <PackageType>Template</PackageType>
@@ -13,6 +14,7 @@
     <IsShipping>false</IsShipping>
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="**\*" />
     <Content Include="test_templates\**\*" Exclude="test_templates\**\bin\**;test_templates\**\obj\**" />

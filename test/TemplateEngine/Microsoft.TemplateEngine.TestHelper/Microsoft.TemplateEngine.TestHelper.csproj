@@ -1,7 +1,7 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETFullTargetFramework);$(NETCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(NETCoreTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <IsTestProject>false</IsTestProject>
@@ -23,4 +23,5 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="FluentAssertions" />
   </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
     <Description>Components used by the template discovery tool, and also used for related functionality in the CLI.</Description>
@@ -17,18 +18,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="LocalizableStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LocalizableStrings.resx</DependentUpon>
-    </Compile>
+    <Compile Update="LocalizableStrings.Designer.cs"
+             DesignTime="True"
+             AutoGen="True"
+             DependentUpon="LocalizableStrings.resx" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="LocalizableStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      Generator="ResXFileCodeGenerator"
+                      LastGenOutput="LocalizableStrings.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,4 +36,5 @@
     <InternalsVisibleTo Include="Microsoft.TemplateSearch.ScraperOutputComparison" Key="$(TemplateEnginePublicKey)" />
     <InternalsVisibleTo Include="Microsoft.TemplateSearch.TemplateDiscovery" Key="$(TemplateEnginePublicKey)" />
   </ItemGroup>
+
 </Project>

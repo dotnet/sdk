@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,5 @@
     <Content Include="Snapshots\**\*" />
     <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
-
 
 </Project>

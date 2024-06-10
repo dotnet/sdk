@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <IncludeBuildOutput>False</IncludeBuildOutput>
@@ -19,10 +20,9 @@
     <PackageType>Template</PackageType>
     <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Remove="Microsoft.NETCore.App" />
-    <Content Include="content\**">
-      <PackagePath>content</PackagePath>
-    </Content>
+    <Content Include="content\**" PackagePath="content" />
   </ItemGroup>
+
 </Project>

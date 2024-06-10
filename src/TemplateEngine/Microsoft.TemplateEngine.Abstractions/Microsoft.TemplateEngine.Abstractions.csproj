@@ -1,12 +1,13 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
     <Description>Contracts for extending Template Engine</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
@@ -14,4 +15,5 @@
   <ItemGroup>
     <Compile Include="..\Shared\IsExternalInit.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
 </Project>
