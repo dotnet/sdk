@@ -28,18 +28,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         private class Implementation : IOperation
         {
-            private readonly string? _id;
-
             public Implementation(IProcessorState processor, string? id, bool initialState)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 

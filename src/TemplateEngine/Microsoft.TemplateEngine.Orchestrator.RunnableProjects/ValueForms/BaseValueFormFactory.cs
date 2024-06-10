@@ -11,18 +11,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     /// </summary>
     internal abstract class BaseValueFormFactory : IValueFormFactory
     {
-        private readonly string _identifier;
-
         protected BaseValueFormFactory(string identifier)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
                 throw new ArgumentException($"'{nameof(identifier)}' cannot be null or whitespace.", nameof(identifier));
             }
-            _identifier = identifier;
+            Identifier = identifier;
         }
 
-        public string Identifier => _identifier;
+        public string Identifier { get; }
 
         public abstract IValueForm Create(string? name = null);
 

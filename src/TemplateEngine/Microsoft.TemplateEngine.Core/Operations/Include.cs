@@ -45,20 +45,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             private readonly Include _source;
             private readonly ITokenTrie _endTokenMatcher;
-            private readonly string? _id;
 
             public Implementation(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
             {
                 Tokens = new[] { token };
                 _source = source;
                 _endTokenMatcher = endTokenMatcher;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 

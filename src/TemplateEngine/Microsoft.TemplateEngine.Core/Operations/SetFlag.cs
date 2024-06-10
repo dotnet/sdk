@@ -60,19 +60,18 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Implementation : IOperation
         {
             private readonly SetFlag _owner;
-            private readonly string? _id;
 
             public Implementation(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
             {
                 _owner = owner;
                 Tokens = tokens;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 
