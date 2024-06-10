@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
-#if !NETFRAMEWORK
+#if NET
 using System.Runtime.Loader;
 #endif
 
@@ -282,10 +282,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (!ReflectionLoadProbingPath.HasLoaded(asmName))
             {
                 AssemblyName name = new AssemblyName(asmName);
-#if NETFRAMEWORK
-                AppDomain.CurrentDomain.Load(name);
-#else
+#if NET
                 AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+#else
+                AppDomain.CurrentDomain.Load(name);
 #endif
             }
 

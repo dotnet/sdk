@@ -3,11 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
-
-#if !NETFRAMEWORK
-
+#if NET
 using System.Runtime.Loader;
-
 #endif
 
 namespace Microsoft.TemplateEngine.Edge
@@ -28,10 +25,10 @@ namespace Microsoft.TemplateEngine.Edge
         internal static void Add(string basePath)
         {
             Instance.Add(new ReflectionLoadProbingPath(basePath));
-#if NETFRAMEWORK
-            AppDomain.CurrentDomain.AssemblyResolve += Resolving;
-#else
+#if NET
             AssemblyLoadContext.Default.Resolving += Resolving;
+#else
+            AppDomain.CurrentDomain.AssemblyResolve += Resolving;
 #endif
         }
 
@@ -45,10 +42,10 @@ namespace Microsoft.TemplateEngine.Edge
             Instance.Clear();
         }
 
-#if NETFRAMEWORK
-        private static Assembly? SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
-#else
+#if NET
         private static Assembly? SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
+#else
+        private static Assembly? SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
 #endif
         {
             return LoadedAssemblies.GetOrAdd(match.ToString(), n =>
@@ -68,10 +65,10 @@ namespace Microsoft.TemplateEngine.Edge
                         continue;
                     }
 
-#if NETFRAMEWORK
-                    AssemblyName candidateName = AssemblyName.GetAssemblyName(file.FullName);
-#else
+#if NET
                     AssemblyName candidateName = AssemblyLoadContext.GetAssemblyName(file.FullName);
+#else
+                    AssemblyName candidateName = AssemblyName.GetAssemblyName(file.FullName);
 #endif
 
                     //Only pursue things that may have the same identity
@@ -181,10 +178,10 @@ namespace Microsoft.TemplateEngine.Edge
                     try
                     {
                         string attempt = bestMatch.Pop();
-#if NETFRAMEWORK
-                        Assembly result = Assembly.LoadFile(attempt);
-#else
+#if NET
                         Assembly result = loadContext.LoadFromAssemblyPath(attempt);
+#else
+                        Assembly result = Assembly.LoadFile(attempt);
 #endif
                         return result;
                     }
@@ -197,17 +194,17 @@ namespace Microsoft.TemplateEngine.Edge
             });
         }
 
-#if NETFRAMEWORK
-        private static Assembly? Resolving(object sender, ResolveEventArgs resolveEventArgs)
-#else
+#if NET
         private static Assembly? Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
+#else
+        private static Assembly? Resolving(object sender, ResolveEventArgs resolveEventArgs)
 #endif
         {
-#if NETFRAMEWORK
+#if NET
+            string stringName = assemblyName.Name;
+#else
             string stringName = resolveEventArgs.Name;
             AssemblyName assemblyName = new AssemblyName(stringName);
-#else
-            string stringName = assemblyName.Name;
 #endif
 
             foreach (ReflectionLoadProbingPath selector in Instance)
@@ -222,20 +219,20 @@ namespace Microsoft.TemplateEngine.Edge
                         && (x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netstandard", StringComparison.OrdinalIgnoreCase) > -1
                         || x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp", StringComparison.OrdinalIgnoreCase) > -1))
                         .OrderByDescending(x => x.FullName);
-#if NETFRAMEWORK
-                    found = SelectBestMatch(sender, assemblyName, files);
-#else
+#if NET
                     found = SelectBestMatch(assemblyLoadContext, assemblyName, files);
+#else
+                    found = SelectBestMatch(sender, assemblyName, files);
 #endif
                 }
                 else if (File.Exists(Path.Combine(selector._path, stringName + ".dll")))
                 {
                     FileInfo f = new FileInfo(Path.Combine(selector._path, stringName + ".dll"));
                     FileInfo[] files = { f };
-#if NETFRAMEWORK
-                    found = SelectBestMatch(sender, assemblyName, files);
-#else
+#if NET
                     found = SelectBestMatch(assemblyLoadContext, assemblyName, files);
+#else
+                    found = SelectBestMatch(sender, assemblyName, files);
 #endif
                 }
 
@@ -243,11 +240,11 @@ namespace Microsoft.TemplateEngine.Edge
                 {
                     foreach (AssemblyName reference in found.GetReferencedAssemblies())
                     {
-#if NETFRAMEWORK
+#if NET
+                        Resolving(assemblyLoadContext, reference);
+#else
                         ResolveEventArgs referenceArgs = new ResolveEventArgs(reference.FullName, found);
                         Resolving(sender, referenceArgs);
-#else
-                        Resolving(assemblyLoadContext, reference);
 #endif
                     }
 
