@@ -719,6 +719,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                                '$(SingleFileHostSourcePath)' != '' and
                                                '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                                                $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">true</_UseSingleFileHostForPublish>
+      <_DisableCetCompat Condition="'$(CetCompat)' == 'false'">true</_DisableCetCompat>
     </PropertyGroup>
   </Target>
 
@@ -746,6 +747,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                    Retries="$(CopyRetryCount)"
                    RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
                    />
   </Target>
 
