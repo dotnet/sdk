@@ -1651,6 +1651,7 @@ sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Newtonsoft.Json.dll: 69273
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
+sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Collections.Immutable.dll: 236544
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -1927,6 +1928,7 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Newt
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
+sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Collections.Immutable.dll: 236544
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -2925,8 +2927,8 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Browser.targets: 697
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.props: 3729
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.targets: 1563
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/Microsoft.NET.Sdk.Web.Tasks.dll: 7168
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 1900
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 935
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 2733
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 1297
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/Microsoft.NET.Sdk.WebAssembly.Tasks.dll: 5632
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.props: 1258
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.targets: 869
@@ -4390,6 +4392,7 @@ System.Management.x.y.z.nupkg: 280452
 System.Memory.Data.x.y.z.nupkg: 43989
 System.Net.Http.Json.x.y.z.nupkg: 68035
 System.Net.Http.WinHttpHandler.x.y.z.nupkg: 107061
+System.Net.ServerSentEvents.x.y.z.nupkg: 49796
 System.Numerics.Tensors.x.y.z.nupkg: 172987
 System.Reflection.Context.x.y.z.nupkg: 88748
 System.Reflection.Metadata.x.y.z.nupkg: 505092
