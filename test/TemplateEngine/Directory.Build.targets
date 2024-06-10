@@ -1,4 +1,5 @@
 <Project>
+
   <Import Project="..\Directory.Build.targets" />
 
   <!-- forces the version in sub dependencies -->
@@ -8,4 +9,5 @@
     <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" /> 
     <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
+
 </Project>
