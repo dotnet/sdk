@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (customGlobModel.ConditionResult)
                         {
                             // only add the special if the condition is true
-                            OperationConfigDefault defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
+                            OperationConfigDefault? defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
 
                             defaultParams ??= OperationConfigDefault.Default;
 

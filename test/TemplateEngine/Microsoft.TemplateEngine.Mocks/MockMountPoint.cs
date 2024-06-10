@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
             for (int i = 0; i < parts.Length; ++i)
             {
-                IFileSystemInfo info = current.EnumerateFileSystemInfos(parts[i], SearchOption.TopDirectoryOnly).FirstOrDefault();
+                IFileSystemInfo? info = current.EnumerateFileSystemInfos(parts[i], SearchOption.TopDirectoryOnly).FirstOrDefault();
 
                 if (info == null)
                 {

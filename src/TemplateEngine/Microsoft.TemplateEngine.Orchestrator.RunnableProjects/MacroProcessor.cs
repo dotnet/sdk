@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (string dependent in macroWithDep.Dependencies)
             {
-                IMacroConfig macro = allMacroConfigs.FirstOrDefault(mc => mc.VariableName == dependent);
+                IMacroConfig? macro = allMacroConfigs.FirstOrDefault(mc => mc.VariableName == dependent);
                 if (macro != null)
                 {
                     dependents.Add(macro);

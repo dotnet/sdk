@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 IReadOnlyList<SpecializedPhase> nextPhases = _currentPhase?.Next ?? _entryPoints;
-                SpecializedPhase match = nextPhases.FirstOrDefault(x => x.Match == token);
+                SpecializedPhase? match = nextPhases.FirstOrDefault(x => x.Match == token);
 
                 if (match != null)
                 {

@@ -332,7 +332,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     continue;
                 }
                 atLeastOneSourceValid = true;
-                NugetPackageMetadata matchedVersion = foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                NugetPackageMetadata? matchedVersion = foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
                 if (matchedVersion != null)
                 {
                     _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} was found in {foundSource.Source}.");
