@@ -7,6 +7,7 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -33,13 +34,12 @@ namespace Microsoft.DotNet.Cli
         {
             _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
 
+            DebuggerUtility.AttachCurrentProcessToVSProcessPID(2468);
+
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            string msBuildArgs = TryGetMSBuildArgs(parseResult, out string[] result) ?
-                string.Join(" ", result) :
-                string.Empty;
 
             ForwardingAppImplementation msBuildForwardingApp = new(
                 GetMSBuildExePath(),
@@ -55,13 +55,6 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop.Wait();
 
             return 0;
-        }
-
-        private static bool TryGetMSBuildArgs(ParseResult parseResult, out string[] msbuildArgs)
-        {
-            var hasMSBuildArgs = parseResult.UnmatchedTokens.Any(token => token == CliConstants.MSBuildOptionKey);
-            msbuildArgs = hasMSBuildArgs ? parseResult.UnmatchedTokens.SkipWhile(token => token != CliConstants.MSBuildOptionKey).Skip(1).ToArray() : [];
-            return hasMSBuildArgs;
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
