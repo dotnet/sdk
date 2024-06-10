@@ -23,7 +23,7 @@ internal abstract class NamedPipeBase
     protected INamedPipeSerializer GetSerializer(int id)
         => _idSerializer.TryGetValue(id, out object serializer)
             ? (INamedPipeSerializer)serializer
-            : throw new InvalidOperationException((string.Format(
+            : throw new ArgumentException((string.Format(
                 CultureInfo.InvariantCulture,
 #if dotnet
                  LocalizableStrings.NoSerializerRegisteredWithIdErrorMessage,
