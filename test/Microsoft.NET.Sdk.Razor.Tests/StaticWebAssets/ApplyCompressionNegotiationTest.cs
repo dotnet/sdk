@@ -158,6 +158,7 @@ public class ApplyCompressionNegotiationTest
         compressedAssets[1].SetMetadata(nameof(StaticWebAsset.Fingerprint), "brotli");
         compressedAssets[1].SetMetadata(nameof(StaticWebAsset.Integrity), "compressed-brotli");
         candidateAssets.AddRange(compressedAssets);
+        var expectedName = Path.GetFileNameWithoutExtension(compressedAssets[0].ItemSpec);
         var defineStaticAssetEndpointsTask = new DefineStaticWebAssetEndpoints
         {
             TestLengthResolver = value => value switch
@@ -213,7 +214,7 @@ public class ApplyCompressionNegotiationTest
             new()
             {
                 Route = "candidate.fingerprint.js",
-                AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.br"),
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
                 Selectors = [
                     new ()
                     {
@@ -290,7 +291,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.fingerprint.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.gz"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
             Selectors = [
             new ()
             {
@@ -421,7 +422,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.fingerprint.js.br",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.br"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
             ResponseHeaders = [
             new ()
             {
@@ -485,7 +486,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.fingerprint.js.gz",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.gz"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
             ResponseHeaders = [
             new ()
             {
@@ -549,7 +550,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.br"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
             Selectors = [
             new ()
             {
@@ -616,7 +617,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.gz"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
             Selectors = [
             new ()
             {
@@ -727,7 +728,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.js.br",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.br"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
             ResponseHeaders = [
             new ()
             {
@@ -781,7 +782,7 @@ public class ApplyCompressionNegotiationTest
         new()
         {
             Route = "candidate.js.gz",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "fpqnkdkwzy.gz"),
+            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
             ResponseHeaders = [
             new () {
             Name = "Accept-Ranges",
