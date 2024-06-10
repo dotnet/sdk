@@ -77,7 +77,7 @@ public class RegistryTests : IDisposable
         var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var chunkSizeLessThanContentLength = 10000;
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[100000]));
         mockLayer
@@ -112,7 +112,7 @@ public class RegistryTests : IDisposable
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var contentLength = 100000;
         var chunkSizeLessThanContentLength = 100000;
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
         mockLayer
@@ -147,7 +147,7 @@ public class RegistryTests : IDisposable
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var contentLength = 1000000;
         var chunkSize = 100000;
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
         mockLayer
@@ -222,7 +222,7 @@ public class RegistryTests : IDisposable
         Mock<Layer> mockLayer = new(MockBehavior.Strict);
         int contentLength = 1000000;
         int chunkSize = 100000;
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
         mockLayer
@@ -323,7 +323,7 @@ public class RegistryTests : IDisposable
     public async Task UploadBlobChunkedAsync_NormalFlow()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
 
         int contentLength = 50000000;
         int chunkSize = 10000000;
@@ -357,7 +357,7 @@ public class RegistryTests : IDisposable
     public async Task UploadBlobChunkedAsync_Failure()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
-        var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+        var registryUri = new Uri("https://public.ecr.aws");;
 
         int contentLength = 50000000;
         int chunkSize = 10000000;

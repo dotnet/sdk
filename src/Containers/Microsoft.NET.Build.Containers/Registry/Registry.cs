@@ -71,7 +71,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
-        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
@@ -87,7 +87,8 @@ internal sealed class Registry
 
         _logger = logger;
         _settings = settings ?? new RegistrySettings();
-        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
+        bool isInsecureRegistry = IsInsecureRegistry(RegistryName);
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, isInsecureRegistry, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -103,6 +104,29 @@ internal sealed class Registry
             // the port was not part of the original assignment, so it's not part of the 'name'
             return baseUri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
         }
+    }
+
+    private static bool IsInsecureRegistry(string registryName)
+    {
+        // Allow insecure access to 'localhost'.
+        if (registryName.StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ||
+            registryName.Equals("localhost:", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // SDK_CONTAINER_INSECURE_REGISTRIES is a semicolon separated list of insecure registry names.
+        string? insecureRegistriesEnv = Environment.GetEnvironmentVariable("SDK_CONTAINER_INSECURE_REGISTRIES");
+        if (insecureRegistriesEnv is not null)
+        {
+            string[] insecureRegistries = insecureRegistriesEnv.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (Array.Exists(insecureRegistries, registry => registryName.Equals(registry, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+        }
+
+        return DockerCli.IsInsecureRegistry(registryName);
     }
 
     public Uri BaseUri { get; }
