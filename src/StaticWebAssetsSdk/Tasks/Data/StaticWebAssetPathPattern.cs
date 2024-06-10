@@ -190,6 +190,8 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
                         }
                         else if (!string.IsNullOrEmpty(part.Value))
                         {
+                            // Token was embedded, so add it to the dictionary.
+                            dictionary[part.Name] = part.Value;
                             result.Append(part.Value);
                         }
                         else
