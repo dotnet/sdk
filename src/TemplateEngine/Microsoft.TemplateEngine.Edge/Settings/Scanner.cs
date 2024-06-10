@@ -273,19 +273,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     Assembly? assembly = null;
 
-#if !NETFRAMEWORK
+#if NETFRAMEWORK
+                    if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        byte[] fileBytes = _environmentSettings.Host.FileSystem.ReadAllBytes(file);
+                        assembly = Assembly.Load(fileBytes);
+                    }
+#else
                     if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         using (Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file))
                         {
                             assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
                         }
-                    }
-#else
-                    if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
-                    {
-                        byte[] fileBytes = _environmentSettings.Host.FileSystem.ReadAllBytes(file);
-                        assembly = Assembly.Load(fileBytes);
                     }
 #endif
 

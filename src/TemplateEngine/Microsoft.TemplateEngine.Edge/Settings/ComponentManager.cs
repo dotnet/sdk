@@ -282,10 +282,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (!ReflectionLoadProbingPath.HasLoaded(asmName))
             {
                 AssemblyName name = new AssemblyName(asmName);
-#if !NETFRAMEWORK
-                AssemblyLoadContext.Default.LoadFromAssemblyName(name);
-#else
+#if NETFRAMEWORK
                 AppDomain.CurrentDomain.Load(name);
+#else
+                AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 #endif
             }
 
