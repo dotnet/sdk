@@ -22,6 +22,11 @@
         <target state="translated">基于指定的回滚定义文件更新工作负载。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">找不到工作负载更新。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">没有为此功能带安装工作负载。若要使用更早的 SDK 版本更新已安装的工作负载，请包括“the --from-previous-sdk”选项。</target>
@@ -42,6 +47,11 @@
         <target state="translated">工作负载“{0}”因以下原因而未能更新:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">更新回退文件与工作负载集不兼容。安装和更新现在会使用松散清单。若要更新到特定工作负载版本，请使用 --version。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">已成功更新工作负载: {0}。</target>
@@ -52,11 +62,6 @@
         <target state="translated">未能将工作负载更新程序包下载到缓存: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">dotnet 工作负载更新的 --mode 参数的参数“{0}”无效。仅支持“workloadset”、“loosemanifest”和“auto”模式。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">成功更新广告清单。</target>
@@ -65,6 +70,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">工作负载更新失败: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">找不到工作负载版本 {0}。</target>
         <note />
       </trans-unit>
     </body>

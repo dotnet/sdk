@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AllowPackageDowngradeOptionDescription">
         <source>Allow package downgrade when installing a .NET tool package.</source>
-        <target state="new">Allow package downgrade when installing a .NET tool package.</target>
+        <target state="translated">.NET 도구 패키지를 설치할 때 패키지 다운그레이드를 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">전역 도구를 설치하려고 한 경우 명령에 `--global`을 추가하세요.
-매니페스트를 만들려면 일반적으로 리포지토리 루트 디렉터리에서 `dotnet new tool-manifest`를 사용하세요.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">전역 도구를 설치하려면 명령에 '--global'을 추가합니다.
+매니페스트를 만들려면 'dotnet tool install' 명령과 함께 '--create-manifest-if-needed' 플래그를 사용하거나 일반적으로 리포지토리 루트 디렉터리에서 'dotnet new tool-manifest'를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -86,6 +86,11 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">--prerelease 및 --version 옵션은 같은 명령에서 지원되지 않습니다</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">대상으로 하는 런타임이 설치되지 않은 경우 .NET 도구가 최신 버전의 .NET 런타임으로 롤포워드하도록 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">

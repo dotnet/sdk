@@ -37,6 +37,11 @@
         <target state="translated">Spécifiez un ID de package d'outil à mettre à jour.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">Mettez à jour tous les outils.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">L'outil '{0}' est à jour (version '{1}', fichier manifeste {2}).</target>
@@ -49,22 +54,32 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">La version demandée {0} est inférieure à la version existante{1} (fichier manifeste {2}). Utilisez l’option --allow-downgrade pour autoriser cette mise à jour.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the prerelease version (version '{1}').</target>
+        <target state="translated">L'outil « {0} » a été réinstallé avec la version préliminaire (version « {1} »).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the stable version (version '{1}').</target>
+        <target state="translated">L'outil « {0} » a été réinstallé avec la version stable (version « {1} »).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La version demandée {0} est inférieure à la version existante {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">Vous devez spécifier l’ID de package ou utiliser l’option Mettre à jour tout (--all).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">L’option de version (--version) et l’option mettre à jour toutes (--all) ne peuvent pas être utilisées ensemble. Spécifiez une seule des options :{0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">

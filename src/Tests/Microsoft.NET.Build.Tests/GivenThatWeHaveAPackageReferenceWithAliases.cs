@@ -11,11 +11,11 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeHaveAPackageReferenceWithAliases(ITestOutputHelper log) : base(log)
         { }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, packageNames: new string[] { "A", "B" });
+            var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, packageNames: new string[] { "ConflictingA", "ConflictingB" });
 
             TestProject testProject = new TestProject()
             {
@@ -43,13 +43,14 @@ namespace Microsoft.NET.Build.Tests
             sources.AddRange(packagesPaths);
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -87,18 +88,19 @@ namespace Microsoft.NET.Build.Tests
             List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
         public void CanBuildProjectWithAPackageReferenceWithMultipleAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
 
-            var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibMultipleClasses);
+            var packageReferenceA = GetPackageReference(targetFramework, "MultipleClasses", ClassLibMultipleClasses);
 
             TestProject testProject = new TestProject()
             {
@@ -123,8 +125,9 @@ namespace Microsoft.NET.Build.Tests
             List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);            
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }

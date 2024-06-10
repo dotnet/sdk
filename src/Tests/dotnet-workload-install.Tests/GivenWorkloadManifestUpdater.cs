@@ -558,7 +558,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var installer = new MockPackWorkloadInstaller(dotnetRoot);
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, installer);
-            manifestUpdater.UpdateAdvertisingManifestsAsync(false, new DirectoryPath(offlineCache)).Wait();
+            manifestUpdater.UpdateAdvertisingManifestsAsync(false, false, new DirectoryPath(offlineCache)).Wait();
 
             // We should have chosen the higher version manifest package to install/ extract
             installer.ExtractCallParams.Count().Should().Be(1);

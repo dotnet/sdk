@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m";
+        const string ExpectedPrefix = "-maxcpucount -verbosity:m -nologo";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                         .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier={expectedOs}-arch");
                 });
             }
-            finally { CultureInfo.CurrentCulture = currentCultureBefore;}
+            finally { CultureInfo.CurrentCulture = currentCultureBefore; }
         }
     }
 }

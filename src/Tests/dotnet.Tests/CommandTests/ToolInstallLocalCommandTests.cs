@@ -145,6 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -153,6 +154,48 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             installLocalCommand.Execute().Should().Be(0);
             _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void WhenRunWithRollForwardItShouldRollForwardToTrueInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --allow-roll-forward");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": true");
+        }
+
+        [Fact]
+        public void WhenRunWithoutRollForwardItShouldDefaultRollForwardToFalseInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": false");
         }
 
         [Fact]
@@ -191,6 +234,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                new PackageId("non-exist"),
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -235,6 +279,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             return new ToolInstallLocalCommand(
                 _parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -250,6 +295,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -268,6 +314,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -286,6 +333,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 GetToolToolPackageInstallerWithPreviewInFeed(),
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -322,6 +370,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -346,6 +395,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -367,6 +417,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
