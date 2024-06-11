@@ -224,6 +224,7 @@
         @(Net80AppHostRids);
         linux-riscv64;
         linux-musl-riscv64;
+        linux-loongarch64;
         linux-musl-loongarch64;
         " />
 
@@ -231,6 +232,7 @@
         @(Net80RuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        linux-loongarch64;
         linux-musl-loongarch64;
         " />
 
