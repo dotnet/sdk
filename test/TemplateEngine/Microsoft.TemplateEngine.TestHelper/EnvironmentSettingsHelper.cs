@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                     catch (Exception e) when (e is UnauthorizedAccessException or IOException)
                     {
                         // Failed to delete the temporary test folders.
-                        // There may be some access being released prior to this dispose or the machine holding an handle to inner files/folders.
+                        // There may be some access being released prior to this dispose or the machine holding a handle to inner files/folders.
                         // No need to worry that deletion failed since these folders are in the Temp directory anyway.
                         // See: https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
                     }
