@@ -200,7 +200,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -229,8 +229,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ComponentApp.bundle.scp.css.gz"
         }
       ]
     },
@@ -306,7 +314,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -408,7 +416,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -437,8 +445,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ComponentApp.styles.css.gz"
         }
       ]
     },
@@ -514,7 +530,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",

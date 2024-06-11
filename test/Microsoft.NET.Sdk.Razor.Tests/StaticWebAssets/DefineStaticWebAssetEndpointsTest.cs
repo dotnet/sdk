@@ -200,6 +200,126 @@ public class DefineStaticWebAssetEndpointsTest
     }
 
     [Fact]
+    public void CanDefineFingerprintedEndpoints_WithEmbeddedFingerprint()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate#[.{fingerprint=yolo}]?.js", "All", "All", fingerprint: "1234asdf", integrity: "asdf1234")],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+            TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
+            TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(2);
+        var endpoint = endpoints[1];
+
+        endpoint.Route.Should().Be("candidate.yolo.js");
+        endpoint.AssetFile.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+        endpoint.EndpointProperties.Should().BeEquivalentTo([
+            new StaticWebAssetEndpointProperty
+            {
+                Name = "fingerprint",
+                Value = "yolo"
+            },
+            new StaticWebAssetEndpointProperty
+            {
+                Name = "integrity",
+                Value = "sha256-asdf1234"
+            },
+            new StaticWebAssetEndpointProperty
+            {
+                Name = "label",
+                Value = "candidate.js"
+            }
+            ]);
+        endpoint.ResponseHeaders.Should().BeEquivalentTo(
+            [
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Content-Length",
+                    Value = "10"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "ETag",
+                    Value = "\"asdf1234\""
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Last-Modified",
+                    Value = "Thu, 15 Nov 1990 00:00:00 GMT"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Cache-Control",
+                    Value = "max-age=31536000, immutable"
+                }
+            ]);
+
+        var otherEndpoint = endpoints[0];
+        otherEndpoint.Route.Should().Be("candidate.js");
+        otherEndpoint.AssetFile.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+        otherEndpoint.ResponseHeaders.Should().BeEquivalentTo(
+                [
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Content-Length",
+                    Value = "10"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "ETag",
+                    Value = "\"asdf1234\""
+                },
+                new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "Last-Modified",
+                    Value = "Thu, 15 Nov 1990 00:00:00 GMT"
+                }
+            ]);
+    }
+
+    [Fact]
     public void DoesNotDefineNewEndpointsWhenAnExistingEndpointAlreadyExists()
     {
         var errorMessages = new List<string>();

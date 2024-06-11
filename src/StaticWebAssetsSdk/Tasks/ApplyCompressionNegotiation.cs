@@ -29,7 +29,7 @@ public class ApplyCompressionNegotiation : Task
             .ToDictionary(g => g.Key, g => g.ToList());
 
         var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
-        var updatedEndpoints = new List<StaticWebAssetEndpoint>();
+        var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
 
         var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
 
@@ -89,13 +89,14 @@ public class ApplyCompressionNegotiation : Task
                 }
 
                 Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
-                if (!updatedEndpoints.Contains(compressedEndpoint))
-                {
-                    updatedEndpoints.Add(compressedEndpoint);
-                }
+                updatedEndpoints.Add(compressedEndpoint);
 
                 foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
                 {
+                    if (!IsCompatible(compressedEndpoint, relatedEndpointCandidate))
+                    {
+                        continue;
+                    }
                     Log.LogMessage(MessageImportance.Low, "Processing related endpoint '{0}'", relatedEndpointCandidate.Route);
                     var encodingSelector = new StaticWebAssetEndpointSelector
                     {
@@ -188,13 +189,23 @@ public class ApplyCompressionNegotiation : Task
                 {
                     Log.LogMessage(MessageImportance.Low, "    Adding endpoint '{0}'", endpoint.AssetFile);
                 }
-                updatedEndpoints.AddRange(endpoints);
+                foreach (var endpoint in endpoints)
+                {
+                    updatedEndpoints.Add(endpoint);
+                }
             }
         }
 
         UpdatedEndpoints = updatedEndpoints.Distinct().Select(e => e.ToTaskItem()).ToArray();
 
         return true;
+    }
+
+    private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
+    {
+        var compressedFingerprint = compressedEndpoint.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
+        var relatedFingerprint = relatedEndpointCandidate.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
+        return string.Equals(compressedFingerprint?.Value, relatedFingerprint?.Value, StringComparison.Ordinal);
     }
 
     private void ApplyCompressedEndpointHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint compressedEndpoint, string relatedEndpointCandidateRoute)
