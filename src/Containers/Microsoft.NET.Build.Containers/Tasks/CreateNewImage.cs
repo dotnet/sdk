@@ -48,7 +48,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
-        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger);
+        RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(

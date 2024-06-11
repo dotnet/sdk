@@ -39,7 +39,7 @@ public class RegistryTests : IDisposable
         containerTag ??= "latest";
 
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
-        Registry registry = new Registry(containerRegistry, logger);
+        Registry registry = new(registryName, logger, RegistryMode.Pull);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
