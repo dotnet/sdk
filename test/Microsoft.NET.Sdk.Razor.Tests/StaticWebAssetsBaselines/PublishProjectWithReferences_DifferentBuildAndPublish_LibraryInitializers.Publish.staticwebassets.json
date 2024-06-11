@@ -1516,7 +1516,7 @@
       ]
     },
     {
-      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.gz",
+      "Route": "AppWithPackageAndP2PReference.styles.css.gz",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1561,7 +1561,7 @@
       ]
     },
     {
-      "Route": "AppWithPackageAndP2PReference.styles.css.gz",
+      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.gz",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1571,7 +1571,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -1600,8 +1600,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "AppWithPackageAndP2PReference.styles.css.gz"
         }
       ]
     },
@@ -1681,7 +1689,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -1828,69 +1836,6 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        },
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "label",
-          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
@@ -2195,7 +2140,7 @@
       ]
     },
     {
-      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2240,7 +2185,7 @@
       ]
     },
     {
-      "Route": "AppWithPackageAndP2PReference.styles.css.br",
+      "Route": "AppWithPackageAndP2PReference.__fingerprint__.styles.css.br",
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2250,7 +2195,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -2279,8 +2224,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "AppWithPackageAndP2PReference.styles.css.br"
         }
       ]
     },
@@ -2360,7 +2313,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -2707,69 +2660,6 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "__fingerprint__"
-        },
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        },
-        {
-          "Name": "label",
-          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
@@ -3256,7 +3146,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -3285,8 +3175,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ClassLibrary.bundle.scp.css.gz"
         }
       ]
     },
@@ -3362,7 +3260,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -3609,7 +3507,7 @@
       ]
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3654,7 +3552,7 @@
       ]
     },
     {
-      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
+      "Route": "_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css.br",
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3664,7 +3562,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -3693,8 +3591,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ClassLibrary.bundle.scp.css.br"
         }
       ]
     },
@@ -3770,7 +3676,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
