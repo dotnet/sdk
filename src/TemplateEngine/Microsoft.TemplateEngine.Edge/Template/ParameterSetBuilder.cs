@@ -346,9 +346,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         private class EvalData
         {
-            private object? _value;
-            private DataSource _dataSource = DataSource.NoSource;
-
             public EvalData(ITemplateParameter parameterDefinition)
             {
                 ParameterDefinition = parameterDefinition;
@@ -357,7 +354,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             public EvalData(EvaluatedInputParameterData other)
                 : this(other.ParameterDefinition, other.Value, other.IsEnabledConditionResult, other.IsRequiredConditionResult)
             {
-                this._dataSource = DataSource.NoSource;
+                this.DataSource = DataSource.NoSource;
             }
 
             private EvalData(
@@ -367,7 +364,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 bool? isRequiredConditionResult)
             {
                 ParameterDefinition = parameterDefinition;
-                _value = value;
+                Value = value;
                 IsEnabledConditionResult = isEnabledConditionResult;
                 IsRequiredConditionResult = isRequiredConditionResult;
             }
@@ -380,14 +377,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             public bool? IsRequiredConditionResult { get; set; }
 
-            public DataSource DataSource => _dataSource;
+            public DataSource DataSource { get; private set; } = DataSource.NoSource;
 
-            public object? Value => _value;
+            public object? Value { get; private set; }
 
             public void SetValue(object? value, DataSource source)
             {
-                _value = value;
-                _dataSource = source;
+                Value = value;
+                DataSource = source;
                 InputDataState = InputDataStateUtil.GetInputDataState(value);
             }
 
@@ -398,7 +395,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new EvaluatedInputParameterData(
                     this.ParameterDefinition,
                     this.Value,
-                    _dataSource,
+                    DataSource,
                     this.IsEnabledConditionResult,
                     this.IsRequiredConditionResult,
                     InputDataState);
@@ -406,10 +403,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             public EvalData Clone()
             {
-                var ds = _dataSource;
+                var ds = DataSource;
                 return new EvalData(ParameterDefinition, Value, IsEnabledConditionResult, IsRequiredConditionResult)
                 {
-                    _dataSource = ds
+                    DataSource = ds
                 };
             }
 

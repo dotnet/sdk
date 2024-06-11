@@ -11,8 +11,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
-        private readonly string? _id;
-
         private readonly bool _initialState;
 
         public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream?> sourceStreamOpener, string? id, bool initialState)
@@ -20,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;
             EndToken = endToken;
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
@@ -30,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public Func<string, Stream?> SourceStreamOpener { get; }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -38,7 +36,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken endTokenBytes = EndToken.ToToken(encoding);
             TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
-            return new Implementation(tokenBytes, endTokenMatcher, this, _id, _initialState);
+            return new Implementation(tokenBytes, endTokenMatcher, this, Id, _initialState);
         }
 
         private class Implementation : IOperation

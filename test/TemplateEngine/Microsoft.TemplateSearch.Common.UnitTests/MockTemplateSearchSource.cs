@@ -30,10 +30,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
     public class MockTemplateSearchProvider : ITemplateSearchProvider
     {
-        private bool _wasSearched;
         private ITemplateSearchProviderFactory? _factory;
 
-        public bool WasSearched => _wasSearched;
+        public bool WasSearched { get; private set; }
 
         public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
 
@@ -49,7 +48,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> matchingTemplatesFilter,
             CancellationToken cancellationToken)
         {
-            _wasSearched = true;
+            WasSearched = true;
             return Task.FromResult(Results);
         }
     }

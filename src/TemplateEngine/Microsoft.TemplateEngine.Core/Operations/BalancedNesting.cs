@@ -22,7 +22,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly ITokenConfig _startToken;
         private readonly ITokenConfig _realEndToken;
         private readonly ITokenConfig _pseudoEndToken;
-        private readonly string? _id;
         private readonly string? _resetFlag;
         private readonly bool _initialState;
 
@@ -31,12 +30,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _startToken = startToken;
             _realEndToken = realEndToken;
             _pseudoEndToken = pseudoEndToken;
-            _id = id;
+            Id = id;
             _resetFlag = resetFlag;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -44,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken realEndToken = _realEndToken.ToToken(encoding);
             IToken pseudoEndToken = _pseudoEndToken.ToToken(encoding);
 
-            return new Implementation(startToken, realEndToken, pseudoEndToken, _id, _resetFlag, _initialState);
+            return new Implementation(startToken, realEndToken, pseudoEndToken, Id, _resetFlag, _initialState);
         }
 
         private class Implementation : IOperation

@@ -414,15 +414,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private class LegacyTemplate : ITemplate
         {
             private readonly ScannedTemplateInfo _templateInfo;
-            private readonly IGenerator _generator;
 
             internal LegacyTemplate(ScannedTemplateInfo templateInfo, IGenerator generator)
             {
                 _templateInfo = templateInfo;
-                _generator = generator;
+                Generator = generator;
             }
 
-            public IGenerator Generator => _generator;
+            public IGenerator Generator { get; }
 
             public IFileSystemInfo Configuration => _templateInfo.ConfigFile;
 
@@ -446,7 +445,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string Identity => _templateInfo.ConfigurationModel.Identity;
 
-            public Guid GeneratorId => _generator.Id;
+            public Guid GeneratorId => Generator.Id;
 
             public string? GroupIdentity => _templateInfo.ConfigurationModel.GroupIdentity;
 
