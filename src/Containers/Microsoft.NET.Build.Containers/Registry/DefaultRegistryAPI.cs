@@ -14,6 +14,14 @@ internal class DefaultRegistryAPI : IRegistryAPI
     private readonly HttpClient _client;
     private readonly ILogger _logger;
 
+    // Empirical value - Unoptimized .NET application layers can be ~200MB
+    // * .NET Runtime (~80MB)
+    // * ASP.NET Runtime (~25MB)
+    // * application and dependencies - variable, but _probably_ not more than the BCL?
+    // Given a 200MB target and a 1Mb/s upload speed, we'd expect an upload speed of 27m:57s.
+    // Making this a round 30 for convenience.
+    private static TimeSpan LongRequestTimeout = TimeSpan.FromMinutes(30);
+
     internal DefaultRegistryAPI(string registryName, Uri baseUri, ILogger logger, RegistryMode mode)
     {
         bool isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
@@ -30,7 +38,12 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry, RegistryMode mode)
     {
-        var innerHandler = new SocketsHttpHandler();
+        var innerHandler = new SocketsHttpHandler()
+        {
+            UseCookies = false,
+            // the rest of the HTTP stack has an very long timeout (see below) but we should still have a reasonable timeout for the initial connection
+            ConnectTimeout = TimeSpan.FromSeconds(30)
+        };
 
         // Ignore certificate for https localhost repository.
         if (baseUri.Host == "localhost" && baseUri.Scheme == "https")
@@ -49,7 +62,10 @@ internal class DefaultRegistryAPI : IRegistryAPI
             clientHandler = new AmazonECRMessageHandler(clientHandler);
         }
 
-        HttpClient client = new(clientHandler);
+        HttpClient client = new(clientHandler)
+        {
+            Timeout = LongRequestTimeout
+        };
 
         client.DefaultRequestHeaders.Add("User-Agent", $".NET Container Library v{Constants.Version}");
 
