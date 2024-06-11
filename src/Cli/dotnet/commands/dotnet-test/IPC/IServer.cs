@@ -3,12 +3,11 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal interface IServer : INamedPipeBase, IDisposable
+internal interface IServer : INamedPipeBase,
 #if NETCOREAPP
-#pragma warning disable SA1001 // Commas should be spaced correctly
-    , IAsyncDisposable
-#pragma warning restore SA1001 // Commas should be spaced correctly
+IAsyncDisposable,
 #endif
+IDisposable
 {
     PipeNameDescription PipeName { get; }
 
