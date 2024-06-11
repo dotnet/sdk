@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             ChunkMemoryStream input = new ChunkMemoryStream(valueBytes, 512);
             ChunkMemoryStream output = new ChunkMemoryStream(1024);
 
-            IOperationProvider[] operations = Array.Empty<IOperationProvider>();
+            IOperationProvider[] operations = [];
             EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Root());
             IProcessor processor = Processor.Create(cfg, operations);
 

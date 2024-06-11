@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 24;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
-        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly IOperationProvider[] NoOperationProviders = [];
         private static readonly char[] SupportedQuotes = { '"', '\'' };
 
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)

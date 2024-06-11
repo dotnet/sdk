@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach ((string glob, GlobalRunConfig runConfig) in configuration.SpecialOperationConfig)
                 {
-                    IReadOnlyList<IOperationProvider> specialOps = Array.Empty<IOperationProvider>();
+                    IReadOnlyList<IOperationProvider> specialOps = [];
 
                     if (runConfig != null)
                     {
@@ -57,11 +57,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        public IReadOnlyList<IPathMatcher> Include { get; private set; } = Array.Empty<IPathMatcher>();
+        public IReadOnlyList<IPathMatcher> Include { get; private set; } = [];
 
-        public IReadOnlyList<IPathMatcher> Exclude { get; private set; } = Array.Empty<IPathMatcher>();
+        public IReadOnlyList<IPathMatcher> Exclude { get; private set; } = [];
 
-        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; } = Array.Empty<IPathMatcher>();
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; } = [];
 
         public IReadOnlyList<IOperationProvider> Operations { get; }
 

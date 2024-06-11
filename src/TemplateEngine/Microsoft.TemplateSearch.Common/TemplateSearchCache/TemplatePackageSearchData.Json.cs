@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.Common
                 : throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Name)} property or it is not a string.", nameof(jObject));
             Version = jObject.ToString(nameof(Version));
             TotalDownloads = jObject.ToInt32(nameof(TotalDownloads));
-            Owners = jObject.Get<JToken>(nameof(Owners)).JTokenStringOrArrayToCollection(Array.Empty<string>());
+            Owners = jObject.Get<JToken>(nameof(Owners)).JTokenStringOrArrayToCollection([]);
             Reserved = jObject.ToBool(nameof(Reserved));
 
             Description = jObject.ToString(nameof(Description));

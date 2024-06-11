@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             if (!_environmentSettings.Host.FileSystem.FileExists(_globalSettingsFile))
             {
-                return Array.Empty<TemplatePackageData>();
+                return [];
             }
 
             for (int i = 0; i < FileReadWriteRetries; i++)

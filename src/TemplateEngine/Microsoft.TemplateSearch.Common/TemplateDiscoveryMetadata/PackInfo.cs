@@ -34,7 +34,7 @@ namespace Microsoft.TemplateSearch.Common
         public long TotalDownloads { get; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Owners { get; } = Array.Empty<string>();
+        public IReadOnlyList<string> Owners { get; } = [];
 
         [JsonProperty]
         public bool Reserved { get; }

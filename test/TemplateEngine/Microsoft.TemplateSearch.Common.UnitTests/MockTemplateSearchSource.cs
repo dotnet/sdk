@@ -35,7 +35,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
         public bool WasSearched => _wasSearched;
 
-        public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
+        public IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> Results { get; set; } = [];
 
         public ITemplateSearchProviderFactory Factory
         {

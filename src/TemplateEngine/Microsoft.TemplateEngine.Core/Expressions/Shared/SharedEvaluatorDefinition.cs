@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         private static readonly IOperatorMap<Operators, TTokens> Map = Instance.GenerateMap();
         private static readonly bool DereferenceInLiteralsSetting = Instance.DereferenceInLiterals;
         private static readonly string NullToken = Instance.NullTokenValue;
-        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly IOperationProvider[] NoOperationProviders = [];
 
         protected abstract string NullTokenValue { get; }
 

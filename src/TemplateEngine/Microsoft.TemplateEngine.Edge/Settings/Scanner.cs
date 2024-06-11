@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             //backward compatibility
             var localizationLocators = templates.SelectMany(t => t.Localizations.Values.Where(li => li.IsValid || returnInvalidTemplates)).ToList();
-            return new ScanResult(source.MountPoint, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
+            return new ScanResult(source.MountPoint, templates, localizationLocators, []);
         }
 
         /// <summary>

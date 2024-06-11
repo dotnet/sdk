@@ -9,14 +9,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public ConditionalTokens()
         {
-            IfTokens = Array.Empty<ITokenConfig>();
-            ElseTokens = Array.Empty<ITokenConfig>();
-            ElseIfTokens = Array.Empty<ITokenConfig>();
-            EndIfTokens = Array.Empty<ITokenConfig>();
-            ActionableIfTokens = Array.Empty<ITokenConfig>();
-            ActionableElseTokens = Array.Empty<ITokenConfig>();
-            ActionableElseIfTokens = Array.Empty<ITokenConfig>();
-            ActionableOperations = Array.Empty<string>();
+            IfTokens = [];
+            ElseTokens = [];
+            ElseIfTokens = [];
+            EndIfTokens = [];
+            ActionableIfTokens = [];
+            ActionableElseTokens = [];
+            ActionableElseIfTokens = [];
+            ActionableOperations = [];
         }
 
         public IReadOnlyList<ITokenConfig> IfTokens { get; set; }

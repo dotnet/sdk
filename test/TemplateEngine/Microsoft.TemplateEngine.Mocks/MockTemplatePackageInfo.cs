@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Mocks
             Name = name;
             Version = version;
             TotalDownloads = totalDownloads;
-            Owners = owners?.ToArray() ?? Array.Empty<string>();
+            Owners = owners?.ToArray() ?? [];
         }
 
         public string Name { get; }

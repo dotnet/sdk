@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 _files[path] = new FileSystemFile();
             }
-            _files[path].Data = Array.Empty<byte>();
+            _files[path].Data = [];
             return new MockFileStream(d => _files[path].Data = d);
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public byte[] ReadAllBytes(string path)
         {
-            return _files[path].Data ?? Array.Empty<byte>();
+            return _files[path].Data ?? [];
         }
 
         public void DirectoryDelete(string path, bool recursive)

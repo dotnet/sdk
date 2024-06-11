@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public ChangeKind ChangeKind { get; private set; }
 
-        public byte[] Contents => Array.Empty<byte>();
+        public byte[] Contents => [];
 
         public void Deserialize(IXunitSerializationInfo info)
         {

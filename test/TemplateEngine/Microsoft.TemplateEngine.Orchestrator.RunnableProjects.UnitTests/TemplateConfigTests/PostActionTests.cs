@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 "sourceName",
                 "MyProject",
                 vc,
-                Array.Empty<IReplacementTokens>());
+                []);
 
             List<IPostAction> postActions = PostAction.Evaluate(
                 _environmentSettings,
@@ -212,7 +212,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     "sourceName",
                     "MyProject",
                     vc,
-                    Array.Empty<IReplacementTokens>());
+                    []);
 
             List<IPostAction> postActions = PostAction.Evaluate(
                 _environmentSettings,
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     "sourceName",
                     "MyProject",
                     vc,
-                    Array.Empty<IReplacementTokens>());
+                    []);
 
             List<IPostAction> postActions = PostAction.Evaluate(
                 _environmentSettings,
@@ -277,7 +277,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     "sourceName",
                     "MyProject",
                     vc,
-                    Array.Empty<IReplacementTokens>());
+                    []);
 
             List<IPostAction> postActions = PostAction.Evaluate(
                 _environmentSettings,

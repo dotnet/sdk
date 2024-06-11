@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 string mountPointUri = entry.ToString(nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
                 string configPlace = entry.ToString(nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
                 JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
-                IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
+                IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection([]);
 
                 TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace)
                 {

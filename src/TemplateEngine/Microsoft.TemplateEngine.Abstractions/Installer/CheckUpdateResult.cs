@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
             TemplatePackage = templatePackage;
             LatestVersion = latestVersion;
             IsLatestVersion = isLatest;
-            Vulnerabilities = Array.Empty<VulnerabilityInfo>();
+            Vulnerabilities = [];
         }
 
         private CheckUpdateResult(
