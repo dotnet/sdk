@@ -288,120 +288,66 @@ public class ApplyCompressionNegotiationTest
             }
             ]
         },
-        new()
-        {
-            Route = "candidate.fingerprint.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-            Selectors = [
-            new ()
+            new()
             {
-                Name = "Content-Encoding",
-                Value = "gzip",
-            Quality = "0.100000000000"
-            }
-        ],
-        ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
-                Name = "Cache-Control",
-                Value = "max-age=31536000, immutable"
-            },
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "gzip"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "9"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022compressed-gzip\u0022"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "W/\u0022original\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
-                Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "fingerprint",
-                Value = "fingerprint"
-            },
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-original"
-            },
-            new ()
-            {
-                Name = "label",
-                Value = "candidate.js"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.fingerprint.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot\\candidate.js"),
+                Route = "candidate.fingerprint.js",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
+                Selectors = [
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "gzip",
+                Quality = "0.100000000000"
+                }
+            ],
             ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
-                Name = "Cache-Control",
-                Value = "max-age=31536000, immutable"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "20"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022original\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            }
-        ],
-        EndpointProperties = [
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "max-age=31536000, immutable"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "gzip"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "9"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-gzip\u0022"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "W/\u0022original\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
                 new ()
                 {
                     Name = "fingerprint",
@@ -417,413 +363,467 @@ public class ApplyCompressionNegotiationTest
                     Name = "label",
                     Value = "candidate.js"
                 }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.fingerprint.js.br",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-            ResponseHeaders = [
-            new ()
+                ]
+            },
+            new()
             {
+                Route = "candidate.fingerprint.js",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
+                ResponseHeaders = [
+                new ()
+                {
                     Name = "Accept-Ranges",
                     Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "max-age=31536000, immutable"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "20"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022original\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                }
+            ],
+            EndpointProperties = [
+                    new ()
+                    {
+                        Name = "fingerprint",
+                        Value = "fingerprint"
+                    },
+                    new ()
+                    {
+                        Name = "integrity",
+                        Value = "sha256-original"
+                    },
+                    new ()
+                    {
+                        Name = "label",
+                        Value = "candidate.js"
+                    }
+                ]
             },
-            new ()
+            new()
             {
-                Name = "Cache-Control",
-                Value = "max-age=31536000, immutable"
+                Route = "candidate.fingerprint.js.br",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
+                ResponseHeaders = [
+                new ()
+                {
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "max-age=31536000, immutable"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "br"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "7"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "application/octet-stream"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-brotli\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "fingerprint",
+                    Value = "fingerprint"
+                },
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-compressed-brotli"
+                },
+                new ()
+                {
+                    Name = "label",
+                    Value = "candidate.js.br"
+                }
+                ]
             },
-            new ()
+            new()
             {
-                Name = "Content-Encoding",
-                Value = "br"
+                Route = "candidate.fingerprint.js.gz",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
+                ResponseHeaders = [
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "max-age=31536000, immutable"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "gzip"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "9"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-gzip\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "fingerprint",
+                    Value = "fingerprint"
+                },
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-compressed-gzip"
+                },
+                new ()
+                {
+                    Name = "label",
+                    Value = "candidate.js.gz"
+                }
+                ]
             },
-            new ()
+            new()
             {
-                Name = "Content-Length",
-                Value = "7"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "application/octet-stream"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022compressed-brotli\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
-                Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "fingerprint",
-                Value = "fingerprint"
-            },
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-compressed-brotli"
-            },
-            new ()
-            {
-                Name = "label",
-                Value = "candidate.js.br"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.fingerprint.js.gz",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
+                Route = "candidate.js",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
+                Selectors = [
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "br",
+                Quality = "0.125000000000"
+                }
+            ],
             ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "br"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "7"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-brotli\u0022"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "W/\u0022original\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-original"
+                }
+                ]
             },
-            new ()
+            new()
             {
-                Name = "Cache-Control",
-                Value = "max-age=31536000, immutable"
-            },
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "gzip"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "9"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022compressed-gzip\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
-                Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "fingerprint",
-                Value = "fingerprint"
-            },
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-compressed-gzip"
-            },
-            new ()
-            {
-                Name = "label",
-                Value = "candidate.js.gz"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-            Selectors = [
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "br",
-            Quality = "0.125000000000"
-            }
-        ],
-        ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
-                Name = "Cache-Control",
-                Value = "no-cache"
-            },
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "br"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "7"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022compressed-brotli\u0022"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "W/\u0022original\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
-                Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-original"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-            Selectors = [
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "gzip",
-            Quality = "0.100000000000"
-            }
-        ],
-        ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
-                Name = "Cache-Control",
-                Value = "no-cache"
-            },
-            new ()
-            {
-                Name = "Content-Encoding",
-                Value = "gzip"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "9"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022compressed-gzip\u0022"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "W/\u0022original\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
-                Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-original"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.js",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot\\candidate.js"),
+                Route = "candidate.js",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
+                Selectors = [
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "gzip",
+                Quality = "0.100000000000"
+                }
+            ],
             ResponseHeaders = [
-            new ()
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "gzip"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "9"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-gzip\u0022"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "W/\u0022original\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-original"
+                }
+                ]
+            },
+            new()
             {
+                Route = "candidate.js",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
+                ResponseHeaders = [
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "20"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "text/javascript"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022original\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-original"
+                }
+                ]
+            },
+            new()
+            {
+                Route = "candidate.js.br",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
+                ResponseHeaders = [
+                new ()
+                {
+                    Name = "Accept-Ranges",
+                    Value = "bytes"
+                },
+                new ()
+                {
+                    Name = "Cache-Control",
+                    Value = "no-cache"
+                },
+                new ()
+                {
+                    Name = "Content-Encoding",
+                    Value = "br"
+                },
+                new ()
+                {
+                    Name = "Content-Length",
+                    Value = "7"
+                },
+                new ()
+                {
+                    Name = "Content-Type",
+                    Value = "application/octet-stream"
+                },
+                new ()
+                {
+                    Name = "ETag",
+                    Value = "\u0022compressed-brotli\u0022"
+                },
+                new ()
+                {
+                    Name = "Last-Modified",
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new ()
+                {
+                    Name = "integrity",
+                    Value = "sha256-compressed-brotli"
+                }
+                ]
+            },
+            new()
+            {
+                Route = "candidate.js.gz",
+                AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
+                ResponseHeaders = [
+                new () {
                 Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
+                    Value = "bytes"
+                },
+                new () {
                 Name = "Cache-Control",
-                Value = "no-cache"
-            },
-            new ()
-            {
-                Name = "Content-Length",
-                Value = "20"
-            },
-            new ()
-            {
-                Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new ()
-            {
-                Name = "ETag",
-                Value = "\u0022original\u0022"
-            },
-            new ()
-            {
-                Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
-                Name = "integrity",
-                Value = "sha256-original"
-            }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.js.br",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-            ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
-            {
-                Name = "Cache-Control",
-                Value = "no-cache"
-            },
-            new ()
-            {
+                    Value = "no-cache"
+                },
+                new () {
                 Name = "Content-Encoding",
-                Value = "br"
-            },
-            new ()
-            {
+                    Value = "gzip"
+                },
+                new () {
                 Name = "Content-Length",
-                Value = "7"
-            },
-            new ()
-            {
+                    Value = "9"
+                },
+                new () {
                 Name = "Content-Type",
-                Value = "application/octet-stream"
-            },
-            new ()
-            {
+                    Value = "text/javascript"
+                },
+                new () {
                 Name = "ETag",
-                Value = "\u0022compressed-brotli\u0022"
-            },
-            new ()
-            {
+                    Value = "\u0022compressed-gzip\u0022"
+                },
+                new () {
                 Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new ()
-            {
+                    Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new () {
                 Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new ()
-            {
+                    Value = "Content-Encoding"
+                }
+            ],
+            EndpointProperties = [
+                new () {
                 Name = "integrity",
-                Value = "sha256-compressed-brotli"
+                    Value = "sha256-compressed-gzip"
+                }
+                ]
             }
-            ]
-        },
-        new()
-        {
-            Route = "candidate.js.gz",
-            AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-            ResponseHeaders = [
-            new () {
-            Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new () {
-            Name = "Cache-Control",
-                Value = "no-cache"
-            },
-            new () {
-            Name = "Content-Encoding",
-                Value = "gzip"
-            },
-            new () {
-            Name = "Content-Length",
-                Value = "9"
-            },
-            new () {
-            Name = "Content-Type",
-                Value = "text/javascript"
-            },
-            new () {
-            Name = "ETag",
-                Value = "\u0022compressed-gzip\u0022"
-            },
-            new () {
-            Name = "Last-Modified",
-                Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
-            },
-            new () {
-            Name = "Vary",
-                Value = "Content-Encoding"
-            }
-        ],
-        EndpointProperties = [
-            new () {
-            Name = "integrity",
-                Value = "sha256-compressed-gzip"
-            }
-            ]
-        }
 };
 
         endpoints.Should().BeEquivalentTo(expectedEndpoints);
