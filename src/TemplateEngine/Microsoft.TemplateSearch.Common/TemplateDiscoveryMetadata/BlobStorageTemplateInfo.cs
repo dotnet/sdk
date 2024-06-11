@@ -91,7 +91,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
         [JsonIgnore]
-        public string? DefaultName => throw new NotImplementedException();
+        public string DefaultName => throw new NotImplementedException();
 
         [JsonProperty]
         public string? Description { get; private set; }
@@ -426,7 +426,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultValue { get; internal set; }
 
             [JsonIgnore]
-            string? ITemplateParameter.DisplayName => throw new NotImplementedException();
+            string ITemplateParameter.DisplayName => throw new NotImplementedException();
 
             [JsonProperty]
             public string? DefaultIfOptionWithoutValue { get; internal set; }
@@ -436,7 +436,7 @@ namespace Microsoft.TemplateSearch.Common
 
             [Obsolete]
             [JsonIgnore]
-            string? ITemplateParameter.Documentation => throw new NotImplementedException();
+            string ITemplateParameter.Documentation => throw new NotImplementedException();
 
             [JsonProperty]
             public bool AllowMultipleValues { get; internal set; }
@@ -484,7 +484,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
 
             [JsonIgnore]
             public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
@@ -514,7 +514,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
         }
 
     }

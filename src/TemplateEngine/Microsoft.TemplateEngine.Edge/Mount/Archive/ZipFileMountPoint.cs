@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         internal Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
 
-        public IFile? FileInfo(string path)
+        public IFile FileInfo(string path)
         {
             return new ZipFileFile(this, path, path.Substring(path.LastIndexOf('/') + 1), null);
         }

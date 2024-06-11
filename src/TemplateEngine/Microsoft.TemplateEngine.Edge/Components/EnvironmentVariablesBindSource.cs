@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge
     {
         int IPrioritizedComponent.Priority => 0;
 
-        string? IBindSymbolSource.SourcePrefix => "env";
+        string IBindSymbolSource.SourcePrefix => "env";
 
         bool IBindSymbolSource.RequiresPrefixMatch => false;
 

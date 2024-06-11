@@ -463,9 +463,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string ConfigPlace => _templateInfo.ConfigFile.FullPath;
 
-            public string? LocaleConfigPlace => throw new NotImplementedException();
+            public string LocaleConfigPlace => throw new NotImplementedException();
 
-            public string? HostConfigPlace => throw new NotImplementedException();
+            public string HostConfigPlace => throw new NotImplementedException();
 
             public string? ThirdPartyNotices => _templateInfo.ConfigurationModel.ThirdPartyNotices;
 
@@ -481,7 +481,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyList<IValidationEntry> ValidationErrors => _templateInfo.ValidationErrors;
 
-            public ILocalizationLocator? Localization => throw new NotImplementedException();
+            public ILocalizationLocator Localization => throw new NotImplementedException();
 
             #region Obsolete members
 
