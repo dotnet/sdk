@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 ScanToCloseCondition(processor, conditionBytes, ref bufferLength, ref currentBufferPosition);
                 byte[] condition = conditionBytes.ToArray();
                 EngineConfig adjustedConfig = new EngineConfig(processor.Config.Logger, processor.Config.Whitespaces, processor.Config.LineEndings, processor.Config.Variables, _definition.VariableFormat);
-                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, Array.Empty<IOperationProvider>());
+                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, []);
                 int pos = 0;
                 int len = conditionBytes.Count;
 

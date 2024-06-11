@@ -9,8 +9,8 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         public MockCreationResult(IReadOnlyList<IPostAction>? postActions = null, IReadOnlyList<ICreationPath>? primaryOutputs = null)
         {
-            PostActions = postActions ?? Array.Empty<IPostAction>();
-            PrimaryOutputs = primaryOutputs ?? Array.Empty<ICreationPath>();
+            PostActions = postActions ?? [];
+            PrimaryOutputs = primaryOutputs ?? [];
         }
 
         public IReadOnlyList<IPostAction> PostActions { get; }

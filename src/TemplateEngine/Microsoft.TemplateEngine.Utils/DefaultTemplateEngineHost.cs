@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Utils
     [Obsolete("Use Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost instead.")]
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
+        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = [];
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         private readonly Dictionary<string, Action<string, string[]>> _diagnosticLoggers;

@@ -9,11 +9,11 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockCreationEffects : ICreationEffects, ICreationEffects2, IXunitSerializable
     {
-        private string[] _primaryOutputs = Array.Empty<string>();
+        private string[] _primaryOutputs = [];
 
-        private MockFileChange[] _mockFileChanges = Array.Empty<MockFileChange>();
+        private MockFileChange[] _mockFileChanges = [];
 
-        private string[] _absentFiles = Array.Empty<string>();
+        private string[] _absentFiles = [];
 
         public MockCreationEffects()
         {

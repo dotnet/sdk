@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = Array.Empty<(Type, IIdentifiedComponent)>();
+        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = [];
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         private readonly ILoggerFactory _loggerFactory;

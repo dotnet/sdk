@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.IDE
             {
                 // returns all templates
                 criteria = (t) => true;
-                filters ??= Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
+                filters ??= [];
             }
             else
             {
@@ -423,7 +423,7 @@ namespace Microsoft.TemplateEngine.IDE
 
             if (!paths.Any())
             {
-                return Array.Empty<string>();
+                return [];
             }
 
             var task = GetManagedTemplatePackagesAsync();

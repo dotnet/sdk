@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.IDE.IntegrationTests.Utils;
 using Microsoft.TemplateEngine.TestHelper;
@@ -165,7 +164,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             using Bootstrapper bootstrapper = GetBootstrapper(loadTestTemplates: true);
 
             var result1 = await bootstrapper.GetTemplatesAsync(default);
-            var result2 = await bootstrapper.GetTemplatesAsync(Array.Empty<Func<ITemplateInfo, MatchInfo>>(), cancellationToken: default);
+            var result2 = await bootstrapper.GetTemplatesAsync([], cancellationToken: default);
 
             Assert.NotEmpty(result1);
             Assert.Equal(result1.Count, result2.Count);

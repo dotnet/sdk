@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         installRequest,
                         InstallerErrorCode.UnsupportedRequest,
                         string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled, installRequest.PackageIdentifier),
-                        Array.Empty<VulnerabilityInfo>());
+                        []);
                 }
                 if (installersThatCanInstall.Count > 1)
                 {
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         installRequest,
                         InstallerErrorCode.UnsupportedRequest,
                         string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed, installRequest.PackageIdentifier),
-                        Array.Empty<VulnerabilityInfo>());
+                        []);
                 }
 
                 IInstaller installer = installersThatCanInstall[0];
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, updateRequest.TemplatePackage.Identifier, updateRequest.Version, updateRequest.TemplatePackage.Installer, cancellationToken, update: true).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
-                return UpdateResult.CreateFailure(updateRequest, result, message, Array.Empty<VulnerabilityInfo>());
+                return UpdateResult.CreateFailure(updateRequest, result, message, []);
             }
 
             UpdateResult updateResult = await updateRequest.TemplatePackage.Installer.UpdateAsync(updateRequest, provider: this, cancellationToken).ConfigureAwait(false);
@@ -302,7 +302,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 forceUpdate: installRequest.Force).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
-                return InstallResult.CreateFailure(installRequest, result, message, Array.Empty<VulnerabilityInfo>());
+                return InstallResult.CreateFailure(installRequest, result, message, []);
             }
 
             InstallResult installResult = await installer.InstallAsync(installRequest, this, cancellationToken).ConfigureAwait(false);

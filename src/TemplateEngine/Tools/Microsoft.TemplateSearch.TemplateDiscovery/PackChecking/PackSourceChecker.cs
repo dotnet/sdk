@@ -388,7 +388,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
                     return scanResult.Templates.Select(t => new TemplateSearchData(t.ToITemplateInfo(), t.ProduceAdditionalData(additionalDataProducers, environmentSettings)));
                 }
-                return Array.Empty<TemplateSearchData>();
+                return [];
             }
             catch (TaskCanceledException)
             {
@@ -397,7 +397,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to read package {0}::{1}, details: {2}. The package will be skipped.", packInfo.Name, packInfo.Version, ex);
-                return Array.Empty<TemplateSearchData>();
+                return [];
             }
         }
 

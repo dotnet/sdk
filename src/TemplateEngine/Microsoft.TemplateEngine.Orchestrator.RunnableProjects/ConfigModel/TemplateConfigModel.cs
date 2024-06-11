@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
 
             Identity = identity;
-            Symbols = Array.Empty<BaseSymbol>();
+            Symbols = [];
         }
 
         private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null)
@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of template short names ("shortName" JSON property).
         /// </summary>
-        public IReadOnlyList<string> ShortNameList { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> ShortNameList { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of post actions defined for the template ("postActions" JSON property).
@@ -287,7 +287,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of template primary outputs ("primaryOutputs" JSON property).
         /// </summary>
-        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; internal init; } = Array.Empty<PrimaryOutputModel>();
+        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; internal init; } = [];
 
         /// <summary>
         /// Gets version expression which defines which generator versions is supported by the template ("generatorVersions" JSON property).
@@ -307,12 +307,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of classifications of the template ("classifications" JSON property).
         /// </summary>
-        public IReadOnlyList<string> Classifications { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> Classifications { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of guids defined in the template ("guids" JSON property).
         /// </summary>
-        public IReadOnlyList<Guid> Guids { get; internal init; } = Array.Empty<Guid>();
+        public IReadOnlyList<Guid> Guids { get; internal init; } = [];
 
         /// <summary>
         /// Gets the source name defined in the template ("sourceName" JSON property).
@@ -332,12 +332,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of sources defined in the template ("sources" JSON property).
         /// </summary>
-        public IReadOnlyList<ExtendedFileSource> Sources { get; internal init; } = Array.Empty<ExtendedFileSource>();
+        public IReadOnlyList<ExtendedFileSource> Sources { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of constraints defined in the template ("constraints" JSON property).
         /// </summary>
-        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; internal init; } = Array.Empty<TemplateConstraintInfo>();
+        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of symbols defined in the template ("symbols" JSON property).
@@ -389,7 +389,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of custom operations defined for the template for specific files ("specialCustomOperations" JSON property).
         /// </summary>
-        public IReadOnlyList<CustomFileGlobModel> SpecialCustomOperations { get; internal init; } = Array.Empty<CustomFileGlobModel>();
+        public IReadOnlyList<CustomFileGlobModel> SpecialCustomOperations { get; internal init; } = [];
 
         internal BaseSymbol NameSymbol { get; private init; } = SetupDefaultNameSymbol(null);
 
@@ -581,7 +581,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!isWindows)
             {
-                return Array.Empty<BindSymbol>();
+                return [];
             }
             //on Windows we implicitly bind OS to avoid likely breaking change.
             //this environment variable is commonly used in conditions when using run script post action.

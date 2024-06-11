@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class VariableCollection : IVariableCollection, IMonitoredVariableCollection
     {
-        private static readonly IEnumerable<string> NoKeys = Array.Empty<string>();
+        private static readonly IEnumerable<string> NoKeys = [];
         private readonly IDictionary<string, object> _values;
         private IVariableCollection? _parent;
 

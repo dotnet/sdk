@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core
             SourceRelativePath = sourceRelativePath;
             TargetRelativePath = targetRelativePath;
             ChangeKind = changeKind;
-            Contents = contents ?? Array.Empty<byte>();
+            Contents = contents ?? [];
         }
 
         public string SourceRelativePath { get; }

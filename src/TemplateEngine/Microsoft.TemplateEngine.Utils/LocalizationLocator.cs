@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
 
-        IReadOnlyList<IValidationEntry> IValidationInfo.ValidationErrors => Array.Empty<IValidationEntry>();
+        IReadOnlyList<IValidationEntry> IValidationInfo.ValidationErrors => [];
 
         bool IValidationInfo.IsValid => true;
     }

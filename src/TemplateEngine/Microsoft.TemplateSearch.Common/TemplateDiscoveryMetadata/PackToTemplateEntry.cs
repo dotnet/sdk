@@ -21,7 +21,7 @@ namespace Microsoft.TemplateSearch.Common
         internal long TotalDownloads { get; set; }
 
         [JsonProperty]
-        internal IReadOnlyList<string> Owners { get; set; } = Array.Empty<string>();
+        internal IReadOnlyList<string> Owners { get; set; } = [];
 
         [JsonProperty]
         internal bool Reserved { get; set; }

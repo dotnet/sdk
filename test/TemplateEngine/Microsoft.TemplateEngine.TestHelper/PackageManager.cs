@@ -167,7 +167,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                     throw new ArgumentException($"{nameof(identifier)} cannot be null or empty", nameof(identifier));
                 }
 
-                IEnumerable<PackageSource> packagesSources = LoadNuGetSources(additionalSources?.ToArray() ?? Array.Empty<string>());
+                IEnumerable<PackageSource> packagesSources = LoadNuGetSources(additionalSources?.ToArray() ?? []);
 
                 NuGetVersion packageVersion;
                 PackageSource source;

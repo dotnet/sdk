@@ -788,7 +788,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 Name = name;
                 FullPath = fullPath;
-                _data = Array.Empty<byte>();
+                _data = [];
             }
 
             public string Name { get; }
