@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Utils
             return allGrouped;
         }
 
-        private struct ValueWrapper<T>
+        private readonly struct ValueWrapper<T>
         {
             public ValueWrapper(T val)
             {
