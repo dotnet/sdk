@@ -291,7 +291,7 @@ namespace Microsoft.NET.TestFramework
             {
                 if (TryResolveCommand("MSBuild", out string pathToMSBuild))
                 {
-                    ret.FullFrameworkMSBuildPath = Path.GetDirectoryName(pathToMSBuild);
+                    ret.FullFrameworkMSBuildPath = pathToMSBuild;
                 }
                 else
                 {
