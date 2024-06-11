@@ -170,6 +170,8 @@ namespace Microsoft.DotNet.Cli
 
             yield return CommonOptions.PropertiesOption;
 
+            yield return CommonOptions.ArtifactsPathOption;
+
             if (includeRuntimeOption)
             {
                 CliOption<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
