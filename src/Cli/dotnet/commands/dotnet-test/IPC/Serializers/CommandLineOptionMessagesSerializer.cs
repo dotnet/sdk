@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Test
 
                 switch (fieldId)
                 {
-                    case CommandLineOptionMessagesFieldsId.ModuleName:
+                    case CommandLineOptionMessagesFieldsId.ModulePath:
                         moduleName = ReadString(stream);
                         break;
 
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             WriteShort(stream, GetFieldCount(commandLineOptionMessages));
 
-            WriteField(stream, CommandLineOptionMessagesFieldsId.ModuleName, commandLineOptionMessages.ModuleName);
+            WriteField(stream, CommandLineOptionMessagesFieldsId.ModulePath, commandLineOptionMessages.ModulePath);
             WriteCommandLineOptionMessagesPayload(stream, commandLineOptionMessages.CommandLineOptionMessageList);
         }
 
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Tools.Test
             WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
         }
 
-        private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessages.ModuleName) ? 0 : 1) +
+        private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessages.ModulePath) ? 0 : 1) +
                (commandLineOptionMessages is null ? 0 : 1));
 
         private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessage.Name) ? 0 : 1) +

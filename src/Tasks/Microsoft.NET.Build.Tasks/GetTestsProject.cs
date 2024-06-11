@@ -5,17 +5,18 @@
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.NET.Sdk.Testing.Tasks
+namespace Microsoft.NET.Build.Tasks
 {
     public class GetTestsProject : Microsoft.Build.Utilities.Task
     {
         [Required]
-
         public ITaskItem TargetPath { get; set; }
 
         [Required]
-
         public ITaskItem GetTestsProjectPipeName { get; set; }
+
+        [Required]
+        public ITaskItem ProjectFullPath { get; set; }
 
         public override bool Execute()
         {
@@ -29,7 +30,7 @@ namespace Microsoft.NET.Sdk.Testing.Tasks
                 dotnetTestPipeClient.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
 
                 dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
-                dotnetTestPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec, ProjectFullPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

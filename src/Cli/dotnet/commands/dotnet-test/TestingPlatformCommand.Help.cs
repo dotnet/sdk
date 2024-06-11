@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli
         private void OnHelpRequested(object sender, HelpEventArgs args)
         {
             CommandLineOptionMessages commandLineOptionMessages = args.CommandLineOptionMessages;
-            string moduleName = commandLineOptionMessages.ModuleName;
+            string moduleName = commandLineOptionMessages.ModulePath;
 
             List<string> builtInOptions = [];
             List<string> nonBuiltInOptions = [];

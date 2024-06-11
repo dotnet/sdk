@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli
 
             if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
             {
-                var testApplication = _testApplications[commandLineOptionMessages.ModuleName];
+                var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
                 testApplication?.OnCommandLineOptionMessages(commandLineOptionMessages);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
@@ -102,15 +102,15 @@ namespace Microsoft.DotNet.Cli
             throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
         }
 
-        private static bool TryGetModuleName(IRequest request, out string moduleName)
+        private static bool TryGetModuleName(IRequest request, out string modulePath)
         {
             if (request is Module module)
             {
-                moduleName = module.Name;
+                modulePath = module.DLLPath;
                 return true;
             }
 
-            moduleName = null;
+            modulePath = null;
             return false;
         }
 

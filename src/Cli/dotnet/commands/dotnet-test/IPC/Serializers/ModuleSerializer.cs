@@ -9,13 +9,15 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            string moduleName = ReadString(stream);
-            return new Module(moduleName.Trim());
+            string modulePath = ReadString(stream);
+            string projectPath = ReadString(stream);
+            return new Module(modulePath.Trim(), projectPath.Trim());
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
         {
-            WriteString(stream, ((Module)objectToSerialize).Name);
+            WriteString(stream, ((Module)objectToSerialize).DLLPath);
+            WriteString(stream, ((Module)objectToSerialize).ProjectPath);
         }
     }
 }

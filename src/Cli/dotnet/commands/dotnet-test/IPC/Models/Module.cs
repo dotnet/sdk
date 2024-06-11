@@ -3,4 +3,4 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal sealed record class Module(string Name) : IRequest;
+internal sealed record class Module(string DLLPath, string ProjectPath) : IRequest;

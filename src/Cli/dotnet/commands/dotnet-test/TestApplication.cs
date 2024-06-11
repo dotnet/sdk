@@ -8,36 +8,36 @@ namespace Microsoft.DotNet.Cli
 {
     internal class TestApplication
     {
-        private readonly string _moduleName;
+        private readonly string _modulePath;
         private readonly string _pipeName;
         private readonly string[] _args;
 
         public event EventHandler<HelpEventArgs> HelpRequested;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
-        public string ModuleName => _moduleName;
+        public string ModuleName => _modulePath;
 
         public TestApplication(string moduleName, string pipeName, string[] args)
         {
-            _moduleName = moduleName;
+            _modulePath = moduleName;
             _pipeName = pipeName;
             _args = args;
         }
 
         public async Task RunAsync()
         {
-            if (!File.Exists(_moduleName))
+            if (!File.Exists(_modulePath))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_moduleName}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
                 return;
             }
 
-            bool isDll = _moduleName.EndsWith(".dll");
+            bool isDll = _modulePath.EndsWith(".dll");
             ProcessStartInfo processStartInfo = new()
             {
                 FileName = isDll ?
                 Environment.ProcessPath :
-                _moduleName,
+                _modulePath,
                 Arguments = BuildArgs(isDll)
             };
 
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli
             StringBuilder builder = new();
 
             if (isDll)
-                builder.Append($"exec {_moduleName} ");
+                builder.Append($"exec {_modulePath} ");
 
             builder.Append(_args.Length != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")

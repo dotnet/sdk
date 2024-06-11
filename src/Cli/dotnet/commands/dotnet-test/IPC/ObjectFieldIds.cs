@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal static class CommandLineOptionMessagesFieldsId
     {
-        internal const int ModuleName = 1;
+        internal const int ModulePath = 1;
         internal const int CommandLineOptionMessageList = 2;
     }
 
