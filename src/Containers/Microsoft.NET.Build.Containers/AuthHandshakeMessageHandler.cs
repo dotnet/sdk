@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -38,12 +39,14 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
     private readonly string _registryName;
     private readonly ILogger _logger;
+    private readonly RegistryMode _registryMode;
     private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
 
-    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger) : base(innerHandler)
+    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
     {
         _registryName = registryName;
         _logger = logger;
+        _registryMode = mode;
     }
 
     /// <summary>
@@ -157,8 +160,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
         // Allow overrides for auth via environment variables
-        string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
-        string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass);
+        (string? credU, string? credP) = GetDockerCredentialsFromEnvironment(_registryMode);
 
         // fetch creds for the host
         DockerCredentials? privateRepoCreds;
@@ -193,6 +195,50 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         else
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets docker credentials from the environment variables based on registry mode.
+    /// </summary>
+    internal static (string? credU, string? credP) GetDockerCredentialsFromEnvironment(RegistryMode mode)
+    {
+        if (mode == RegistryMode.Push)
+        {
+            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectUser);
+            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectPass);
+
+            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
+            {
+                // Fallback to the old environment variables
+                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
+                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
+            }
+
+            return (credU, credP);
+        }
+        else if (mode == RegistryMode.Pull)
+        {
+            return (Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser),
+                    Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass));
+        }
+        else if (mode == RegistryMode.PullFromOutput)
+        {
+            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser);
+            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass);
+
+            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
+            {
+                // Fallback to the old environment variables
+                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
+                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
+            }
+
+            return (credU, credP);
+        }
+        else
+        {
+            throw new InvalidEnumArgumentException(nameof(mode), (int)mode, typeof(RegistryMode));
         }
     }
 
