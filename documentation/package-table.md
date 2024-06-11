@@ -22,8 +22,6 @@ Reference notes:
 > * [Host, Host FX Resolver, and Shared Framework](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table)
 > * [ASP.NET Core Shared Framework](https://github.com/aspnet/AspNetCore/blob/main/docs/DailyBuilds.md)
 
-.NET Core SDK 2.x downloads can be found at [.NET Core SDK 2.x Installers and Binaries](Downloads2.x.md) but they are [out of support](https://dotnet.microsoft.com/platform/support/policy/dotnet-core).
-
 [win-x64-badge-main]: https://aka.ms/dotnet/9.0.1xx/daily/win_x64_Release_version_badge.svg?no-cache
 [win-x64-version-main]: https://aka.ms/dotnet/9.0.1xx/daily/productCommit-win-x64.txt
 [win-x64-installer-main]: https://aka.ms/dotnet/9.0.1xx/daily/dotnet-sdk-win-x64.exe
