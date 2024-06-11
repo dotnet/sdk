@@ -56,9 +56,9 @@ namespace Microsoft.TemplateEngine.Edge
             Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             IDictionary env = Environment.GetEnvironmentVariables();
 
-            foreach (string key in env.Keys.OfType<string>())
+            foreach (string key in env.Keys.Cast<string>())
             {
-                variables[key] = (env[key] as string) ?? string.Empty;
+                variables[key] = (string)env[key];
             }
 
             return variables;
