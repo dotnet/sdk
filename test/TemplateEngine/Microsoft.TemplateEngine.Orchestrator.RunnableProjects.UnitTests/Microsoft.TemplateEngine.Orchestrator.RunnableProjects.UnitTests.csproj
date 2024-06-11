@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NETCoreTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-    <!-- TODO: Remove when https://github.com/VerifyTests/Verify/pull/1220 is merged and consumed. -->
-    <FlagNetStandard1XDependencies>false</FlagNetStandard1XDependencies>
   </PropertyGroup>
 
   <ItemGroup>
