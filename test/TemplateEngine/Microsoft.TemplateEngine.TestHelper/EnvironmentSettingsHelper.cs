@@ -78,10 +78,12 @@ namespace Microsoft.TemplateEngine.TestHelper
                     {
                         Directory.Delete(f, true);
                     }
-                    catch
+                    catch (UnauthorizedAccessException)
                     {
-                        Thread.Sleep(2000);
-                        Directory.Delete(f, true);
+                        // Failed to delete the temporary test folders.
+                        // This is more likely to happen in the TemplatePackageManagerTests.
+                        // There may be some access being released prior to this dispose.
+                        // No need to worry since these folders are in the Temp directory.
                     }
                 }
             });
