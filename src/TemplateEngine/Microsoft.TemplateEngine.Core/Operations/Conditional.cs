@@ -128,7 +128,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly Conditional _definition;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly ITokenTrie _trie;
-            private readonly string? _id;
             private EvaluationState? _current;
 
             public Implementation(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string? id, bool initialState)
@@ -136,11 +135,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _trie = trie;
                 _definition = definition;
                 Tokens = tokens;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public IReadOnlyList<IToken> Tokens { get; }
 

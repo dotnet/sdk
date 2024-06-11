@@ -12,18 +12,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         private readonly ITokenConfig _match;
         private readonly string? _replaceWith;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public Replacement(ITokenConfig match, string? replaceWith, string? id, bool initialState)
         {
             _match = match;
             _replaceWith = replaceWith;
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -35,7 +34,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 return null!;
             }
 
-            return new Implementation(token, replaceWith, _id, _initialState);
+            return new Implementation(token, replaceWith, Id, _initialState);
         }
 
         private class Implementation : IOperation
