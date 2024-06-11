@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
         /// </summary>
         /// <param name="environmentSettings">Environment to be used.</param>
         /// <param name="parent">Mount points can be mounted inside each other. Pass in parent or <c>null</c>.</param>
-        /// <param name="mountPointUri">Valid <see cref="System.Uri"/> that represents mount point.</param>
+        /// <param name="mountPointUri">Valid <see cref="Uri"/> that represents mount point.</param>
         /// <param name="mountPoint">Resulting mount point.</param>
         /// <returns><c>true</c> if mount point was successfully mounted.</returns>
         bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint? parent, string mountPointUri, out IMountPoint? mountPoint);
