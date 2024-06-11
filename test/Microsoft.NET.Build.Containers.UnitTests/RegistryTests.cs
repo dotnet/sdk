@@ -2,8 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using System.Net.Sockets;
 using Moq;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
@@ -390,11 +395,166 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [Theory]
+    public async Task InsecureRegistry(bool serverIsHttps, bool isInsecureRegistry)
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(InsecureRegistry));
 
+        // Start a dummy HTTP server that response with 200 OK.
+        using TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        IPEndPoint endpoint = (listener.LocalEndpoint as IPEndPoint)!;
+        Uri registryUri = new Uri($"https://{endpoint.Address}:{endpoint.Port}");
+        SslServerAuthenticationOptions? sslOptions = null!;
+        if (serverIsHttps)
+        {
+            var key = RSA.Create(2048);
+            var request = new CertificateRequest("CN=localhost", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            X509Certificate2 serverCertificate = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+            sslOptions = new SslServerAuthenticationOptions()
+            {
+                ServerCertificate = serverCertificate,
+                ClientCertificateRequired = false
+            };
+        }
+        _ = Task.Run(async () =>
+        {
+            while (true)
+            {
+                using TcpClient client = await listener.AcceptTcpClientAsync();
+                try
+                {
+                    using Stream stream = serverIsHttps ? new SslStream(client.GetStream(), leaveInnerStreamOpen: false) : client.GetStream();
+                    if (stream is SslStream sslStream)
+                    {
+                        await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
+                    }
+                    await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
+                }
+                catch
+                { }
+            }
+        });
+
+        RegistrySettings settings = new()
+        {
+            IsInsecure = isInsecureRegistry
+        };
+        Registry registry = new(registryUri, logger, settings: settings);
+
+        // Make a request.
+        Task getManifest = registry.GetImageManifestAsync(repositoryName: "dotnet/runtime", reference: "latest", runtimeIdentifier: "linux-x64", manifestPicker: null!, cancellationToken: default!);
+
+        if (isInsecureRegistry)
+        {
+            // Falls back to http (when serverIsHttps is false) or ignores https certificate errors (when serverIsHttps is true).
+            // Results in throwing: CONTAINER2003: The manifest for dotnet/runtime:latest from registry hwas an unknown type.
+            await Assert.ThrowsAsync<NotImplementedException>(() => getManifest);
+        }
+        else
+        {
+            // Does not fall back and throws HttpRequestException.
+            var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
+            Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
+        }
+    }
+
+    [InlineData("localhost", null, true)]
+    [InlineData("localhost:5000", null, true)]
+    [InlineData("public.ecr.aws", null, false)]
+    [InlineData("public.ecr.aws", "public.ecr.aws", true)]
+    [InlineData("public.ecr.aws", "Public.ecr.aws", true)] // ignore case
+    [InlineData("public.ecr.aws", "public.ecr.aws;docker.io", true)] // multiple registries
+    [InlineData("public.ecr.aws", ";public.ecr.aws ;  docker.io ", true)] // ignore whitespace
+    [InlineData("public.ecr.aws", "public.ecr.aws2;docker.io ", false)] // full name match
+    [Theory]
+    public void IsRegistryInsecure(string registryName, string? insecureRegistriesEnvvar, bool expectedInsecure)
+    {
+        var environment = new Dictionary<string, string>();
+        if (insecureRegistriesEnvvar is not null)
+        {
+            environment["SDK_CONTAINER_INSECURE_REGISTRIES"] = insecureRegistriesEnvvar;
+        }
+
+        var registrySettings = new RegistrySettings(registryName, new MockEnvironmentProvider(environment));
+
+        Assert.Equal(expectedInsecure, registrySettings.IsInsecure);
+    }
 
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
     {
         return new(uploadUrl);
     }
 
+    private class MockEnvironmentProvider : IEnvironmentProvider
+    {
+        private readonly IDictionary<string, string> _environmentVariables;
+
+        public MockEnvironmentProvider(IDictionary<string, string> environmentVariables)
+        {
+            _environmentVariables = environmentVariables;
+        }
+
+        public bool GetEnvironmentVariableAsBool(string name, bool defaultValue)
+        {
+            string? str = GetEnvironmentVariable(name);
+            if (string.IsNullOrEmpty(str))
+            {
+                return defaultValue;
+            }
+
+            switch (str.ToLowerInvariant())
+            {
+                case "true":
+                case "1":
+                case "yes":
+                    return true;
+                case "false":
+                case "0":
+                case "no":
+                    return false;
+                default:
+                    return defaultValue;
+            }
+        }
+
+        public string? GetEnvironmentVariable(string name)
+        {
+            string? value;
+            _environmentVariables.TryGetValue(name, out value);
+            return value;
+        }
+
+        public string? GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
+            => GetEnvironmentVariable(variable);
+
+        public int? GetEnvironmentVariableAsNullableInt(string variable)
+        {
+            if (GetEnvironmentVariable(variable) is string strValue && int.TryParse(strValue, out int intValue))
+            {
+                return intValue;
+            }
+
+            return null;
+        }
+
+        public void SetEnvironmentVariable(string variable, string value, EnvironmentVariableTarget target)
+            => throw new NotImplementedException();
+
+        public IEnumerable<string> ExecutableExtensions
+            => throw new NotImplementedException();
+
+        public string GetCommandPath(string commandName, params string[] extensions)
+            => throw new NotImplementedException();
+
+        public string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
+            => throw new NotImplementedException();
+
+        public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
+            => throw new NotImplementedException();
+    }
 }

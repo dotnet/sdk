@@ -30,7 +30,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
         }
 
         bool canFallback = request.RequestUri.Host == _host && request.RequestUri.Port == _port && request.RequestUri.Scheme == "https";
-        bool canRetry = true;
+        bool canRetry = canFallback;
         do
         {
             try
@@ -45,7 +45,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
 
                 return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
-            catch (HttpRequestException re) when (canFallback && canRetry && re.HttpRequestError == HttpRequestError.SecureConnectionError)
+            catch (HttpRequestException re) when (canRetry && re.HttpRequestError == HttpRequestError.SecureConnectionError)
             {
                 _fallbackToHttp = true;
             }
