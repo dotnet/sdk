@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
         }
 
-        internal string Condition { get; private set; }
+        internal string Condition { get; }
 
         internal ConditionStringEvaluator Evaluator { get; private set; } = EvaluatorSelector.SelectStringEvaluator(DefaultEvaluator);
 

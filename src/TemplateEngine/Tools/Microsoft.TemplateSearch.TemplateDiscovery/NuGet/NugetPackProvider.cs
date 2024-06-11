@@ -51,7 +51,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             }
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public bool SupportsGetPackageInfoViaApi => true;
 

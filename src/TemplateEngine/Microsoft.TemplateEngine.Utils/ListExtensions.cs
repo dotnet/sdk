@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
                 Val = val;
             }
 
-            public T Val { get; private set; }
+            public T Val { get; }
 
 #pragma warning disable IDE0251 // Make member 'readonly'
             public override bool Equals(object obj)

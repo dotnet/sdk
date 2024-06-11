@@ -19,13 +19,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Expand = expand;
         }
 
-        public IReadOnlyDictionary<string, string> Sources { get; private init; }
+        public IReadOnlyDictionary<string, string> Sources { get; }
 
-        public IReadOnlyList<string> Order { get; private init; }
+        public IReadOnlyList<string> Order { get; }
 
-        public string? FallbackFormat { get; private init; }
+        public string? FallbackFormat { get; }
 
-        public bool Expand { get; private init; }
+        public bool Expand { get; }
 
         internal static IVariableConfig Default { get; } =
                 new VariableConfig(

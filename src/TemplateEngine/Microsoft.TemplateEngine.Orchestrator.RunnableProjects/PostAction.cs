@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid ActionId { get; }
 
-        public bool ContinueOnError { get; private set; }
+        public bool ContinueOnError { get; }
 
         public IReadOnlyDictionary<string, string> Args { get; } = new Dictionary<string, string>();
 

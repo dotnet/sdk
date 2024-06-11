@@ -41,12 +41,12 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <remarks>
         /// Could be folder name, NuGet PackageId, path to .nupkg...
         /// </remarks>
-        public string PackageIdentifier { get; private set; }
+        public string PackageIdentifier { get; }
 
         /// <summary>
         /// Specific version to be installed or null to install latest.
         /// </summary>
-        public string? Version { get; private set; }
+        public string? Version { get; }
 
         /// <summary>
         /// Additional details, like NuGet Server(Source), that specific installer uses.

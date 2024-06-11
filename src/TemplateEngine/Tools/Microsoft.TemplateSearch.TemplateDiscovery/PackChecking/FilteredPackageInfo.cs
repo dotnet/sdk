@@ -47,10 +47,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public bool Reserved { get; private set; }
 
         [JsonIgnore]
-        public string? Description { get; private set; }
+        public string? Description { get; }
 
         [JsonIgnore]
-        public string? IconUrl { get; private set; }
+        public string? IconUrl { get; }
     }
 }
 

@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The actual atomic values specified for the parameter.
         /// </summary>
-        public IReadOnlyList<string> Values { get; private init; }
+        public IReadOnlyList<string> Values { get; }
 
         public static bool TryPerformMultiValueEqual(object x, object y, out bool result)
         {
