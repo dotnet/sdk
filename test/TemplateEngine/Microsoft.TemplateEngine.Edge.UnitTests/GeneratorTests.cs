@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             public Guid Id { get; } = new Guid("{AB083D9D-857A-419E-8394-113F97FFBD6B}");
 
-            public object? ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError) => throw new NotImplementedException();
+            public object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError) => throw new NotImplementedException();
 
             [Obsolete]
             public Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate template, IParameterSet parameters, string targetDirectory, CancellationToken cancellationToken) => throw new NotImplementedException();
@@ -154,9 +154,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public bool IsNameAgreementWithFolderPreferred => false;
 
-                public string? Author => "Microsoft";
+                public string Author => "Microsoft";
 
-                public string? Description => "This is the description";
+                public string Description => "This is the description";
 
                 public IReadOnlyList<string> Classifications => Array.Empty<string>();
 

@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge
     {
         int IPrioritizedComponent.Priority => 100;
 
-        string? IBindSymbolSource.SourcePrefix => "host";
+        string IBindSymbolSource.SourcePrefix => "host";
 
         bool IBindSymbolSource.RequiresPrefixMatch => false;
 

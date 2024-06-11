@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         /// </summary>
         internal string MountPointRootPath { get; }
 
-        public IFile? FileInfo(string path)
+        public IFile FileInfo(string path)
         {
             string fullPath = Path.Combine(MountPointRootPath, path.TrimStart('/'));
 
