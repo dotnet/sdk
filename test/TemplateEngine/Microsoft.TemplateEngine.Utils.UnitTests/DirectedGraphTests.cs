@@ -224,9 +224,9 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             actual.DependenciesMap.Keys.Should()
                 .BeEquivalentTo(expected.Keys, options => options.WithoutStrictOrdering());
 
-            foreach (int key in expected.Keys)
+            foreach (var item in expected)
             {
-                actual.DependenciesMap[key].Should().BeEquivalentTo(expected[key], options => options.WithoutStrictOrdering());
+                actual.DependenciesMap[item.Key].Should().BeEquivalentTo(item.Value, options => options.WithoutStrictOrdering());
             }
         }
     }

@@ -408,19 +408,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             List<TemplatePackageSearchData> removedTemplatePacks = new List<TemplatePackageSearchData>();
             List<FilteredPackageInfo> removedNonTemplatePacks = new List<FilteredPackageInfo>();
 
-            foreach (var package in _existingCache.Keys)
+            foreach (var item in _existingCache)
             {
-                if (!newCache.ContainsKey(package))
+                if (!newCache.ContainsKey(item.Key))
                 {
-                    removedTemplatePacks.Add(_existingCache[package]);
+                    removedTemplatePacks.Add(item.Value);
                 }
             }
 
-            foreach (var package in _knownFilteredPackages.Keys)
+            foreach (var item in _knownFilteredPackages)
             {
-                if (!filteredPackages.ContainsKey(package))
+                if (!filteredPackages.ContainsKey(item.Key))
                 {
-                    removedNonTemplatePacks.Add(_knownFilteredPackages[package]);
+                    removedNonTemplatePacks.Add(item.Value);
                 }
             }
             if (removedTemplatePacks.Any())
