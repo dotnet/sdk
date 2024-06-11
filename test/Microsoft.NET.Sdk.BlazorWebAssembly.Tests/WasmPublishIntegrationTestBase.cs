@@ -7,10 +7,8 @@ using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<str
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
+    public abstract class WasmPublishIntegrationTestBase(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public WasmPublishIntegrationTestBase(ITestOutputHelper log) : base(log) { }
-
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {
             var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");

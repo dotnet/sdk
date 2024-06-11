@@ -76,6 +76,7 @@
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/*   @tmat @arkalyanms @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh   @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService    @BillHiebert @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries

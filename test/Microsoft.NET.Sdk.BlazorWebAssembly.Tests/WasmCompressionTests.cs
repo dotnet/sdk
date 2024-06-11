@@ -102,8 +102,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             for (var i = 0; i < 3; i++)
             {
-                var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-                buildCommand.Execute().Should().Pass();
+                var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+                ExecuteCommand(buildCommand).Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
@@ -134,8 +134,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             for (var i = 0; i < 3; i++)
             {
-                var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-                buildCommand.Execute("/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
+                var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+                ExecuteCommand(buildCommand, "/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
