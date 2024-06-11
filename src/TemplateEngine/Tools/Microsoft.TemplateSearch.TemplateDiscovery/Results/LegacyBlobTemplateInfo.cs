@@ -245,7 +245,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string DsplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
         }
     }
 }
