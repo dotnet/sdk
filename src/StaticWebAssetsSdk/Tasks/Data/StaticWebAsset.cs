@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
         {
-            var file = File.Exists(identity) ?
+            using var file = File.Exists(identity) ?
                 File.OpenRead(identity) :
                 (File.Exists(originalItemSpec) ?
                     File.OpenRead(originalItemSpec) :
