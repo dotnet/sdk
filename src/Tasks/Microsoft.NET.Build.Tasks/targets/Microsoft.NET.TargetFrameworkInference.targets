@@ -222,7 +222,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="ProcessFrameworkReferences"
     Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
     <ItemGroup>
-      <_ValidTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and $([MSBuild]::VersionEquals(%(Identity), $(TargetPlatformVersion)))" />
+      <_ApplicableTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and '%(SdkSupportedTargetPlatformVersion.DefineConstantsOnly)' != 'true'" RemoveMetadata="DefineConstantsOnly" />
+      <_ValidTargetPlatformVersion Include="@(_ApplicableTargetPlatformVersion)" Condition="'@(_ApplicableTargetPlatformVersion)' != '' and $([MSBuild]::VersionEquals(%(Identity), $(TargetPlatformVersion)))" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -236,8 +237,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
     <PropertyGroup>
       <TargetPlatformVersionSupported Condition="'$(TargetPlatformVersionSupported)' == '' and '@(_ValidTargetPlatformVersion)' != ''" >true</TargetPlatformVersionSupported>
-      <_ValidTargetPlatformVersions Condition="'@(SdkSupportedTargetPlatformVersion)' != ''" >@(SdkSupportedTargetPlatformVersion, '%0a')</_ValidTargetPlatformVersions>
-      <_ValidTargetPlatformVersions Condition="'@(SdkSupportedTargetPlatformVersion)' == ''" >None</_ValidTargetPlatformVersions>
+      <_ValidTargetPlatformVersions Condition="'@(_ApplicableTargetPlatformVersion)' != ''" >@(_ApplicableTargetPlatformVersion, '%0a')</_ValidTargetPlatformVersions>
+      <_ValidTargetPlatformVersions Condition="'@(_ApplicableTargetPlatformVersion)' == ''" >None</_ValidTargetPlatformVersions>
     </PropertyGroup>
 
     <NetSdkError Condition="'$(TargetPlatformVersionSupported)' != 'true'"

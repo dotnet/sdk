@@ -8,19 +8,8 @@ using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class ProcessRunner
+    internal sealed class ProcessRunner(IReporter reporter)
     {
-        private static readonly Func<string, string?> _getEnvironmentVariable = static key => Environment.GetEnvironmentVariable(key);
-
-        private readonly IReporter _reporter;
-
-        public ProcessRunner(IReporter reporter)
-        {
-            Ensure.NotNull(reporter, nameof(reporter));
-
-            _reporter = reporter;
-        }
-
         // May not be necessary in the future. See https://github.com/dotnet/corefx/issues/12039
         public async Task<int> RunAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
         {
@@ -30,63 +19,81 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             var stopwatch = new Stopwatch();
 
-            using (var process = CreateProcess(processSpec))
-            using (var processState = new ProcessState(process, _reporter))
+            using var process = CreateProcess(processSpec);
+            using var processState = new ProcessState(process, reporter);
+
+            cancellationToken.Register(() => processState.TryKill());
+
+            var readOutput = false;
+            var readError = false;
+            if (processSpec.IsOutputCaptured)
             {
-                cancellationToken.Register(() => processState.TryKill());
-
-                var readOutput = false;
-                var readError = false;
-                if (processSpec.IsOutputCaptured)
+                readOutput = true;
+                readError = true;
+                process.OutputDataReceived += (_, a) =>
                 {
-                    readOutput = true;
-                    readError = true;
-                    process.OutputDataReceived += (_, a) =>
+                    if (!string.IsNullOrEmpty(a.Data))
                     {
-                        if (!string.IsNullOrEmpty(a.Data))
-                        {
-                            processSpec.OutputCapture.AddLine(a.Data);
-                        }
-                    };
-                    process.ErrorDataReceived += (_, a) =>
+                        processSpec.OutputCapture.AddLine(a.Data);
+                    }
+                };
+                process.ErrorDataReceived += (_, a) =>
+                {
+                    if (!string.IsNullOrEmpty(a.Data))
                     {
-                        if (!string.IsNullOrEmpty(a.Data))
-                        {
-                            processSpec.OutputCapture.AddLine(a.Data);
-                        }
-                    };
-                }
-                else if (processSpec.OnOutput != null)
-                {
-                    readOutput = true;
-                    process.OutputDataReceived += processSpec.OnOutput;
-                }
-
-                stopwatch.Start();
-                process.Start();
-
-                _reporter.Verbose($"Started '{processSpec.Executable}' with arguments '{processSpec.GetArgumentsDisplay()}': process id {process.Id}", emoji: "🚀");
-
-                if (readOutput)
-                {
-                    process.BeginOutputReadLine();
-                }
-                if (readError)
-                {
-                    process.BeginErrorReadLine();
-                }
-
-                await processState.Task;
-
-                exitCode = process.ExitCode;
-                stopwatch.Stop();
-                _reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms");
+                        processSpec.OutputCapture.AddLine(a.Data);
+                    }
+                };
             }
+            else if (processSpec.OnOutput != null)
+            {
+                readOutput = true;
+                process.OutputDataReceived += processSpec.OnOutput;
+            }
+
+            stopwatch.Start();
+
+            int? processId = null;
+            try
+            {
+                if (process.Start())
+                {
+                    processId = process.Id;
+                }
+            }
+            finally
+            {
+                var argsDisplay = processSpec.GetArgumentsDisplay();
+
+                if (processId.HasValue)
+                {
+                    reporter.Verbose($"Launched '{processSpec.Executable}' with arguments '{argsDisplay}': process id {processId.Value}", emoji: "🚀");
+                }
+                else
+                {
+                    reporter.Verbose($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}'");
+                }
+            }
+
+            if (readOutput)
+            {
+                process.BeginOutputReadLine();
+            }
+            if (readError)
+            {
+                process.BeginErrorReadLine();
+            }
+
+            await processState.Task;
+
+            exitCode = process.ExitCode;
+            stopwatch.Stop();
+            reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms");
 
             return exitCode;
         }
 
-        private Process CreateProcess(ProcessSpec processSpec)
+        private static Process CreateProcess(ProcessSpec processSpec)
         {
             var process = new Process
             {
@@ -118,53 +125,14 @@ namespace Microsoft.DotNet.Watcher.Internal
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
-            SetEnvironmentVariable(process.StartInfo, "DOTNET_STARTUP_HOOKS", processSpec.EnvironmentVariables.DotNetStartupHooks, Path.PathSeparator, _getEnvironmentVariable);
-            SetEnvironmentVariable(process.StartInfo, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", processSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies, ';', _getEnvironmentVariable);
-
             return process;
         }
 
-        internal static void SetEnvironmentVariable(ProcessStartInfo processStartInfo, string envVarName, List<string> envVarValues, char separator, Func<string, string?> getEnvironmentVariable)
-        {
-            if (envVarValues is { Count: 0 })
-            {
-                return;
-            }
-
-            var existing = getEnvironmentVariable(envVarName);
-            if (processStartInfo.Environment.TryGetValue(envVarName, out var value))
-            {
-                existing = CombineEnvironmentVariable(existing, value, separator);
-            }
-
-            string result;
-            if (!string.IsNullOrEmpty(existing))
-            {
-                result = existing + separator + string.Join(separator, envVarValues);
-            }
-            else
-            {
-                result = string.Join(separator, envVarValues);
-            }
-
-            processStartInfo.EnvironmentVariables[envVarName] = result;
-
-            static string? CombineEnvironmentVariable(string? a, string? b, char separator)
-            {
-                if (!string.IsNullOrEmpty(a))
-                {
-                    return !string.IsNullOrEmpty(b) ? (a + separator + b) : a;
-                }
-
-                return b;
-            }
-        }
-
-        private class ProcessState : IDisposable
+        private sealed class ProcessState : IDisposable
         {
             private readonly IReporter _reporter;
             private readonly Process _process;
-            private readonly TaskCompletionSource _tcs = new TaskCompletionSource();
+            private readonly TaskCompletionSource _tcs = new();
             private volatile bool _disposed;
 
             public ProcessState(Process process, IReporter reporter)
@@ -181,7 +149,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         // events.
                         //
                         // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
-                        if (!_process.WaitForExit(Int32.MaxValue))
+                        if (!_process.WaitForExit(int.MaxValue))
                         {
                             throw new TimeoutException();
                         }

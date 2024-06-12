@@ -1,0 +1,49 @@
+<installer-gui-script minSpecVersion="1">
+    <title>{CLISdkBrandName} ({arch})</title>
+    <background file="dotnetbackground.png" mime-type="image/png"/>
+    <options customize="never" require-scripts="false" hostArchitectures="{hostArchitectures}" />
+    <welcome file="welcome.html" mime-type="text/html" />
+    <conclusion file="conclusion.html" mime-type="text/html" />
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="{minOsVersion}" />
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="{NetCoreAppTargetingPackComponentId}.pkg" />
+        <line choice="{NetStandardTargetingPackComponentId}.pkg" />
+        <line choice="{NetCoreAppHostPackComponentId}.pkg" />
+        <line choice="{SharedFxComponentId}.pkg" />
+        <line choice="{HostFxrComponentId}.pkg" />
+        <line choice="{SharedHostComponentId}.pkg" />
+        <line choice="{CLISdkComponentId}.pkg"/>
+    </choices-outline>
+    <choice id="{NetCoreAppTargetingPackComponentId}.pkg" visible="true" title="{NetCoreAppTargetingPackBrandName} ({arch})" description="The .NET Targeting Pack">
+        <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg" />
+    </choice>
+    <choice id="{NetStandardTargetingPackComponentId}.pkg" visible="true" title="{NetStandardTargetingPackBrandName} ({arch})" description="The .NET Standard 2.1 Targeting Pack">
+        <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg" />
+    </choice>
+    <choice id="{NetCoreAppHostPackComponentId}.pkg" visible="true" title="{NetCoreAppHostPackBrandName} ({arch})" description="The .NET App Host Pack">
+        <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg" />
+    </choice>
+    <choice id="{SharedFxComponentId}.pkg" visible="true" title="{SharedFxBrandName} ({arch})" description="The .NET Shared Framework">
+        <pkg-ref id="{SharedFxComponentId}.pkg" />
+    </choice>
+    <choice id="{HostFxrComponentId}.pkg" visible="true" title="{HostFxrBrandName} ({arch})" description="The .NET Host FX Resolver">
+        <pkg-ref id="{HostFxrComponentId}.pkg" />
+    </choice>
+    <choice id="{SharedHostComponentId}.pkg" visible="true" title="{SharedHostBrandName} ({arch})" description="The .NET Shared Host.">
+        <pkg-ref id="{SharedHostComponentId}.pkg" />
+    </choice>
+    <choice id="{CLISdkComponentId}.pkg" visible="true" title="{CLISdkBrandName} ({arch})" description="The .NET SDK">
+        <pkg-ref id="{CLISdkComponentId}.pkg"/>
+    </choice>
+    <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg">{NetCoreAppTargetingPackComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg">{NetStandardTargetingPackComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg">{NetCoreAppHostPackComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{SharedFxComponentId}.pkg">{SharedFxComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{HostFxrComponentId}.pkg">{HostFxrComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{SharedHostComponentId}.pkg">{SharedHostComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{CLISdkComponentId}.pkg">{CLISdkComponentId}.pkg</pkg-ref>
+</installer-gui-script>

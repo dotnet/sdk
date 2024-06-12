@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: Das Microsoft.Net.Compilers.Toolset.Framework-Paket sollte nicht direkt festgelegt werden. Legen Sie stattdessen bei Bedarf die Eigenschaft "BuildWithNetFrameworkHostedCompiler" auf "true" fest.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: CLSIDMap kann auf dem COM-Host nicht eingebettet werden, weil für das Hinzufügen von Ressourcen eine Ausführung des Builds unter Windows erforderlich ist (Nano Server ausgeschlossen).</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: Der App-Host für "{0}" wurde nicht gefunden. "{0}" könnte ein ungültiger Runtimebezeichner (RID) sein. Weitere Informationen zum RID finden Sie unter https://aka.ms/rid-catalog.</target>
@@ -482,8 +477,8 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
-        <target state="translated">NETSDK1144: Fehler bei der Größenoptimierung von Assemblys. Die Optimierung kann durch Festlegen der PublishTrimmed-Eigenschaft auf FALSE deaktiviert werden.</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed.</source>
+        <target state="needs-review-translation">NETSDK1144: Fehler bei der Größenoptimierung von Assemblys. Die Optimierung kann durch Festlegen der PublishTrimmed-Eigenschaft auf FALSE deaktiviert werden.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
@@ -750,6 +745,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</source>
         <target state="translated">NETSDK1189: Prefer32Bit wird nicht unterstützt und hat keine Auswirkungen auf das netcoreapp-Ziel.</target>
         <note>{StrBegin="NETSDK1189: "}</note>
+      </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

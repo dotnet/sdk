@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Tools.Common
                 throw new ArgumentNullException(nameof(relativePath));
             }
 
-            Uri resultUri = new Uri(new Uri(basePath), new Uri(relativePath, UriKind.Relative));
+            Uri resultUri = new(new Uri(basePath), new Uri(relativePath, UriKind.Relative));
             return resultUri.LocalPath;
         }
 
@@ -319,7 +319,7 @@ namespace Microsoft.DotNet.Tools.Common
                 }
             }
 
-            if (path[path.Length-1] == Path.DirectorySeparatorChar)
+            if (path[path.Length - 1] == Path.DirectorySeparatorChar)
             {
                 result += Path.DirectorySeparatorChar;
             }
@@ -377,7 +377,7 @@ namespace Microsoft.DotNet.Tools.Common
             }
         }
 
-        public static bool IsDirectory(this string path) => 
+        public static bool IsDirectory(this string path) =>
             File.GetAttributes(path).HasFlag(FileAttributes.Directory);
     }
 }

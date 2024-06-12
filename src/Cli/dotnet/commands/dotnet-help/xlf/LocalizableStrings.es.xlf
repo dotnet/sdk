@@ -163,8 +163,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ListDefinition">
-        <source>List project references of a .NET project.</source>
-        <target state="translated">Enumera las referencias de proyecto de un proyecto de .NET.</target>
+        <source>List packages or references of a .NET project.</source>
+        <target state="needs-review-translation">Enumera las referencias de proyecto de un proyecto de .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

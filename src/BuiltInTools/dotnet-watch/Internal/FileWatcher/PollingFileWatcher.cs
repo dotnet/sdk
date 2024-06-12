@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -15,9 +13,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private readonly DirectoryInfo _watchedDirectory;
 
-        private Dictionary<string, FileMeta> _knownEntities = new Dictionary<string, FileMeta>();
-        private Dictionary<string, FileMeta> _tempDictionary = new Dictionary<string, FileMeta>();
-        private HashSet<string> _changes = new HashSet<string>();
+        private Dictionary<string, FileMeta> _knownEntities = new();
+        private Dictionary<string, FileMeta> _tempDictionary = new();
+        private HashSet<string> _changes = new();
 
         private Thread _pollingThread;
         private bool _raiseEvents;
@@ -31,19 +29,21 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
             BasePath = _watchedDirectory.FullName;
 
-            _pollingThread = new Thread(new ThreadStart(PollingLoop));
-            _pollingThread.IsBackground = true;
-            _pollingThread.Name = nameof(PollingFileWatcher);
+            _pollingThread = new Thread(new ThreadStart(PollingLoop))
+            {
+                IsBackground = true,
+                Name = nameof(PollingFileWatcher)
+            };
 
             CreateKnownFilesSnapshot();
 
             _pollingThread.Start();
         }
 
-        public event EventHandler<(string, bool)> OnFileChange;
+        public event EventHandler<(string, bool)>? OnFileChange;
 
 #pragma warning disable CS0067 // not used
-        public event EventHandler<Exception> OnError;
+        public event EventHandler<Exception>? OnError;
 #pragma warning restore
 
         public string BasePath { get; }
@@ -151,7 +151,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _tempDictionary.Clear();
         }
 
-        private void RecordChange(FileSystemInfo fileInfo)
+        private void RecordChange(FileSystemInfo? fileInfo)
         {
             if (fileInfo == null ||
                 _changes.Contains(fileInfo.FullName) ||

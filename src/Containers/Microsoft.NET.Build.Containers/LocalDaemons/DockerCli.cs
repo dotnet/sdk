@@ -40,8 +40,8 @@ internal sealed class DockerCli
             throw new ArgumentException($"{command} is an unknown command.");
         }
 
-        this._command = command;
-        this._logger = loggerFactory.CreateLogger<DockerCli>();
+        _command = command;
+        _logger = loggerFactory.CreateLogger<DockerCli>();
     }
 
     public DockerCli(ILoggerFactory loggerFactory) : this(null, loggerFactory)
@@ -87,10 +87,12 @@ internal sealed class DockerCli
         string commandPath = await FindFullCommandPath(cancellationToken);
 
         // call `docker load` and get it ready to receive input
-        ProcessStartInfo loadInfo = new(commandPath, $"load");
-        loadInfo.RedirectStandardInput = true;
-        loadInfo.RedirectStandardOutput = true;
-        loadInfo.RedirectStandardError = true;
+        ProcessStartInfo loadInfo = new(commandPath, $"load")
+        {
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
 
         using Process? loadProcess = Process.Start(loadInfo);
 
@@ -119,7 +121,7 @@ internal sealed class DockerCli
 
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
-        bool commandPathWasUnknown = this._command is null; // avoid running the version command twice.
+        bool commandPathWasUnknown = _command is null; // avoid running the version command twice.
         string? command = await GetCommandAsync(cancellationToken);
         if (command is null)
         {
@@ -272,7 +274,7 @@ internal sealed class DockerCli
 
 
         // Feed each layer tarball into the stream
-        JsonArray layerTarballPaths = new JsonArray();
+        JsonArray layerTarballPaths = new();
 
         foreach (var d in image.LayerDescriptors)
         {
@@ -299,7 +301,7 @@ internal sealed class DockerCli
         // add config
         string configTarballPath = $"{image.ImageSha}.json";
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
+        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config)))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configTarballPath)
             {
@@ -324,7 +326,7 @@ internal sealed class DockerCli
         });
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
+        using (MemoryStream manifestStream = new(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, "manifest.json")
             {

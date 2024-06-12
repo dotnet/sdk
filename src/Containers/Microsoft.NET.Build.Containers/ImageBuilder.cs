@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using Microsoft.NET.Build.Containers.Resources;
-using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 

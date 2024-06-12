@@ -67,11 +67,11 @@ namespace Microsoft.DotNet.Cli
         };
 
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
-        
+
         public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
-        
+
         public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
         private static readonly CliCommand Command = ConstructCommand();
@@ -114,6 +114,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
 

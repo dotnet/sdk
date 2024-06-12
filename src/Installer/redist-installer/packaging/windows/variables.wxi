@@ -1,0 +1,54 @@
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define Servicing_Key_SP   =   "0" ?>
+  <?define Servicing_Key_SPIndex   =   "0" ?>
+  <?define Servicing_Key_SPName   =   "Beta" ?>
+  <?define Dotnet_ProductVersion   =   "$(var.BuildVersion)" ?>
+  <?define Dotnet_SDKBundleVersion   =   "$(var.SDKBundleVersion)" ?>
+  <?define Dotnet_BuildVersion   =   "$(var.BuildVersion)" ?>
+  <?define Manufacturer     =   "Microsoft Corporation" ?>
+  <?define ProductName      =   "$(var.ProductMoniker) ($(sys.BUILDARCH))" ?>
+  <?define ProductLanguage  =   "1033" ?>
+  <?define ProductVersion   =   "$(var.Dotnet_ProductVersion)" ?>
+  <?define ProductFamily    =   "dotnet" ?>
+  <?define ProductEdition   =   "001dotnet" ?>
+  <?define LCID  = "$(var.ProductLanguage)"?>
+  <?define DowngradeErrorMessage  = "A newer version is already installed; please uninstall it and re-run setup."?>
+
+  <!-- NativeMachine values match the expected values for image file machine constants
+       https://docs.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
+  <?define NativeMachine_x86=332?>
+  <?define NativeMachine_x64=34404?>
+  <?define NativeMachine_arm64=43620?>
+  
+  <?define Platform   =   "$(sys.BUILDARCH)" ?>
+  
+  <?if $(var.Platform)=x86?>
+  <?define PlatformToken="X86"?>
+  <?define WixQuietExec="WixQuietExec"?>
+  <?define Program_Files="ProgramFilesFolder"?>
+  <?define Win64AttributeValue=no?>
+  <?elseif $(var.Platform)=x64?>
+  <?define PlatformToken="X64"?>
+  <?define WixQuietExec="WixQuietExec64"?>
+  <?define Program_Files="ProgramFiles64Folder"?>
+  <?define Win64AttributeValue=yes?>
+  <?elseif $(var.Platform)=arm64?>
+  <?define PlatformToken="ARM64"?>
+  <?define WixQuietExec="WixQuietExec64"?>
+  <?define Program_Files="ProgramFiles64Folder"?>
+  <?define Win64AttributeValue=yes?>
+  <?else?>
+  <?error Invalid Platform ($(var.Platform))?>
+  <?endif?>
+
+  <!-- See https://docs.microsoft.com/en-us/windows/win32/msi/using-64-bit-windows-installer-packages. -->
+  <!-- For 64-bit packages on the Arm64 platform, the Windows Installer database schema must be 500 or higher. -->
+  <?if $(var.Platform)=arm64?>
+  <?define InstallerVersion="500"?>
+  <?else?>
+  <?define InstallerVersion="200"?>
+  <?endif?>
+
+  <?define DependencyKey   = "$(var.DependencyKeyName)_$(var.SDKBundleVersion)_$(var.Platform)"?>
+  <?define DependencyKeyId = "$(var.DependencyKey)" ?>
+</Include>

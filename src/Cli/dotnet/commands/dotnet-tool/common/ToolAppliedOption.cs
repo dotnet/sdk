@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             ParseResult parseResult,
             string message)
         {
-            List<string> options = new List<string>();
+            List<string> options = new();
             if (parseResult.GetResult(GlobalOption) is not null)
             {
                 options.Add(GlobalOption.Name);

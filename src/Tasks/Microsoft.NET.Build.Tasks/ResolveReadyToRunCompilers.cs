@@ -193,11 +193,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    portablePlatform = "linux";
+                    portablePlatform = "win";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    portablePlatform = "win";
+                    portablePlatform = "linux";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -257,6 +257,14 @@ namespace Microsoft.NET.Build.Tasks
                 case "arm64":
                     architecture = Architecture.Arm64;
                     break;
+#if !NETFRAMEWORK
+                case "riscv64":
+                    architecture = Architecture.RiscV64;
+                    break;
+                case "loongarch64":
+                    architecture = Architecture.LoongArch64;
+                    break;
+#endif
                 case "x64":
                     architecture = Architecture.X64;
                     break;
@@ -424,6 +432,10 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.X64 => "x64",
                 Architecture.Arm => "arm",
                 Architecture.Arm64 => "arm64",
+#if !NETFRAMEWORK
+                Architecture.RiscV64 => "riscv64",
+                Architecture.LoongArch64 => "loongarch64",
+#endif
                 _ => null
             };
         }

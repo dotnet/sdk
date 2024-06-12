@@ -471,10 +471,6 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1091: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</value>
     <comment>{StrBegin="NETSDK1091: "}</comment>
   </data>
-  <data name="CannotEmbedClsidMapIntoComhost" xml:space="preserve">
-    <value>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</value>
-    <comment>{StrBegin="NETSDK1092: "}</comment>
-  </data>
   <data name="ProjectToolOnlySupportTFMLowerThanNetcoreapp22" xml:space="preserve">
     <value>NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</value>
     <comment>{StrBegin="NETSDK1093: "}</comment>
@@ -683,7 +679,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1143: "}</comment>
   </data>
   <data name="ILLinkFailed" xml:space="preserve">
-    <value>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</value>
+    <value>NETSDK1144: Optimizing assemblies for size failed.</value>
     <comment>{StrBegin="NETSDK1144: "}</comment>
   </data>
   <data name="TargetingApphostPackMissingCannotRestore" xml:space="preserve">
@@ -947,6 +943,10 @@ You may need to build the project on another operating system or architecture, o
   <data name="Net8NotCompatibleWithDev177" xml:space="preserve">
     <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
     <comment>{StrBegin="NETSDK1213: "}</comment>
+  </data>
+  <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
+    <value>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
+    <comment>{StrBegin="NETSDK1214: "}</comment>
   </data>
   <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
