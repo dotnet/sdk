@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 }
             }
 
-            return builder.ToList();
+            return builder;
         }
     }
 }

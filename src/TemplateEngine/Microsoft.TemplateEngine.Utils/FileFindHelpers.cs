@@ -15,9 +15,8 @@ namespace Microsoft.TemplateEngine.Utils
             do
             {
                 List<string> filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, SearchOption.TopDirectoryOnly).ToList();
-                List<string> matches = new();
 
-                matches = secondaryFilter == null ? filesInDir : filesInDir.Where(x => secondaryFilter(x)).ToList();
+                List<string> matches = secondaryFilter == null ? filesInDir : filesInDir.Where(x => secondaryFilter(x)).ToList();
 
                 if (matches.Count > 0)
                 {

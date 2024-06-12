@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
         {
-            foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>().ToList())
+            foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>())
             {
                 if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint? mountPoint))
                 {
