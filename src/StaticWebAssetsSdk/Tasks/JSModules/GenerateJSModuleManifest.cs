@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Execute()
         {
-            var modules = JsModules.Select(StaticWebAsset.FromTaskItem).Select(s => s.ComputeTargetPath("", '/')).ToArray();
+            var modules = JsModules.Select(StaticWebAsset.FromTaskItem).Select(s => s.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance)).ToArray();
             Array.Sort(modules, StringComparer.Ordinal);
 
             PersistModules(modules);
