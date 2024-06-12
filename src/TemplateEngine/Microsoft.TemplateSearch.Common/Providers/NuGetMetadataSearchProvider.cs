@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+#if NETFRAMEWORK
+using System.Net.Http;
+#endif
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
@@ -185,7 +188,11 @@ namespace Microsoft.TemplateSearch.Common.Providers
                             _logger.LogDebug(GetResponseDetails(response));
                             if (response.IsSuccessStatusCode)
                             {
+#if NET
+                                string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
                                 string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
                                 _environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
                                 _logger.LogDebug("Search cache file was successfully downloaded to {0}.", searchMetadataFileLocation);
                                 if (response.Headers.TryGetValues(ETagHeaderName, out IEnumerable<string> etagValues))

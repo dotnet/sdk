@@ -171,7 +171,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             // Read bytes from the stream until we fill the preamble array or hit EOF.
             do
             {
+#if NET
+                read = await fileStream.ReadAsync(preamble.AsMemory(offset, preamble.Length - offset), cancellationToken).ConfigureAwait(false);
+#else
                 read = await fileStream.ReadAsync(preamble, offset, preamble.Length - offset, cancellationToken).ConfigureAwait(false);
+#endif
                 offset += read;
                 // Optimization to not call .ReadAsync twice
                 if (offset == preamble.Length)
