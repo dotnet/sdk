@@ -36,6 +36,22 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [Fact]
+        public void It_does_not_pass_excess_references_to_the_compiler()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = "net8.0",
+                IsExe = true,
+                ProjectSdk = "Microsoft.NET.Sdk"
+            };
+
+            testProject("")
+            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource().WithTargetFramework("net8.0");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+        }
+
         [WindowsOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
