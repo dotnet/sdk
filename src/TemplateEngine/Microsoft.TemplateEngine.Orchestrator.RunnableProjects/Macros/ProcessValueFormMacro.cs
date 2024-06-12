@@ -16,7 +16,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, ProcessValueFormMacroConfig config)
         {
-            string? value = string.Empty;
             if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
                 environmentSettings.Host.Logger.LogDebug("[{macro}]: Source variable '{sourceVar}' was not found, skipping processing for macro '{var}'.", nameof(ProcessValueFormMacro), config.SourceVariable, config.VariableName);

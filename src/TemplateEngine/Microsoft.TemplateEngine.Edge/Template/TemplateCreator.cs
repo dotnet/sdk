@@ -152,7 +152,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     _environmentSettings.Host.FileSystem.CreateDirectory(targetDir);
                 }
-                IComponentManager componentManager = _environmentSettings.Components;
 
                 // setup separate sets of parameters to be used for GetCreationEffects() and by CreateAsync().
                 if (!TryCreateParameterSet(template, realName!, inputParameters, out IParameterSetData? effectParams, out TemplateCreationResult? resultIfParameterCreationFailed))
