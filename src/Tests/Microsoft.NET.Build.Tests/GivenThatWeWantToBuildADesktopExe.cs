@@ -43,10 +43,13 @@ namespace Microsoft.NET.Build.Tests
                 ProjectSdk = "Microsoft.NET.Sdk"
             };
 
-            testProject("")
             var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource().WithTargetFramework("net8.0");
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().Pass();
+
+            var getValues = new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, "net8.0");
+            getValues.DependsOnTargets = "Compile;CoreGenerateSatelliteAssemblies";
+            getValues.Execute().Should().Pass();
+
+            getValues.GetValues().Count.Should().Be(1);
         }
 
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
