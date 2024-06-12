@@ -27,7 +27,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _ = file ?? throw new ArgumentNullException(nameof(file));
 
             JObject srcObject = file.ReadJObjectFromIFile();
-            var parameterLocalizations = new Dictionary<string, ParameterSymbolLocalizationModel>();
 
             List<(string Key, string Value)> localizedStrings = srcObject.Properties()
                 .Select(p => p.Value.Type == JTokenType.String ? (p.Name, p.Value.ToString()) : throw new Exception(LocalizableStrings.Authoring_InvalidJsonElementInLocalizationFile))

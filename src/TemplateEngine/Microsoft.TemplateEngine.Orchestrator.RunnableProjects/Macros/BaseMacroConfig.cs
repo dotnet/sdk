@@ -203,7 +203,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 NullLogger<RunnableProjectGenerator>.Instance,
                 condition,
                 new VariableCollection(null, symbols.ToDictionary(s => s, s => s as object)),
-                out var evaluableExpressionError,
+                out var _,
                 referencedVariablesKeys);
 
             referencedVariablesKeys.ForEach(PopulateMacroConfigDependency);

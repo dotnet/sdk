@@ -82,21 +82,12 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.Tasks
             Log.LogMessage(LocalizableStrings.Validate_Log_FoundTemplate, scanResult.MountPoint.MountPointUri, scanResult.Templates.Count);
             foreach (IScanTemplateInfo template in scanResult.Templates)
             {
-                string templateDisplayName = GetTemplateDisplayName(template);
-                StringBuilder sb = new();
-
                 LogValidationEntries(LocalizableStrings.Validate_Log_TemplateConfiguration_Subcategory, template.ValidationErrors);
                 foreach (KeyValuePair<string, ILocalizationLocator> locator in template.Localizations)
                 {
                     ILocalizationLocator localizationInfo = locator.Value;
                     LogValidationEntries(LocalizableStrings.Validate_Log_TemplateLocalization_Subcategory, localizationInfo.ValidationErrors);
                 }
-            }
-
-            static string GetTemplateDisplayName(IScanTemplateInfo template)
-            {
-                string templateName = string.IsNullOrEmpty(template.Name) ? "<no name>" : template.Name;
-                return $"'{templateName}' ({template.Identity})";
             }
 
             void LogValidationEntries(string subCategory, IReadOnlyList<IValidationEntry> errors)

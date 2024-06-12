@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
+            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
 
             string sourceImage = Path.Combine(templateLocation, "image.png");
             string targetImage = Path.Combine(output, "image.png");
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
+            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
 
             string sourceImage = Path.Combine(templateLocation, "image.png");
             string targetImage = Path.Combine(output, "image.png");
