@@ -12,7 +12,7 @@ usage()
   echo "Common settings:"
   echo "  --binaryLog                     Create MSBuild binary log (short: -bl)"
   echo "  --configuration <value>         Build configuration: 'Debug' or 'Release' (short: -c)"
-  echo "  -r, --rid <value>               Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
+  echo "  --rid, --target-rid <value>     Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
   echo "  --verbosity <value>             Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   echo ""
 
@@ -88,7 +88,7 @@ ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
 use_dev_versioning=false
-rid=
+target_rid=
 
 properties=()
 while [[ $# > 0 ]]; do
@@ -102,8 +102,8 @@ while [[ $# > 0 ]]; do
       configuration=$2
       shift
       ;;
-    -rid|-r)
-      rid=$2
+    -rid|-target-rid)
+      target_rid=$2
       shift
       ;;
     -verbosity|-v)
@@ -286,8 +286,8 @@ fi
 source $scriptroot/eng/common/native/init-os-and-arch.sh
 source $scriptroot/eng/common/native/init-distro-rid.sh
 initDistroRidGlobal "$os" "$arch" ""
-if [[ -n "$rid" ]]; then
-  properties+=( "/p:TargetRid=$rid" )
+if [[ -n "$target_rid" ]]; then
+  properties+=( "/p:TargetRid=$target_rid" )
 fi
 
 # Source-only settings
