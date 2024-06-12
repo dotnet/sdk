@@ -20,6 +20,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Register TestingPlatform task -->
   <UsingTask TaskName="GetTestsProject" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="_GetTestsProject" Condition=" $(IsTestProject) == 'true' OR '$(IsTestingPlatformApplication)' == 'true' " >
-    <GetTestsProject TargetPath="$(TargetPath)" GetTestsProjectPipeName="$(GetTestsProjectPipeName)" ProjectFullPath="$(MSBuildProjectFullPath)" />
+    <GetTestsProject TargetPath="$(TargetPath)" GetTestsProjectPipeName="$(GetTestsProjectPipeName)" ProjectFullPath="$(MSBuildThisFileDirectory)../../../Microsoft.NET.Build.Tasks.dll" />
   </Target>
 </Project>
