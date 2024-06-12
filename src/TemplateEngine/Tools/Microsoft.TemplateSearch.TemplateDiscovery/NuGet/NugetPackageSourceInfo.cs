@@ -25,9 +25,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             Version = version;
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public string Version { get; private set; }
+        public string Version { get; }
 
         public long TotalDownloads { get; private set; }
 

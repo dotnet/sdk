@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             Ref
         }
 
-        internal IReadOnlyList<(JoinType Type, string Value)> Symbols { get; private set; }
+        internal IReadOnlyList<(JoinType Type, string Value)> Symbols { get; }
 
         internal string Separator { get; private set; }
 

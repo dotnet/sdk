@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             Steps = steps;
         }
 
-        internal string Source { get; private set; }
+        internal string Source { get; }
 
         internal IReadOnlyList<(string Regex, string Replacement)> Steps { get; private set; }
 

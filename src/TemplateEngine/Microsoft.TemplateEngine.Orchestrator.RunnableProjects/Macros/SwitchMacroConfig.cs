@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         internal ConditionStringEvaluator Evaluator { get; private set; } = EvaluatorSelector.SelectStringEvaluator(DefaultEvaluator);
 
-        internal IReadOnlyList<(string? Condition, string Value)> Cases { get; private set; }
+        internal IReadOnlyList<(string? Condition, string Value)> Cases { get; }
 
         public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
         {

@@ -707,7 +707,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             public int Priority => 0;
 
-            public Guid Id { get; private set; }
+            public Guid Id { get; }
 
             public bool RequiresPrefixMatch { get; }
 

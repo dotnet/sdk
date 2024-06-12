@@ -103,7 +103,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public string Name { get; private set; }
 
         [JsonIgnore]
-        public bool PreferDefaultName { get; private set; }
+        public bool PreferDefaultName { get; }
 
         [JsonProperty]
         public string ShortName
@@ -160,10 +160,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public DateTime? ConfigTimestampUtc { get; private set; }
 
         [JsonIgnore]
-        public IReadOnlyDictionary<string, string> TagsCollection { get; private set; }
+        public IReadOnlyDictionary<string, string> TagsCollection { get; }
 
         [JsonIgnore]
-        public IParameterDefinitionSet ParameterDefinitions { get; private set; }
+        public IParameterDefinitionSet ParameterDefinitions { get; }
 
         [JsonIgnore]
         [Obsolete("Use ParameterDefinitionSet instead.")]
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         [JsonIgnore]
-        public IReadOnlyList<Guid> PostActions { get; private set; }
+        public IReadOnlyList<Guid> PostActions { get; }
 
         [JsonIgnore]
         IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();

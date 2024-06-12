@@ -18,11 +18,11 @@ public class ScrubbersDefinition
 
     public delegate void ScrubFileByPath(string relativeFilePath, StringBuilder content);
 
-    internal Dictionary<string, Action<StringBuilder>> ScrubbersByExtension { get; private set; } = new Dictionary<string, Action<StringBuilder>>();
+    internal Dictionary<string, Action<StringBuilder>> ScrubbersByExtension { get; } = new Dictionary<string, Action<StringBuilder>>();
 
     internal Action<StringBuilder>? GeneralScrubber { get; private set; }
 
-    internal List<ScrubFileByPath> ByPathScrubbers { get; private set; } = new List<ScrubFileByPath>();
+    internal List<ScrubFileByPath> ByPathScrubbers { get; } = new List<ScrubFileByPath>();
 
     public ScrubbersDefinition AddScrubber(Action<StringBuilder> scrubber, string? extension = null)
     {
