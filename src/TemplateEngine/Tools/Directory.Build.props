@@ -1,6 +1,9 @@
 <Project>
+
   <Import Project="..\Directory.Build.props" />
+
   <PropertyGroup>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
+
 </Project>

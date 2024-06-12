@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <IncludeSource>False</IncludeSource>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>

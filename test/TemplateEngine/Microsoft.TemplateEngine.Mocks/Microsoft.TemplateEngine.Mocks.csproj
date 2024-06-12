@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(NetFrameworkCurrent)</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
-    <IsTestProject>false</IsTestProject>
+    <IsTestUtilityProject>true</IsTestUtilityProject>
   </PropertyGroup>
 
   <ItemGroup>

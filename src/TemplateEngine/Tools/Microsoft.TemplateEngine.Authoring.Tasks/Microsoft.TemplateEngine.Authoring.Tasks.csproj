@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NETStandardTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Description>MSBuild tasks for template authoring.</Description>
     <IsPackable>true</IsPackable>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
