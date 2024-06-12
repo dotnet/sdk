@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Workloads.Workload.History
         public WorkloadHistoryState StateBeforeCommand { get; set; }
 
         public WorkloadHistoryState StateAfterCommand { get; set; }
+
+        public string GlobalJsonVersion { get; set; }
     }
 
     internal class WorkloadHistoryState

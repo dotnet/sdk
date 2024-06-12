@@ -115,6 +115,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
             }
+            else if (!string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) && !string.IsNullOrWhiteSpace(_fromHistorySpecified))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
+            }
+            else if (!string.IsNullOrWhiteSpace(_fromHistorySpecified) && !string.IsNullOrWhiteSpace(_workloadSetVersion))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndFromHistory));
+            }
         }
 
         protected bool TryHandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, out IEnumerable<ManifestVersionUpdate> updates)

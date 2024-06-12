@@ -17,6 +17,11 @@
         <target state="new">Date</target>
         <note />
       </trans-unit>
+      <trans-unit id="GlobalJsonVersion">
+        <source>Global.json Version</source>
+        <target state="new">Global.json Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
         <target state="new">Id</target>

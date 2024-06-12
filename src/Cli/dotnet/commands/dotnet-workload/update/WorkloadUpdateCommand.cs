@@ -147,11 +147,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
                         _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+                        recorder.HistoryRecord.GlobalJsonVersion = _workloadSetVersionFromGlobalJson;
 
                         try
                         {
                             ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
                             DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                            if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
+                            {
+                                if (!string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion))
+                                {
+                                    // This is essentially the same as updating to a specific workload set version, and we're now past the error check, so we
+                                    // can just use the same code path.
+                                    _workloadSetVersion = _WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion;
+                                }
+                            }
+
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                             {
                                 CalculateManifestUpdatesAndUpdateWorkloads(recorder, _includePreviews, offlineCache);
@@ -191,7 +202,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             var useRollbackOrHistory = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) || !string.IsNullOrWhiteSpace(_fromHistorySpecified);
             var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
 
-            if (useRollbackOrHistory && useWorkloadSets)
+            if (!string.IsNullOrWhiteSpace(_fromRollbackDefinition) && useWorkloadSets)
             {
                 // Rollback files are only for loose manifests. Update the mode to be loose manifests.
                 Reporter.WriteLine(LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
@@ -219,8 +230,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 }
                 else
                 {
-                    manifestsToUpdate = useRollbackOrHistory ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                    manifestsToUpdate = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
+                        !string.IsNullOrWhiteSpace(_fromHistorySpecified) ? _workloadManifestUpdater.CalculateManifestUpdatesFromHistory(_WorkloadHistoryRecord) :
+                        _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
                 }
 
                 UpdateWorkloads(useRollbackOrHistory, manifestsToUpdate, offlineCache, context, recorder);

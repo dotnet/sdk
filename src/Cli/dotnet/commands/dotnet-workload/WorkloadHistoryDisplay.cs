@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
             public DateTimeOffset? TimeStarted { get; set; }
             public string Command { get; set; }
             public List<string> Workloads { get; set; }
+            public string GlobalJsonVersion { get; set; }
 
             public WorkloadHistoryRecord HistoryRecord { get; set; }
         }
@@ -50,6 +51,7 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
                     TimeStarted = historyRecord.TimeStarted,
                     Command = historyRecord.CommandName,
                     Workloads = historyRecord.WorkloadArguments,
+                    GlobalJsonVersion = historyRecord.GlobalJsonVersion,
                     HistoryRecord = historyRecord
                 });
 

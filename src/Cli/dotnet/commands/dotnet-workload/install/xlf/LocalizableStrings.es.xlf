@@ -22,6 +22,11 @@
         <target state="translated">No se pueden usar las opciones {0} y {1} juntas. Si se instala desde un archivo de reversión, quite {0}. De lo contrario, quite {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndFromHistory">
+        <source>Cannot specify a particular workload version on the command line via both --version and --from-history.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via both --version and --from-history.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">No se puede especificar una versión de carga de trabajo determinada en la línea de comandos mediante --version o --from-history cuando ya hay una versión especificada en el archivo global.json {0}. Para actualizar la versión de carga de trabajo instalada globalmente, ejecute el comando fuera de la ruta de acceso que contiene ese archivo global.json o actualice la versión especificada en el archivo global.json y ejecute "dotnet workload update".</target>

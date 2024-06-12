@@ -135,4 +135,7 @@
   <data name="Workloads" xml:space="preserve">
     <value>Workloads</value>
   </data>
+  <data name="GlobalJsonVersion" xml:space="preserve">
+    <value>Global.json Version</value>
+  </data>
 </root>
