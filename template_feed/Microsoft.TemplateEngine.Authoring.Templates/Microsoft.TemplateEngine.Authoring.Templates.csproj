@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <IncludeBuildOutput>False</IncludeBuildOutput>
@@ -19,12 +20,14 @@
     <PackageProjectUrl>https://github.com/dotnet/templating</PackageProjectUrl>
     <PackageType>Template</PackageType>
     <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Remove="Microsoft.NETCore.App" />
     <Content Include="content\**">
       <PackagePath>content</PackagePath>
     </Content>
   </ItemGroup>
+
 </Project>

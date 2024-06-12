@@ -6,7 +6,6 @@
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <PackAsTool>true</PackAsTool>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
