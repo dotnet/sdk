@@ -576,19 +576,20 @@
     <!--
       Aspire isn't really a toolset dependency. However, it only inserts a baseline manifest in installer,
       and if you squint at it, this means we can say that its specific dependency versions don't matter to installer.
+      It also doesn't currently ship 9.0 preview versions, meaning the version is locked to the latest shipped from 8.0 era.
       Avoiding this as a product dependency avoids a long coherency path (aspnetcore->extensions->aspire->installer).
       **It is** of course possible that an incoherent aspire means that aspire depends on versions of extensions that
       aren't shipping, or those extensions packages depend on aspnetcore packages that won't ship. However, given the cost
       of maintaining this coherency path is high. This being toolset means that aspire is responsible for its own coherency.
     -->
-    <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-9.0.100-preview.1" Version="9.0.0-preview.2.24163.9">
+    <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-8.0.100" Version="8.0.1">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>9faf59f870abdeb427c51c1380fce84d8163f2f0</Sha>
+      <Sha>a6e341ebbf956bbcec0dda304109815fcbae70c9</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="9.0.0-preview.2.24163.9">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="8.0.1-preview.8.24267.1">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>9faf59f870abdeb427c51c1380fce84d8163f2f0</Sha>
+      <Sha>a6e341ebbf956bbcec0dda304109815fcbae70c9</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
