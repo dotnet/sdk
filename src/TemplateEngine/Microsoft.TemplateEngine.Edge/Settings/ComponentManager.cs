@@ -249,7 +249,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public void AddComponent(Type type, IIdentifiedComponent component)
 #pragma warning restore SA1202 // Elements should be ordered by access
         {
-            if (!type.IsAssignableFrom(component.GetType()))
+            if (!type.IsInstanceOfType(component))
             {
                 throw new ArgumentException($"{component.GetType().Name} should be assignable from {type.Name} type", nameof(type));
             }
