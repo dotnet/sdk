@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Cli
                 yield return packageId;
             }
 
-            stream.Dispose();
+            result.Dispose();
         }
 
         internal static IEnumerable<string> EnumerablePackageIdFromQueryResponse(Stream result)
