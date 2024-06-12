@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return handlerResult.Value;
                 }
 
-                if (typeof(T).GetTypeInfo().IsEnum && source is string s)
+                if (typeof(T).IsEnum && source is string s)
                 {
                     try
                     {

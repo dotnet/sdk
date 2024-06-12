@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            string package = typeof(NuGetInstallerTests).GetTypeInfo().Assembly.Location;
+            string package = typeof(NuGetInstallerTests).Assembly.Location;
 
             InstallRequest request = new InstallRequest(package);
             Assert.False(await installer.CanInstallAsync(request, CancellationToken.None));
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             MockPackageManager mockPackageManager = new MockPackageManager();
 
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
-            string package = typeof(NuGetInstallerTests).GetTypeInfo().Assembly.Location;
+            string package = typeof(NuGetInstallerTests).Assembly.Location;
 
             InstallRequest request = new InstallRequest(package);
             InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);

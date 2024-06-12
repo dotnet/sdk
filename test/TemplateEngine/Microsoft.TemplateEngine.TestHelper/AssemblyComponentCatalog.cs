@@ -41,12 +41,12 @@ namespace Microsoft.TemplateEngine.TestHelper
             {
                 foreach (Type type in asm.GetTypes())
                 {
-                    if (!typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(type) || type.GetTypeInfo().GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass || type.IsAbstract)
+                    if (!typeof(IIdentifiedComponent).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) == null || !type.IsClass || type.IsAbstract)
                     {
                         continue;
                     }
 
-                    IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && x != typeof(IPrioritizedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
+                    IReadOnlyList<Type> registerFor = type.GetInterfaces().Where(x => x != typeof(IIdentifiedComponent) && x != typeof(IPrioritizedComponent) && typeof(IIdentifiedComponent).IsAssignableFrom(x)).ToList();
                     if (registerFor.Count == 0)
                     {
                         continue;
