@@ -33,13 +33,28 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [Fact]
+        public void It_does_not_pass_excess_references_to_the_compiler()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = "net8.0",
+                IsExe = true,
+                ProjectSdk = "Microsoft.NET.Sdk"
+            };
+
+            testProject("")
+            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource().WithTargetFramework("net8.0");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+        }
+
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
         [WindowsOnlyTheory]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", true, "x86")]
         [InlineData("SQLite/3.13.0", false, "x86")]
         [InlineData("SQLite/3.13.0", true, "x86")]
-
         public void PlatformTargetInferredCorrectly(string packageToReference, bool referencePlatformPackage, string expectedPlatform)
         {
             var testProject = new TestProject()
