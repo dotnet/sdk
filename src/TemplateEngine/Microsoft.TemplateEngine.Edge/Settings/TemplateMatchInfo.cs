@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     [Obsolete("This implementation is deprecated, use " + nameof(TemplateMatchInfo) + " instead")]
     internal class TemplateMatchInfoEx : ITemplateMatchInfo
     {
-        private readonly IList<MatchInfo> _matchDisposition;
+        private readonly List<MatchInfo> _matchDisposition;
 
-        private readonly IList<MatchInfo> _dispositionOfDefaults;
+        private readonly List<MatchInfo> _dispositionOfDefaults;
 
         public TemplateMatchInfoEx(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
                             : this(info)
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public ITemplateInfo Info { get; }
 
-        public IReadOnlyList<MatchInfo> MatchDisposition => _matchDisposition.ToList();
+        public IReadOnlyList<MatchInfo> MatchDisposition => _matchDisposition;
 
         // Stores match info relative to default settings.
         // These don't have to match for the template to be a match, but they can be used to filter matches
