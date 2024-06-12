@@ -171,12 +171,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // This method does not save the settings, it just registers into the memory cache.
         private bool RegisterType(Type type)
         {
-            if (!typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(type) || type.GetTypeInfo().GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass)
+            if (!typeof(IIdentifiedComponent).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) == null || !type.IsClass)
             {
                 return false;
             }
 
-            IReadOnlyList<Type> interfaceTypesToRegisterFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
+            IReadOnlyList<Type> interfaceTypesToRegisterFor = type.GetInterfaces().Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).IsAssignableFrom(x)).ToList();
             if (interfaceTypesToRegisterFor.Count == 0)
             {
                 return false;
