@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
             else
             {
-                return Array.Empty<ReplacementContext>();
+                return [];
             }
         }
     }

@@ -10,20 +10,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "expandvariables";
 
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public ExpandVariables(string? id, bool initialState)
         {
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
-            return new Implementation(processor, _id, _initialState);
+            return new Implementation(processor, Id, _initialState);
         }
 
         private class Implementation : IOperation

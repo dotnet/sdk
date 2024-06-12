@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     verifySettings.AddScrubber(options.CustomScrubbers.GeneralScrubber);
                 }
 
-                foreach (var pair in options.CustomScrubbers.ScrubersByExtension)
+                foreach (var pair in options.CustomScrubbers.ScrubbersByExtension)
                 {
                     verifySettings.AddScrubber(pair.Key, pair.Value);
                 }
@@ -405,7 +405,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                         scrubbers.ByPathScrubbers.ForEach(scrubberByPath => scrubberByPath(relativePath, sb));
                     }
 
-                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
+                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubbersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
                     {
                         sb ??= new StringBuilder(content);
                         scrubber(sb);

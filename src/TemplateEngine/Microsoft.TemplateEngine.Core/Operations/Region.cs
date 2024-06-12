@@ -16,7 +16,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly bool _toggle;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public Region(ITokenConfig start, ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string? id, bool initialState)
@@ -27,17 +26,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _end = end;
             _include = include;
             _toggle = _start.Equals(_end);
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             IToken startToken = _start.ToToken(encoding);
             IToken endToken = _end.ToToken(encoding);
-            return new Implementation(this, startToken, endToken, _include, _toggle, _id, _initialState);
+            return new Implementation(this, startToken, endToken, _include, _toggle, Id, _initialState);
         }
 
         private class Implementation : IOperation

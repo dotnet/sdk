@@ -9,13 +9,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class InlineMarkupConditional : IOperationProvider
     {
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string variableFormat, string? id, bool initialState)
         {
             Tokens = tokens;
-            _id = id;
+            Id = id;
             Evaluator = evaluator;
             WholeLine = wholeLine;
             TrimWhitespace = trimWhitespace;
@@ -25,7 +24,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public ConditionEvaluator Evaluator { get; }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public MarkupTokens Tokens { get; }
 
@@ -65,7 +64,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 closeCommentToken);
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
-            return new Implementation(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
+            return new Implementation(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, Id, _initialState);
         }
 
         private class Implementation : IOperation
@@ -106,7 +105,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 ScanToCloseCondition(processor, conditionBytes, ref bufferLength, ref currentBufferPosition);
                 byte[] condition = conditionBytes.ToArray();
                 EngineConfig adjustedConfig = new EngineConfig(processor.Config.Logger, processor.Config.Whitespaces, processor.Config.LineEndings, processor.Config.Variables, _definition.VariableFormat);
-                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, Array.Empty<IOperationProvider>());
+                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, []);
                 int pos = 0;
                 int len = conditionBytes.Count;
 

@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     {
         private protected BaseReplaceSymbol(string name, string? replaces) : base(name)
         {
-            ReplacementContexts = Array.Empty<ReplacementContext>();
+            ReplacementContexts = [];
             Replaces = replaces;
         }
 

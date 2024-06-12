@@ -82,7 +82,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public IReadOnlyList<string> Classifications { get; private set; }
 
         [JsonProperty]
-        public string? DefaultName => string.Empty;
+        public string DefaultName => string.Empty;
 
         [JsonProperty]
         public string? Description { get; private set; }
@@ -139,13 +139,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         public Guid LocaleConfigMountPointId => Guid.Empty;
 
         [JsonProperty]
-        public string? LocaleConfigPlace => string.Empty;
+        public string LocaleConfigPlace => string.Empty;
 
         [JsonProperty]
         public Guid HostConfigMountPointId => Guid.Empty;
 
         [JsonProperty]
-        public string? HostConfigPlace => string.Empty;
+        public string HostConfigPlace => string.Empty;
 
         [JsonProperty]
         public string? ThirdPartyNotices { get; private set; }
@@ -245,7 +245,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
         }
     }
 }

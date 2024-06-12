@@ -14,19 +14,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// Defines the files to be just copied when instantiating template. Operations will not be applied to them.
         /// Can be glob. If single value is given, it can be also a filename where from to read this configuration.
         /// </summary>
-        public IReadOnlyList<string> CopyOnly { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> CopyOnly { get; internal init; } = [];
 
         /// <summary>
         /// Defines the files to be include when instantiating template. Operations will be applied to them.
         /// Can be glob. If single value is given, it can be also a filename where from to read this configuration.
         /// </summary>
-        public IReadOnlyList<string> Include { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> Include { get; internal init; } = [];
 
         /// <summary>
         /// Defines the files to be excluded when instantiating template. These files will not be processed during template instantiation.
         /// Can be glob. If single value is given, it can be also a filename where from to read this configuration.
         /// </summary>
-        public IReadOnlyList<string> Exclude { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> Exclude { get; internal init; } = [];
 
         /// <summary>
         /// Defines the files to be renamed when instantiating the template. The key is a source file name, the value is the final file name.

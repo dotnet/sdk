@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateApiVerifier
                 "1.0.0",
                 null,
                 new List<(Type, IIdentifiedComponent)>(),
-                Array.Empty<string>());
+                []);
 
             var bootstrapper = new Bootstrapper(
                 host,

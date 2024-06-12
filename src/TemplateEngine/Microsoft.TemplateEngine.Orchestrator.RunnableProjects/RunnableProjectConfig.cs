@@ -41,7 +41,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string[] DefaultPlaceholderFilenames = new[] { "-.-", "_._" };
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new();
 
-        private readonly TemplateLocalizationInfo? _localizationInfo;
         private readonly IFile? _hostConfigFile;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
@@ -66,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 try
                 {
                     LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(localeConfigFile);
-                    _localizationInfo = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
+                    Localization = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +161,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         internal IMountPoint SourceMountPoint { get; }
 
-        internal TemplateLocalizationInfo? Localization => _localizationInfo;
+        internal TemplateLocalizationInfo? Localization { get; }
 
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
@@ -174,11 +173,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         internal override IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> Localizations =>
-             _localizationInfo is null
+             Localization is null
                 ? new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 : new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 {
-                    { _localizationInfo.Locale, _localizationInfo }
+                    { Localization.Locale, Localization }
                 };
 
         internal override IReadOnlyDictionary<string, IFile> HostFiles =>
@@ -553,9 +552,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (modifier.EvaluateCondition(Logger, rootVariableCollection))
                         {
-                            IReadOnlyList<string> modifierIncludes = TryReadConfigFromFile(modifier.Include, ConfigFile, Array.Empty<string>());
-                            IReadOnlyList<string> modifierExcludes = TryReadConfigFromFile(modifier.Exclude, ConfigFile, Array.Empty<string>());
-                            IReadOnlyList<string> modifierCopyOnly = TryReadConfigFromFile(modifier.CopyOnly, ConfigFile, Array.Empty<string>());
+                            IReadOnlyList<string> modifierIncludes = TryReadConfigFromFile(modifier.Include, ConfigFile, []);
+                            IReadOnlyList<string> modifierExcludes = TryReadConfigFromFile(modifier.Exclude, ConfigFile, []);
+                            IReadOnlyList<string> modifierCopyOnly = TryReadConfigFromFile(modifier.CopyOnly, ConfigFile, []);
                             FileSourceEvaluable modifierPatterns = new FileSourceEvaluable(modifierIncludes, modifierExcludes, modifierCopyOnly);
                             modifierList.Add(modifierPatterns);
 

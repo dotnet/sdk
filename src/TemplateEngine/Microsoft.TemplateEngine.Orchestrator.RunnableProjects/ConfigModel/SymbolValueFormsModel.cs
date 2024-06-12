@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         public IReadOnlyList<string> GlobalForms { get; }
 
-        internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Array.Empty<string>());
+        internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel([]);
 
         // by default, symbols get the "identity" value form, for a direct replacement
         internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new[] { IdentityValueFormFactory.FormIdentifier });

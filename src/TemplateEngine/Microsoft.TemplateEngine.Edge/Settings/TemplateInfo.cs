@@ -234,10 +234,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string? HostData { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
+        public IReadOnlyList<Guid> PostActions { get; private set; } = [];
 
         [JsonProperty]
-        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; private set; } = Array.Empty<TemplateConstraintInfo>();
+        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; private set; } = [];
 
         public static TemplateInfo FromJObject(JObject entry)
         {

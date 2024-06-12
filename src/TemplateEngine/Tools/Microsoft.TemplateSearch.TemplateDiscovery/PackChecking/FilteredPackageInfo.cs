@@ -41,7 +41,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public long TotalDownloads { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
+        public IReadOnlyList<string> Owners { get; private set; } = [];
 
         [JsonProperty]
         public bool Reserved { get; private set; }

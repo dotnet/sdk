@@ -56,12 +56,12 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         private void ExpandVariables(IEngineConfig config, Encoding encoding)
         {
-            foreach (string key in config.Variables.Keys)
+            foreach (var item in config.Variables)
             {
-                string formattedKey = string.Format(config.VariableFormatString, key);
+                string formattedKey = string.Format(config.VariableFormatString, item.Key);
                 IToken keyBytes = formattedKey.Token(encoding);
                 _variableKeys.Add(keyBytes);
-                _values[Variables.AddToken(keyBytes)] = () => config.Variables[key];
+                _values[Variables.AddToken(keyBytes)] = () => item.Value;
             }
         }
     }

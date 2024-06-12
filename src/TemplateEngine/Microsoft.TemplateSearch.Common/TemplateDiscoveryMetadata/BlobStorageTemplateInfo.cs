@@ -40,7 +40,7 @@ namespace Microsoft.TemplateSearch.Common
             ShortNameList = templateInfo.ShortNameList;
             ParameterDefinitions = new ParameterDefinitionSet(templateInfo.ParameterDefinitions?.Select(p => new BlobTemplateParameter(p)));
             Author = templateInfo.Author;
-            Classifications = templateInfo.Classifications ?? Array.Empty<string>();
+            Classifications = templateInfo.Classifications ?? [];
             Description = templateInfo.Description;
             GroupIdentity = templateInfo.GroupIdentity;
             Precedence = templateInfo.Precedence;
@@ -91,7 +91,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> Classifications { get; private set; } = new List<string>();
 
         [JsonIgnore]
-        public string? DefaultName => throw new NotImplementedException();
+        public string DefaultName => throw new NotImplementedException();
 
         [JsonProperty]
         public string? Description { get; private set; }
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; } = new Dictionary<string, string>();
 
         [JsonProperty]
-        public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
+        public IReadOnlyList<Guid> PostActions { get; private set; } = [];
 
         [JsonIgnore]
         IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateSearch.Common
                 ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(Name)} property.", nameof(entry));
 
             JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
-            IEnumerable<string> shortNames = shortNameToken?.JTokenStringOrArrayToCollection(Array.Empty<string>())
+            IEnumerable<string> shortNames = shortNameToken?.JTokenStringOrArrayToCollection([])
                 ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ShortNameList)} property.", nameof(entry));
 
             BlobStorageTemplateInfo info = new BlobStorageTemplateInfo(identity, name, shortNames)
@@ -426,7 +426,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultValue { get; internal set; }
 
             [JsonIgnore]
-            string? ITemplateParameter.DisplayName => throw new NotImplementedException();
+            string ITemplateParameter.DisplayName => throw new NotImplementedException();
 
             [JsonProperty]
             public string? DefaultIfOptionWithoutValue { get; internal set; }
@@ -436,7 +436,7 @@ namespace Microsoft.TemplateSearch.Common
 
             [Obsolete]
             [JsonIgnore]
-            string? ITemplateParameter.Documentation => throw new NotImplementedException();
+            string ITemplateParameter.Documentation => throw new NotImplementedException();
 
             [JsonProperty]
             public bool AllowMultipleValues { get; internal set; }
@@ -484,7 +484,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
 
             [JsonIgnore]
             public IReadOnlyDictionary<string, ParameterChoice> Choices => throw new NotImplementedException();
@@ -514,7 +514,7 @@ namespace Microsoft.TemplateSearch.Common
             public string? DefaultIfOptionWithoutValue { get; }
 
             [JsonIgnore]
-            public string? DisplayName => throw new NotImplementedException();
+            public string DisplayName => throw new NotImplementedException();
         }
 
     }

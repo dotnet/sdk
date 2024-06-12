@@ -354,7 +354,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         {
             if (!inputParameters.HasConditions())
             {
-                paramsWithInvalidValues = Array.Empty<string>();
+                paramsWithInvalidValues = [];
                 isExternalEvaluationInvalid = false;
                 return parametersBuilder.Build(false, template.Generator, _logger);
             }

@@ -9,17 +9,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
     public class PhasedOperation : IOperationProvider
     {
         private readonly IReadOnlyList<Phase> _config;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public PhasedOperation(string? id, IReadOnlyList<Phase> config, bool initialState)
         {
-            _id = id;
+            Id = id;
             _config = config;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -98,10 +97,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _definition = definition;
                 Tokens = config;
                 _entryPoints = entryPoints;
-                IsInitialStateOn = string.IsNullOrEmpty(_definition._id) || initialState;
+                IsInitialStateOn = string.IsNullOrEmpty(_definition.Id) || initialState;
             }
 
-            public string? Id => _definition._id;
+            public string? Id => _definition.Id;
 
             public IReadOnlyList<IToken> Tokens { get; }
 

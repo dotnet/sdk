@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             else
             {
                 Version = null;
-                TemplateInfo = Array.Empty<TemplateInfo>();
+                TemplateInfo = [];
                 MountPointsInfo = new Dictionary<string, DateTime>();
                 Locale = string.Empty;
                 return;

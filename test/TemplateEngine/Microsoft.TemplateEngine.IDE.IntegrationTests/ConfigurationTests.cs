@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             try
             {
                 var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(TestTemplatesLocation);
-                var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
+                var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest).ToString(), "1.0.0", null, builtIns, []);
 
                 Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true);
                 var result = await bootstrapper.GetTemplatesAsync(cancellationToken: default);
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var hostDir = Path.Combine(baseDir, nameof(VirtualConfigurationTest).ToString());
 
             var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(TestTemplatesLocation);
-            var host = new DefaultTemplateEngineHost(nameof(VirtualConfigurationTest).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
+            var host = new DefaultTemplateEngineHost(nameof(VirtualConfigurationTest).ToString(), "1.0.0", null, builtIns, []);
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
             var result = await bootstrapper.GetTemplatesAsync(cancellationToken: default);
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var expectedHostDir = TestUtils.CreateTemporaryFolder();
 
             var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(TestTemplatesLocation);
-            var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
+            var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString(), "1.0.0", null, builtIns, []);
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true, hostSettingsLocation: expectedHostDir);
             var result = await bootstrapper.GetTemplatesAsync(cancellationToken: default);
