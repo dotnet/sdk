@@ -128,8 +128,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // Split them using '/' and store together with the localized string.
             IEnumerable<(IEnumerable<string> NameParts, string LocalizedString)> strings = localizedStrings
                 .Where(s => s.Key.StartsWith("postActions" + KeySeparator))
-                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable().Skip(1), s.Value))
-                .ToList();
+                .Select(s => (s.Key.Split(KeySeparator).AsEnumerable().Skip(1), s.Value));
 
             foreach (var postActionParts in strings.GroupBy(p => p.NameParts.FirstOrDefault()))
             {

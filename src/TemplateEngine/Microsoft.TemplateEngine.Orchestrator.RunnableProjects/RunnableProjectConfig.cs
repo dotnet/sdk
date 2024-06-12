@@ -480,12 +480,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private List<IMacroConfig> ProduceGeneratedSymbolsMacroConfig()
         {
-            var generatedSymbolsConfigs = ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
             Dictionary<string, IGeneratedSymbolMacro> generatedSymbolMacros = EngineEnvironmentSettings.Components.OfType<IGeneratedSymbolMacro>()
                 .ToDictionary(m => m.Type, m => m);
 
             var generatedMacroConfigs = new List<IMacroConfig>();
-            foreach (var generatedSymbolConfig in generatedSymbolsConfigs)
+            foreach (var generatedSymbolConfig in ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>())
             {
                 if (generatedSymbolMacros.TryGetValue(generatedSymbolConfig.Type, out var generatedSymbolMacro))
                 {
@@ -538,9 +537,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, ConfigFile, IncludePatternDefaults).ToList();
-                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, ConfigFile, ExcludePatternDefaults).ToList();
-                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, ConfigFile, CopyOnlyPatternDefaults).ToList();
+                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, ConfigFile, IncludePatternDefaults);
+                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, ConfigFile, ExcludePatternDefaults);
+                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, ConfigFile, CopyOnlyPatternDefaults);
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
 
                 Dictionary<string, string> fileRenamesFromSource = source.Rename.ToDictionary(x => x.Key, x => x.Value);
