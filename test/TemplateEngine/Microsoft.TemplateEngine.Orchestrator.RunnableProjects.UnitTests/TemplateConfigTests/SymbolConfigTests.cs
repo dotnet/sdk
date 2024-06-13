@@ -68,59 +68,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        private static JObject ConfigWithNameSymbolWithoutBinding
-        {
-            get
-            {
-                string configString = /*lang=json*/ """
-                {
-                  "author": "Test Asset",
-                  "classifications": [ "Test Asset" ],
-                  "name": "TemplateWithNameSymbolWithoutBinding",
-                  "generatorVersions": "[1.0.0.0-*)",
-                  "groupIdentity": "TestAssets.TemplateWithNameSymbolWithoutBinding",
-                  "precedence": "100",
-                  "identity": "TestAssets.TemplateWithNameSymbolWithoutBinding",
-                  "shortName": "TestAssets.TemplateWithNameSymbolWithoutBinding",
-                  "symbols": {
-                    "name": {
-                      "type": "parameter",
-                      "dataType": "string",
-                    }
-                  }
-                }
-                """;
-                return JObject.Parse(configString);
-            }
-        }
-
-        private static JObject ConfigWithNameSymbolWithCustomBinding
-        {
-            get
-            {
-                string configString = /*lang=json*/ """
-                {
-                  "author": "Test Asset",
-                  "classifications": [ "Test Asset" ],
-                  "name": "ConfigWithNameSymbolWithCustomBinding",
-                  "generatorVersions": "[1.0.0.0-*)",
-                  "groupIdentity": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
-                  "precedence": "100",
-                  "identity": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
-                  "shortName": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
-                  "symbols": {
-                    "name": {
-                      "type": "parameter",
-                      "dataType": "string",
-                      "binding": "customBinding",
-                    }
-                  }
-                }
-                """;
-                return JObject.Parse(configString);
-            }
-        }
-
         private static JObject ArrayConfigWithNameSymbolAndValueFormsWithIdentity
         {
             get
