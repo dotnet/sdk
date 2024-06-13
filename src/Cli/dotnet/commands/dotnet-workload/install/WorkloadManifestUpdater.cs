@@ -526,7 +526,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             if (Uri.TryCreate(rollbackDefinitionFilePath, UriKind.Absolute, out var rollbackUri) && !rollbackUri.IsFile)
             {
-                fileContent = (new HttpClient()).GetStringAsync(rollbackDefinitionFilePath).Result;
+                using HttpClient httpClient = new();
+                fileContent = httpClient.GetStringAsync(rollbackDefinitionFilePath).Result;
             }
             else
             {
