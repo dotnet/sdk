@@ -151,13 +151,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.8.0-7.24312.15</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.8.0-7.24312.15</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.8.0-7.24313.8</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.8.0-7.24313.8</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup>
