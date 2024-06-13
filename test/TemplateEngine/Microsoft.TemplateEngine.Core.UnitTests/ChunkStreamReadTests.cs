@@ -130,11 +130,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream input = new ChunkMemoryStream(data, 1);
             Stream output = new ChunkMemoryStream(1);
             bool changed = processor.Run(input, output, 5);
