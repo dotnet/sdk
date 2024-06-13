@@ -39,16 +39,17 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_pass_excess_references_to_the_compiler()
         {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = new TestProject()
             {
-                TargetFrameworks = "net8.0",
+                TargetFrameworks = tfm,
                 IsExe = true,
                 ProjectSdk = "Microsoft.NET.Sdk"
             };
 
-            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource().WithTargetFramework("net8.0");
+            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFramework(tfm);
 
-            var getValues = new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, "net8.0");
+            var getValues = new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm);
             getValues.DependsOnTargets = "Compile;CoreGenerateSatelliteAssemblies";
             getValues.Execute().Should().Pass();
 
