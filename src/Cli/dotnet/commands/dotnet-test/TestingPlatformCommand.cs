@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
+using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -13,13 +14,12 @@ namespace Microsoft.DotNet.Cli
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
         private readonly List<NamedPipeServer> _namedPipeServers = new();
-        private readonly List<Task> _taskModuleName = [];
-        private readonly ConcurrentBag<Task> _testsRun = [];
         private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
         private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
+        private readonly TestApplicationChannel _channel = new();
 
         private Task _namedPipeConnectionLoop;
         private string[] _args;
@@ -36,6 +36,12 @@ namespace Microsoft.DotNet.Cli
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
+            // Add readers to the channel, to read the test applications
+            for (int i = 0; i < Environment.ProcessorCount; i++)
+            {
+                _channel.ReadFromChannel();
+            }
+
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
 
             ForwardingAppImplementation msBuildForwardingApp = new(
@@ -45,9 +51,18 @@ namespace Microsoft.DotNet.Cli
                         "-verbosity:q"]);
             int getTestsProjectResult = msBuildForwardingApp.Execute();
 
+            // Wait for all the writers to complete
+            // Notify the readers that no more data will be written
+            _ = Task.Run(async () =>
+            {
+                await _channel.WaitForWriters();
+                _channel.NotifyWritingIsComplete();
+            });
+
+            // Wait for all the readers to complete
+            _channel.WaitForReaders();
+
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-            Task.WaitAll([.. _taskModuleName]);
-            Task.WaitAll([.. _testsRun]);
             _cancellationToken.Cancel();
             _namedPipeConnectionLoop.Wait();
 
@@ -81,12 +96,11 @@ namespace Microsoft.DotNet.Cli
 
         private Task<IResponse> OnRequest(IRequest request)
         {
-            if (TryGetModuleName(request, out string moduleName))
+            if (TryGetModulePath(request, out string modulePath))
             {
-                TestApplication testApplication = GenerateTestApplication(moduleName);
-                _testApplications[moduleName] = testApplication;
-
-                _testsRun.Add(Task.Run(async () => await testApplication.RunAsync()));
+                _testApplications[modulePath] = GenerateTestApplication(modulePath);
+                // Write the test application to the channel
+                _channel.WriteToChannel(_testApplications[modulePath]);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
@@ -102,7 +116,7 @@ namespace Microsoft.DotNet.Cli
             throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
         }
 
-        private static bool TryGetModuleName(IRequest request, out string modulePath)
+        private static bool TryGetModulePath(IRequest request, out string modulePath)
         {
             if (request is Module module)
             {
@@ -126,9 +140,9 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
-        private TestApplication GenerateTestApplication(string moduleName)
+        private TestApplication GenerateTestApplication(string modulePath)
         {
-            var testApplication = new TestApplication(moduleName, _pipeNameDescription.Name, _args);
+            var testApplication = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
 
             if (ContainsHelpOption(_args))
             {

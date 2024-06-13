@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Cli
         public const string NoBuildOptionKey = "--no-build";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
+        public const string DegreeOfParallelismOptionKey = "--dop";
 
         public const string ServerOptionValue = "dotnettestcli";
 
