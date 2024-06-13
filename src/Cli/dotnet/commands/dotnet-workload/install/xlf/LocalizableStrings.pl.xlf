@@ -162,11 +162,6 @@
         <target state="translated">Docelowa platforma, dla której ma zostać zainstalowane obciążenie.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Nie istnieje żaden manifest o identyfikatorze {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">Nie znaleziono pliku MSI manifestu w pakiecie NuGet {0}</target>

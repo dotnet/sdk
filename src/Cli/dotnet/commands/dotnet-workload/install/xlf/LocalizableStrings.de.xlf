@@ -162,11 +162,6 @@
         <target state="translated">Das Zielframework, für das die Workload installiert wird.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Es ist kein Manifest mit der ID {0} vorhanden.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">Manifest-MSI wurde im NuGet-Paket {0} nicht gefunden.</target>

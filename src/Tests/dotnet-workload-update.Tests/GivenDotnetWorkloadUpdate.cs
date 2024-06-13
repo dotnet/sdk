@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var oldVersion = upgrade ? "2.3.2" : "2.3.6";
             var workloadManifestUpdater = new MockWorkloadManifestUpdater(
                 manifestUpdates: new ManifestUpdateWithWorkloads[] {
-                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion(oldVersion), "8.0.200", new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
                 },
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
@@ -375,7 +375,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), existingSdkFeatureBand, new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
@@ -385,8 +385,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewFeatureBand);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingVersion);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
 
             var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), "6.0.300", "InstallState", "default.json");
@@ -404,9 +402,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("1.0.0"), "6.0.300", new ManifestVersion("2.0.0"), "6.0.100"), null),
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("1.0.0"), "6.0.100", new ManifestVersion("2.0.0"), "6.0.300"), null),
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("1.0.0"), "5.0.100", new ManifestVersion("2.0.0"), "6.0.100"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("2.0.0"), "6.0.100"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("2.0.0"), "6.0.300"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("2.0.0"), "6.0.100"), null),
                     };
             (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
@@ -418,9 +416,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
             packInstaller.InstalledManifests[1].manifestUpdate.NewFeatureBand.Should().Be("6.0.300");
             packInstaller.InstalledManifests[2].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be("6.0.300");
-            packInstaller.InstalledManifests[1].manifestUpdate.ExistingFeatureBand.Should().Be("6.0.100");
-            packInstaller.InstalledManifests[2].manifestUpdate.ExistingFeatureBand.Should().Be("5.0.100");
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
         }
 

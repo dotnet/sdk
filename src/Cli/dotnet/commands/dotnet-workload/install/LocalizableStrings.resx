@@ -237,9 +237,6 @@
   <data name="AdManifestPackageDoesNotExist" xml:space="preserve">
     <value>Advertising manifest not updated. Manifest package for {0} doesn't exist.</value>
   </data>
-  <data name="ManifestDoesNotExist" xml:space="preserve">
-    <value>No manifest with ID {0} exists.</value>
-  </data>
   <data name="FailedToInstallWorkloadManifest" xml:space="preserve">
     <value>Failed to install manifest {0} version {1}: {2}.</value>
   </data>

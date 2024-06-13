@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if ((adVersion.CompareTo(installedVersion) > 0 && adBand.Equals(installedBand)) ||
                     adBand.CompareTo(installedBand) > 0)
                 {
-                    var update = new ManifestVersionUpdate(manifestId, installedVersion, installedBand.ToString(), adVersion, adBand.ToString());
+                    var update = new ManifestVersionUpdate(manifestId, adVersion, adBand.ToString());
                     yield return new(update, adWorkloads);
                 }
             }
@@ -262,9 +262,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return versionUpdates.Select(manifest =>
             {
                 var (id, (version, band)) = manifest;
-                var (installedVersion, installedBand) = GetInstalledManifestVersion(id);
-                return new ManifestVersionUpdate(id, installedVersion, installedBand.ToString(), version, band.ToString());
-            }).ToList();    //  Call ToList() so that GetInstalledManifestVersion call isn't delayed until the result is iterated over
+                return new ManifestVersionUpdate(id, version, band.ToString());
+            });
         }
 
         public async Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
@@ -439,12 +438,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
         {
-            var manifest = _workloadResolver.GetInstalledManifests().FirstOrDefault(manifest => manifest.Id.ToLowerInvariant().Equals(manifestId.ToString()));
-            if (manifest == null)
-            {
-                throw new Exception(string.Format(LocalizableStrings.ManifestDoesNotExist, manifestId.ToString()));
-            }
-            return new(new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
+            return new(new ManifestVersion(_workloadResolver.GetManifestVersion(manifestId.ToString())), new SdkFeatureBand(_workloadResolver.GetManifestFeatureBand(manifestId.ToString())));
         }
 
         private bool AdManifestSentinelIsDueForUpdate()
@@ -470,6 +464,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private async Task<bool> UpdatedAdManifestPackagesExistAsync()
         {
             var manifests = GetInstalledManifestIds();
+            //  TODO: This doesn't seem to account for differing feature bands
             var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
             return availableUpdates.Any();
         }

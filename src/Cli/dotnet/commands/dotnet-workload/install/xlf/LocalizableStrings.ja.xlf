@@ -162,11 +162,6 @@
         <target state="translated">ワークロードをインストールするターゲット フレームワーク。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">ID を持つ {0} マニフェストが存在しません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">NuGet パッケージ {0} にマニフェスト MSI が見つかりません</target>

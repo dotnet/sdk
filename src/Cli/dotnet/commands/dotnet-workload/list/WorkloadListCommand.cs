@@ -150,7 +150,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 {
                     if (installedList.Contains(workloadId))
                     {
-                        yield return new UpdateAvailableEntry(manifestUpdate.ExistingVersion.ToString(),
+                        var existingVersion = _workloadListHelper.WorkloadResolver.GetManifestVersion(manifestUpdate.ManifestId.ToString());
+
+                        yield return new UpdateAvailableEntry(existingVersion,
                             manifestUpdate.NewVersion.ToString(),
                             workloadDefinition.Description, workloadId.ToString());
                     }

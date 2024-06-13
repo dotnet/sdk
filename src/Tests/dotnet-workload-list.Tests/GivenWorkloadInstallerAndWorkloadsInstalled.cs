@@ -44,8 +44,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest1"),
-                        new ManifestVersion(CurrentSdkVersion),
-                        currentSdkFeatureBand.ToString(),
                         new ManifestVersion(UpdateAvailableVersion),
                         currentSdkFeatureBand.ToString()),
                     new WorkloadCollection
@@ -60,8 +58,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest-other"),
-                        new ManifestVersion(CurrentSdkVersion),
-                        currentSdkFeatureBand.ToString(),
                         new ManifestVersion("7.0.101"),
                         currentSdkFeatureBand.ToString()),
                     new WorkloadCollection
@@ -74,8 +70,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest-older-version"),
-                        new ManifestVersion(CurrentSdkVersion),
-                        currentSdkFeatureBand.ToString(),
                         new ManifestVersion("6.0.100"),
                         currentSdkFeatureBand.ToString()),
                     new WorkloadCollection

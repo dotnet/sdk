@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), featureBand.ToString()), null),
                     };
             (_, var installManager, var installer, _, _, _) =
                 GetTestInstallers(parseResult, userLocal, sdkVersion, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
@@ -237,7 +237,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()), null)
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), featureBand.ToString()), null)
                     };
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path,
                 "mockCachePath");
@@ -598,7 +598,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), sdkFeatureBand, new ManifestVersion("2.0.0"), sdkFeatureBand), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), sdkFeatureBand), null),
                     };
             (_, var installManager, _, _, _, _) =
                 GetTestInstallers(parseResult, true, sdkFeatureBand, manifestUpdates: manifestsToUpdate);
