@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
-        private readonly TestApplicationChannel _channel = new();
+        private TestApplicationActionQueue actionQueue;
 
         private Task _namedPipeConnectionLoop;
         private string[] _args;
@@ -31,16 +31,16 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
+            _args = ContainsHelpOption(parseResult.GetArguments()) ? [CliConstants.HelpOptionKey] : [];
+
+            // User can decide what the degree of parallelism should be
+            // If not specified, we will default to the number of processors
+            if (!int.TryParse(parseResult.GetValue(TestCommandParser.DegreeOfParallelism), out int degreeOfParallelism))
+                degreeOfParallelism = Environment.ProcessorCount;
+            actionQueue = new(degreeOfParallelism);
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
-
-            // Add readers to the channel, to read the test applications
-            for (int i = 0; i < Environment.ProcessorCount; i++)
-            {
-                _channel.ReadFromChannel();
-            }
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
 
@@ -51,16 +51,9 @@ namespace Microsoft.DotNet.Cli
                         "-verbosity:q"]);
             int getTestsProjectResult = msBuildForwardingApp.Execute();
 
-            // Wait for all the writers to complete
-            // Notify the readers that no more data will be written
-            _ = Task.Run(async () =>
-            {
-                await _channel.WaitForWriters();
-                _channel.NotifyWritingIsComplete();
-            });
+            actionQueue.EnqueueCompleted();
 
-            // Wait for all the readers to complete
-            _channel.WaitForReaders();
+            actionQueue.WaitAllActions();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             _cancellationToken.Cancel();
@@ -100,7 +93,7 @@ namespace Microsoft.DotNet.Cli
             {
                 _testApplications[modulePath] = GenerateTestApplication(modulePath);
                 // Write the test application to the channel
-                _channel.WriteToChannel(_testApplications[modulePath]);
+                actionQueue.Enqueue(_testApplications[modulePath]);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }

@@ -5,35 +5,34 @@ using System.Threading.Channels;
 
 namespace Microsoft.DotNet.Cli.commands.dotnet_test
 {
-    internal class TestApplicationChannel
+    internal class TestApplicationActionQueue
     {
         private readonly Channel<TestApplication> _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions() { SingleReader = false, SingleWriter = false });
         private readonly List<Task> _readers = [];
         private readonly List<Task> _writers = [];
 
-        public void ReadFromChannel()
+        public TestApplicationActionQueue(int dop)
         {
-            _readers.Add(Task.Run(async () => await Read()));
+            // Add readers to the channel, to read the test applications
+            for (int i = 0; i < dop; i++)
+            {
+                _readers.Add(Task.Run(async () => await Read()));
+            }
         }
 
-        public void WriteToChannel(TestApplication testApplication)
+        public void Enqueue(TestApplication testApplication)
         {
             _writers.Add(Task.Run(() => _channel.Writer.TryWrite(testApplication)));
         }
 
-        public async Task WaitForWriters()
-        {
-            await Task.WhenAll(_writers);
-        }
-
-        public void WaitForReaders()
+        public void WaitAllActions()
         {
             Task.WaitAll([.. _readers]);
         }
 
-        public void NotifyWritingIsComplete()
+        public void EnqueueCompleted()
         {
-            //Notify consumers that no more data will be written
+            //Notify readers that no more data will be written
             _channel.Writer.Complete();
         }
 
