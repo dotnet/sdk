@@ -448,17 +448,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 Folders = folders;
             }
 
-            public static void TriggerChanged()
-            {
-                foreach (var provider in AllCreatedProviders)
-                {
-                    if (provider.TryGetTarget(out var actualProvider))
-                    {
-                        actualProvider.UpdatePackages(NuPkgs, Folders);
-                    }
-                }
-            }
-
             public static int StaticPriority { get; set; }
 
             public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)

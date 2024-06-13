@@ -187,7 +187,7 @@ color:red;";
 
             IOperationProvider[] operations =
             {
-                new MockOperationProvider(new MockOperation(null, ReadaheadOneByte, true, Encoding.UTF8.GetBytes("foo"))),
+                new MockOperationProvider(new MockOperation(null, ReadaheadOneByte, true, "foo"u8.ToArray())),
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foot"), "b", null, true)
             };
             EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Root());

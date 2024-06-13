@@ -130,40 +130,16 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream input = new ChunkMemoryStream(data, 1);
             Stream output = new ChunkMemoryStream(1);
             bool changed = processor.Run(input, output, 5);
 
             Verify(Encoding.UTF8, output, changed, "Hello    \r\n    There    \r\n    You", "Hello    \r\n    You");
-        }
-
-        private class ChunkMemoryStream : MemoryStream
-        {
-            private readonly int _chunkSize;
-
-            internal ChunkMemoryStream(int chunkSize) : base()
-            {
-                _chunkSize = chunkSize;
-            }
-
-            internal ChunkMemoryStream(byte[] buffer, int chunkSize) : base(buffer)
-            {
-                _chunkSize = chunkSize;
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                if (count > _chunkSize)
-                {
-                    count = _chunkSize;
-                }
-                return base.Read(buffer, offset, count);
-            }
         }
     }
 }

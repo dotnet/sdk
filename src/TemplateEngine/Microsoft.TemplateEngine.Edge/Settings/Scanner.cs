@@ -324,8 +324,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             public bool FoundComponents { get; set; }
 
             public bool FoundTemplates { get; set; }
-
-            public bool AnythingFound => FoundTemplates || FoundComponents;
         }
     }
 }
