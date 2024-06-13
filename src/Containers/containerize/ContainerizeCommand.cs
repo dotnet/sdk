@@ -47,6 +47,12 @@ internal class ContainerizeCommand : CliRootCommand
         Required = false
     };
 
+    internal CliOption<ContainerImageArchiveFormat> ArchiveOutputFormatOption { get; } = new("--archiveoutputformat")
+    {
+        Description = "The format of the written container image.",
+        Required = false
+    };
+
     internal CliOption<string> RepositoryOption { get; } = new("--repository")
     {
         Description = "The name of the output container repository that will be pushed to the registry.",
@@ -194,6 +200,7 @@ internal class ContainerizeCommand : CliRootCommand
         this.Options.Add(BaseImageTagOption);
         this.Options.Add(OutputRegistryOption);
         this.Options.Add(ArchiveOutputPathOption);
+        this.Options.Add(ArchiveOutputFormatOption);
         this.Options.Add(RepositoryOption);
         this.Options.Add(ImageTagsOption);
         this.Options.Add(WorkingDirectoryOption);
@@ -220,6 +227,7 @@ internal class ContainerizeCommand : CliRootCommand
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
             string? _outputReg = parseResult.GetValue(OutputRegistryOption);
             string? _archiveOutputPath = parseResult.GetValue(ArchiveOutputPathOption);
+            ContainerImageArchiveFormat _archiveOutputFormat = parseResult.GetValue(ArchiveOutputFormatOption);
             string _name = parseResult.GetValue(RepositoryOption)!;
             string[] _tags = parseResult.GetValue(ImageTagsOption)!;
             string _workingDir = parseResult.GetValue(WorkingDirectoryOption)!;
@@ -265,6 +273,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _localContainerDaemon,
                 _containerUser,
                 _archiveOutputPath,
+                _archiveOutputFormat,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

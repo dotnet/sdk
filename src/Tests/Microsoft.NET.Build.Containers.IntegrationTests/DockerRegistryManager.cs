@@ -15,7 +15,8 @@ public class DockerRegistryManager
     public const string Net7ImageTag = "7.0";
     public const string Net8PreviewImageTag = "8.0-preview";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8PreviewImageTag}-nanoserver-ltsc2022";
-    public const string LocalRegistry = "localhost:5010";
+    public const string LocalRegistryPort = "5010";
+    public const string LocalRegistry = $"localhost:{LocalRegistryPort}";
     public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net8PreviewImageTag}";
     public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8PreviewImageTag}";
     private static string? s_registryContainerId;
@@ -40,7 +41,7 @@ public class DockerRegistryManager
             {
                 logger.LogInformation("Spawning local registry at '{registry}', attempt #{attempt}.", LocalRegistry, spawnRegistryAttempt);
 
-                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
+                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", $"{LocalRegistryPort}:5000", "--detach", "docker.io/library/registry:2").Execute();
 
                 processResult.Should().Pass().And.HaveStdOut();
 

@@ -6,13 +6,15 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.LocalDaemons;
 
-internal class ArchiveFileRegistry : ILocalRegistry
+internal abstract class ArchiveFileRegistry : ILocalRegistry
 {
     public string ArchiveOutputPath { get; private set; }
+    public ContainerImageArchiveFormat ArchiveOutputFormat { get; }
 
-    public ArchiveFileRegistry(string archiveOutputPath)
+    protected ArchiveFileRegistry(string archiveOutputPath, ContainerImageArchiveFormat archiveOutputFormat)
     {
         ArchiveOutputPath = archiveOutputPath;
+        ArchiveOutputFormat = archiveOutputFormat;
     }
 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
@@ -36,7 +38,7 @@ internal class ArchiveFileRegistry : ILocalRegistry
 
         ArchiveOutputPath = fullPath;
         await using var fileStream = File.Create(fullPath);
-        await DockerCli.WriteImageToStreamAsync(
+        await WriteImageToStreamAsync(
             image,
             sourceReference,
             destinationReference,
@@ -44,13 +46,16 @@ internal class ArchiveFileRegistry : ILocalRegistry
             cancellationToken).ConfigureAwait(false);
     }
 
+    protected abstract Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference,
+        DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken);
+
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
     public bool IsAvailable() => true;
 
 
-    public override string ToString()
+    public sealed override string ToString()
     {
-        return string.Format(Strings.ArchiveRegistry_PushInfo, ArchiveOutputPath);
+        return string.Format(Strings.ArchiveRegistry_PushInfo, ArchiveOutputPath, ArchiveOutputFormat);
     }
 }

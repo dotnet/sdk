@@ -27,4 +27,14 @@ internal sealed class DigestUtils
 
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
+
+    internal static string TrimDigest(string digest)
+    {
+        int separator = digest.IndexOf(':');
+        if (separator != -1)
+        {
+            return digest[(separator + 1)..];
+        }
+        return digest;
+    }
 }

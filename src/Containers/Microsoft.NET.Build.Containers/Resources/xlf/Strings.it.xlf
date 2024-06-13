@@ -23,9 +23,9 @@
         <note>{StrBegin="CONTAINER2026: "}</note>
       </trans-unit>
       <trans-unit id="ArchiveRegistry_PushInfo">
-        <source>local archive at '{0}'</source>
-        <target state="translated">archivio locale in '{0}'</target>
-        <note>{0} is the path to the file written</note>
+        <source>local archive at '{0}' as {1} </source>
+        <target state="new">local archive at '{0}' as {1} </target>
+        <note>{0} is the path to the file written, {1} is the format type written</note>
       </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
@@ -156,6 +156,11 @@
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: il pull di immagini dal registro locale non è supportato.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageArchiveFormat">
+        <source>CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</source>
+        <target state="new">CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
