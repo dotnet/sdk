@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
     internal sealed class StreamForwarder
     {
         private const char FlushBuilderCharacter = '\n';
-        private static readonly char[] IgnoreCharacters = new char[] { '\r' };
+        private const char CarriageReturn = '\r';
 
         private StringBuilder? _builder;
         private StringWriter? _capture;
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 {
                     WriteBuilder();
                 }
-                else if (!IgnoreCharacters.Contains(currentCharacter))
+                else if (currentCharacter != CarriageReturn)
                 {
                     _ = _builder.Append(currentCharacter);
                 }
