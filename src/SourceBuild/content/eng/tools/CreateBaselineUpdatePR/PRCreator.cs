@@ -298,7 +298,7 @@ public class PRCreator
             {
                 // Merge the target branch into the existing pull request
                 var merge = new NewMerge(newBranchName, headSha);
-                var mergeResult = await _client.Repository.Merging.Create(_repoOwner, _repoName, merge);
+                await _client.Repository.Merging.Create(_repoOwner, _repoName, merge);
             }
             catch (Exception e)
             {
