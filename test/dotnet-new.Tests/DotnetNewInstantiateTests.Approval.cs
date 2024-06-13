@@ -6,7 +6,6 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [UsesVerify]
     public partial class DotnetNewInstantiateTests
     {
         [Fact]

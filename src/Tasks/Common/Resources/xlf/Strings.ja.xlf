@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: Microsoft.Net.Compilers.Toolset.Framework パッケージを直接設定することは望ましくありません。この方法ではなく、必要に応じてプロパティ 'BuildWithNetFrameworkHostedCompiler' を 'true' に設定してください。</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: リソースの追加にはビルドが Windows 上で実行されることが要求されるため、CLSIDMap を COM ホストに埋め込むことはできません (Nano Server を除く)。</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: {0} のアプリ ホストが見つかりません。{0} は無効なランタイム識別子 (RID) である可能性があります。RID の詳細については、https://aka.ms/rid-catalog をご覧ください。</target>
@@ -750,6 +745,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</source>
         <target state="translated">NETSDK1189: Prefer32Bit はサポートされておらず、netcoreapp ターゲットには影響しません。</target>
         <note>{StrBegin="NETSDK1189: "}</note>
+      </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

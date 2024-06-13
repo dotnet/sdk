@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.Sdk.Razor.Test
 {
@@ -311,7 +312,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -323,9 +324,11 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>sample-fingerprint</Fingerprint>
+      <Integrity>sample-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";
@@ -353,6 +356,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["RelatedAsset"] = "",
                             ["AssetTraitName"] = "",
                             ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "sample-fingerprint",
+                            ["Integrity"] = "sample-integrity",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","sample.js"),
                             ["CopyToOutputDirectory"] = "Never",
                             ["CopyToPublishDirectory"] = "PreserveNewest"
                         }),
@@ -383,7 +389,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css'))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -395,11 +401,13 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>styles-fingerprint</Fingerprint>
+      <Integrity>styles-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))"">
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
@@ -411,9 +419,11 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>sample-fingerprint</Fingerprint>
+      <Integrity>sample-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";
@@ -441,6 +451,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["RelatedAsset"] = "",
                             ["AssetTraitName"] = "",
                             ["AssetTraitValue"] = "",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","sample.js"),
+                            ["Fingerprint"] = "sample-fingerprint",
+                            ["Integrity"] = "sample-integrity",
                             ["CopyToOutputDirectory"] = "Never",
                             ["CopyToPublishDirectory"] = "PreserveNewest"
                         }),
@@ -457,6 +470,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["RelatedAsset"] = "",
                             ["AssetTraitName"] = "",
                             ["AssetTraitValue"] = "",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","App.styles.css"),
+                            ["Fingerprint"] = "styles-fingerprint",
+                            ["Integrity"] = "styles-integrity",
                             ["CopyToOutputDirectory"] = "Never",
                             ["CopyToPublishDirectory"] = "PreserveNewest"
                         }),

@@ -82,6 +82,11 @@
         <target state="translated">Gravando registros de instalação para cargas de trabalho do Visual Studio: "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Configurado para usar {0} ao instalar novos manifestos.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

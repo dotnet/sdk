@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: o pacote Microsoft.Net.Compilers.Toolset.Framework não deve ser definido diretamente. Defina a propriedade 'BuildWithNetFrameworkHostedCompiler' como 'true' se precisar.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: o CLSIDMap não pode ser inserido no host COM porque a adição de recursos requer que o build seja executado no Windows (excluindo Nano Server).</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: Não é possível encontrar o host do aplicativo para {0}. {0} poderia ser um RID (identificador de runtime inválido). Para obter mais informações sobre RID, confira https://aka.ms/rid-catalog.</target>
@@ -750,6 +745,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</source>
         <target state="translated">NETSDK1189: Prefer32Bit não é suportado e não tem efeito para o destino netcoreapp.</target>
         <note>{StrBegin="NETSDK1189: "}</note>
+      </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

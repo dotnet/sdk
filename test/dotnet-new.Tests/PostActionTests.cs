@@ -553,6 +553,98 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public void AddProjectReference_ExistingProject()
+        {
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Existing", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Existing";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            var result = new DotnetCommand(_log, "--version")
+                .Execute();
+
+            new DotnetNewCommand(_log)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute("classlib", "-n", "ExistingProject");
+
+            new DotnetNewCommand(_log, expectedTemplateName)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{expectedTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully added");
+
+            new DotnetBuildCommand(_log, "ExistingProject/ExistingProject.csproj")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetBuildCommand(_log, "Project1/Project1.csproj")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+        }
+
+        [Fact]
+        public void AddProjectReference_ExistingProjectWithSymbolFileRename()
+        {
+            var templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/ExistingWithRename", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            var expectedTemplateName = "TestAssets.PostActions.AddProjectReference.ExistingWithRename";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            string src = Path.Combine(workingDirectory, "src");
+            Directory.CreateDirectory(src);
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            var result = new DotnetCommand(_log, "--version")
+                .Execute();
+
+            new DotnetNewCommand(_log)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(src)
+                .Execute("classlib", "-n", "AlreadyExisting");
+
+            new DotnetNewCommand(_log, expectedTemplateName, "--existingProject", "src/AlreadyExisting/AlreadyExisting.csproj")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{expectedTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully added");
+
+            new DotnetBuildCommand(_log, "Project1/Project1.csproj")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetBuildCommand(_log, "src/AlreadyExisting/AlreadyExisting.csproj")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+        }
+
+        [Fact]
         public void AddProjectReference_WithOutputAbsolutePath()
         {
             string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
