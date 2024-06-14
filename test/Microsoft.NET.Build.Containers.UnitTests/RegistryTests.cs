@@ -415,6 +415,10 @@ public class RegistryTests : IDisposable
             var key = RSA.Create(2048);
             var request = new CertificateRequest("CN=localhost", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             X509Certificate2 serverCertificate = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+
+            // https://stackoverflow.com/questions/72096812/loading-x509certificate2-from-pem-file-results-in-no-credentials-are-available/72101855#72101855
+            serverCertificate = new X509Certificate2(serverCertificate.Export(X509ContentType.Pfx));
+
             sslOptions = new SslServerAuthenticationOptions()
             {
                 ServerCertificate = serverCertificate,
