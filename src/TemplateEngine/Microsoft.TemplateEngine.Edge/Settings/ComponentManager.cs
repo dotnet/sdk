@@ -61,7 +61,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IEnumerable<T> OfType<T>()
             where T : class, IIdentifiedComponent
         {
-            List<T> components = [];
             lock (_componentIdToAssemblyQualifiedTypeName)
             {
                 if (!_componentIdsByType.TryGetValue(typeof(T), out HashSet<Guid> ids))
@@ -72,22 +71,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     else
                     {
-                        yield break;
+                        return [];
                     }
                 }
 
-                foreach (Guid id in ids)
-                {
-                    if (TryGetComponent(id, out T? component))
-                    {
-                        components.Add(component ?? throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'"));
-                    }
-                }
-            }
-
-            foreach (T component in components)
-            {
-                yield return component;
+                return ids.Select(id => TryGetComponent(id, out T? component) ?
+                    component ?? throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'") :
+                    null)
+                    .OfType<T>();
             }
         }
 
