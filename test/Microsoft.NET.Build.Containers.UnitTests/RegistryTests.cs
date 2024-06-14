@@ -437,6 +437,7 @@ public class RegistryTests : IDisposable
                     {
                         await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
                     }
+                    await stream.ReadAtLeastAsync(new byte[1], 1); // Wait for the request.
                     await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
                 }
                 catch
