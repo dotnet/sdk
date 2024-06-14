@@ -3,12 +3,8 @@
 
 namespace Microsoft.DotNet.Tests.EndToEnd
 {
-    public class GivenDotNetLinuxInstallers : SdkTest
+    public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
     {
-        public GivenDotNetLinuxInstallers(ITestOutputHelper log) : base(log)
-        {
-        }
-
         [Fact]
         public void ItHasExpectedDependencies()
         {

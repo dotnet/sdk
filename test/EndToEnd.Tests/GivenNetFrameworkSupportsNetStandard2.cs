@@ -3,16 +3,13 @@
 
 namespace EndToEnd
 {
-    public class GivenNetFrameworkSupportsNetStandard2 : SdkTest
+    public class GivenNetFrameworkSupportsNetStandard2(ITestOutputHelper log) : SdkTest(log)
     {
-        public GivenNetFrameworkSupportsNetStandard2(ITestOutputHelper log) : base(log)
-        {
-        }
-
         [WindowsOnlyFact]
         public void Anet462ProjectCanReferenceANETStandardProject()
         {
-            var _testInstance = _testAssetsManager.CopyTestAsset("NETFrameworkReferenceNETStandard20", testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
+            var _testInstance = _testAssetsManager
+                .CopyTestAsset("NETFrameworkReferenceNETStandard20", testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
 
             string projectDirectory = Path.Combine(_testInstance.Path, "TestApp");
@@ -22,10 +19,10 @@ namespace EndToEnd
                 .Should().Pass();
 
             new DotnetCommand(Log, "run")
-                    .WithWorkingDirectory(projectDirectory)
-                    .Execute()
-                    .Should().Pass()
-                         .And.HaveStdOutContaining("This string came from the test library!");
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should().Pass()
+                    .And.HaveStdOutContaining("This string came from the test library!");
 
         }
     }

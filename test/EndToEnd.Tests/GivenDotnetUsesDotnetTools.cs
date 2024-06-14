@@ -3,18 +3,14 @@
 
 namespace EndToEnd
 {
-    public class GivenDotnetUsesDotnetTools : SdkTest
+    public class GivenDotnetUsesDotnetTools(ITestOutputHelper log) : SdkTest(log)
     {
-        public GivenDotnetUsesDotnetTools(ITestOutputHelper log) : base(log)
-        {
-        }
-
         [Fact]
         public void ThenOneDotnetToolsCanBeCalled()
         {
             new DotnetCommand(Log)
                 .Execute("dev-certs", "--help")
-                    .Should().Pass();
+                .Should().Pass();
         }
     }
 }
