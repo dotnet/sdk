@@ -65,7 +65,7 @@ public class DockerRegistryManager
                 using var reader = new StringReader(processResult.StdOut!);
                 s_registryContainerId = reader.ReadLine();
 
-                EnsureRegistryLoaded(LocalRegistry, s_registryContainerId, logger, testOutput);
+                EnsureRegistryLoaded(new Uri($"http://{LocalRegistry}"), s_registryContainerId, logger, testOutput);
 
                 foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag, Net9PreviewImageTag })
                 {
@@ -119,15 +119,15 @@ public class DockerRegistryManager
         }
     }
 
-    private static void EnsureRegistryLoaded(string registryName, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
+    private static void EnsureRegistryLoaded(Uri registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
     {
         const int registryLoadMaxRetry = 10;
         const int registryLoadTimeout = 1000; //ms
 
         using HttpClient client = new();
-        using HttpRequestMessage request = new(HttpMethod.Get, new Uri($"https://{registryName}/v2/"));
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(registryBaseUri, "/v2/"));
 
-        logger.LogInformation("Checking if the registry '{registry}' is available.", registryName);
+        logger.LogInformation("Checking if the registry '{registry}' is available.", registryBaseUri);
 
         int attempt = 1;
         while (attempt <= registryLoadMaxRetry)
@@ -141,14 +141,14 @@ public class DockerRegistryManager
 
                 if (response.IsSuccessStatusCode)
                 {
-                    logger.LogInformation("The registry '{registry}' is available after {timeout} ms.", registryName, attempt * registryLoadTimeout);
+                    logger.LogInformation("The registry '{registry}' is available after {timeout} ms.", registryBaseUri, attempt * registryLoadTimeout);
                     return;
                 }
-                logger.LogWarning("The registry '{registry} is not loaded after {timeout} ms. Returned status code: {statusCode}.", registryName, attempt * registryLoadTimeout, response.StatusCode);
+                logger.LogWarning("The registry '{registry} is not loaded after {timeout} ms. Returned status code: {statusCode}.", registryBaseUri, attempt * registryLoadTimeout, response.StatusCode);
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "The registry '{registry} is not loaded after {timeout} ms.", registryName, attempt * registryLoadTimeout);
+                logger.LogWarning(ex, "The registry '{registry} is not loaded after {timeout} ms.", registryBaseUri, attempt * registryLoadTimeout);
             }
             attempt++;
         }
