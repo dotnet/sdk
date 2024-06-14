@@ -30,12 +30,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             RunInternal(sourceDir, targetDir, spec);
@@ -50,12 +48,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             return GetFileChangesInternal(sourceDir, targetDir, spec);
