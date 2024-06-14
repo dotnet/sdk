@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 
@@ -1214,6 +1215,91 @@ public class Test
     }
 }";
             await VerifyAnalyzerCSAsync(csSource);
+        }
+
+        [Fact]
+        public async Task CallGuardFromPlatformSpecificAssembly()
+        {
+            string csDependencyCode = @"
+public class Library
+{
+    static bool s_isWindowsOrLinux = false;
+
+    [System.Runtime.Versioning.SupportedOSPlatformGuard(""windows"")]
+    [System.Runtime.Versioning.SupportedOSPlatformGuard(""linux"")]
+    public static bool IsSupported => s_isWindowsOrLinux;
+
+    [System.Runtime.Versioning.UnsupportedOSPlatformGuard(""windows"")]
+    [System.Runtime.Versioning.UnsupportedOSPlatformGuard(""linux"")]
+    public static bool IsNotSupported => false;
+
+    public static void AMethod() { }
+}";
+            csDependencyCode = @$"[assembly: System.Runtime.Versioning.SupportedOSPlatform(""windows"")]
+                                  [assembly: System.Runtime.Versioning.SupportedOSPlatform(""linux"")]
+                                  {csDependencyCode}";
+
+            string csCurrentAssemblyCode = @"
+using System;
+
+public class Program
+{
+    public void ProgramMethod()
+    {
+        [|Library.AMethod()|]; // Not guarded, warns
+        if (Library.IsSupported)
+        {
+             Library.AMethod();
+        }
+
+        if (Library.IsNotSupported)
+        {
+             [|Library.AMethod()|]; // warn because guarded by unsupported
+        }
+        else
+        {
+             Library.AMethod(); // guarded
+        }
+    }
+}";
+            var test = SetupDependencyAndTestCSWithOneSourceFile(csCurrentAssemblyCode, csDependencyCode);
+            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $@"root = true
+
+[*]
+build_property.TargetFramework = net5
+"));
+            await test.RunAsync();
+        }
+
+        private static VerifyCS.Test SetupDependencyAndTestCSWithOneSourceFile(string csInput, string csDependencyCode)
+        {
+            return new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    },
+                    AdditionalProjects =
+                    {
+                        ["PreviewAssembly"] =
+                        {
+                            Sources =
+                            {
+                                ("/PreviewAssembly/AssemblyInfo.cs", csDependencyCode)
+                            },
+                        },
+                    },
+                    AdditionalProjectReferences =
+                    {
+                        "PreviewAssembly",
+                    },
+                },
+            };
         }
 
         [Fact]
@@ -4181,7 +4267,7 @@ using System.Runtime.Versioning;
 [assembly: SupportedOSPlatform(""ios10.0"")]
 class Test
 {
-    static bool s_isiOS11OrNewer => false;
+    static bool s_isiOS11OrNewer = false;
 
     [SupportedOSPlatformGuard(""ios11.0"")]
     private bool IsIos11Supported() => s_isiOS11OrNewer; // should not warn
