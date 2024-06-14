@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
@@ -23,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 string mountPointUri = entry.ToString(nameof(MountPointUri)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(MountPointUri)} property.", nameof(entry));
                 string configPlace = entry.ToString(nameof(ConfigPlace)) ?? throw new ArgumentException($"{nameof(entry)} doesn't have {nameof(ConfigPlace)} property.", nameof(entry));
                 JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
-                IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
+                IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection([]);
 
                 TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace)
                 {
@@ -78,9 +76,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     List<ITemplateParameter> templateParameters = new List<ITemplateParameter>();
                     foreach (JToken item in parametersArray)
                     {
-                        if (item is JObject jobj)
+                        if (item is JObject jObj)
                         {
-                            templateParameters.Add(ParameterFromJObject(jobj));
+                            templateParameters.Add(ParameterFromJObject(jObj));
                         }
                     }
                     info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);

@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -132,14 +128,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
-                bool checkingDirWithPlaceholderFile = false;
 
-                if (spec.IgnoreFileNames.Contains(fileName))
-                {
-                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // The change checking / reporting is different, setting this variable tracks it.
-                    checkingDirWithPlaceholderFile = true;
-                }
+                // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                // The change checking / reporting is different, setting this variable tracks it.
+                bool checkingDirWithPlaceholderFile = spec.IgnoreFileNames.Contains(fileName);
 
                 foreach (IPathMatcher include in spec.Include)
                 {
@@ -207,14 +199,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
-                bool checkingDirWithPlaceholderFile = false;
 
-                if (spec.IgnoreFileNames.Contains(fileName))
-                {
-                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // The change checking / reporting is different, setting this variable tracks it.
-                    checkingDirWithPlaceholderFile = true;
-                }
+                // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                // The change checking / reporting is different, setting this variable tracks it.
+                bool checkingDirWithPlaceholderFile = spec.IgnoreFileNames.Contains(fileName);
 
                 foreach (IPathMatcher include in spec.Include)
                 {

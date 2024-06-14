@@ -135,7 +135,7 @@
     <value>Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it's possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error.</value>
     <comment>{0} is the dependency chain</comment>
   </data>
-  <data name="Constaint_Error_ArgumentHasEmptyString" xml:space="preserve">
+  <data name="Constraint_Error_ArgumentHasEmptyString" xml:space="preserve">
     <value>'{0}' should not contain empty items</value>
     <comment>{0} is JSON configuration for constraint</comment>
   </data>
@@ -268,45 +268,45 @@
   <data name="NuGetInstaller_Error_FileAlreadyExists" xml:space="preserve">
     <value>File {0} already exists.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_DownloadFailed" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_DownloadFailed" xml:space="preserve">
     <value>Failed to download {0} from {1}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_InstallGeneric" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_InstallGeneric" xml:space="preserve">
     <value>Failed to install the package {0}.
 Details: {1}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_InstallRequestNotSupported" xml:space="preserve">
     <value>The install request {0} cannot be processed by installer {1}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_InvalidPackage" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_InvalidPackage" xml:space="preserve">
     <value>The NuGet package {0} is invalid.</value>
   </data>
   <data name="NuGetInstaller_InstallResult_Error_VulnerablePackage" xml:space="preserve">
     <value>The requested package {0} has vulnerabilities.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_InvalidSources" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_InvalidSources" xml:space="preserve">
     <value>The configured NuGet sources are invalid: {0}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_InvalidSources_None" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_InvalidSources_None" xml:space="preserve">
     <value>No NuGet sources are configured.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_OperationCancelled" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_PackageNotFound" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_PackageNotFound" xml:space="preserve">
     <value>{0} was not found in NuGet feeds {1}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_PackageNotSupported" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_PackageNotSupported" xml:space="preserve">
     <value>The package {0} is not supported by installer {1}.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_UninstallGeneric" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_UninstallGeneric" xml:space="preserve">
     <value>Failed to uninstall the package {0}.
 Details: {1}.</value>
   </data>
   <data name="NuGetInstaller_UpdateCheck_Error_VulnerablePackage" xml:space="preserve">
     <value>The checked package {0} has vulnerabilities.</value>
   </data>
-  <data name="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric" xml:space="preserve">
+  <data name="NuGetInstaller_InstallResult_Error_UpdateCheckGeneric" xml:space="preserve">
     <value>Failed to check the update for the package {0}.
 Details: {1}.</value>
   </data>
@@ -413,7 +413,7 @@ Details: {0}</value>
 Details: {1}</value>
     <comment>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</comment>
   </data>
-    <data name="TemplatePackageManager_Error_FailedToFindPackage" xml:space="preserve">
+  <data name="TemplatePackageManager_Error_FailedToFindPackage" xml:space="preserve">
     <value>Failed to retrieve package with identifier '{0}'.</value>
   </data>
   <data name="TemplatePackageManager_Error_FailedToScan" xml:space="preserve">

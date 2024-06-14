@@ -176,7 +176,7 @@ Detalhes: {1}</target>
         <note>erty name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessing_Warning_DependencyErrors">
-        <source>'{0}' was not processed due to the next issues in dependencises: '{1}'.</source>
+        <source>'{0}' was not processed due to the next issues in dependencies: '{1}'.</source>
         <target state="translated">'{0}' não foi processado devido aos próximos problemas nas dependências: '{1}'.</target>
         <note>{0} - macro name, {1} - dependent macros errors</note>
       </trans-unit>

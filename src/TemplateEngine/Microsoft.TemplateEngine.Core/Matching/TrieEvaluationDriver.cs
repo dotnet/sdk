@@ -54,8 +54,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
                     if (expectedShift == 0)
                     {
                         int actualShift = originalSequenceNumber - _sequenceNumber - 1;
-                        int compensation = actualShift - expectedShift;
-                        bufferPosition -= compensation;
+                        bufferPosition -= actualShift;
                     }
                 }
             }

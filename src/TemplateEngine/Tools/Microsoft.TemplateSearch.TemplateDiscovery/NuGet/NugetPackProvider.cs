@@ -45,17 +45,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             _searchUriFormat = $"{searchResources[0].Uri}?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}&semVerLevel=2.0.0";
 
-            if (Directory.Exists(_packageTempPath))
-            {
-                throw new Exception($"temp storage path for NuGet packages already exists: {_packageTempPath}");
-            }
-            else
+            if (!Directory.Exists(_packageTempPath))
             {
                 Directory.CreateDirectory(_packageTempPath);
             }
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public bool SupportsGetPackageInfoViaApi => true;
 
@@ -143,20 +139,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             try
             {
-                using Stream packageStream = File.Create(outputPackageFileNameFullPath);
-                if (await _downloadResource.CopyNupkgToStreamAsync(
-                    packinfo.Name,
-                    new NuGetVersion(packinfo.Version!),
-                    packageStream,
-                    _cacheContext,
-                    NullLogger.Instance,
-                    token).ConfigureAwait(false))
+                if (File.Exists(outputPackageFileNameFullPath))
                 {
                     return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
                 else
                 {
-                    throw new Exception($"Download failed: {nameof(_downloadResource.CopyNupkgToStreamAsync)} returned false.");
+                    using Stream packageStream = File.Create(outputPackageFileNameFullPath);
+                    if (await _downloadResource.CopyNupkgToStreamAsync(
+                        packinfo.Name,
+                        new NuGetVersion(packinfo.Version!),
+                        packageStream,
+                        _cacheContext,
+                        NullLogger.Instance,
+                        token).ConfigureAwait(false))
+                    {
+                        return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
+                    }
+                    else
+                    {
+                        throw new Exception($"Download failed: {nameof(_downloadResource.CopyNupkgToStreamAsync)} returned false.");
+                    }
                 }
             }
             catch (TaskCanceledException)
@@ -275,7 +278,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             public long TotalDownloads { get; }
 
-            public IReadOnlyList<string> Owners => Array.Empty<string>();
+            public IReadOnlyList<string> Owners => [];
 
             public bool Reserved { get; }
 

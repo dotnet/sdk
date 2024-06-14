@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -14,8 +11,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
-        private readonly string? _id;
-
         private readonly bool _initialState;
 
         public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream?> sourceStreamOpener, string? id, bool initialState)
@@ -23,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;
             EndToken = endToken;
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
@@ -33,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public Func<string, Stream?> SourceStreamOpener { get; }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -41,27 +36,26 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken endTokenBytes = EndToken.ToToken(encoding);
             TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
-            return new Impl(tokenBytes, endTokenMatcher, this, _id, _initialState);
+            return new Implementation(tokenBytes, endTokenMatcher, this, Id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly Include _source;
             private readonly ITokenTrie _endTokenMatcher;
-            private readonly string? _id;
 
-            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
+            public Implementation(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
             {
                 Tokens = new[] { token };
                 _source = source;
                 _endTokenMatcher = endTokenMatcher;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 

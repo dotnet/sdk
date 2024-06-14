@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                     DefaultFeed,
                     identifier,
                     version ?? string.Empty,
-                    Array.Empty<VulnerabilityInfo>()));
+                    []));
         }
 
         public Task<(string LatestVersion, bool IsLatestVersion, IReadOnlyList<VulnerabilityInfo> Vulnerabilities)> GetLatestVersionAsync(string identifier, string? version = null)

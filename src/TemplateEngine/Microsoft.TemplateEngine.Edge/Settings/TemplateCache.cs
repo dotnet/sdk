@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -75,28 +71,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             PrintOverlappingIdentityWarning(logger, templateDeduplicationDictionary);
         }
 
-        public TemplateCache(JObject? contentJobject)
+        public TemplateCache(JObject? contentJObject)
         {
-            if (contentJobject != null && contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
+            if (contentJObject != null && contentJObject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
             {
                 Version = versionToken.ToString();
             }
             else
             {
                 Version = null;
-                TemplateInfo = Array.Empty<TemplateInfo>();
+                TemplateInfo = [];
                 MountPointsInfo = new Dictionary<string, DateTime>();
                 Locale = string.Empty;
                 return;
             }
 
-            Locale = contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
+            Locale = contentJObject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
                 ? localeToken.ToString()
                 : string.Empty;
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
+            if (contentJObject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
             {
                 foreach (var entry in dict)
                 {
@@ -108,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
+            if (contentJObject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
             {
                 foreach (JToken entry in arr)
                 {
@@ -178,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 // we print the message only if managed template wins and we have > 1 managed templates with overlapping identities
                 var lastTemplate = identityToTemplates.Value.Last();
                 var managedTemplates = identityToTemplates.Value.Where(templateInto => templateInto.TemplatePackage is IManagedTemplatePackage).ToArray();
-                if (lastTemplate.TemplatePackage is IManagedTemplatePackage managedPackage && managedTemplates.Length > 1)
+                if (lastTemplate.TemplatePackage is IManagedTemplatePackage && managedTemplates.Length > 1)
                 {
                     var templatesList = new StringBuilder();
                     foreach (var (templateName, packageId, _, _) in managedTemplates)

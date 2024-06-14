@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -700,7 +697,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// Currently not implemented in <see cref="InMemoryFileSystem"/>.
         /// Just returns <see cref="IDisposable"/> object, but never calls callback.
         /// </summary>
-        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        public IDisposable WatchFileChanges(string filePath, FileSystemEventHandler fileChanged)
         {
             return new MemoryStream(); //Just some disposable dummy
         }
@@ -791,7 +788,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 Name = name;
                 FullPath = fullPath;
-                _data = Array.Empty<byte>();
+                _data = [];
             }
 
             public string Name { get; }

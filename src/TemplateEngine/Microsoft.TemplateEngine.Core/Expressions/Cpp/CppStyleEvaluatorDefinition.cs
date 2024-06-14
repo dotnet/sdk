@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -20,7 +16,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 24;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
-        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly IOperationProvider[] NoOperationProviders = [];
         private static readonly char[] SupportedQuotes = { '"', '\'' };
 
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
@@ -533,7 +529,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static object? InferTypeAndConvertLiteral(string literal)
         {
-            //A propertly quoted string must be...
+            //  A properly quoted string must be...
             //  At least two characters long
             //  Start and end with the same character
             //  The character that the string starts with must be one of the supported quote kinds
@@ -556,7 +552,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                 if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
                     || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
-                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
+                    && ParserExtensions.DoubleTryParseCurrentOrInvariant(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }

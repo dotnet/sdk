@@ -15,7 +15,7 @@
 
 ## Overview
 
-Conditions are used to drive [dynamic content genarating or replacing](Conditional-processing-and-comment-syntax.md).
+Conditions are used to drive [dynamic content generating or replacing](Conditional-processing-and-comment-syntax.md).
 
 Conditions use C++ style of [conditional preprocessor expressions](https://docs.microsoft.com/en-us/cpp/preprocessor/hash-if-hash-elif-hash-else-and-hash-endif-directives-c-cpp?view=msvc-170). Expressions are composed from constant literals (strings, numbers, `true`, `false`), [operators](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Core/Expressions/Cpp/Operator.cs), [symbols](https://github.com/dotnet/templating/blob/main/docs/Available-Symbols-Generators.md), brackets and whitespaces. Only single line expressions are supported. Boolean and numerical expressions are supported (nonzero value is interpreted as `true`)
 

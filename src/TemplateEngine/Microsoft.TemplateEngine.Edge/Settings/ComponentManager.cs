@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
-#if !NETFULL
+#if NET
 using System.Runtime.Loader;
 #endif
 
@@ -176,12 +171,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // This method does not save the settings, it just registers into the memory cache.
         private bool RegisterType(Type type)
         {
-            if (!typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(type) || type.GetTypeInfo().GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass)
+            if (!typeof(IIdentifiedComponent).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) == null || !type.IsClass)
             {
                 return false;
             }
 
-            IReadOnlyList<Type> interfaceTypesToRegisterFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
+            IReadOnlyList<Type> interfaceTypesToRegisterFor = type.GetInterfaces().Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).IsAssignableFrom(x)).ToList();
             if (interfaceTypesToRegisterFor.Count == 0)
             {
                 return false;
@@ -254,7 +249,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public void AddComponent(Type type, IIdentifiedComponent component)
 #pragma warning restore SA1202 // Elements should be ordered by access
         {
-            if (!type.IsAssignableFrom(component.GetType()))
+            if (!type.IsInstanceOfType(component))
             {
                 throw new ArgumentException($"{component.GetType().Name} should be assignable from {type.Name} type", nameof(type));
             }
@@ -287,7 +282,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (!ReflectionLoadProbingPath.HasLoaded(asmName))
             {
                 AssemblyName name = new AssemblyName(asmName);
-#if !NETFULL
+#if NET
                 AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 #else
                 AppDomain.CurrentDomain.Load(name);
