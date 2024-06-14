@@ -72,23 +72,28 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
         socketsHttpHandler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions()
         {
-            RemoteCertificateValidationCallback = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
-            {
-                if (sslPolicyErrors == SslPolicyErrors.None)
-                {
-                    return true;
-                }
-
-                // Ignore certificate errors for the hostname.
-                if ((sender as SslStream)?.TargetHostName == baseUri.Host)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            RemoteCertificateValidationCallback = IgnoreCertificateErrorsForSpecificHost(baseUri.Host)
         };
 
         return new FallbackToHttpMessageHandler(baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
+    }
+
+    private static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
+    {
+        return (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            // Ignore certificate errors for the hostname.
+            if ((sender as SslStream)?.TargetHostName == host)
+            {
+                return true;
+            }
+
+            return false;
+        };
     }
 }
