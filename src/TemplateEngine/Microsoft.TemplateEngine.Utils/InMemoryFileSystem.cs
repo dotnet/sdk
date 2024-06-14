@@ -426,11 +426,9 @@ namespace Microsoft.TemplateEngine.Utils
                 throw new IOException($"File already exists {targetPath}");
             }
 
-            using (Stream s = OpenRead(sourcePath))
-            using (Stream t = CreateFile(targetPath))
-            {
-                s.CopyTo(t);
-            }
+            using Stream s = OpenRead(sourcePath);
+            using Stream t = CreateFile(targetPath);
+            s.CopyTo(t);
         }
 
         public void FileDelete(string path)
@@ -523,11 +521,9 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string ReadAllText(string path)
         {
-            using (Stream s = OpenRead(path))
-            using (StreamReader r = new(s, Encoding.UTF8, true, 8192, true))
-            {
-                return r.ReadToEnd();
-            }
+            using Stream s = OpenRead(path);
+            using StreamReader r = new(s, Encoding.UTF8, true, 8192, true);
+            return r.ReadToEnd();
         }
 
         public byte[] ReadAllBytes(string path)
@@ -536,22 +532,18 @@ namespace Microsoft.TemplateEngine.Utils
             using Stream s = OpenRead(path);
             if (s is not MemoryStream ms)
             {
-                using (MemoryStream stream = new())
-                {
-                    s.CopyTo(stream);
-                    return stream.ToArray();
-                }
+                using MemoryStream stream = new();
+                s.CopyTo(stream);
+                return stream.ToArray();
             }
             return ms.ToArray();
         }
 
         public void WriteAllText(string path, string value)
         {
-            using (Stream s = CreateFile(path))
-            using (StreamWriter r = new(s, Encoding.UTF8, 8192, true))
-            {
-                r.Write(value);
-            }
+            using Stream s = CreateFile(path);
+            using StreamWriter r = new(s, Encoding.UTF8, 8192, true);
+            r.Write(value);
         }
 
         public FileAttributes GetFileAttributes(string file)

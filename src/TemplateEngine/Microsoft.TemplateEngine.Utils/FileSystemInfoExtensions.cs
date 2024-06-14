@@ -13,12 +13,10 @@ namespace Microsoft.TemplateEngine.Utils
 
             foreach (IFile file in source.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
             {
-                using (Stream f = source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name)))
-                using (Stream s = file.OpenRead())
-                {
-                    s.CopyTo(f);
-                    f.Flush();
-                }
+                using Stream f = source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name));
+                using Stream s = file.OpenRead();
+                s.CopyTo(f);
+                f.Flush();
             }
 
             foreach (IDirectory dir in source.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))

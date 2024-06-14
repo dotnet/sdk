@@ -270,11 +270,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    using (Stream excludeList = sourceFile!.Parent!.FileInfo(singleConfig)!.OpenRead())
-                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
-                    {
-                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    }
+                    using Stream excludeList = sourceFile!.Parent!.FileInfo(singleConfig)!.OpenRead();
+                    using TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true);
+                    return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             return configs;

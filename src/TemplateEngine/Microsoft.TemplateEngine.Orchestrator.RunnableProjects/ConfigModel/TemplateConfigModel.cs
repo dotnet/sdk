@@ -408,10 +408,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <param name="filename">The file path of template configuration (optional, used for logging).</param>
         public static TemplateConfigModel FromStream(Stream content, ILogger? logger = null, string? filename = null)
         {
-            using (TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true))
-            {
-                return FromTextReader(tr, logger);
-            }
+            using TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true);
+            return FromTextReader(tr, logger);
         }
 
         /// <summary>
@@ -427,18 +425,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 throw new ArgumentException($"'{nameof(content)}' cannot be null or whitespace.", nameof(content));
             }
 
-            using (TextReader tr = new StringReader(content))
-            {
-                return FromTextReader(tr, logger);
-            }
+            using TextReader tr = new StringReader(content);
+            return FromTextReader(tr, logger);
         }
 
         internal static TemplateConfigModel FromTextReader(TextReader content, ILogger? logger = null)
         {
-            using (JsonReader r = new JsonTextReader(content))
-            {
-                return new TemplateConfigModel(JObject.Load(r), logger, null);
-            }
+            using JsonReader r = new JsonTextReader(content);
+            return new TemplateConfigModel(JObject.Load(r), logger, null);
         }
 
         internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null)

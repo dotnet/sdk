@@ -242,11 +242,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                             {
                                 string targetPath = CreateTargetDir(_fileSystem, sourceRel, targetDir, spec);
 
-                                using (Stream sourceStream = file.OpenRead())
-                                using (Stream targetStream = _fileSystem.CreateFile(targetPath))
-                                {
-                                    sourceStream.CopyTo(targetStream);
-                                }
+                                using Stream sourceStream = file.OpenRead();
+                                using Stream targetStream = _fileSystem.CreateFile(targetPath);
+                                sourceStream.CopyTo(targetStream);
                             }
                         }
 
@@ -275,23 +273,21 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             try
             {
-                using (Stream source = sourceFile.OpenRead())
-                using (Stream target = _fileSystem.CreateFile(targetPath))
+                using Stream source = sourceFile.OpenRead();
+                using Stream target = _fileSystem.CreateFile(targetPath);
+                if (!customBufferSize)
                 {
-                    if (!customBufferSize)
+                    runner.Run(source, target);
+                }
+                else
+                {
+                    if (!customFlushThreshold)
                     {
-                        runner.Run(source, target);
+                        runner.Run(source, target, bufferSize);
                     }
                     else
                     {
-                        if (!customFlushThreshold)
-                        {
-                            runner.Run(source, target, bufferSize);
-                        }
-                        else
-                        {
-                            runner.Run(source, target, bufferSize, flushThreshold);
-                        }
+                        runner.Run(source, target, bufferSize, flushThreshold);
                     }
                 }
             }

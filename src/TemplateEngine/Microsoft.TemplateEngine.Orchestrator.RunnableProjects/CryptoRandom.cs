@@ -18,10 +18,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static int NextInt(int minValue, int maxValue)
         {
-            using (CryptoRandom random = new CryptoRandom())
-            {
-                return random.Next(minValue, maxValue);
-            }
+            using CryptoRandom random = new CryptoRandom();
+            return random.Next(minValue, maxValue);
         }
 
         public int Next()
