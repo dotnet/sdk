@@ -222,7 +222,9 @@ namespace Microsoft.DotNet.Cli
             whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
             whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
 
-            whyCommand.Options.Add(new CliOption<string>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore });
+            whyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
+                .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
+                .AllowSingleArgPerToken());
 
             whyCommand.SetAction(NuGetCommand.Run);
 
