@@ -365,7 +365,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
                 retryCount += 1;
-                _logger.LogInformation("Encountered a SocketException with message \"{message}\". Pausing before retry.", se.Message);
+                _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
                 await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
