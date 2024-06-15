@@ -30,25 +30,49 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
         }
 
         bool canFallback = request.RequestUri.Host == _host && request.RequestUri.Port == _port && request.RequestUri.Scheme == "https";
-        bool canRetry = canFallback;
         do
         {
             try
             {
                 if (canFallback && _fallbackToHttp)
                 {
-                    var uriBuilder = new UriBuilder(request.RequestUri);
-                    uriBuilder.Scheme = "http";
-                    request.RequestUri = uriBuilder.Uri;
-                    canRetry = false;
+                    FallbackToHttp(request);
+                    canFallback = false;
                 }
 
                 return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
-            catch (HttpRequestException re) when (canRetry && re.HttpRequestError == HttpRequestError.SecureConnectionError)
+            catch (HttpRequestException re) when (canFallback && ShouldAttemptFallbackToHttp(re))
             {
-                _fallbackToHttp = true;
+                try
+                {
+                    // Try falling back.
+                    FallbackToHttp(request);
+                    HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    // Fall back was successful. Use http for all new requests.
+                    _fallbackToHttp = true;
+
+                    return response;
+                }
+                catch
+                { }
+
+                // Falling back didn't work, throw original exception.
+                throw;
             }
         } while (true);
+    }
+
+    internal static bool ShouldAttemptFallbackToHttp(HttpRequestException exception)
+    {
+        return exception.HttpRequestError == HttpRequestError.SecureConnectionError;
+    }
+
+    private static void FallbackToHttp(HttpRequestMessage request)
+    {
+        var uriBuilder = new UriBuilder(request.RequestUri!);
+        uriBuilder.Scheme = "http";
+        request.RequestUri = uriBuilder.Uri;
     }
 }

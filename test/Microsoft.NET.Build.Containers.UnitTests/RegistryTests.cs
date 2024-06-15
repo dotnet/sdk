@@ -395,12 +395,13 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, true)]
+    [InlineData(false, false, false)]
     [Theory]
-    public async Task InsecureRegistry(bool serverIsHttps, bool isInsecureRegistry)
+    public async Task InsecureRegistry(bool isInsecureRegistry, bool serverIsHttps, bool httpServerCloseAbortive)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(InsecureRegistry));
 
@@ -437,8 +438,20 @@ public class RegistryTests : IDisposable
                     {
                         await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
                     }
-                    await stream.ReadAtLeastAsync(new byte[1], 1); // Wait for the request.
-                    await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
+                    byte[] buffer = new byte[10];
+                    await stream.ReadAtLeastAsync(buffer, buffer.Length); // Wait for the request.
+                    // Repond if we see '/v2/' in the buffer (since we expect that as part of the request path).
+                    if (buffer.AsSpan().IndexOf("/v2/"u8) != 0)
+                    {
+                        await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
+                    }
+                    else
+                    {
+                        if (httpServerCloseAbortive)
+                        {
+                            client.GetStream().Close(timeout: 0);
+                        }
+                    }
                 }
                 catch
                 { }
@@ -462,17 +475,48 @@ public class RegistryTests : IDisposable
         }
         else
         {
-            try
+            if (serverIsHttps)
             {
                 // Does not fall back and throws HttpRequestException.
                 var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
                 Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
             }
-            catch when (!serverIsHttps)
+            else
             {
-                // We're talking https to an http server. The server may respond in a way that triggers
-                // the retry handling in AuthHandshakeMessageHandler which then throws an ApplicationException.
-                await Assert.ThrowsAsync<ApplicationException>(() => getManifest);
+                // We're using https against an http server.
+                var re = await Assert.ThrowsAnyAsync<HttpRequestException>(() => getManifest);
+                try
+                {
+                    // Verify the exception is one that FallbackToHttpMessageHandler would fall back for.
+                    Assert.True(FallbackToHttpMessageHandler.ShouldAttemptFallbackToHttp(re));
+                }
+                catch
+                {
+                    // Log a message describing the exception that would not cause the FallbackToHttpMessageHandler to fall back.
+                    StringBuilder sb = new();
+                    sb.AppendLine("Exception is not fallback exception:");
+                    Exception? e = re;
+                    while (e != null)
+                    {
+                        switch (e)
+                        {
+                            case SocketException socketException:
+                                sb.AppendLine($"{nameof(SocketException)}({socketException.SocketErrorCode}) - {e.Message}");
+                                break;
+                            case HttpRequestException requestException:
+                                sb.AppendLine($"{nameof(HttpRequestException)}({requestException.HttpRequestError}) - {e.Message}");
+                                break;
+                            default:
+                                sb.AppendLine($"{e.GetType().Name} - {e.Message}");
+                                break;
+                        }
+
+                        e = e.InnerException;
+                    }
+                    logger.LogError(sb.ToString());
+
+                    throw;
+                }
             }
         }
     }
