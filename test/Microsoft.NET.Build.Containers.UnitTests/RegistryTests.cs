@@ -462,9 +462,9 @@ public class RegistryTests : IDisposable
         }
         else
         {
-            // Does not fall back and throws HttpRequestException.
             try
             {
+                // Does not fall back and throws HttpRequestException.
                 var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
                 Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
             }
