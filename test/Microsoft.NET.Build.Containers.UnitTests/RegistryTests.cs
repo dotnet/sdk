@@ -463,8 +463,17 @@ public class RegistryTests : IDisposable
         else
         {
             // Does not fall back and throws HttpRequestException.
-            var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
-            Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
+            try
+            {
+                var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
+                Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
+            }
+            catch when (!serverIsHttps)
+            {
+                // We're talking https to an http server. The server may respond in a way that triggers
+                // the retry handling in AuthHandshakeMessageHandler which then throws an ApplicationException.
+                await Assert.ThrowsAsync<ApplicationException>(() => getManifest);
+            }
         }
     }
 
