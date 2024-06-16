@@ -132,9 +132,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Initializers from referenced projects and packages -->
       <_ExistingBuildJSModules
         Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(StaticWebAsset.AssetKind)' != 'Publish'" />
+        Condition="'%(StaticWebAsset.SourceId)' != '$(PackageId)' and '%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(StaticWebAsset.AssetKind)' != 'Publish'" />
 
       <_ExistingBuildJSModules
         Include="@(_JSModuleStaticWebAsset)"
