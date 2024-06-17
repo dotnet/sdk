@@ -187,7 +187,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
                     if (response.IsSuccessStatusCode)
                     {
 #if NET
-                                string resultText = @await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                        string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
                         string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 #endif
