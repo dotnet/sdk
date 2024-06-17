@@ -113,11 +113,48 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="_JSModuleStaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
+    <ItemGroup Condition="'@(_JSModuleStaticWebAsset)' != ''">
+      <!-- Append a property 'script-type' so that we include the file on the import map -->
+      <_AddPropertyToInitializers Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>script-type</Name>
+        <Value>module</Value>
+      </_AddPropertyToInitializers>
+
+      <!-- Append a property 'dependency-group' so that we can link and preload the file without using the name -->
+      <_AddPropertyToInitializers Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>dependency-group</Name>
+        <Value>js-initializer</Value>
+      </_AddPropertyToInitializers>
+    </ItemGroup>
+
+    <FilterStaticWebAssetEndpoints Condition="'@(_JSModuleStaticWebAsset)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint);@(_JSModuleStaticWebAssetEndpoint)"
+      Assets="@(_JSModuleStaticWebAsset)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredJSModuleStaticWebAssetEndpoint" />
+      <Output TaskParameter="AssetsWithoutMatchingEndpoints" ItemName="_MissingJSModuleStaticWebAsset" />
+    </FilterStaticWebAssetEndpoints>
+
+    <Error Condition="'@(_MissingJSModuleStaticWebAsset)' != ''"
+      Text="The following JS module files do not have matching endpoints: @(_MissingJSModuleStaticWebAsset->'%(Identity)')" />
+
+    <UpdateStaticWebAssetEndpoints
+      Condition="'@(_AddPropertyToInitializers)' != ''"
+      EndpointsToUpdate="@(_FilteredJSModuleStaticWebAssetEndpoint)"
+      AllEndpoints="@(_FilteredJSModuleStaticWebAssetEndpoint)"
+      Operations="@(_AddPropertyToInitializers)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_FilteredJSModuleStaticWebAssetEndpointWithProperty" />
+    </UpdateStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Remove="@(_JSModuleStaticWebAsset)" />
       <StaticWebAsset Include="@(_JSModuleStaticWebAsset)" />
-      <StaticWebAssetEndpoint Remove="@(_JSModuleStaticWebAssetEndpoint)" />
-      <StaticWebAssetEndpoint Include="@(_JSModuleStaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Remove="@(_FilteredJSModuleStaticWebAssetEndpointWithProperty)" />
+      <StaticWebAssetEndpoint Include="@(_FilteredJSModuleStaticWebAssetEndpointWithProperty)" />
     </ItemGroup>
 
   </Target>
@@ -407,11 +444,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ApplyJsModules>
 
     <ItemGroup>
+      <_AddPropertyToJsModules Include="Append" Condition="'@(_MvcJSModuleEndpoint)' != '' or '@(_ComponentJSModuleEndpoint)' != ''">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>script-type</Name>
+        <Value>module</Value>
+      </_AddPropertyToJsModules>
+    </ItemGroup>
+
+    <UpdateStaticWebAssetEndpoints
+      Condition="'@(_AddPropertyToJsModules)' != ''"
+      EndpointsToUpdate="@(_MvcJSModuleEndpoint);@(_ComponentJSModuleEndpoint)"
+      AllEndpoints="@(_MvcJSModuleEndpoint);@(_ComponentJSModuleEndpoint)"
+      Operations="@(_AddPropertyToJsModules)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_JSModuleEndpointsWithProperty" />
+    </UpdateStaticWebAssetEndpoints>
+
+    <ItemGroup>
       <StaticWebAsset Remove="@(_JsFileModuleStaticWebAsset)" />
       <StaticWebAsset Include="@(_JsFileModuleStaticWebAsset)" />
-
-      <StaticWebAssetEndpoint Include="@(_ComponentJSModuleEndpoint)" />
-      <StaticWebAssetEndpoint Include="@(_MvcJSModuleEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_JSModuleEndpointsWithProperty)" />
 
       <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
       <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />

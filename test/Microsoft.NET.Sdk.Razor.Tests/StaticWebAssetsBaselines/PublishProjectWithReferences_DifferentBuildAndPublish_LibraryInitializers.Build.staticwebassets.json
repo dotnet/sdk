@@ -647,8 +647,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -884,8 +892,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
