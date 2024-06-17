@@ -56,15 +56,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <returns>A boolean value indicating the result of the evaluation.</returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string? faultedMessage, HashSet<string>? referencedVariablesKeys = null)
         {
-            using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new())
-            {
-                EngineConfig cfg = new(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
-                return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys, true);
-            }
+            using MemoryStream ms = new(Encoding.UTF8.GetBytes(text));
+            using MemoryStream res = new();
+            EngineConfig cfg = new(logger, variables);
+            IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+            int len = (int)ms.Length;
+            int pos = 0;
+            return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys, true);
         }
 
         /// <summary>
@@ -84,16 +82,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             out string? evaluableExpressionError,
             HashSet<string> referencedVariablesKeys)
         {
-            using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new())
-            {
-                EngineConfig cfg = new(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
+            using MemoryStream ms = new(Encoding.UTF8.GetBytes(text));
+            using MemoryStream res = new();
+            EngineConfig cfg = new(logger, variables);
+            IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+            int len = (int)ms.Length;
+            int pos = 0;
 
-                return GetEvaluableExpression(state, ref len, ref pos, out evaluableExpressionError, referencedVariablesKeys);
-            }
+            return GetEvaluableExpression(state, ref len, ref pos, out evaluableExpressionError, referencedVariablesKeys);
         }
 
         protected static int Compare(object? left, object? right)
