@@ -254,8 +254,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 (PackageSource Source, IEnumerable<IPackageSearchMetadata>? FoundPackages)[] foundPackagesBySource =
                     await Task.WhenAll(
                         packageSources.Select(source =>
-                            Task.Run(() => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, cancellationToken))))
-                              ;
+                            Task.Run(() => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, cancellationToken))));
 
                 if (!foundPackagesBySource.Where(result => result.FoundPackages != null).Any())
                 {
