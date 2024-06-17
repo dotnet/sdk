@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         // Partial archive extraction
                         if (isZipArchive)
                         {
-                            var zip = new ZipArchive(File.OpenRead(SourceArchive));
+                            using var zip = new ZipArchive(File.OpenRead(SourceArchive));
                             string loc = DestinationDirectory;
                             foreach (var entry in zip.Entries)
                             {

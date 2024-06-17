@@ -6,12 +6,8 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmJsModulesIntegrationTests : BlazorWasmBaselineTests
+    public class WasmJsModulesIntegrationTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public WasmJsModulesIntegrationTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [Fact]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
@@ -20,9 +16,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory);
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -52,9 +47,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "wwwroot", "blazorwasm.lib.module.js"), "console.log('Hello initializer')");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "razorclasslibrary", "wwwroot", "razorclasslibrary.lib.module.js"), "console.log('Hello RCL initializer')");
 
-            var build = new BuildCommand(ProjectDirectory, "blazorhosted");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -87,9 +81,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -139,9 +132,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -213,9 +205,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 </Target>"));
             });
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute("/bl");
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -280,9 +271,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute("/bl");
+            var publish = CreatePublishCommand(ProjectDirectory, "blazorhosted");
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();

@@ -21,6 +21,11 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
+  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
+    <SkipBuildingInstallers>true</SkipBuildingInstallers>
+    <PgoTerm>-pgo</PgoTerm>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Latest</LangVersion>
@@ -31,6 +36,7 @@
     <IsShippingPackage>false</IsShippingPackage>
     <SdkTargetFramework>net9.0</SdkTargetFramework>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 
     <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
          may target a lower version of .NET -->

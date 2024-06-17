@@ -72,6 +72,11 @@
         <target state="translated">Сбой обновления рабочей нагрузки: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Версия рабочей нагрузки {0} не найдена.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public IReadOnlyList<IAssemblySymbol?> LoadAssembliesFromArchive(string archivePath, IReadOnlyList<string> relativePaths)
         {
             using FileStream stream = File.OpenRead(archivePath);
-            ZipArchive zipFile = new(stream);
+            using ZipArchive zipFile = new(stream);
 
             // First resolve all assemblies that are passed in and create metadata references out of them. Reference assemblies of the
             // assemblies inside the archive that themselves are part of the archive will be skipped to be resolved, as they are resolved
@@ -130,7 +130,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 }
 
                 using MemoryStream memoryStream = new();
-                entry.Open().CopyTo(memoryStream);
+                using Stream entryStream = entry.Open();
+                entryStream.CopyTo(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
                 string name = Path.GetFileName(relativePaths[i]);

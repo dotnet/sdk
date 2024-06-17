@@ -3,22 +3,17 @@
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests : BlazorWasmBaselineTests
+    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public VanillaWasmTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
-        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
+        [CoreMSBuildOnlyFact]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
             var targetFramework = "net8.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(testInstance);
-            build.WithWorkingDirectory(testInstance.Path);
-            build.Execute("/bl")
+            var build = CreateBuildCommand(testInstance);
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 

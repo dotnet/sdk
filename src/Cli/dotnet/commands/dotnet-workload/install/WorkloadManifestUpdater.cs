@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -220,6 +221,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             try
             {
+#if !DOT_NET_BUILD_FROM_SOURCE
+                if (OperatingSystem.IsWindows())
+                {
+                    //  Also advertise updates for workloads installed by Visual Studio
+                    InstalledWorkloadsCollection installedVSWorkloads = new InstalledWorkloadsCollection();
+                    VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, installedVSWorkloads, _sdkFeatureBand);
+                    installedWorkloads = installedWorkloads.Concat(installedVSWorkloads.AsEnumerable().Select(kvp => new WorkloadId(kvp.Key))).Distinct().ToList();
+                }
+#endif
+
                 var overlayProvider = new TempDirectoryWorkloadManifestProvider(Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString()), _sdkFeatureBand.ToString());
                 var advertisingManifestResolver = _workloadResolver.CreateOverlayResolver(overlayProvider);
                 return _workloadResolver.GetUpdatedWorkloads(advertisingManifestResolver, installedWorkloads);
@@ -340,7 +351,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
                     using PackageArchiveReader packageReader = new(packagePath);
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
-                    var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(_sdkFeatureBand, downloadedPackageVersion.ToString());
+                    if (packageVersion != null && !downloadedPackageVersion.Equals(packageVersion))
+                    {
+                        throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
+                    }
+
+                    var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(band, downloadedPackageVersion.ToString());
                     File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
                 }
 
@@ -510,7 +526,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             if (Uri.TryCreate(rollbackDefinitionFilePath, UriKind.Absolute, out var rollbackUri) && !rollbackUri.IsFile)
             {
-                fileContent = (new HttpClient()).GetStringAsync(rollbackDefinitionFilePath).Result;
+                using HttpClient httpClient = new();
+                fileContent = httpClient.GetStringAsync(rollbackDefinitionFilePath).Result;
             }
             else
             {

@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             foreach (var element in orderedAssets)
             {
                 var asset = assets[element.AssetFile];
-                var fullPathExpression = $"""$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(asset.RelativePath).Replace("/","\\")}))""";
+                var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+                var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/","\\")}'))""";
 
                 itemGroup.Add(new XElement(nameof(StaticWebAssetEndpoint),
                     new XAttribute("Include", element.Route),
