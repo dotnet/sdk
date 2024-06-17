@@ -169,9 +169,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             }
                             else
                             {
-                                RunInNewTransaction(recorder, context =>
+                                RunInNewTransaction(context =>
                                 {
-                                    if (!TryHandleWorkloadUpdateFromVersion(context, recorder, offlineCache, out var manifestUpdates))
+                                    if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifestUpdates))
                                     {
                                         return;
                                     }
@@ -219,11 +219,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
-            RunInNewTransaction(recorder, context =>
+            RunInNewTransaction(context =>
             {
                 if (useWorkloadSets)
                 {
-                    if (!TryInstallWorkloadSet(context, recorder, out manifestsToUpdate))
+                    if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
                     {
                         return;
                     }
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     manifestsToUpdate = CalculateManifestUpdates(recorder);
                 }
 
-                UpdateWorkloads(useRollbackOrHistory, manifestsToUpdate, offlineCache, context, recorder);
+                UpdateWorkloads(useRollbackOrHistory, manifestsToUpdate, offlineCache, context);
             });
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
@@ -245,14 +245,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
         }
 
-        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context, WorkloadHistoryRecorder recorder = null)
+        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context)
         {
-            var workloadIds = GetUpdatableWorkloads();
-            if (recorder is not null)
-            {
-                recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
-            }
-
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
         }
 
@@ -411,24 +405,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
         }
         
-        private void RunInNewTransaction(WorkloadHistoryRecorder recorder, Action<ITransactionContext> a)
+        private void RunInNewTransaction(Action<ITransactionContext> a)
         {
-            var transaction = new CliTransaction();
-            transaction.RollbackStarted = () =>
+            new CliTransaction
             {
-                Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
-                if (recorder != null)
-                {
-                    recorder.HistoryRecord.StateAfterCommand = recorder.HistoryRecord.StateBeforeCommand;
-                }
-            };
-            // Don't hide the original error if roll back fails, but do log the rollback failure
-            transaction.RollbackFailed = ex =>
-            {
-                Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
-            };
-
-            transaction.Run(context => a(context));
+                RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
+                // Don't hide the original error if roll back fails, but do log the rollback failure
+                RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
+            }.Run(context => a(context));
         }
     }
 }

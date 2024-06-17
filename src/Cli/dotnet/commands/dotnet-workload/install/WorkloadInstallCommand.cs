@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 RunInNewTransaction(recorder, context =>
                                 {
-                                    if (!TryHandleWorkloadUpdateFromVersion(context, recorder, offlineCache, out var manifests))
+                                    if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
                                     {
                                         return;
                                     }
@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (useWorkloadSets)
                     {
-                        if (!TryInstallWorkloadSet(context, recorder, out manifestsToUpdate))
+                        if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
                         {
                             return;
                         }
@@ -371,20 +371,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void RunInNewTransaction(WorkloadHistoryRecorder recorder, Action<ITransactionContext> a)
         {
-            var transaction = new CliTransaction()
+            new CliTransaction()
             {
-                RollbackStarted = () =>
-                {
-                    Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
-                    if (recorder != null)
-                    {
-                        recorder.HistoryRecord.StateAfterCommand = recorder.HistoryRecord.StateBeforeCommand;
-                    }
-                },
+                RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
                 // Don't hide the original error if roll back fails, but do log the rollback failure
                 RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
-            };
-            transaction.Run(context => a(context));
+            }.Run(context => a(context));
         }
     }
 }
