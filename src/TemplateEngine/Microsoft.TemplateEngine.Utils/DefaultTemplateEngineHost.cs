@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
             _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
             LoggerFactory = NullLoggerFactory.Instance;
-            Logger = LoggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
+            Logger = LoggerFactory.CreateLogger("Template Engine");
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }

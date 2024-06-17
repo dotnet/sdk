@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             loggerFactory ??= NullLoggerFactory.Instance;
             LoggerFactory = loggerFactory;
-            Logger = LoggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
+            Logger = LoggerFactory.CreateLogger("Template Engine");
 
             WorkingDirectory = Environment.CurrentDirectory;
         }
