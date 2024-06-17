@@ -149,6 +149,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 }
                             }
 
+                            var currentWorkloadInformation = _workloadResolver.GetGlobalWorkloadSetVersion();
+                            if (currentWorkloadInformation.Version is not null)
+                            {
+                                recorder.HistoryRecord.StateBeforeCommand.WorkloadSetVersion = currentWorkloadInformation.Version;
+                            }
+                            else
+                            {
+                                recorder.HistoryRecord.StateBeforeCommand.ManifestVersions = currentWorkloadInformation.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString());
+                            }
+
                             DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                             var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
@@ -164,7 +174,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 RunInNewTransaction(recorder, context =>
                                 {
-                                    if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
+                                    if (!TryHandleWorkloadUpdateFromVersion(context, recorder, offlineCache, out var manifests))
                                     {
                                         return;
                                     }
@@ -176,6 +186,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 Reporter.WriteLine();
                                 Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
                                 Reporter.WriteLine();
+                            }
+
+                            currentWorkloadInformation = _workloadResolver.GetGlobalWorkloadSetVersion();
+                            if (currentWorkloadInformation.Version is not null)
+                            {
+                                recorder.HistoryRecord.StateAfterCommand.WorkloadSetVersion = currentWorkloadInformation.Version;
+                            }
+                            else
+                            {
+                                recorder.HistoryRecord.StateAfterCommand.ManifestVersions = currentWorkloadInformation.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString());
                             }
                         }
                         catch (Exception e)
@@ -245,7 +265,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (useWorkloadSets)
                     {
-                        if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
+                        if (!TryInstallWorkloadSet(context, recorder, out manifestsToUpdate))
                         {
                             return;
                         }

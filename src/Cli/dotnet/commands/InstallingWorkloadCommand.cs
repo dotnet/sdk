@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
         }
 
-        protected bool TryHandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, out IEnumerable<ManifestVersionUpdate> updates)
+        protected bool TryHandleWorkloadUpdateFromVersion(ITransactionContext context, WorkloadHistoryRecorder recorder, DirectoryPath? offlineCache, out IEnumerable<ManifestVersionUpdate> updates)
         {
             // Ensure workload set mode is set to 'workloadset'
             // Do not skip checking the mode first, as setting it triggers
@@ -136,10 +136,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
-            return TryInstallWorkloadSet(context, out updates, throwOnFailure: true);
+            return TryInstallWorkloadSet(context, recorder, out updates, throwOnFailure: true);
         }
 
-        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates, bool throwOnFailure = false)
+        public bool TryInstallWorkloadSet(ITransactionContext context, WorkloadHistoryRecorder recorder, out IEnumerable<ManifestVersionUpdate> updates, bool throwOnFailure = false)
         {
             // Ensure workload set mode is set to 'workloadset
             _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
@@ -150,6 +150,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 // This file isn't created in tests.
                 var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
                 Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, version));
+                recorder.HistoryRecord.StateAfterCommand.WorkloadSetVersion = version;
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {

@@ -163,6 +163,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                                 }
                             }
 
+                            WorkloadSet currentWorkloadInformation = _workloadResolver.GetGlobalWorkloadSetVersion();
+                            if (currentWorkloadInformation.Version is not null)
+                            {
+                                recorder.HistoryRecord.StateBeforeCommand.WorkloadSetVersion = currentWorkloadInformation.Version;
+                            }
+                            else
+                            {
+                                recorder.HistoryRecord.StateBeforeCommand.ManifestVersions = currentWorkloadInformation.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString());
+                            }
+
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                             {
                                 CalculateManifestUpdatesAndUpdateWorkloads(recorder, _includePreviews, offlineCache);
@@ -171,12 +181,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             {
                                 RunInNewTransaction(recorder, context =>
                                 {
-                                    if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifestUpdates))
+                                    if (!TryHandleWorkloadUpdateFromVersion(context, recorder, offlineCache, out var manifestUpdates))
                                     {
                                         return;
                                     }
                                     UpdateWorkloads(false, manifestUpdates, offlineCache, context);
                                 });
+                            }
+
+                            currentWorkloadInformation = _workloadResolver.GetGlobalWorkloadSetVersion();
+                            if (currentWorkloadInformation.Version is not null)
+                            {
+                                recorder.HistoryRecord.StateAfterCommand.WorkloadSetVersion = currentWorkloadInformation.Version;
+                            }
+                            else
+                            {
+                                recorder.HistoryRecord.StateAfterCommand.ManifestVersions = currentWorkloadInformation.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString());
                             }
                         }
                         catch (Exception e)
@@ -223,16 +243,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 if (useWorkloadSets)
                 {
-                    if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
+                    if (!TryInstallWorkloadSet(context, recorder, out manifestsToUpdate))
                     {
                         return;
                     }
                 }
                 else
                 {
-                    manifestsToUpdate = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
-                        !string.IsNullOrWhiteSpace(_fromHistorySpecified) ? _workloadManifestUpdater.CalculateManifestUpdatesFromHistory(_WorkloadHistoryRecord) :
-                        _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                    manifestsToUpdate = CalculateManifestUpdates(recorder);
                 }
 
                 UpdateWorkloads(useRollbackOrHistory, manifestsToUpdate, offlineCache, context, recorder);

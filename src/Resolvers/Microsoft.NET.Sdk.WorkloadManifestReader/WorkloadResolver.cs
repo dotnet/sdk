@@ -118,6 +118,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public WorkloadSet? GetGlobalWorkloadSetVersion() => _manifestProvider.GetCurrentWorkloadVersion();
 
         private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider, bool useInstallStateOnly = false)
         {
@@ -774,6 +775,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly) => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
             public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public WorkloadSet? GetCurrentWorkloadVersion() => new() { Version = "8.0.100" };
         }
     }
 

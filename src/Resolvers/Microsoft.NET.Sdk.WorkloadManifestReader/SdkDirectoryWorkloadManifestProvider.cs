@@ -112,42 +112,63 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             RefreshWorkloadManifests();
         }
 
+        public WorkloadSet? GetCurrentWorkloadVersion()
+        {
+            WorkloadSet? workloadSet = GetWorkloadSet(considerGlobalJson: false);
+            if (workloadSet?.Version is null)
+            {
+                workloadSet = new WorkloadSet();
+                workloadSet.ManifestVersions = _knownManifestIdsAndOrder?.Select(kvp => kvp.Key).ToDictionary(id => new ManifestId(id), id =>
+                {
+                    var (manifestDirectory, manifestFeatureBand) = FallbackForMissingManifest(id);
+                    return (new ManifestVersion(Path.GetFileName(manifestDirectory)), new SdkFeatureBand(manifestFeatureBand));
+                }) ?? workloadSet.ManifestVersions;
+            }
+
+            return workloadSet;
+        }
+
         public void RefreshWorkloadManifests()
+        {
+            _workloadSet = GetWorkloadSet(considerGlobalJson: true);
+        }
+
+        private WorkloadSet? GetWorkloadSet(bool considerGlobalJson)
         {
             //  Reset exception state, we may be refreshing manifests after a missing workload set was installed
             _exceptionToThrow = null;
             _globalJsonWorkloadSetVersion = null;
 
-            _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
             _useManifestsFromInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets();
+            WorkloadSet? workloadSet = null;
 
             if (_workloadSetVersionFromConstructor != null)
             {
                 _useManifestsFromInstallState = false;
-                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
+                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
             }
 
-            if (_workloadSet is null)
+            if (workloadSet is null && considerGlobalJson)
             {
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
                     _useManifestsFromInstallState = false;
-                    if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
+                    if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
-                        return;
+                        return null;
                     }
                 }
             }
 
-            if (_workloadSet is null)
+            if (workloadSet is null)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
                 if (File.Exists(installStateFilePath))
@@ -155,7 +176,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installState = InstallStateContents.FromPath(installStateFilePath);
                     if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                     {
-                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
+                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out workloadSet))
                         {
                             throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                         }
@@ -168,11 +189,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (_workloadSet == null && availableWorkloadSets.Any())
+            if (workloadSet == null && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
-                _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+                workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
+
+            return workloadSet;
         }
 
         void ThrowExceptionIfManifestsNotAvailable()

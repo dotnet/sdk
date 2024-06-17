@@ -22,6 +22,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         string? GetWorkloadVersion();
         IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads);
         WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId);
+        WorkloadSet? GetGlobalWorkloadSetVersion();
 
         /// <summary>
         /// Resolve the pack for this resolver's SDK band.
