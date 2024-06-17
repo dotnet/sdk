@@ -133,7 +133,7 @@ O {1} atual é '{2}'.</target>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="translated">Aviso NETSDK1174: a abreviação de-p para--projeto é preterida. Use --projeto.</target>
+        <target state="translated">Aviso NETSDK1174: a abreviação de -p para --project está deprecada. Use --project.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
