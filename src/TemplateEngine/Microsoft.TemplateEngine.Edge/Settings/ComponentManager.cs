@@ -71,10 +71,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     else
                     {
-                        yield break;
+                        return [];
                     }
                 }
 
+                var components = new List<T>();
                 foreach (Guid id in ids)
                 {
                     if (TryGetComponent(id, out T? component))
@@ -83,9 +84,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         {
                             throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'");
                         }
-                        yield return component;
+
+                        components.Add(component);
                     }
                 }
+
+                return components;
             }
         }
 
