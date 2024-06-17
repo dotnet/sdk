@@ -157,7 +157,43 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
+        private static bool IsTestingPlatformEnabled()
+        {
+            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
+            var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
+            return isTestingPlatformEnabled;
+        }
+
         private static CliCommand ConstructCommand()
+        {
+#if RELEASE
+            return GetVSTestCliCommand();
+#else
+            bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
+            string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
+
+            if (isTestingPlatformEnabled)
+            {
+                return GetTestingPlatformCliCommand();
+            }
+            else
+            {
+                return GetVSTestCliCommand();
+            }
+
+            throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
+#endif
+        }
+
+        private static CliCommand GetTestingPlatformCliCommand()
+        {
+            var command = new TestingPlatformCommand("test");
+            command.SetAction((parseResult) => command.Run(parseResult));
+
+            return command;
+        }
+
+        private static CliCommand GetVSTestCliCommand()
         {
             DocumentedCommand command = new("test", DocsLink, LocalizableStrings.AppFullName)
             {
@@ -196,7 +232,6 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
-
             command.SetAction(TestCommand.Run);
 
             return command;
