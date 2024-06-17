@@ -82,6 +82,11 @@
         <target state="translated">Visual Studio ワークロードのインストール レコードを書き込み中: '{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">新しいマニフェストをインストールするときに {0} を使用するように構成されています。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

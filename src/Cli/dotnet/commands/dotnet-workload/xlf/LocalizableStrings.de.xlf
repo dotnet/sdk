@@ -82,6 +82,11 @@
         <target state="translated">Installationseinträge für Visual Studio Workloads werden geschrieben: „{0}“</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Konfiguriert für die Verwendung {0} beim Installieren neuer Manifeste.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

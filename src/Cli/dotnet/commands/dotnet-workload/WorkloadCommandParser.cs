@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli
 
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.DotnetPath), "default.json")).UseWorkloadSets;
             var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
-            reporter.WriteLine($"Configured to use {workloadSetsString} when installing new manifests.");
+            reporter.WriteLine(string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
             if (installedWorkloads.Count == 0)
             {

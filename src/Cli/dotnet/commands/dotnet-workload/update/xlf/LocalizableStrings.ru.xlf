@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionRequestedNotFound">
         <source>Workload version {0} not found.</source>
-        <target state="new">Workload version {0} not found.</target>
+        <target state="translated">Версия рабочей нагрузки {0} не найдена.</target>
         <note />
       </trans-unit>
     </body>

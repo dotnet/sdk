@@ -82,6 +82,11 @@
         <target state="translated">Запись сведений об установках для рабочих нагрузок Visual Studio: "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Настроено на использование {0} при установке новых манифестов.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

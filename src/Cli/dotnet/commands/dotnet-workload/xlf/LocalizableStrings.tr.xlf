@@ -82,6 +82,11 @@
         <target state="translated">Visual Studio iş yükleri için yükleme yazma: '{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Yeni bildirimler yüklenirken {0} kullanılacak şekilde yapılandırıldı.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

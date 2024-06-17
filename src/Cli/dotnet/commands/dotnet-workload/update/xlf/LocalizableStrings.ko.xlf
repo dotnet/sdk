@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionRequestedNotFound">
         <source>Workload version {0} not found.</source>
-        <target state="new">Workload version {0} not found.</target>
+        <target state="translated">워크로드 버전 {0}을(를) 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
     </body>
