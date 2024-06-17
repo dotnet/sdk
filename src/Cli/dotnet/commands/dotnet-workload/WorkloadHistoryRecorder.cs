@@ -51,13 +51,15 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         private WorkloadHistoryState GetWorkloadState()
         {
+            var currentWorkloadInfo = _workloadResolver.GetGlobalWorkloadSetVersion();
             return new WorkloadHistoryState()
             {
-                ManifestVersions = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests()).ToDictionaryForJson(),
+                ManifestVersions = currentWorkloadInfo.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString()),
                 InstalledWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository()
                                                        .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
                                                        .Select(id => id.ToString())
-                                                       .ToList()
+                                                       .ToList(),
+                WorkloadSetVersion = currentWorkloadInfo.Version
             };
             
         }

@@ -115,15 +115,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public WorkloadSet? GetCurrentWorkloadVersion()
         {
             WorkloadSet? workloadSet = GetWorkloadSet(considerGlobalJson: false);
-            if (workloadSet?.Version is null)
-            {
-                workloadSet = new WorkloadSet();
-                workloadSet.ManifestVersions = _knownManifestIdsAndOrder?.Select(kvp => kvp.Key).ToDictionary(id => new ManifestId(id), id =>
-                {
-                    var (manifestDirectory, manifestFeatureBand) = FallbackForMissingManifest(id);
-                    return (new ManifestVersion(Path.GetFileName(manifestDirectory)), new SdkFeatureBand(manifestFeatureBand));
-                }) ?? workloadSet.ManifestVersions;
-            }
+
+            var tempWorkloadSetInformation = _workloadSet;
+            _workloadSet = null;
+            workloadSet ??= new WorkloadSet();
+            workloadSet.ManifestVersions = GetManifests().ToDictionary(manifest => new ManifestId(manifest.ManifestId), manifest => (new ManifestVersion(manifest.ManifestVersion), new SdkFeatureBand(manifest.ManifestFeatureBand)));
+
+            _workloadSet = tempWorkloadSetInformation;
 
             return workloadSet;
         }
