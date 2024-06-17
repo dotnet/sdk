@@ -84,6 +84,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         }
 
                         historyRecordsWithUnknownAndInitial.Add(historyRecord);
+                        previous = historyRecord;
                     }
 
                     if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > historyRecordsWithUnknownAndInitial.Count)
