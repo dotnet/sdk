@@ -475,48 +475,42 @@ public class RegistryTests : IDisposable
         }
         else
         {
-            if (serverIsHttps)
+            // Does not fall back and throws HttpRequestException with SecureConnectionError.
+            Exception? exception = await Assert.ThrowsAnyAsync<Exception>(() => getManifest);
+            try
             {
-                // Does not fall back and throws HttpRequestException.
-                var requestException = await Assert.ThrowsAsync<HttpRequestException>(() => getManifest);
+                Assert.IsType<HttpRequestException>(exception);
+                HttpRequestException requestException = (HttpRequestException)exception;
                 Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
+
+                // The FallbackToHttpMessageHandler should fall back (if this registry was configured as insecure).
+                Assert.True(FallbackToHttpMessageHandler.ShouldAttemptFallbackToHttp(requestException));
             }
-            else
+            catch
             {
-                // We're using https against an http server.
-                var re = await Assert.ThrowsAnyAsync<HttpRequestException>(() => getManifest);
-                try
+                // Log a message describing the exception.
+                StringBuilder sb = new();
+                sb.AppendLine("Exception is not fallback exception:");
+                while (exception != null)
                 {
-                    // Verify the exception is one that FallbackToHttpMessageHandler would fall back for.
-                    Assert.True(FallbackToHttpMessageHandler.ShouldAttemptFallbackToHttp(re));
-                }
-                catch
-                {
-                    // Log a message describing the exception that would not cause the FallbackToHttpMessageHandler to fall back.
-                    StringBuilder sb = new();
-                    sb.AppendLine("Exception is not fallback exception:");
-                    Exception? e = re;
-                    while (e != null)
+                    switch (exception)
                     {
-                        switch (e)
-                        {
-                            case SocketException socketException:
-                                sb.AppendLine($"{nameof(SocketException)}({socketException.SocketErrorCode}) - {e.Message}");
-                                break;
-                            case HttpRequestException requestException:
-                                sb.AppendLine($"{nameof(HttpRequestException)}({requestException.HttpRequestError}) - {e.Message}");
-                                break;
-                            default:
-                                sb.AppendLine($"{e.GetType().Name} - {e.Message}");
-                                break;
-                        }
-
-                        e = e.InnerException;
+                        case SocketException socketException:
+                            sb.AppendLine($"{nameof(SocketException)}({socketException.SocketErrorCode}) - {exception.Message}");
+                            break;
+                        case HttpRequestException requestException:
+                            sb.AppendLine($"{nameof(HttpRequestException)}({requestException.HttpRequestError}) - {exception.Message}");
+                            break;
+                        default:
+                            sb.AppendLine($"{exception.GetType().Name} - {exception.Message}");
+                            break;
                     }
-                    logger.LogError(sb.ToString());
 
-                    throw;
+                    exception = exception.InnerException;
                 }
+                logger.LogError(sb.ToString());
+
+                throw;
             }
         }
     }
