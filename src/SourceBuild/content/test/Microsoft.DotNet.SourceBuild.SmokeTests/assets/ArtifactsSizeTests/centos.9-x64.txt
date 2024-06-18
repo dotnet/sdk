@@ -65,6 +65,9 @@ Microsoft.CodeAnalysis.CSharp.Scripting.x.y.z.nupkg: 120333
 Microsoft.CodeAnalysis.CSharp.Workspaces.x.y.z.nupkg: 1076810
 Microsoft.CodeAnalysis.CSharp.x.y.z.nupkg: 10672401
 Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.x.y.z.nupkg: 55769
+Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CSharp.x.y.z.nupkg: 19224
+Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.x.y.z.nupkg: 51007
+Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.x.y.z.nupkg: 33450
 Microsoft.CodeAnalysis.Features.x.y.z.nupkg: 6219098
 Microsoft.CodeAnalysis.NetAnalyzers.x.y.z.nupkg: 4600374
 Microsoft.CodeAnalysis.Razor.Tooling.Internal.x.y.z.nupkg: 539710
@@ -187,12 +190,12 @@ Microsoft.Net.Http.Headers.x.y.z.nupkg: 55645
 Microsoft.NET.ILLink.Tasks.x.y.z.nupkg: 661321
 Microsoft.NET.ILLink.x.y.z.nupkg: 271948
 Microsoft.NET.Sdk.Aspire.Manifest-x.y.z.nupkg: 9185
-Microsoft.NET.Sdk.BlazorWebAssembly.x.y.z.nupkg: 46221
+Microsoft.NET.Sdk.BlazorWebAssembly.x.y.z.nupkg: 63526
 Microsoft.NET.Sdk.IL.x.y.z.nupkg: 21157
 Microsoft.NET.Sdk.Publish.x.y.z.nupkg: 447041
 Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.x.y.z.nupkg: 603135
 Microsoft.NET.Sdk.Razor.x.y.z.nupkg: 94941
-Microsoft.NET.Sdk.StaticWebAssets.x.y.z.nupkg: 199091
+Microsoft.NET.Sdk.StaticWebAssets.x.y.z.nupkg: 252732
 Microsoft.NET.Sdk.Web.ProjectSystem.x.y.z.nupkg: 19201
 Microsoft.NET.Sdk.Web.x.y.z.nupkg: 86770
 Microsoft.NET.Sdk.WebAssembly.x.y.z.nupkg: 18159
@@ -1651,6 +1654,7 @@ sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Newtonsoft.Json.dll: 69273
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
+sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Collections.Immutable.dll: 236544
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -1760,6 +1764,7 @@ sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.CSharp.dll: 6423552
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.CSharp.Features.dll: 2065920
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.CSharp.Workspaces.dll: 886272
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.dll: 2946560
+sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll: 12800
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Features.dll: 4928000
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Scripting.dll: 127488
 sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.VisualBasic.dll: 4813824
@@ -1927,6 +1932,7 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Newt
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
+sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Collections.Immutable.dll: 236544
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -1999,6 +2005,7 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Build.Locato
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll: 657408
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.CSharp.Features.dll: 2065920
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.CSharp.Workspaces.dll: 886272
+sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll: 12800
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Features.dll: 4928000
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Scripting.dll: 127488
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Workspaces.dll: 3880960
@@ -2799,7 +2806,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.Bla
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.props: 2308
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets: 3411
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.5_0.targets: 9260
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll: 97792
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll: 147456
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.deps.json: 3595
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll: 14336
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.runtimeconfig.json: 384
@@ -2887,6 +2894,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.Stati
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ContentTypeMappings.props: 48811
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.CrossTargeting.targets: 4439
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets: 18113
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.FingerprintingPatterns.props: 1469
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets: 15080
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.CrossTargeting.targets: 5801
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.targets: 11356
@@ -2894,7 +2902,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.Stati
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.Publish.targets: 14188
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.References.targets: 13108
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.5_0.targets: 25080
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets: 21337
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets: 26930
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets: 14489
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.SingleTargeting.targets: 822
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.targets: 34808
@@ -2925,8 +2933,8 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Browser.targets: 697
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.props: 3729
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.targets: 1563
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/Microsoft.NET.Sdk.Web.Tasks.dll: 7168
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 1900
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 935
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 2733
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 1297
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/Microsoft.NET.Sdk.WebAssembly.Tasks.dll: 5632
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.props: 1258
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.targets: 869
@@ -4390,6 +4398,7 @@ System.Management.x.y.z.nupkg: 280452
 System.Memory.Data.x.y.z.nupkg: 43989
 System.Net.Http.Json.x.y.z.nupkg: 68035
 System.Net.Http.WinHttpHandler.x.y.z.nupkg: 107061
+System.Net.ServerSentEvents.x.y.z.nupkg: 49792
 System.Numerics.Tensors.x.y.z.nupkg: 172987
 System.Reflection.Context.x.y.z.nupkg: 88748
 System.Reflection.Metadata.x.y.z.nupkg: 505092

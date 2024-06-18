@@ -285,4 +285,10 @@ Examples:
   <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
     <value>NAME="VALUE"</value>
   </data>
+  <data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
+      <value>No serializer registered with ID '{0}'</value>
+  </data>
+  <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
+      <value>No serializer registered with type '{0}'</value>
+  </data>
 </root>

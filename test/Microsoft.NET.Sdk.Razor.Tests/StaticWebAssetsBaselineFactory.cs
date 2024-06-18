@@ -23,10 +23,15 @@ public partial class StaticWebAssetsBaselineFactory
     [GeneratedRegex("""(?:#\[\.{fingerprint=[0123456789abcdefghijklmnopqrstuvwxyz]{10}\}](\?|\!)?)""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex EmbeddedFingerprintExpression();
 
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.lib\.module\.js)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex JSInitializerRegex();
+
+
     private static IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements = new List<(Regex expression, string replacement)>
     {
         (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
         (ScopedAppBundleRegex(),"$1__fingerprint__$3$4"),
+        (JSInitializerRegex(), "$1__fingerprint__$3$4"),
         (EmbeddedFingerprintExpression(), "#[.{fingerprint=__fingerprint__}]$1"),
         (FingerprintedSiteCssRegex(), "fingerprint-site$1__fingerprint__$3$4"),
     };

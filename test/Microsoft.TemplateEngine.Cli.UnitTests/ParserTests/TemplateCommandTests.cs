@@ -13,7 +13,6 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
-    [UsesVerify]
     public class TemplateCommandTests
     {
         [Fact]
