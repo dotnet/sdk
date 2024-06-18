@@ -141,9 +141,6 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates, bool throwOnFailure = false)
         {
-            // Ensure workload set mode is set to 'workloadset
-            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
             {

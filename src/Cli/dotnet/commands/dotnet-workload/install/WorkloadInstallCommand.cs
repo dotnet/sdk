@@ -106,8 +106,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         var existingWorkloads = GetInstalledWorkloads(false);
                         var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                        var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
-                        PrintDownloadLink(packageUrls);
+                        DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
                     }
                     catch (Exception e)
                     {

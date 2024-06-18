@@ -462,7 +462,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var installer = new MockPackWorkloadInstaller(failingWorkload)
+            var installer = new MockPackWorkloadInstaller(failingWorkload: failingWorkload)
             {
                 WorkloadResolver = workloadResolver
             };
