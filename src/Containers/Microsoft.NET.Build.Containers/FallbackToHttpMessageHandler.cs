@@ -46,22 +46,23 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
             }
             catch (HttpRequestException re) when (canFallback && ShouldAttemptFallbackToHttp(re))
             {
+                string uri = request.RequestUri.ToString();
                 try
                 {
                     // Try falling back.
-                    _logger.LogTrace("Attempt to fall back to http for {uri}.", request.RequestUri);
+                    _logger.LogTrace("Attempt to fall back to http for {uri}.", uri);
                     FallbackToHttp(request);
                     HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Fall back was successful. Use http for all new requests.
-                    _logger.LogTrace("Fall back to http for {uri} was successful.", request.RequestUri);
+                    _logger.LogTrace("Fall back to http for {uri} was successful.", uri);
                     _fallbackToHttp = true;
 
                     return response;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogInformation(ex, "Fall back to http for {uri} failed with message \"{message}\".", request.RequestUri, ex.Message);
+                    _logger.LogInformation(ex, "Fall back to http for {uri} failed with message \"{message}\".", uri, ex.Message);
                 }
 
                 // Falling back didn't work, throw original exception.
