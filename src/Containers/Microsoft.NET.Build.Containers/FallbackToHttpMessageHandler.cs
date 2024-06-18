@@ -14,12 +14,14 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
 {
     private readonly string _host;
     private readonly int _port;
+    private readonly ILogger _logger;
     private bool _fallbackToHttp;
 
     public FallbackToHttpMessageHandler(string host, int port, HttpMessageHandler innerHandler, ILogger logger) : base(innerHandler)
     {
         _host = host;
         _port = port;
+        _logger = logger;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -47,16 +49,20 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
                 try
                 {
                     // Try falling back.
+                    _logger.LogTrace("Attempt to fall back to http for {uri}.", request.RequestUri);
                     FallbackToHttp(request);
                     HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Fall back was successful. Use http for all new requests.
+                    _logger.LogTrace("Fall back to http for {uri} was successful.", request.RequestUri);
                     _fallbackToHttp = true;
 
                     return response;
                 }
-                catch
-                { }
+                catch (Exception ex)
+                {
+                    _logger.LogInformation(ex, "Fall back to http for {uri} failed with message \"{message}\".", request.RequestUri, ex.Message);
+                }
 
                 // Falling back didn't work, throw original exception.
                 throw;
