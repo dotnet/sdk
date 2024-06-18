@@ -43,6 +43,7 @@ try {
   --azdev-pat $AzdoToken `
   --bar-uri $MaestroApiEndPoint `
   --password $MaestroToken `
+  --ci `
 	@optionalParams
 
   if ($LastExitCode -ne 0) {

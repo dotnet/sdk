@@ -29,7 +29,7 @@ public class ApplyCompressionNegotiation : Task
             .ToDictionary(g => g.Key, g => g.ToList());
 
         var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
-        var updatedEndpoints = new List<StaticWebAssetEndpoint>();
+        var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
 
         var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
 
@@ -93,6 +93,10 @@ public class ApplyCompressionNegotiation : Task
 
                 foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
                 {
+                    if (!IsCompatible(compressedEndpoint, relatedEndpointCandidate))
+                    {
+                        continue;
+                    }
                     Log.LogMessage(MessageImportance.Low, "Processing related endpoint '{0}'", relatedEndpointCandidate.Route);
                     var encodingSelector = new StaticWebAssetEndpointSelector
                     {
@@ -137,7 +141,13 @@ public class ApplyCompressionNegotiation : Task
         }
 
         // Add the preserved endpoints to the list of updated endpoints.
-        updatedEndpoints.AddRange(preservedEndpoints.Values);
+        foreach (var preservedEndpoint in preservedEndpoints.Values)
+        {
+            if (!updatedEndpoints.Contains(preservedEndpoint))
+            {
+                updatedEndpoints.Add(preservedEndpoint);
+            }
+        }
 
         // Before we return the updated endpoints we need to capture any other endpoint whose asset is not associated
         // with the compressed asset. This is because we are going to remove the endpoints from the associated item group
@@ -179,13 +189,23 @@ public class ApplyCompressionNegotiation : Task
                 {
                     Log.LogMessage(MessageImportance.Low, "    Adding endpoint '{0}'", endpoint.AssetFile);
                 }
-                updatedEndpoints.AddRange(endpoints);
+                foreach (var endpoint in endpoints)
+                {
+                    updatedEndpoints.Add(endpoint);
+                }
             }
         }
 
-        UpdatedEndpoints = updatedEndpoints.Select(e => e.ToTaskItem()).ToArray();
+        UpdatedEndpoints = updatedEndpoints.Distinct().Select(e => e.ToTaskItem()).ToArray();
 
         return true;
+    }
+
+    private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
+    {
+        var compressedFingerprint = compressedEndpoint.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
+        var relatedFingerprint = relatedEndpointCandidate.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
+        return string.Equals(compressedFingerprint?.Value, relatedFingerprint?.Value, StringComparison.Ordinal);
     }
 
     private void ApplyCompressedEndpointHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint compressedEndpoint, string relatedEndpointCandidateRoute)
