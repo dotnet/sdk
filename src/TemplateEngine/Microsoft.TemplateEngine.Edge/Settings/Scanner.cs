@@ -276,10 +276,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 #if NET
                     if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        using (Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file))
-                        {
-                            assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
-                        }
+                        using Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file);
+                        assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
                     }
 #else
                     if (file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)

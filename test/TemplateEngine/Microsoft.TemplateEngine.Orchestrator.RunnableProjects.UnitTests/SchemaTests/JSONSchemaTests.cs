@@ -21,22 +21,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
         [InlineData(@"SchemaTests/ConditionalParametersTest.json")]
         public void IsJSONSchemaValid(string testFile)
         {
-            using (TextReader schemaFileStream = File.OpenText(@"SchemaTests/template.json"))
-            {
-                JSchema schema = JSchema.Load(new JsonTextReader(schemaFileStream));
-                using (TextReader jsonFileStream = File.OpenText(testFile))
-                {
-                    using (JsonTextReader jsonReader = new JsonTextReader(jsonFileStream))
-                    {
-                        JObject templateConfig = (JObject)JToken.ReadFrom(jsonReader);
-                        Assert.True(
-                            templateConfig.IsValid(schema, out IList<string> errors),
-                            "The JSON file is not valid against the schema" +
-                            Environment.NewLine +
-                            string.Join(Environment.NewLine, errors));
-                    }
-                }
-            }
+            using TextReader schemaFileStream = File.OpenText(@"SchemaTests/template.json");
+            JSchema schema = JSchema.Load(new JsonTextReader(schemaFileStream));
+            using TextReader jsonFileStream = File.OpenText(testFile);
+            using JsonTextReader jsonReader = new JsonTextReader(jsonFileStream);
+            JObject templateConfig = (JObject)JToken.ReadFrom(jsonReader);
+            Assert.True(
+                templateConfig.IsValid(schema, out IList<string> errors),
+                "The JSON file is not valid against the schema" +
+                Environment.NewLine +
+                string.Join(Environment.NewLine, errors));
         }
 
         private static readonly string JsonLocation = Path.Combine(".template.config", "template.json");

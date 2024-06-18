@@ -75,10 +75,21 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
 
-                return ids.Select(id => TryGetComponent(id, out T? component) ?
-                    component ?? throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'") :
-                    null)
-                    .OfType<T>();
+                var components = new List<T>();
+                foreach (Guid id in ids)
+                {
+                    if (TryGetComponent(id, out T? component))
+                    {
+                        if (component is null)
+                        {
+                            throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'");
+                        }
+
+                        components.Add(component);
+                    }
+                }
+
+                return components;
             }
         }
 

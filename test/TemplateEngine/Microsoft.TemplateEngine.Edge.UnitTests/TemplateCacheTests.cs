@@ -392,23 +392,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
         {
-            using (var fileStream = fileSystem.OpenRead(path))
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return JObject.Load(jsonReader);
-            }
+            using var fileStream = fileSystem.OpenRead(path);
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return JObject.Load(jsonReader);
         }
 
         private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
         {
-            using (var fileStream = fileSystem.CreateFile(path))
-            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
-            using (var jsonWriter = new JsonTextWriter(textWriter))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(jsonWriter, obj);
-            }
+            using var fileStream = fileSystem.CreateFile(path);
+            using var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            using var jsonWriter = new JsonTextWriter(textWriter);
+            var serializer = new JsonSerializer();
+            serializer.Serialize(jsonWriter, obj);
         }
     }
 }

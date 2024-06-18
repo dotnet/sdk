@@ -30,12 +30,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             RunInternal(sourceDir, targetDir, spec);
@@ -50,12 +48,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             return GetFileChangesInternal(sourceDir, targetDir, spec);
@@ -242,11 +238,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                             {
                                 string targetPath = CreateTargetDir(_fileSystem, sourceRel, targetDir, spec);
 
-                                using (Stream sourceStream = file.OpenRead())
-                                using (Stream targetStream = _fileSystem.CreateFile(targetPath))
-                                {
-                                    sourceStream.CopyTo(targetStream);
-                                }
+                                using Stream sourceStream = file.OpenRead();
+                                using Stream targetStream = _fileSystem.CreateFile(targetPath);
+                                sourceStream.CopyTo(targetStream);
                             }
                         }
 
@@ -275,23 +269,21 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             try
             {
-                using (Stream source = sourceFile.OpenRead())
-                using (Stream target = _fileSystem.CreateFile(targetPath))
+                using Stream source = sourceFile.OpenRead();
+                using Stream target = _fileSystem.CreateFile(targetPath);
+                if (!customBufferSize)
                 {
-                    if (!customBufferSize)
+                    runner.Run(source, target);
+                }
+                else
+                {
+                    if (!customFlushThreshold)
                     {
-                        runner.Run(source, target);
+                        runner.Run(source, target, bufferSize);
                     }
                     else
                     {
-                        if (!customFlushThreshold)
-                        {
-                            runner.Run(source, target, bufferSize);
-                        }
-                        else
-                        {
-                            runner.Run(source, target, bufferSize, flushThreshold);
-                        }
+                        runner.Run(source, target, bufferSize, flushThreshold);
                     }
                 }
             }

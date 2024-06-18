@@ -21,15 +21,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new MemoryStream())
-            {
-                EngineConfig cfg = new EngineConfig(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
-                return Evaluate(state, ref len, ref pos, out bool faulted);
-            }
+            using MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text));
+            using MemoryStream res = new MemoryStream();
+            EngineConfig cfg = new EngineConfig(logger, variables);
+            IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+            int len = (int)ms.Length;
+            int pos = 0;
+            return Evaluate(state, ref len, ref pos, out bool faulted);
         }
 
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
