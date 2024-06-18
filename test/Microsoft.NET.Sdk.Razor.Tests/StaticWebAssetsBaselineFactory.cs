@@ -145,6 +145,7 @@ public partial class StaticWebAssetsBaselineFactory
                 {
                     case "fingerprint":
                         property.Value = "__fingerprint__";
+                        endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
                         break;
                     case "integrity":
                         property.Value = "__integrity__";
@@ -153,7 +154,6 @@ public partial class StaticWebAssetsBaselineFactory
                         break;
                 }
 
-                endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
                 ReplaceFileName(endpoint.Route);
             }
 

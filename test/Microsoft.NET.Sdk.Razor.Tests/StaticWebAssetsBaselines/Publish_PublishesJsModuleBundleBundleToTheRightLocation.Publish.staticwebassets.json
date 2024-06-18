@@ -634,8 +634,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -689,6 +697,10 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
         },
@@ -699,6 +711,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.lib.module.js"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -1282,8 +1298,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -1337,6 +1361,10 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
         },
@@ -1347,6 +1375,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.lib.module.js"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -1999,8 +2031,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -2036,6 +2076,10 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "fingerprint",
           "Value": "__fingerprint__"
         },
@@ -2046,6 +2090,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.lib.module.js"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     }
