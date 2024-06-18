@@ -33,13 +33,32 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [Fact]
+        public void It_does_not_pass_excess_references_to_the_compiler()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = tfm,
+                IsExe = true,
+                ProjectSdk = "Microsoft.NET.Sdk"
+            };
+
+            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFramework(tfm);
+
+            var getValues = new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm);
+            getValues.DependsOnTargets = "Compile;CoreGenerateSatelliteAssemblies";
+            getValues.Execute().Should().Pass();
+
+            getValues.GetValues().Count.Should().Be(1);
+        }
+
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
         [WindowsOnlyTheory]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", true, "x86")]
         [InlineData("SQLite/3.13.0", false, "x86")]
         [InlineData("SQLite/3.13.0", true, "x86")]
-
         public void PlatformTargetInferredCorrectly(string packageToReference, bool referencePlatformPackage, string expectedPlatform)
         {
             var testProject = new TestProject()
