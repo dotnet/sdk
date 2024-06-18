@@ -1766,7 +1766,7 @@
         },
         {
           "Name": "label",
-          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
+          "Value": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },
