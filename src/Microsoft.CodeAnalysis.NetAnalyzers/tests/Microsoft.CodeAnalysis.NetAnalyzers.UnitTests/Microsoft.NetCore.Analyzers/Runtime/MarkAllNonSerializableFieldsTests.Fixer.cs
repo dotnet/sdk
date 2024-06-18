@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
@@ -65,7 +65,7 @@ End Class");
         [Fact]
         public async Task CA2235WithNonSerializableFieldsWithFix1Async()
         {
-            await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, XUnitVerifier>
+            await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
                 TestCode = @"
 using System;
@@ -90,7 +90,7 @@ public class CA2235WithNonPublicNonSerializableFields
                 CodeActionIndex = 1,
             }.RunAsync();
 
-            await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, XUnitVerifier>
+            await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
                 TestCode = @"
 Imports System
@@ -163,7 +163,7 @@ End Class");
         [Fact]
         public async Task CA2235WithNonSerializableFieldsWithFix3Async()
         {
-            await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, XUnitVerifier>
+            await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
                 TestCode = @"
 using System;
@@ -192,7 +192,7 @@ public class CA2235WithNonPublicNonSerializableFields
                 CodeActionIndex = 1,
             }.RunAsync();
 
-            await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, XUnitVerifier>
+            await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
                 TestCode = @"
 Imports System
