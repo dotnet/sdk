@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeHaveAPackageReferenceWithAliases(ITestOutputHelper log) : base(log)
         { }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -90,12 +90,12 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset)
                 .WithWorkingDirectory(testAsset.Path);
-            buildCommand.Execute("-bl")
+            buildCommand.Execute("-bl:c:\test")
                 .Should()
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void CanBuildProjectWithAPackageReferenceWithMultipleAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
