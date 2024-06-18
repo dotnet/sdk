@@ -479,6 +479,14 @@ public class RegistryTests : IDisposable
             Exception? exception = await Assert.ThrowsAnyAsync<Exception>(() => getManifest);
             try
             {
+                // The AuthHandshakeMessageHandler may reach its retry limit and throw an ApplicationException.
+                if (exception is ApplicationException)
+                {
+                    // Find the exception for the first failed attempt.
+                    exception = (exception.InnerException as AggregateException)?.InnerExceptions.FirstOrDefault();
+                    Assert.NotNull(exception);
+                }
+
                 Assert.IsType<HttpRequestException>(exception);
                 HttpRequestException requestException = (HttpRequestException)exception;
                 Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);

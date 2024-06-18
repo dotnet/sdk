@@ -333,6 +333,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         int retryCount = 0;
+        List<Exception>? requestExceptions = null;
 
         while (retryCount < MaxRequestRetries)
         {
@@ -364,6 +365,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
+                requestExceptions ??= new();
+                requestExceptions.Add(e);
+
                 retryCount += 1;
                 _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
@@ -374,7 +378,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
         }
 
-        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)));
+        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)), new AggregateException(requestExceptions!));
     }
 
     [GeneratedRegex("(?<key>\\w+)=\"(?<value>[^\"]*)\"(?:,|$)")]
