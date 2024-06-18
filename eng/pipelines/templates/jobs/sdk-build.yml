@@ -113,7 +113,6 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
