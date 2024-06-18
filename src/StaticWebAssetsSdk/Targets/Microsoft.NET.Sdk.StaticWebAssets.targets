@@ -117,6 +117,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateExternallyDefinedStaticWebAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 

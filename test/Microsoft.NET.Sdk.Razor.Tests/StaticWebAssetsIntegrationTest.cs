@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -421,6 +422,97 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Bin folder manifest does not exist
             new FileInfo(finalPath).Should().NotExist();
+        }
+
+        [Fact]
+        public void Publish_WithExternalProjectReference_UpdatesAssets()
+        {
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((name, project) =>
+                {
+                    if (Path.GetFileName(name).Equals("ClassLibrary.csproj", StringComparison.Ordinal))
+                    {
+                        project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk";
+                        project.Root.AddFirst(new XElement("Import", new XAttribute("Project", "ExternalStaticAssets.targets")));
+
+                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.Razor.Tests.content.ExternalStaticAssets.targets");
+                        using var destination = File.OpenWrite(Path.Combine(Path.GetDirectoryName(name), "ExternalStaticAssets.targets"));
+                        stream.CopyTo(destination);
+                    }
+                });
+
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
+            ExecuteCommand(publish).Should().Pass();
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the build manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(publishPath, "ComponentApp.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().NotExist();
+
+            // GenerateStaticWebAssetsManifest should generate the publish manifest file.
+            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
+            AssertManifest(publishManifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                publishManifest,
+                publishPath,
+                intermediateOutputPath);
+        }
+
+        [Fact]
+        public void Build_WithExternalProjectReference_UpdatesAssets()
+        {
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((name, project) =>
+                {
+                    if (Path.GetFileName(name).Equals("ClassLibrary.csproj", StringComparison.Ordinal))
+                    {
+                        project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk";
+                        project.Root.AddFirst(new XElement("Import", new XAttribute("Project", "ExternalStaticAssets.targets")));
+
+                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.Razor.Tests.content.ExternalStaticAssets.targets");
+                        using var destination = File.OpenWrite(Path.Combine(Path.GetDirectoryName(name), "ExternalStaticAssets.targets"));
+                        stream.CopyTo(destination);
+                    }
+
+                    if (Path.GetFileName(name).Equals("AppWithP2PReference.csproj", StringComparison.Ordinal))
+                    {
+                        project.Root.AddFirst(new XElement("ItemGroup",
+                            new XElement(
+                                "StaticWebAssetFingerprintInferenceExpression",
+                                new XAttribute("Include", "Version"),
+                                new XAttribute("Pattern", ".*(?<fingerprint>v\\d{1})\\.js$"))));
+                    }
+                });
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var buildPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the build manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadBuildManifest());
+
+            AssertBuildAssets(
+                manifest,
+                buildPath,
+                intermediateOutputPath);
         }
     }
 
