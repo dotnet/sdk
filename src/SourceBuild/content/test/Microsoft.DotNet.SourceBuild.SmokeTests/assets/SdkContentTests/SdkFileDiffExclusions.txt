@@ -77,9 +77,14 @@
 
 ./sdk/x.y.z/*/dump/|msft
 
+# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/4016
+
 # https://github.com/dotnet/source-build/issues/4079
 ./sdk/x.y.z/*/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll|sb
 ./sdk/x.y.z/*/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll|sb
 ./sdk/x.y.z/*/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll|sb
 ./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll|sb
 ./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll|sb
+
+# https://github.com/dotnet/source-build/issues/4351
+./sdk/x.y.z/*/Microsoft.Build.NuGetSdkResolver.resources.dll|msft
