@@ -181,7 +181,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' and '$(TargetFrameworkIdentifier)' == '.NETStandard'" >
     <PropertyGroup>
       <!-- Default the check to true, but allow developers to turn the warning off. -->
-      <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == '' and '$(OutputType)' == 'Library'">true</CheckNotRecommendedTargetFramework>
+      <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == ''" >true</CheckNotRecommendedTargetFramework>
     </PropertyGroup>
 
     <NETSdkWarning Condition="'$(CheckNotRecommendedTargetFramework)' == 'true'"
