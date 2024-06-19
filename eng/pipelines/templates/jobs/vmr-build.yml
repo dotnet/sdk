@@ -406,7 +406,7 @@ jobs:
 
           # Only use Docker when a container is specified
           if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+            docker run --rm $dockerVolumeArgs -e MSBUILDENSURESTDOUTFORTASKPROCESSES=1 -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           else
             cd $(sourcesPath)
             ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
