@@ -71,7 +71,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/3471")]
+        [Theory]
         [InlineData(false, false)]
         [InlineData(false, true)]
         [InlineData(true, false)]

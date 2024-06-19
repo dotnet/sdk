@@ -609,7 +609,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Linux, Skip = "https://github.com/dotnet/sdk/issues/22865")]
+        [PlatformSpecificFact(TestPlatforms.Linux)]
         public void ItShouldShowWarningMessageOnCollectCodeCoverageThatProfilerWasNotInitialized()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");

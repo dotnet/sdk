@@ -2125,7 +2125,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/67019")]
+        [Fact]
         public void TestInterfaceWithOperatorGeneration()
         {
             RunTest(original: """
@@ -2149,7 +2149,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                  includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/67019")]
+        [Fact]
         public void TestInterfaceWithCheckedOperatorGeneration()
         {
             RunTest(original: """

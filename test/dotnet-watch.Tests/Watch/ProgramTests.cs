@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux, Skip = "https://github.com/dotnet/aspnetcore/issues/23394")]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public async Task ConsoleCancelKey()
         {
             var console = new TestConsole(Logger);

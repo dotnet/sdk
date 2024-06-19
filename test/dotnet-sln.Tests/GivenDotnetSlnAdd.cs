@@ -974,7 +974,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/522")]
+        [Fact]
         public void WhenPassedAnUnknownProjectTypeItFails()
         {
             var projectDirectory = _testAssetsManager

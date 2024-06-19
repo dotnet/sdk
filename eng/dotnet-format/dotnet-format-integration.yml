@@ -14,14 +14,13 @@ parameters:
     _branchName: "main"
     _sha: "a3bb37003aeccad012a6e7dd220977599e8b8e65"
     _useParentSdk: 0
-  # Formatting sdk fails: https://github.com/dotnet/sdk/issues/41060
-  # - Name: sdk
-  #   _repo: "https://github.com/dotnet/sdk"
-  #   _repoName: "dotnet/sdk"
-  #   _targetSolution: "sdk.sln"
-  #   _branchName: "main"
-  #   _sha: "be25db95c376bffd508a023399ddd34392fe6458"
-  #   _useParentSdk: 0
+  - Name: sdk
+    _repo: "https://github.com/dotnet/sdk"
+    _repoName: "dotnet/sdk"
+    _targetSolution: "sdk.sln"
+    _branchName: "main"
+    _sha: "be25db95c376bffd508a023399ddd34392fe6458"
+    _useParentSdk: 0
   - Name: project_system
     _repo: "https://github.com/dotnet/project-system"
     _repoName: "dotnet/project-system"
