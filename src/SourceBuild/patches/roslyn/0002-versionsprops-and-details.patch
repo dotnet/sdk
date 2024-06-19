@@ -1,4 +1,4 @@
-From 18ed28cd149577af2df39d970273bab606b9e3a1 Mon Sep 17 00:00:00 2001
+From 642134215a2c7285e958dfc8aa6fb058a836c6da Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Wed, 19 Jun 2024 10:32:23 +0000
 Subject: [PATCH] Correctly define versions for runtime dependencies
@@ -18,10 +18,11 @@ https://github.com/dotnet/sdk/pull/41616
 Backport PR: https://github.com/dotnet/roslyn/pull/74060
 
 ---
- eng/Directory.Packages.props | 4 ++--
- eng/Version.Details.xml      | 8 ++++++++
- eng/Versions.props           | 2 ++
- 3 files changed, 12 insertions(+), 2 deletions(-)
+ eng/Directory.Packages.props                              | 4 ++--
+ eng/Version.Details.xml                                   | 8 ++++++++
+ eng/Versions.props                                        | 2 ++
+ .../Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj     | 2 +-
+ 4 files changed, 13 insertions(+), 3 deletions(-)
 
 diff --git a/eng/Directory.Packages.props b/eng/Directory.Packages.props
 index 83ab7a5601433..e93b49fa24c55 100644
@@ -77,3 +78,16 @@ index 0f39e2822c158..1f9c7b8d08ec2 100644
      <SystemIOPipelinesVersion>8.0.0</SystemIOPipelinesVersion>
      <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
      <SystemResourcesExtensionsVersion>8.0.0</SystemResourcesExtensionsVersion>
+diff --git a/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj b/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
+index 8a011c5f82948..4310078bf9b32 100644
+--- a/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
++++ b/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
+@@ -27,7 +27,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionVersion)" />
++    <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
+   <ItemGroup>
