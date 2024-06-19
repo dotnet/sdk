@@ -178,7 +178,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     Trigger a warning if targeting a lower version of .NET Standard than is recommended
   -->
   <Target Name="_CheckForNotRecommendedNETStandardVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'">
+          Condition="'$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' and '$(TargetFrameworkIdentifier)' == '.NETStandard'" >
+    <PropertyGroup>
+      <!-- Default the check to true, but allow developers to turn the warning off. -->
+      <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == '' and '$(OutputType)' == 'Library'">true</CheckNotRecommendedTargetFramework>
+    </PropertyGroup>
+
+    <NETSdkWarning Condition="'$(CheckNotRecommendedTargetFramework)' == 'true'"
+          ResourceName="TargetFrameworkIsNotRecommended"
+          FormatArguments="https://aka.ms/dotnet/dotnet-standard-guidance" />
   </Target>
 
   <!--

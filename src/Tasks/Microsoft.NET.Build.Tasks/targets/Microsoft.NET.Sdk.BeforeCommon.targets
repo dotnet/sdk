@@ -84,9 +84,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for EOL frameworks -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.EolTargetFrameworks.targets" />
 
-  <!-- Checks for Not Recommended frameworks -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.NETStandardTargetFrameworks.targets" />
-
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
