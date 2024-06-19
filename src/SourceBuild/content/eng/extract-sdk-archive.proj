@@ -8,13 +8,20 @@
           BeforeTargets="AfterBuild"
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Inputs="$(SdkTarballPath)"
-          Outputs="$(DotNetSdkExtractDir)">
+          Outputs="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete">
     <MakeDir Directories="$(DotNetSdkExtractDir)" />
+
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
           Command="tar -xzf $(SdkTarballPath) -C $(DotNetSdkExtractDir)" />
     <Unzip Condition="'$(ArchiveExtension)' == '.zip'"
            SourceFiles="$(SdkTarballPath)"
            DestinationFolder="$(DotNetSdkExtractDir)" />
+
+    <Message Text="Extracted SDK archive file to '$(DotNetSdkExtractDir)'." Importance="high"  />
+
+    <Touch Files="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
   </Target>
 
 </Project>
