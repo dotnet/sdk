@@ -17,7 +17,7 @@
            SourceFiles="$(SdkTarballPath)"
            DestinationFolder="$(DotNetSdkExtractDir)" />
 
-    <Message Text="Extracted SDK archive file to '$(DotNetSdkExtractDir)'." Importance="high"  />
+    <Message Text="Extracted SDK archive file '$(SdkTarballPath)' to '$(DotNetSdkExtractDir)'." Importance="high" />
 
     <Touch Files="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
