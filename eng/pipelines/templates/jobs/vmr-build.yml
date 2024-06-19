@@ -123,7 +123,7 @@ jobs:
   - name: additionalBuildArgs
     value: ''
   - name: runTestsTimeout
-    value: 60
+    value: 30
 
   - ${{ if parameters.isBuiltFromVmr }}:
     - name: vmrPath
