@@ -145,7 +145,7 @@
     <value>Execute a .NET application.</value>
   </data>
   <data name="HelpDefinition" xml:space="preserve">
-    <value>Show command line help.</value>
+    <value>Opens the reference page in a browser for the specified command.</value>
   </data>
   <data name="HostOptions" xml:space="preserve">
     <value>Host options (passed before the command)</value>
@@ -248,6 +248,9 @@
   </data>
   <data name="SDKDiagnosticsCommandDefinition" xml:space="preserve">
     <value>Enable diagnostic output.</value>
+  </data>
+  <data name="SDKOptionsHelpDefinition" xml:space="preserve">
+    <value>Show command line help.</value>
   </data>
   <data name="RunDotnetCommandHelpForMore" xml:space="preserve">
     <value>Run 'dotnet [command] --help' for more information on a command.</value>

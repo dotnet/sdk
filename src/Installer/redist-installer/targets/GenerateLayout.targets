@@ -202,6 +202,17 @@
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
+      <BundledLayoutPackage Include="MicrosoftDotNetILCompilerPackNupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'">
+        <PackageName>runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
+
+      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
+
       <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
                                  Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
@@ -457,6 +468,11 @@
 
     <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
+          SkipUnchangedFiles="true"
+          />
+
+    <Copy SourceFiles="@(BundledLayoutLibraryPackage)"
+          DestinationFolder="$(RedistLayoutPath)/library-packs"
           SkipUnchangedFiles="true"
           />
 

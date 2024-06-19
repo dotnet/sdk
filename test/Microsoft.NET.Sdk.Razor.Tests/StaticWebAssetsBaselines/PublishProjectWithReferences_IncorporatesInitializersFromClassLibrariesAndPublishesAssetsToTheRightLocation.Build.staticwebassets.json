@@ -689,8 +689,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -926,8 +934,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -2050,7 +2066,7 @@
         },
         {
           "Name": "label",
-          "Value": "ClassLibrary.bundle.scp.css.gz"
+          "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz"
         }
       ]
     },
@@ -2168,7 +2184,7 @@
         },
         {
           "Name": "label",
-          "Value": "ClassLibrary.bundle.scp.css"
+          "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
         }
       ]
     },
@@ -2450,7 +2466,7 @@
         },
         {
           "Name": "label",
-          "Value": "ClassLibrary.bundle.scp.css"
+          "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
         }
       ]
     },
@@ -2643,7 +2659,7 @@
         },
         {
           "Name": "label",
-          "Value": "RazorPackageLibraryDirectDependency.bundle.scp.css"
+          "Value": "_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.bundle.scp.css"
         }
       ]
     },

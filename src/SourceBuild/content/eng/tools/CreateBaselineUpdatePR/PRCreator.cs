@@ -134,7 +134,8 @@ public class PRCreator
                 {
                     if (!parsedFile.Contains(line))
                     {
-                        content = content.Replace(line + "\n", "");
+                        // If the newline character is not present, the line is at the end of the file
+                        content = content.Contains(line + "\n") ? content.Replace(line + "\n", "") : content.Replace(line, "");
                     }
                 }
             }

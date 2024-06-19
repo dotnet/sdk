@@ -225,6 +225,16 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
         <target state="translated">Les arguments suivants ont été ignorés : "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="new">No serializer registered with ID '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="new">No serializer registered with type '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">
         <source>
 
