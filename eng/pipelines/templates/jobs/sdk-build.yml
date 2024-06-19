@@ -113,7 +113,6 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -138,6 +137,7 @@ jobs:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>

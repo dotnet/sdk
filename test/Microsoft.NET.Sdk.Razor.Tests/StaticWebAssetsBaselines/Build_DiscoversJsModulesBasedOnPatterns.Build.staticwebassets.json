@@ -212,6 +212,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -249,6 +253,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -781,6 +789,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -881,6 +893,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
