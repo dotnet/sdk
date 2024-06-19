@@ -32,6 +32,11 @@
         <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadHistoryRecords">
+        <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
+        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
         <target state="translated">Es wurde kein Workload-Update gefunden.</target>

@@ -141,6 +141,9 @@
   <data name="WorkloadHistoryRecordNonIntegerId" xml:space="preserve">
     <value>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</value>
   </data>
+  <data name="NoWorkloadHistoryRecords" xml:space="preserve">
+    <value>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</value>
+  </data>
   <data name="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto" xml:space="preserve">
     <value>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</value>
   </data>

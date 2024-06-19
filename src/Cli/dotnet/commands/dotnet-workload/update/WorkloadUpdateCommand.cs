@@ -65,6 +65,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
                 {
                     var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()).OrderBy(r => r.TimeStarted).ToList();
+                    if (workloadHistoryRecords.Count == 0)
+                    {
+                        throw new GracefulException(LocalizableStrings.NoWorkloadHistoryRecords, isUserError: true);
+                    }
+
                     var historyRecordsWithUnknownAndInitial = new List<WorkloadHistoryRecord>();
                     historyRecordsWithUnknownAndInitial.Add(new WorkloadHistoryRecord()
                     {
