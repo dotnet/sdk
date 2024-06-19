@@ -24,7 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Remove="Microsoft.NETCore.App" />
     <Content Include="content\**">
       <PackagePath>content</PackagePath>
     </Content>
