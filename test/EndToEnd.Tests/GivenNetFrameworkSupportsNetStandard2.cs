@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace EndToEnd
+namespace EndToEnd.Tests
 {
     public class GivenNetFrameworkSupportsNetStandard2(ITestOutputHelper log) : SdkTest(log)
     {

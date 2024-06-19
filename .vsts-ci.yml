@@ -45,6 +45,9 @@ variables:
 - name: _signArgument
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
+  # The OfficialBuilder property is set to Microsoft for the official build only.
+  # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
+  # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
