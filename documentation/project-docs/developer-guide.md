@@ -113,6 +113,8 @@ Run the following commands from the root of the repository to setup the test env
 source ./eng/dogfood.sh
 ```
 
+NOTE: If you are running on MacOS you will need to use a `bash` shell rather than the default `zsh`. You can either change your default shell or type `bash` before executing the above command.
+
 Ensure the `dotnet` being used is from the artifacts directory:
 
 ```
