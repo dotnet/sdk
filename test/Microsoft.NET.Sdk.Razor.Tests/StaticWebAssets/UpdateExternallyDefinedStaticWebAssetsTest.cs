@@ -97,7 +97,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "dist", "index.html"), "<html><body></body></html>");
         var assets = new ITaskItem[] {
             new TaskItem(
-                Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"),
+                Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"),
                 new Dictionary<string, string>
                 {
                     ["RelativePath"] = "assets/index-C5tBAdQX.css",
@@ -112,11 +112,11 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
                     ["AssetRole"] = "Primary",
                     ["AssetTraitValue"] = "",
                     ["AssetTraitName"] = "",
-                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"),
+                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"),
                     ["CopyToPublishDirectory"] = "PreserveNewest"
                 }),
             new TaskItem(
-                Path.Combine(AppContext.BaseDirectory, @"dist\index.html"),
+                Path.Combine(AppContext.BaseDirectory, "dist", "index.html"),
                 new Dictionary<string, string>
                 {
                     ["RelativePath"] = "index.html",
@@ -131,7 +131,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
                     ["AssetRole"] = "Primary",
                     ["AssetTraitValue"] = "",
                     ["AssetTraitName"] = "",
-                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, @"dist\index.html"),
+                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "dist", "index.html"),
                     ["CopyToPublishDirectory"] = "PreserveNewest"
                 })
         };
@@ -145,7 +145,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
                     new Dictionary<string, string>
                     {
                         ["Route"] = "/index.html",
-                        ["AssetFile"] = Path.Combine(AppContext.BaseDirectory, @"dist\index.html"),
+                        ["AssetFile"] = Path.Combine(AppContext.BaseDirectory, "dist", "index.html"),
                         ["Selectors"] = "[]",
                         ["ResponseHeaders"] = "[]",
                         ["EndpointProperties"] = "[]"
@@ -162,7 +162,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
 
         task.UpdatedAssets.Should().HaveCount(2);
         task.AssetsWithoutEndpoints.Should().HaveCount(1);
-        task.AssetsWithoutEndpoints[0].ItemSpec.Should().Be(Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"));
+        task.AssetsWithoutEndpoints[0].ItemSpec.Should().Be(Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"));
         task.UpdatedAssets[0].GetMetadata("Fingerprint").Should().NotBeNullOrEmpty();
         task.UpdatedAssets[1].GetMetadata("Fingerprint").Should().NotBeNullOrEmpty();
         task.UpdatedAssets[0].GetMetadata("Integrity").Should().NotBeNullOrEmpty();
@@ -183,7 +183,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "dist", "index.html"), "<html><body></body></html>");
         var assets = new ITaskItem[] {
             new TaskItem(
-                Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"),
+                Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"),
                 new Dictionary<string, string>
                 {
                     ["RelativePath"] = "assets/index-C5tBAdQX.css",
@@ -198,11 +198,11 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
                     ["AssetRole"] = "Primary",
                     ["AssetTraitValue"] = "",
                     ["AssetTraitName"] = "",
-                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"),
+                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"),
                     ["CopyToPublishDirectory"] = "PreserveNewest"
                 }),
             new TaskItem(
-                Path.Combine(AppContext.BaseDirectory, @"dist\index.html"),
+                Path.Combine(AppContext.BaseDirectory, "dist", "index.html"),
                 new Dictionary<string, string>
                 {
                     ["RelativePath"] = "index.html",
@@ -217,7 +217,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
                     ["AssetRole"] = "Primary",
                     ["AssetTraitValue"] = "",
                     ["AssetTraitName"] = "",
-                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, @"dist\index.html"),
+                    ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "dist", "index.html"),
                     ["CopyToPublishDirectory"] = "PreserveNewest"
                 })
         };
