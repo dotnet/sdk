@@ -1,17 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace EndToEnd.Tests
 {
-    public class ValidateInsertedManifests : TestBase
+    public class ValidateInsertedManifests(ITestOutputHelper log) : SdkTest(log)
     {
         [Fact]
         public void ManifestReaderCanReadManifests()
         {
-            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk-manifests");
+            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath), "sdk-manifests");
             var sdkversionDir = new DirectoryInfo(sdkManifestDir).EnumerateDirectories().First();
             foreach (var manifestVersionDir in sdkversionDir.EnumerateDirectories())
             {
@@ -19,7 +18,7 @@ namespace EndToEnd.Tests
                 {
                     var manifestId = manifestVersionDir.Name;
 
-                    string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
+                    string manifestFile = new FileInfo(Path.Combine(manifestDir.FullName, "WorkloadManifest.json")).FullName;
 
                     if (!string.Equals(manifestId, "workloadsets"))
                     {
@@ -30,7 +29,6 @@ namespace EndToEnd.Tests
                     }
                 }
             }
-            
         }
     }
 }
