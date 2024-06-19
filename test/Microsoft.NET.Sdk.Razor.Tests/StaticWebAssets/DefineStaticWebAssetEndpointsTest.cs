@@ -385,7 +385,7 @@ public class DefineStaticWebAssetEndpointsTest
 
         var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
 
-        var assetIdentity = Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css");
+        var assetIdentity = Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css");
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
