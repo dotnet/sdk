@@ -7,8 +7,10 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Cli.Utils;
+using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -24,22 +26,25 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool FailingRollback;
         public bool FailingGarbageCollection;
         private readonly string FailingPack;
-        private readonly string _dotnetDir;
+        List<WorkloadHistoryRecord> HistoryRecords = new();
         private string workloadSetContents;
+        private string _dotnetDir;
 
         public IWorkloadResolver WorkloadResolver { get; set; }
 
         public int ExitCode => 0;
+        public SdkFeatureBand SdkFeatureBand => new("8.0.200");
 
-        public MockPackWorkloadInstaller(string dotnetDir, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
-            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, string workloadSetContents = "")
+        public MockPackWorkloadInstaller(string dotnetDir = null, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string workloadSetContents = "")
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
             FailingRollback = failingRollback;
             InstalledPacks = installedPacks ?? new List<PackInfo>();
             FailingPack = failingPack;
             FailingGarbageCollection = failingGarbageCollection;
-            _dotnetDir = dotnetDir;
+            HistoryRecords = records ?? HistoryRecords;
+            _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             this.workloadSetContents = workloadSetContents;
         }
 
@@ -87,12 +92,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
                 foreach (var packInfo in packs)
                 {
+                    if (InstalledPacks.Contains(packInfo))
+                    {
+                        continue;
+                    }
+
                     InstalledPacks = InstalledPacks.Append(packInfo).ToList();
                     if (packInfo.Id.ToString().Equals(FailingPack))
                     {
                         throw new Exception($"Failing pack: {packInfo.Id}");
                     }
                 }
+
+                InstallationRecordRepository.WorkloadInstallRecord = InstallationRecordRepository.WorkloadInstallRecord.Union(workloadIds).ToHashSet();
             },
             rollback: () =>
             {
@@ -146,6 +158,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return packs.Select(p => new WorkloadDownload(p.ResolvedPackageId, p.ResolvedPackageId, p.Version));
         }
 
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            HistoryRecords.Add(workloadHistoryRecord);
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            return HistoryRecords;
+        }
+
         public void Shutdown()
         {
 
@@ -187,6 +209,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadResolver = workloadResolver;
         }
 
+        public string GetFailingWorkloadFromTest() => InstallationRecordRepository.FailingWorkload;
+
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
@@ -210,14 +234,21 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository
     {
-        public IList<WorkloadId> WorkloadInstallRecord = new List<WorkloadId>();
-        private readonly string FailingWorkload;
+        public ISet<WorkloadId> WorkloadInstallRecord = new HashSet<WorkloadId>();
+        public readonly string FailingWorkload;
         public IList<WorkloadId> InstalledWorkloads;
 
         public MockInstallationRecordRepository(string failingWorkload = null, IList<WorkloadId> installedWorkloads = null)
         {
             FailingWorkload = failingWorkload;
             InstalledWorkloads = installedWorkloads ?? new List<WorkloadId>();
+            if (installedWorkloads is not null)
+            {
+                foreach (var id in installedWorkloads)
+                {
+                    WriteWorkloadInstallationRecord(id, new SdkFeatureBand("1.0.0"));
+                }
+            }
         }
 
         public void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)

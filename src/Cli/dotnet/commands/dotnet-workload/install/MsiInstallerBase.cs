@@ -3,8 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
@@ -322,6 +325,42 @@ namespace Microsoft.DotNet.Installer.Windows
             }
 
             throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+        }
+
+        internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads", sdkFeatureBand.ToString(), "history");
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            WriteWorkloadHistoryRecord(JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }), logFile);
+        }
+
+        public void WriteWorkloadHistoryRecord(string workloadHistoryRecord, string logFile)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(logFile));
+
+                File.WriteAllText(logFile, workloadHistoryRecord);
+
+                SecurityUtils.SecureFile(logFile);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendMsiRequest(InstallRequestType.WriteWorkloadHistoryFile,
+                    null, packagePath: logFile, productCode: workloadHistoryRecord);
+                ExitOnFailure(response, "Failed to write workload history record");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
         }
 
         /// <summary>

@@ -22,6 +22,11 @@
         <target state="translated">無法同時使用 {0} 與 {1} 選項。如果從復原檔案安裝，請移除 {0}。否則，請移除 {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndFromHistory">
+        <source>Cannot specify a particular workload version on the command line via both --version and --from-history.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via both --version and --from-history.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">當 global.json 檔案 {0} 中已指定版本時，無法在命令列上透過 --version 或 --from-history 指定特定工作負載版本。若要更新全域安裝的工作負載版本，請在包含該 global.json 檔案的路徑外執行命令，或更新 global.json 檔案中指定的版本，然後執行 "dotnet workload update"。</target>

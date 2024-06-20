@@ -16,7 +16,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public void RefreshWorkloadManifests() { }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest>
+            GetManifests(bool useInstallStateOnly)
         {
             foreach (var workloadManifestDirectory in GetManifestDirectories())
             {
@@ -55,5 +56,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public string GetSdkFeatureBand() => _sdkVersionBand;
         public string? GetWorkloadVersion() => _sdkVersionBand.ToString() + ".2";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
+        public WorkloadSet? GetCurrentWorkloadVersion() => new() { Version = "8.0.100" };
     }
 }

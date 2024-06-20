@@ -22,6 +22,11 @@
         <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다. 롤백 파일에서 설치하는 경우 {0}을(를) 제거합니다. 그렇지 않으면 {1}을(를) 제거합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndFromHistory">
+        <source>Cannot specify a particular workload version on the command line via both --version and --from-history.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via both --version and --from-history.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">global.json 파일 {0}에 지정된 버전이 이미 있는 경우 --version 또는 --from-history를 통해 명령줄에서 특정 워크로드 버전을 지정할 수 없습니다. 전역으로 설치된 워크로드 버전을 업데이트하려면 해당 global.json 파일이 포함된 경로 외부에서 명령을 실행하거나 global.json 파일에 지정된 버전을 업데이트하고 "dotnet 워크로드 업데이트"를 실행합니다.</target>

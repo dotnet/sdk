@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly bool _skipManifestUpdate;
         private readonly IReadOnlyCollection<string> _workloadIds;
 
+        public bool IsRunningRestore { get; set; }
+
         public WorkloadInstallCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -65,116 +67,138 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public override int Execute()
         {
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            if (_printDownloadLinkOnly)
+
+            WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            recorder.HistoryRecord.CommandName = IsRunningRestore ? "restore" : "install";
+            recorder.HistoryRecord.WorkloadArguments = _workloadIds.Select(id => id.ToString()).ToList();
+
+            try
             {
-                ValidateWorkloadIdsInput();
-
-                Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
-
-                //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
-                //  which require new packs for currently installed workloads, those packs will be downloaded.
-                //  If the packs are already installed, they won't be included in the results
-                var existingWorkloads = GetInstalledWorkloads(false);
-                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
-
-                var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
-
-                Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-                Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
-            }
-            else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
-            {
-                ValidateWorkloadIdsInput();
-
-                try
+                if (_printDownloadLinkOnly)
                 {
+                    ValidateWorkloadIdsInput();
+
+                    Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
+
                     //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
                     //  which require new packs for currently installed workloads, those packs will be downloaded.
                     //  If the packs are already installed, they won't be included in the results
                     var existingWorkloads = GetInstalledWorkloads(false);
                     var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                    DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
+                    var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
+
+                    Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+                    Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
                 }
-                catch (Exception e)
+                else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
                 {
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                    ValidateWorkloadIdsInput();
+
+                    try
+                    {
+                        Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
+
+                        //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
+                        //  which require new packs for currently installed workloads, those packs will be downloaded.
+                        //  If the packs are already installed, they won't be included in the results
+                        var existingWorkloads = GetInstalledWorkloads(false);
+                        var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+
+                        DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                    }
                 }
-            }
-            else if (_skipManifestUpdate && usedRollback)
-            {
-                throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback,
-                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
-                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
-            }
-            else
-            {
-                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-                _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-
-                try
+                else if (_skipManifestUpdate && usedRollback)
                 {
-                    ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
-
-                    //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
-                    //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
-                    //  workload set installed yet, and trying to list the available workloads would throw an error
-                    if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                    throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback,
+                        WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
+                        WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
+                }
+                else
+                {
+                    recorder.Run(() =>
                     {
-                        ValidateWorkloadIdsInput();
-                    }
-
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-                    {
-                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                        if (File.Exists(installStateFilePath))
+                        var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                        _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+                        
+                        try
                         {
-                            var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                            _workloadSetVersion = installStateContents.WorkloadVersion;
-                        }
-                    }
+                            ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
 
-                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                    var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-                    {
-                        InstallWorkloads(
-                            workloadIds,
-                            _skipManifestUpdate,
-                            _includePreviews,
-                            offlineCache);
-                    }
-                    else
-                    {
-                        RunInNewTransaction(context =>
-                        {
-                            if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
+                            //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
+                            //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                            //  workload set installed yet, and trying to list the available workloads would throw an error
+                            if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
                             {
-                                return;
+                                ValidateWorkloadIdsInput();
                             }
-                            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifests, offlineCache, false);
-                        });
 
-                        TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+                            if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                            {
+                                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                                if (File.Exists(installStateFilePath))
+                                {
+                                    var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                                    _workloadSetVersion = installStateContents.WorkloadVersion;
+                                }
+                            }
 
-                        Reporter.WriteLine();
-                        Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
-                        Reporter.WriteLine();
-                    }
-                }
-                catch (Exception e)
-                {
-                    // Don't show entire stack trace
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
+                            DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                            var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                            if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                            {
+                                InstallWorkloads(
+                                    workloadIds,
+                                    _skipManifestUpdate,
+                                    _includePreviews,
+                                    offlineCache,
+                                    recorder);
+                            }
+                            else
+                            {
+                                RunInNewTransaction(recorder, context =>
+                                {
+                                    if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
+                                    {
+                                        return;
+                                    }
+                                    InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifests, offlineCache, false);
+                                });
+
+                                TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+                                Reporter.WriteLine();
+                                Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
+                                Reporter.WriteLine();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't show entire stack trace
+                            throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
+                        }
+                    });
                 }
             }
-
-            _workloadInstaller.Shutdown();
+            finally
+            {
+                _workloadInstaller.Shutdown();
+            }
+            
             return _workloadInstaller.ExitCode;
         }
 
-        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(
+            IEnumerable<WorkloadId> workloadIds,
+            bool skipManifestUpdate = false,
+            bool includePreviews = false,
+            DirectoryPath? offlineCache = null,
+            WorkloadHistoryRecorder recorder = null)
         {
             Reporter.WriteLine();
 
@@ -196,7 +220,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            RunInNewTransaction(context =>
+            RunInNewTransaction(recorder, context =>
             {
                 if (!skipManifestUpdate)
                 {
@@ -227,7 +251,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                     else
                     {
-                        manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                        manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
                             _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
                     }
                 }
@@ -344,15 +368,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return GetDownloads(workloadIds, skipManifestUpdate, includePreviews, offlineCache.Value);
         }
 
-        private void RunInNewTransaction(Action<ITransactionContext> a)
+        private void RunInNewTransaction(WorkloadHistoryRecorder recorder, Action<ITransactionContext> a)
         {
-            var transaction = new CliTransaction()
+            new CliTransaction()
             {
                 RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
                 // Don't hide the original error if roll back fails, but do log the rollback failure
                 RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
-            };
-            transaction.Run(context => a(context));
+            }.Run(context => a(context));
         }
     }
 }

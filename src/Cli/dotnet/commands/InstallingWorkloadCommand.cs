@@ -34,6 +34,8 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
+        protected readonly string _fromHistorySpecified;
+        protected readonly bool _historyManifestOnlyOption;
         protected string _workloadSetVersion;
         protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
@@ -60,6 +62,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             _downloadToCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.DownloadToCacheOption);
 
             _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
+            _fromHistorySpecified = parseResult.GetValue(InstallingWorkloadCommandParser.FromHistoryOption);
+            _historyManifestOnlyOption = !string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.HistoryManifestOnlyOption));
             var configOption = parseResult.GetValue(InstallingWorkloadCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(InstallingWorkloadCommandParser.SourceOption);
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
@@ -111,6 +115,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
             }
+            else if (!string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) && !string.IsNullOrWhiteSpace(_fromHistorySpecified))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
+            }
+            else if (!string.IsNullOrWhiteSpace(_fromHistorySpecified) && !string.IsNullOrWhiteSpace(_workloadSetVersion))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndFromHistory));
+            }
         }
 
         protected bool TryHandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, out IEnumerable<ManifestVersionUpdate> updates)
@@ -134,7 +146,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 // This file isn't created in tests.
                 var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-                PrintWorkloadSetTransition(version);
+                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, version));
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
@@ -155,11 +167,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
             updates = _workloadManifestUpdater.ParseRollbackDefinitionFiles(files);
             return true;
-        }
-
-        private void PrintWorkloadSetTransition(string newVersion)
-        {
-            Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)
@@ -238,6 +245,11 @@ namespace Microsoft.DotNet.Workloads.Workload
             return ret;
         }
 
+        protected void PrintDownloadLink(IEnumerable<string> packageUrls)
+        {
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
         protected IEnumerable<WorkloadId> GetInstalledWorkloads(bool fromPreviousSdk)
         {
             if (fromPreviousSdk)
@@ -306,6 +318,16 @@ namespace Microsoft.DotNet.Workloads.Workload
             Hidden = true
         };
 
+        public static readonly CliOption<string> FromHistoryOption = new("--from-history")
+        {
+            Description = Update.LocalizableStrings.FromHistoryOptionDescription
+        };
+
+        public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+        {
+            Description = Update.LocalizableStrings.HistoryManifestOnlyOptionDescription
+        };
+
         public static readonly CliOption<string> ConfigOption = new("--configfile")
         {
             Description = Strings.ConfigFileOptionDescription,
@@ -328,6 +350,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             command.Options.Add(DownloadToCacheOption);
             command.Options.Add(IncludePreviewOption);
             command.Options.Add(FromRollbackFileOption);
+            command.Options.Add(FromHistoryOption);
+            command.Options.Add(HistoryManifestOnlyOption);
         }
     }
 }
