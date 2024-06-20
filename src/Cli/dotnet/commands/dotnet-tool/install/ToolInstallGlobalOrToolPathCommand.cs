@@ -163,6 +163,15 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 if (oldPackageNullable != null)
                 {
+                    var nugetVersion = toolPackageDownloader.GetNuGetVersion(
+                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                            packageId: packageId,
+                            versionRange: versionRange,
+                            verbosity: _verbosity,
+                            isGlobalTool: true);
+
+                    EnsureVersionIsDifferent(oldPackageNullable, nugetVersion);
+
                     RunWithHandlingUninstallError(() =>
                     {
                         foreach (RestoredCommand command in oldPackageNullable.Commands)
@@ -222,17 +231,15 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
                 }, packageId);
 
-                EnsureVersionIsDifferent(oldPackageNullable, newInstalledPackage);
-
                 scope.Complete();
 
             }
             return 0;
         }
         
-        private void EnsureVersionIsDifferent(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage)
+        private void EnsureVersionIsDifferent(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
         {
-            if (oldPackageNullable != null && (oldPackageNullable.Version == newInstalledPackage.Version))
+            if (oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version))
             {
                 throw new GracefulException(
                     messages: [string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId)],
