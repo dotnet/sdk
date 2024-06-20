@@ -29,7 +29,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
     <ItemGroup>
-      <Reference Include="$(MSBuildPathInPackage)" />
+      <Reference Include="$(MSBuildPathInPackage)" Private="false" />
     </ItemGroup>
   </Target>
 
