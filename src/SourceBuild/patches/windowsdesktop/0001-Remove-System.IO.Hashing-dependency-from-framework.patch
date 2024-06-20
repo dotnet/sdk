@@ -1,0 +1,39 @@
+From b50a96ce51d4bf5f00ded7e29a305441ec7fa5c1 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 20 Jun 2024 15:09:40 +0000
+Subject: [PATCH] Remove System.IO.Hashing dependency from framework list class
+
+Backport: https://github.com/dotnet/windowsdesktop/pull/4463
+
+---
+ .../src/sfx/Microsoft.WindowsDesktop.App.Ref.sfxproj             | 1 -
+ .../src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj         | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Ref.sfxproj b/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Ref.sfxproj
+index 49c4b6f3..5b6cda28 100644
+--- a/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Ref.sfxproj
++++ b/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Ref.sfxproj
+@@ -24,7 +24,6 @@
+     <FrameworkListFileClass Include="System.Diagnostics.PerformanceCounter.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.DirectoryServices.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Formats.Nrbf.dll" Profile="WindowsForms;WPF" />
+-    <FrameworkListFileClass Include="System.IO.Hashing.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.IO.Packaging.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Resources.Extensions.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Security.Cryptography.Pkcs.dll" Profile="WindowsForms;WPF" />
+diff --git a/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj b/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj
+index 5ee57cf4..1a00969a 100644
+--- a/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj
++++ b/src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj
+@@ -24,7 +24,6 @@
+     <FrameworkListFileClass Include="System.Diagnostics.PerformanceCounter.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.DirectoryServices.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Formats.Nrbf.dll" Profile="WindowsForms;WPF" />
+-    <FrameworkListFileClass Include="System.IO.Hashing.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.IO.Packaging.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Resources.Extensions.dll" Profile="WindowsForms;WPF" />
+     <FrameworkListFileClass Include="System.Security.Cryptography.Pkcs.dll" Profile="WindowsForms;WPF" />
+-- 
+2.45.1
+
