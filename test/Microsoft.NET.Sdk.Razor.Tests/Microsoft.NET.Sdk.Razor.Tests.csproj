@@ -60,4 +60,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="content\ExternalStaticAssets.targets" />
+  </ItemGroup>
+
 </Project>
