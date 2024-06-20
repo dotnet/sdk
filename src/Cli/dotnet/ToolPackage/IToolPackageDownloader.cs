@@ -16,5 +16,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false
         );
+
+        NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation, PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false);
     }
 }
