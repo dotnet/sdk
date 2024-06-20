@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("NetStandard1.4")]
         [InlineData("NetStandard1.5")]
         [InlineData("NetStandard1.6")]
-        public void It_warns_that_framework_is_no_recommended(string targetFrameworks)
+        public void It_warns_that_framework_is_not_recommended(string targetFrameworks)
         {
             var testProject = new TestProject()
             {
