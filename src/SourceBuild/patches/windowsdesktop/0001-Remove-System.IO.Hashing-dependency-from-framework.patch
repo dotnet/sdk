@@ -34,6 +34,3 @@ index 5ee57cf4..1a00969a 100644
      <FrameworkListFileClass Include="System.IO.Packaging.dll" Profile="WindowsForms;WPF" />
      <FrameworkListFileClass Include="System.Resources.Extensions.dll" Profile="WindowsForms;WPF" />
      <FrameworkListFileClass Include="System.Security.Cryptography.Pkcs.dll" Profile="WindowsForms;WPF" />
--- 
-2.45.1
-
