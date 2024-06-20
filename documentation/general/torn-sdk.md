@@ -1,0 +1,109 @@
+# Torn .NET SDK
+
+## Terminology
+
+- msbuild: refers the .NET Framework based msbuild included with Visual Studio.
+- dotnet msbuild: refers to the .NET Core based msbuild included with the .NET SDK.
+- analyzers: this document will use analyzers to refer to both analyzers and generators.
+
+## Summary
+
+Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product.
+
+| Scenario | Loads Roslyn | Loads Analyzers / Generators |
+| --- | --- | --- |
+| msbuild | From Visual Studio | From .NET SDK |
+| dotnet msbuild | From .NET SDK | From .NET SDK |
+| Visual Studio Design Time | From Visual Studio | From Both |
+
+Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. That is the compiler and analyzers are the same hence mixing poses no real issue. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... However when the .NET SDK is not paired with the Visual Studio version,then compatibility issues can, and will, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
+
+> CSC : warning CS9057: The analyzer assembly '..\dotnet\sdk\8.0.200\Sdks\Microsoft.NET.Sdk.Razor\source-
+generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
+than the currently running version '4.8.0.0'.
+
+To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to the following:
+
+| Scenario | Loads Roslyn | Loads Analyzers / Generators |
+| --- | --- | --- |
+| msbuild | From .NET SDK | From .NET SDK |
+| dotnet msbuild | From .NET SDK | From .NET SDK |
+| Visual Studio Design Time | From Visual Studio | From Visual Studio |
+
+Specifically we will be
+
+1. Changing msbuild to use a compiler from the .NET SDK
+2. Changing Visual Studio to use analyzers from Visual Studio
+
+In addition to making our builds more reliable this will also massively simplify our analyzer development strategy. Analyzers following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
+
+## Detailed Design
+
+### MSBuild using .NET SDK Compiler
+
+The .NET SDK will start producing a package named Microsoft.NETSdk.Compiler.Roslyn. This will contain a .NET Framework version of the Roslyn compiler that matches .NET Core version. This will be published as a part of the .NET SDK release process meaning it's available for all publicly available .NET SDKs.
+
+The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected the matching Microsoft.NETSDK.Compiler.Roslyn package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
+
+One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider that when a solution has a mix of .NET SDK style projects and legacy projects then in a torn state the .NET SDK projects will use the .NET SDK compiler will legacy projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
+
+### Visual Studio using Visual Studio Analyzers
+
+#### .NET SDK in box analyzers
+
+Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
+
+This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current
+
+This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the in box copy loading but it has virtually zero maintanence cost.
+
+This also means these analyzers can vastly simplify their development model by alwasy targeting the latest version of Roslyn. There is no more need to multi-target beacuse the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
+
+This means that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make. Customers who wish to have a consistent experience between design time should not operate in a torn state.
+
+#### NuGet based analyzers
+
+Analyzers which ship via NuGet will continue to following the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support.
+
+## Work Breakdown
+
+- [ ]: Flow the Micosoft.Net.Compilers.Toolset.Framework package to the .NET SDK
+- [ ]: Create a new package Micosoft.NETSdk.Compiler.Roslyn in .NET SDK.
+  - [ ]: The contents of this package will include the contents of the Microsoft.Net.Compilers.Toolset.Framework package
+  - [ ]: The contents will include a README.md stating the package is **not** supported for direct user consumption.
+  - [ ]: The package will follow the versioning scheme of the .NET SDK.
+- [ ]: Change the Sdk.targets file to have copies of the following three `<UsingTasks>` from [Microsoft.Common.tasks][microsoft-common-tasks]. Having a copy in Sdk.targets means that resetting `$(RoslynTargetsPath)` during build will change the chosen compiler.
+- [ ]: When the .NET SDK detects a torn state
+  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.NETSdk.Compiler.Roslyn package
+  - [ ]: Change `$(RoslynTargetsPath)` to point into the package contents
+
+## Alternative
+
+### PackageReference
+
+Instead of `<PackageDownload>` the toolset package could be installed via `<PackageReference>`. This is how the existing Microsoft.Net.Compilers.Toolset package works today. This has a number of disadvantages:
+
+1. PackageReferences are not side effect free and have been shown to cause issues in complex builds. For example this package did not work by default in the Visual Studio or Bing builds. Deploying this at scale to all our customers will almost ceratinly cause issues.
+2. This approach does not solve all scenarios. The mechanics of restore mean that the compiler is not swapped until part way through the build. Build operations that happen earlier, such as legacy WPF, will still use the Visual Studio compiler and hence experience analyzer compatibility issues.
+3. Mixing builds that do and do not restore can lead to different build outcomes as they can end up choosing different compilers. Mixing the version of msbuild / dotnet msbuild can also lead to strange outcomes as they can end up choosing different compilers.
+
+### Install the Framework compiler
+
+An alternative is simply shipping both Roslyn compilers in the Windows .NET SDK. This means there is no need for a `<PackageDownload>` step as the compiler is always there. This is a simpler build but it means that all .NET SDK installs on Windows will incease by ~6-7%.
+
+### Use the .NET Core compiler
+
+Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could just use the .NET Core Roslyn it comes with. That would have virtually no real compatibility issues. This has a number of disadvantages:
+
+1. Changes the process name from VBCSCompiler to `dotnet`. That seems insignificant but the process name is important as it's referenced in a lot of build scripts. This would be a subtle breaking change that we'd have to work with customers on.
+2. This would make Visual Studio dependent on the servicing lifetime of the .NET Core runtime in the SDK. That has a very different lifetime and could lead to surprising outcomes down the road. For example if policy removed out of support runtimes from machines it would break the Visual Studio build.
+
+## Related Issues
+
+- https://github.com/dotnet/roslyn/issues/72672
+- https://github.com/dotnet/installer/pull/19144
+
+[microsoft-common-tasks]: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks#L106-L109
+[matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
+[pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
+[code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
