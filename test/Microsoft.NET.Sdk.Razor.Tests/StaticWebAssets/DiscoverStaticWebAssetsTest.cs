@@ -57,9 +57,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Theory]
-        [InlineData("index.js", "index#[.{fingerprint}]?.js")]
-        [InlineData("css/site.css", "css/site#[.{fingerprint}]?.css")]
-        public void FingerprintsContentWhenEnabled(string file, string expectedRelativePath)
+        [InlineData("index.js", "index#[.{fingerprint}]?.js", "")]
+        [InlineData("css/site.css", "css/site#[.{fingerprint}]!.css", "#[.{fingerprint}]!")]
+        public void FingerprintsContentWhenEnabled(string file, string expectedRelativePath, string expression)
         {
             var errorMessages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
@@ -80,6 +80,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
             };
+            if (!string.IsNullOrEmpty(expression))
+            {
+                task.FingerprintPatterns = [new TaskItem("CssFile", new Dictionary<string, string> { ["Pattern"] = "*.css", ["Expression"] = expression })];
+            }
 
             // Act
             var result = task.Execute();
@@ -155,9 +159,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Theory]
-        [InlineData("candidate.lib.module.js", "candidate#[.{fingerprint}]?.lib.module.js")]
-        [InlineData("library.candidate.lib.module.js", "library.candidate#[.{fingerprint}]?.lib.module.js")]
-        public void FingerprintsContentUsingPatternsWhenMoreThanOneExtension(string fileName, string expectedRelativePath)
+        [InlineData("candidate.lib.module.js", "candidate#[.{fingerprint}]?.lib.module.js", "")]
+        [InlineData("library.candidate.lib.module.js", "library.candidate#[.{fingerprint}]!.lib.module.js", "#[.{fingerprint}]!")]
+        public void FingerprintsContentUsingPatternsWhenMoreThanOneExtension(string fileName, string expectedRelativePath, string expression)
         {
             var errorMessages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
@@ -171,7 +175,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 [
                     CreateCandidate(Path.Combine("wwwroot", fileName))
                 ],
-                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js" })],
+                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
                 FingerprintCandidates = true,
                 RelativePathPattern = "wwwroot\\**",
                 SourceType = "Discovered",

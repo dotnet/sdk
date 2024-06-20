@@ -53,7 +53,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return result;
     }
 
-    internal static StaticWebAssetEndpoint FromTaskItem(ITaskItem item)
+    public static StaticWebAssetEndpoint FromTaskItem(ITaskItem item)
     {
         var result = new StaticWebAssetEndpoint()
         {
