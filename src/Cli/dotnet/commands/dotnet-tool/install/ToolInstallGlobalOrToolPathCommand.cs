@@ -174,17 +174,19 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }, packageId);
                 }
 
+                IToolPackage newInstalledPackage = null;
+
                 RunWithHandlingInstallError(() =>
                 {
-                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
-                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
-                        packageId: packageId,
-                        versionRange: versionRange,
-                        targetFramework: _framework,
-                        verbosity: _verbosity,
-                        isGlobalTool: true,
-                        isGlobalToolRollForward: _allowRollForward
-                    );
+                    newInstalledPackage = toolPackageDownloader.InstallPackage(
+                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                            packageId: packageId,
+                            versionRange: versionRange,
+                            targetFramework: _framework,
+                            verbosity: _verbosity,
+                            isGlobalTool: true,
+                            isGlobalToolRollForward: _allowRollForward
+                        );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
 
@@ -220,10 +222,22 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
                 }, packageId);
 
+                EnsureVersionIsDifferent(oldPackageNullable, newInstalledPackage);
+
                 scope.Complete();
 
             }
             return 0;
+        }
+        
+        private void EnsureVersionIsDifferent(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage)
+        {
+            if (oldPackageNullable != null && (oldPackageNullable.Version == newInstalledPackage.Version))
+            {
+                throw new GracefulException(
+                    messages: [string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId)],
+                    isUserError: false);
+            }
         }
 
         private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)
