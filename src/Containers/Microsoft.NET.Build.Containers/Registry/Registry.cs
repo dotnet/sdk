@@ -71,7 +71,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
-        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
@@ -86,8 +86,8 @@ internal sealed class Registry
         BaseUri = baseUri;
 
         _logger = logger;
-        _settings = settings ?? new RegistrySettings();
-        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
+        _settings = settings ?? new RegistrySettings(RegistryName);
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, _settings.IsInsecure, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
