@@ -1,0 +1,93 @@
+From 642134215a2c7285e958dfc8aa6fb058a836c6da Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Wed, 19 Jun 2024 10:32:23 +0000
+Subject: [PATCH] Correctly define versions for runtime dependencies
+
+System.ComponentModel.Composition and
+System.IO.Hashing were missing Versions.props and
+Version.Details.xml entries.
+
+This is necessary so that the VMR can upgrade
+the dependencies when building all dependencies
+live.
+
+Similar to c74b31bd8313865fa3becf0d8f91f00d528ca5ad
+Unblocks runtime dependency flow:
+https://github.com/dotnet/sdk/pull/41616
+
+Backport PR: https://github.com/dotnet/roslyn/pull/74060
+
+---
+ eng/Directory.Packages.props                              | 4 ++--
+ eng/Version.Details.xml                                   | 8 ++++++++
+ eng/Versions.props                                        | 2 ++
+ .../Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj     | 2 +-
+ 4 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/eng/Directory.Packages.props b/eng/Directory.Packages.props
+index 83ab7a5601433..e93b49fa24c55 100644
+--- a/eng/Directory.Packages.props
++++ b/eng/Directory.Packages.props
+@@ -190,10 +190,10 @@
+     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
+     <PackageVersion Include="System.Composition" Version="$(SystemCompositionVersion)" />
+-    <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0" />
++    <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionVersion)" />
+     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
+     <PackageVersion Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogVersion)" />
+-    <PackageVersion Include="System.IO.Hashing" Version="8.0.0" />
++    <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingVersion)" />
+     <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesVersion)" />
+     <PackageVersion Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
+     <PackageVersion Include="System.Memory" Version="4.5.5" />
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 0e070103b4b0c..7852558f7c3e6 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -64,10 +64,18 @@
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
+     </Dependency>
++    <Dependency Name="System.ComponentModel.Composition" Version="8.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
++    </Dependency>
+     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="8.0.0">
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
+     </Dependency>
++    <Dependency Name="System.IO.Hashing" Version="8.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
++    </Dependency>
+     <Dependency Name="System.IO.Pipelines" Version="8.0.0">
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 0f39e2822c158..1f9c7b8d08ec2 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -25,7 +25,9 @@
+     <SystemConfigurationConfigurationManagerVersion>8.0.0</SystemConfigurationConfigurationManagerVersion>
+     <SystemDiagnosticsEventLogVersion>8.0.0</SystemDiagnosticsEventLogVersion>
+     <SystemCollectionsImmutableVersion>8.0.0</SystemCollectionsImmutableVersion>
++    <SystemComponentModelCompositionVersion>8.0.0</SystemComponentModelCompositionVersion>
+     <SystemDiagnosticsDiagnosticSourceVersion>8.0.0</SystemDiagnosticsDiagnosticSourceVersion>
++    <SystemIOHashingVersion>8.0.0</SystemIOHashingVersion>
+     <SystemIOPipelinesVersion>8.0.0</SystemIOPipelinesVersion>
+     <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
+     <SystemResourcesExtensionsVersion>8.0.0</SystemResourcesExtensionsVersion>
+diff --git a/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj b/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
+index 8a011c5f82948..4310078bf9b32 100644
+--- a/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
++++ b/src/Tools/ExternalAccess/Xaml/Microsoft.CodeAnalysis.ExternalAccess.Xaml.csproj
+@@ -27,7 +27,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionVersion)" />
++    <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
+   <ItemGroup>
