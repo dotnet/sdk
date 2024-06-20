@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("EditorConfig file", ".editorconfig", new[] { "--empty" })]
         [InlineData("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit", "--use-artifacts" })]
         [InlineData("MSBuild Directory.Build.targets file", "buildtargets", new[] { "--inherit" })]
-        public async void AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
+        public async Task AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //
 
         //[Fact]
-        //public async void EditorConfigTests_Default()
+        //public async Task EditorConfigTests_Default()
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
         //    {
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Theory]
         [InlineData(new object[] { "console", "C#" })]
         [InlineData(new object[] { "console", "VB" })]
-        public async void AotVariants(string name, string language)
+        public async Task AotVariants(string name, string language)
         {
             // template framework needs to be hardcoded here during the major version transition.
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
@@ -321,7 +321,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
         [MemberData(nameof(FeaturesSupport_Data))]
-        public async void FeaturesSupport(
+        public async Task FeaturesSupport(
             string name,
             bool buildPass,
             string? framework,
