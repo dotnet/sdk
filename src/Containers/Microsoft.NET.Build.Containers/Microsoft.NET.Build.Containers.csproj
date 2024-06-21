@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
@@ -41,10 +41,19 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Nuget.Packaging" />
+    <PackageReference Include="Nuget.Packaging">
+      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
+      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging">
+      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
+      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
+      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
+      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <!-- net472 builds manually import files to compile -->
