@@ -178,7 +178,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Trigger a warning if targeting a lower version of .NET Standard than is recommended
   -->
   <Target Name="_CheckForNotRecommendedNETStandardVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
-          Condition="$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.0')) and '$(TargetFrameworkIdentifier)' == '.NETStandard'" >
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' and $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.0'))">
     <PropertyGroup>
       <!-- Default the check to true, but allow developers to turn the warning off. -->
       <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == ''" >true</CheckNotRecommendedTargetFramework>
