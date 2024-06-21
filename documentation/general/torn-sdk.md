@@ -37,9 +37,15 @@ Specifically we will be
 
 In addition to making our builds more reliable this will also massively simplify our analyzer development strategy. Analyzers following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
 
-## Detailed Design
+## Goals
 
-### MSBuild using .NET SDK Compiler
+This design has a number of goals:
+
+1. The `msbuild` and `dotnet build` build experience should be equivalent.
+1. The Visual Studio Design time experience is independent of the .NET SDK installed.
+1. To make explicit that it is okay, and even expected, that the design time and command line build experiences can differ when the SDK is in a torn state.
+
+## MSBuild using .NET SDK Compiler
 
 The .NET SDK will start producing a package named Microsoft.NETSdk.Compiler.Roslyn. This will contain a .NET Framework version of the Roslyn compiler that matches .NET Core version. This will be published as a part of the .NET SDK release process meaning it's available for all publicly available .NET SDKs.
 
@@ -47,37 +53,35 @@ The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. 
 
 One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider that when a solution has a mix of .NET SDK style projects and legacy projects then in a torn state the .NET SDK projects will use the .NET SDK compiler will legacy projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
 
-### Visual Studio using Visual Studio Analyzers
+## Visual Studio using Visual Studio Analyzers
 
-#### .NET SDK in box analyzers
+### .NET SDK in box analyzers dual insert
 
 Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
 
 This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current
 
-This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the in box copy loading but it has virtually zero maintanence cost.
+This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintanence cost.
 
 This also means these analyzers can vastly simplify their development model by always targeting the latest version of Roslyn. There is no more need to multi-target because the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
 
-This means that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make. Customers who wish to have a consistent experience between design time should not operate in a torn state.
+This does mean that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make for reliability. Customers who wish to have a consistent experience between design time should not operate in a torn state.
 
-#### NuGet based analyzers
+## .NET SDK in box analyzers target oldest
+
+Analyzers which have no need to target the latest Roslyn could instead choose to target the oldest supported version of Roslyn. That ensures they can safely load into any supported scenario without issue.
+
+This strategy should be considered short term. The Roslyn API is under constant development to respond to the performance demands of Visual Studio. New APIs can quickly become virtually mandatory for analyzers and generators to use and will only be available on latest. At that point the analyzer will need to also update to use dual insertions.
+
+### NuGet based analyzers
 
 Analyzers which ship via NuGet will continue to following the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support.
 
-## Work Breakdown
-
-- [ ]: Flow the Micosoft.Net.Compilers.Toolset.Framework package to the .NET SDK
-- [ ]: Create a new package Micosoft.NETSdk.Compiler.Roslyn in .NET SDK.
-  - [ ]: The contents of this package will include the contents of the Microsoft.Net.Compilers.Toolset.Framework package
-  - [ ]: The contents will include a README.md stating the package is **not** supported for direct user consumption.
-  - [ ]: The package will follow the versioning scheme of the .NET SDK.
-- [ ]: Change the Sdk.targets file to have copies of the following three `<UsingTasks>` from [Microsoft.Common.tasks][microsoft-common-tasks]. Having a copy in Sdk.targets means that resetting `$(RoslynTargetsPath)` during build will change the chosen compiler.
-- [ ]: When the .NET SDK detects a torn state
-  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.NETSdk.Compiler.Roslyn package
-  - [ ]: Change `$(RoslynTargetsPath)` to point into the package contents
-
 ## Alternative
+
+### .NET SDK in box analyzers multi-target
+
+Technically in box analyzers can have a multi-targeting strategy just as NuGet based analyzers do. This is actively discouraged because it leads to unnecessary increases in .NET SDK sizes. The time spent implementing multi-targeting is likely better spent moving to a dual insertion to keep .NET SDK sizes down and provide a consistent experience with other analyzers.
 
 ### PackageReference
 
@@ -107,3 +111,18 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could ju
 [matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
 [pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
+
+## Work Breakdown
+
+This will be moved to an issue when this PR is opened against dotnet/sdk proper:
+
+- [ ]: Flow the Micosoft.Net.Compilers.Toolset.Framework package to the .NET SDK
+- [ ]: Create a new package Micosoft.NETSdk.Compiler.Roslyn in .NET SDK.
+  - [ ]: The contents of this package will include the contents of the `tasks\net472` folder in the Microsoft.Net.Compilers.Toolset.Framework package. This subset is all that is needed and makes the package not usable via `<PackageReference>`. The latter reduces the incentive for customers to use it directly.
+  - [ ]: The contents will include a README.md stating the package is **not** supported for direct user consumption.
+  - [ ]: The package will follow the versioning scheme of the .NET SDK.
+  - [ ]: The package will be unlisted (ideal but not a hard requirement)
+- [ ]: Change the Sdk.targets file to have copies of the following three `<UsingTasks>` from [Microsoft.Common.tasks][microsoft-common-tasks]. Having a copy in Sdk.targets means that resetting `$(RoslynTargetsPath)` during build will change the chosen compiler.
+- [ ]: When the .NET SDK detects a torn state
+  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.NETSdk.Compiler.Roslyn package
+  - [ ]: Change `$(RoslynTargetsPath)` to point into the package contents
