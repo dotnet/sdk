@@ -208,22 +208,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>20f05435be385abfe74737b6433dc80fd3b3b504</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.11.0-preview-24318-07">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.11.0-preview-24320-06">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3d2ea06c998a002f640b01f5d84fdefb14167502</Sha>
+      <Sha>5b69fd31169dd07ced917329bbb483f3b73ea98f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.11.0-preview-24318-07">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.11.0-preview-24320-06">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3d2ea06c998a002f640b01f5d84fdefb14167502</Sha>
+      <Sha>5b69fd31169dd07ced917329bbb483f3b73ea98f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.11.0-preview-24318-07">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.11.0-preview-24320-06">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3d2ea06c998a002f640b01f5d84fdefb14167502</Sha>
+      <Sha>5b69fd31169dd07ced917329bbb483f3b73ea98f</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.11.0-preview-24318-07">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.11.0-preview-24320-06">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3d2ea06c998a002f640b01f5d84fdefb14167502</Sha>
+      <Sha>5b69fd31169dd07ced917329bbb483f3b73ea98f</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.6.24319.11">
@@ -246,26 +246,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>117cfccdd71abc164e6b933ca7602b509a1365dd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.6.24320.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.6.24320.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>fd4882363adaf9e2c883de99c3993199a3dfcf29</Sha>
+      <Sha>16bd64088c359e88d8d17fe08bf135f43efdc5b6</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.6.24320.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.6.24320.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>fd4882363adaf9e2c883de99c3993199a3dfcf29</Sha>
+      <Sha>16bd64088c359e88d8d17fe08bf135f43efdc5b6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.6.24320.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.6.24320.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>fd4882363adaf9e2c883de99c3993199a3dfcf29</Sha>
+      <Sha>16bd64088c359e88d8d17fe08bf135f43efdc5b6</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.6.24320.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.6.24320.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>fd4882363adaf9e2c883de99c3993199a3dfcf29</Sha>
+      <Sha>16bd64088c359e88d8d17fe08bf135f43efdc5b6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.7.24320.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.7.24320.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>4093a1649f50d767671a58b8a2a0f738480e51ff</Sha>
+      <Sha>5d665cda688edd091afd8ba95e7c8503f1c11a91</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.7.24320.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -382,13 +382,13 @@
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.6.24319.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.6.24320.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>77be8127d323f322a9c168acaf5920d84271096c</Sha>
+      <Sha>5a34c71ca7414f5dcfccde4b2a7ba61e6758062d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.7.24320.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.7.24320.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>4093a1649f50d767671a58b8a2a0f738480e51ff</Sha>
+      <Sha>5d665cda688edd091afd8ba95e7c8503f1c11a91</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24317.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
