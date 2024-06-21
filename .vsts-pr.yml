@@ -65,6 +65,8 @@ stages:
       platform:
         name: Managed
         container: centosStream9
+        jobProperties:
+          timeoutInMinutes: 30
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

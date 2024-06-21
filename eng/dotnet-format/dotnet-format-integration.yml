@@ -58,6 +58,10 @@ parameters:
     _sha: "ecb4b595e3322a18c240f50a763868540f51eaaa"
     _useParentSdk: 0
 
+- name: timeoutInMinutes
+  type: number
+  default: 90
+
 jobs:
 - job: Formatting_Check
   displayName: Run Formatting Check
@@ -69,7 +73,7 @@ jobs:
       name: $(DncEngInternalBuildPool)
       image: 1es-windows-2022
       os: windows
-  timeoutInMinutes: 60
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   steps:
   - script: .\restore.cmd
     displayName: Restore dependencies
@@ -96,7 +100,7 @@ jobs:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-    timeoutInMinutes: 60
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     steps:
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
       displayName: Prepare ${{ testArgs._repoName }} for formatting
