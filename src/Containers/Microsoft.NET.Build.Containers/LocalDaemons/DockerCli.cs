@@ -372,7 +372,6 @@ internal sealed class DockerCli
 
         return _command;
     }
-#endif
 
     private static bool IsPodmanAlias()
     {
@@ -394,7 +393,6 @@ internal sealed class DockerCli
         }
     }
 
-#if NET
     private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
     {
         try
