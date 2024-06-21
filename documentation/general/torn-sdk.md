@@ -57,7 +57,7 @@ This approach enables us to take actions like NGEN or R2R analyzers inside of Vi
 
 This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the in box copy loading but it has virtually zero maintanence cost.
 
-This also means these analyzers can vastly simplify their development model by alwasy targeting the latest version of Roslyn. There is no more need to multi-target beacuse the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
+This also means these analyzers can vastly simplify their development model by always targeting the latest version of Roslyn. There is no more need to multi-target because the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
 
 This means that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make. Customers who wish to have a consistent experience between design time should not operate in a torn state.
 
