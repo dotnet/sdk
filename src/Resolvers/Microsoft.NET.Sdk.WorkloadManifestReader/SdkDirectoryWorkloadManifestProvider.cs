@@ -14,6 +14,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public const string WorkloadSetsFolderName = "workloadsets";
 
         private readonly string _sdkRootPath;
+        private readonly string _sdkOrUserLocalPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
         private static HashSet<string> _outdatedManifestIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "microsoft.net.workload.android", "microsoft.net.workload.blazorwebassembly", "microsoft.net.workload.ios",
@@ -63,6 +64,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             _sdkRootPath = sdkRootPath;
+            _sdkOrUserLocalPath = _sdkRootPath;
             _sdkVersionBand = new SdkFeatureBand(sdkVersion);
             _workloadSetVersionFromConstructor = workloadSetVersion;
             _globalJsonPathFromConstructor = globalJsonPath;
@@ -90,6 +92,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 if (userManifestsRoot != null && WorkloadFileBasedInstall.IsUserLocal(_sdkRootPath, _sdkVersionBand.ToString()) && Directory.Exists(userManifestsRoot))
                 {
                     _manifestRoots = new[] { userManifestsRoot, dotnetManifestRoot };
+                    _sdkOrUserLocalPath = userProfileDir ?? _sdkRootPath;
                 }
                 else
                 {
@@ -149,7 +152,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet is null)
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
                 if (File.Exists(installStateFilePath))
                 {
                     var installState = InstallStateContents.FromPath(installStateFilePath);

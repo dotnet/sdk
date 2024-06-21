@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                     _includePreviews,
-                    ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath),
+                    ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                     string.IsNullOrWhiteSpace(_fromCacheOption) ?
                         null :
                         new DirectoryPath(_fromCacheOption))
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             {
                                 return;
                             }
-                            UpdateWorkloads(false, manifestUpdates, offlineCache, context);
+                            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestUpdates, false, context, offlineCache);
                         });
                     }
                 }
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+            var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
 
             if (useRollback && useWorkloadSets)
             {
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
                 }
 
-                UpdateWorkloads(useRollback, manifestsToUpdate, offlineCache, context);
+                UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
             });
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
@@ -170,13 +170,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
             Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
             Reporter.WriteLine();
-        }
-
-        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context)
-        {
-            var workloadIds = GetUpdatableWorkloads();
-
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
         }
 
         private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)
