@@ -341,7 +341,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.DoesNotContain("--baseline", result);
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/templating/issues/4387")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanCompleteParameters_StartsWith_AfterOption()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")

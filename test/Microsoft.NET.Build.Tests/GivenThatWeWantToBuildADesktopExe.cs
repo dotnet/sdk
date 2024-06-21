@@ -657,7 +657,7 @@ class Program
                 .And.NotHaveStdOutContaining("Could not determine");
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip = "https://github.com/dotnet/NuGet.BuildTasks/issues/75")]
         [InlineData("4.3.3")]
         [InlineData("4.1.0")]
         public void Aliases_are_preserved_if_inbox_assembly_wins_conflict_resolution(string httpPackageVersion)
