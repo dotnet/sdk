@@ -23,7 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj">
+      <!-- This is referenced by the core CLI as well so it doesn't need to be redistributed
+           in the containers task folder. The net472 copy does though for a couple of references. -->
+      <IncludeAssets Condition="'$(TargetFramework)' != 'net472'">build</IncludeAssets>
+      <Private Condition="'$(TargetFramework)' != 'net472'">false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
