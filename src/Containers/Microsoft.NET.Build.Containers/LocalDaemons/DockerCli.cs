@@ -7,7 +7,9 @@ using System.Formats.Tar;
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
+#if NET
 using Microsoft.DotNet.Cli.Utils;
+#endif
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -51,7 +53,15 @@ internal sealed class DockerCli
     {
         foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
         {
-            string fullPath = Path.Combine(directory, command + FileNameSuffixes.CurrentPlatform.Exe);
+            string exeSuffix =
+#if NET
+                FileNameSuffixes.CurrentPlatform.Exe;
+#else
+                // Avoid dependencies from Microsoft.DotNet.Cli.Utils reference for VS/net472
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+#endif
+
+            string fullPath = Path.Combine(directory, command + exeSuffix);
             if (File.Exists(fullPath))
             {
                 return fullPath;
@@ -173,7 +183,6 @@ internal sealed class DockerCli
 
     public string? GetCommand()
         => GetCommandAsync(default).GetAwaiter().GetResult();
-#endif
 
     /// <summary>
     /// Gets docker configuration.
@@ -263,6 +272,7 @@ internal sealed class DockerCli
             return false;
         }
     }
+#endif
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
 
