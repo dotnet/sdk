@@ -42,15 +42,19 @@
       <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
       <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
+      <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
+           so it doesn't have to be redistributed. -->
+      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.3</VersionOverride>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
-    <PackageReference Include="Microsoft.Extensions.Logging">
-      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
-      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
-      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
-      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
-    </PackageReference>
+
+    <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
+    <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <!-- net472 builds manually import files to compile -->
@@ -59,7 +63,6 @@
     <Compile Include="ReferenceParser.cs" />
     <Compile Include="KnownStrings.cs" />
     <Compile Include="DockerLoadException.cs" />
-    <Compile Include="LocalDaemons/DockerCli.cs" />
     <Compile Include="Tasks/ParseContainerProperties.cs" />
     <Compile Include="Tasks/CreateNewImage.Interface.cs" />
     <Compile Include="Tasks/CreateNewImageToolTask.cs" />
