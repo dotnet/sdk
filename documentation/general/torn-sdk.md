@@ -37,6 +37,19 @@ Specifically we will be
 
 In addition to making our builds more reliable this will also massively simplify our analyzer development strategy. Analyzers following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
 
+## Motivations
+
+There are a number of scenarios where customers end up in a torn state. The most common is when customers have a CI setup with the following items:
+
+1. They use a task like [actions/setup-dotnet][setup-dotnet] to install the .NET SDK and use a flexible version format like `8.x`.
+2. They use `msbuild` to actually drive their build. This `msbuild` comes from the Visual Studio installed on the machine image.
+
+This means that CI systems are updated to the latest .NET SDK virtually as soon as we release them. However the version of Visual Studio is updated much later as CI images usually take several weeks to upgrade to a new Visual Studio version. This is a very common CI setup and means a significant number of our customers end up in a torn state for several weeks.
+
+Another reason is that teams use older Visual Studio versions due to internal constraints: like an organizational policy. At the same time they install the latest .NET SDK which puts them into a torn state.
+
+This also hits any customer that uses a preview version of .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio This results in blockers for big teams like Bing from testing out our previews.
+
 ## Goals
 
 This design has a number of goals:
@@ -111,6 +124,7 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could ju
 [matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
 [pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
+[setup-dotnet]: https://github.com/actions/setup-dotnet
 
 ## Work Breakdown
 
