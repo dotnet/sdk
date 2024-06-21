@@ -11,7 +11,6 @@ using NuGet.Versioning;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System.Text;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {

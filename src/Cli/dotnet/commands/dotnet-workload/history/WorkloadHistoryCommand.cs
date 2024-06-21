@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
                 table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
                 table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
                 table.AddColumn(LocalizableStrings.Command, r => r.Command);
-                table.AddColumn(LocalizableStrings.Workloads, r => r.Workloads == null ? "" : string.Join(", ", r.Workloads));
+                table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.Command.Equals("InitialState") ? displayRecords[1].HistoryRecord.StateBeforeCommand.InstalledWorkloads : r.HistoryRecord.StateAfterCommand.InstalledWorkloads));
                 table.AddColumn(LocalizableStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
 
                 Reporter.WriteLine();

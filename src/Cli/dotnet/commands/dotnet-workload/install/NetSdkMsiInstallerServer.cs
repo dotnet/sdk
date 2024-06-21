@@ -103,11 +103,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
-                        case InstallRequestType.WriteWorkloadHistoryFile:
-                            WriteWorkloadHistoryRecord(request.ProductCode, request.PackagePath);
-                            Dispatcher.ReplySuccess("Created workload history file.");
-                            break;
-
                         case InstallRequestType.AdjustWorkloadMode:
                             UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
                             string newMode = request.UseWorkloadSets ? "workload sets" : "loose manifests";

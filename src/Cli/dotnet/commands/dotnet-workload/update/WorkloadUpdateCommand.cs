@@ -7,12 +7,9 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
@@ -117,7 +114,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     try
                     {
                         var workloadIds = GetUpdatableWorkloads();
-                        recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
                         DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews, workloadIds).Wait();
                     }
                     catch (Exception e)
@@ -217,10 +213,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
 
             var workloadIds = GetUpdatableWorkloads();
-            if (recorder is not null)
-            {
-                recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
-            }
             WriteSDKInstallRecordsForVSWorkloads(workloadIds);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 

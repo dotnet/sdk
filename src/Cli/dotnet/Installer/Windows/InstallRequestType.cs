@@ -66,11 +66,6 @@ namespace Microsoft.DotNet.Installer.Windows
         RemoveManifestsFromInstallStateFile,
 
         /// <summary>
-        /// Writes a workload history record.
-        /// </summary>
-        WriteWorkloadHistoryFile,
-
-        /// <summary>
         /// Changes the workload mode
         /// </summary>
         AdjustWorkloadMode,
