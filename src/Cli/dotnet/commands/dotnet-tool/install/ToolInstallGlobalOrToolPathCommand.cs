@@ -157,12 +157,16 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
             IToolPackage oldPackageNullable = GetOldPackage(toolPackageStoreQuery, packageId);
-            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
 
-            if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
+            if (oldPackageNullable != null)
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId).Green());
-                return 0;
+                NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+
+                if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
+                {
+                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId).Green());
+                    return 0;
+                }   
             }
 
             using (var scope = new TransactionScope(
