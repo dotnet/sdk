@@ -117,6 +117,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <RazorWarningLevel Condition="'$(RazorWarningLevel)' == ''">$(WarningLevel)</RazorWarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!--
       The property IsRazorCompilerReferenced is defined by the 2.x Razor.Design package. We can use this as a best guess to determine if a project is targeting 2.x or earlier.
       This is useful to provide 3.0 or newer specific build warnings. However, since it's not very reliable, we should not use this to make build-altering decisions.
