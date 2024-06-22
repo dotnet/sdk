@@ -71,7 +71,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             OutputRegistry,
             LocalRegistry);
 
-        LogPublishOperationTelemetry(sourceImageReference, destinationImageReference);
+        var telemetry = CreateTelemetryContext(sourceImageReference, destinationImageReference);
 
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
@@ -88,16 +88,24 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
             catch (RepositoryNotFoundException)
             {
+                telemetry.LogUnknownRepository();
                 Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
             catch (UnableToAccessRepositoryException)
             {
+                telemetry.LogCredentialFailure(sourceImageReference);
                 Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
             catch (ContainerHttpException e)
             {
+                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+                return !Log.HasLoggedErrors;
+            }
+            catch (BaseImageNotFoundException e)
+            {
+                telemetry.LogRIDMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
                 return !Log.HasLoggedErrors;
             }
@@ -110,6 +118,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         if (imageBuilder is null)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
+
             return !Log.HasLoggedErrors;
         }
 
@@ -157,8 +166,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return false;
         }
 
-
-
         BuiltImage builtImage = imageBuilder.Build();
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -175,28 +182,34 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 await PushToLocalRegistryAsync(builtImage,
                     sourceImageReference,
                     destinationImageReference,
+                    telemetry,
                     cancellationToken).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
                 await PushToRemoteRegistryAsync(builtImage,
                     sourceImageReference,
                     destinationImageReference,
+                    telemetry,
                     cancellationToken).ConfigureAwait(false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
+        telemetry.LogPublishSuccess();
+
         return !Log.HasLoggedErrors;
     }
 
     private async Task PushToLocalRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
+        Telemetry telemetry,
         CancellationToken cancellationToken)
     {
         ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
         if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
         {
+            telemetry.LogMissingLocalBinary();
             Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
             return;
         }
@@ -219,12 +232,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
         catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
         {
+            telemetry.LogLocalLoadError();
             Log.LogErrorFromException(dle, showStackTrace: false);
         }
     }
 
     private async Task PushToRemoteRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
+        Telemetry telemetry,
         CancellationToken cancellationToken)
     {
         try
@@ -330,22 +345,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             logError: (s, a) => { if (a is null) Log.LogErrorWithCodeFromResources(s); else Log.LogErrorWithCodeFromResources(s, a); });
     }
 
-    private void LogPublishOperationTelemetry(SourceImageReference source, DestinationImageReference destination)
+    private Telemetry CreateTelemetryContext(SourceImageReference source, DestinationImageReference destination)
     {
-        var telemetryData = new PublishTelemetryData(
+        var context = new PublishTelemetryContext(
             source.Registry is not null ? GetRegistryType(source.Registry) : null,
             null, // we don't support local pull yet, but we may in the future
             destination.RemoteRegistry is not null ? GetRegistryType(destination.RemoteRegistry) : null,
             destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry) : null);
-
-        Log.LogTelemetry("sdk/container/publish", new Dictionary<string, string?>
-        {
-            { nameof(telemetryData.RemotePullType), telemetryData.RemotePullType?.ToString() },
-            { "LocalPullType", telemetryData.LocalPullType?.ToString() },
-            { "RemotePushType", telemetryData.RemotePushType?.ToString() },
-            { "LocalPushType", telemetryData.LocalPushType?.ToString() }
-        });
-
+        return new Telemetry(Log, context);
     }
 
     private RegistryType GetRegistryType(Registry r)
@@ -367,7 +374,70 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         else return LocalStorageType.Podman;
     }
 
-    private record class PublishTelemetryData(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
+    private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
     private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, Other }
     private enum LocalStorageType { Docker, Podman, Tarball }
+
+    private class Telemetry(Microsoft.Build.Utilities.TaskLoggingHelper Log, PublishTelemetryContext context)
+    {
+        private IDictionary<string, string?> ContextProperties() => new Dictionary<string, string?>
+            {
+                { nameof(context.RemotePullType), context.RemotePullType?.ToString() },
+                { nameof(context.LocalPullType), context.LocalPullType?.ToString() },
+                { nameof(context.RemotePushType), context.RemotePushType?.ToString() },
+                { nameof(context.LocalPushType), context.LocalPushType?.ToString() }
+            };
+
+        public void LogPublishSuccess()
+        {
+            Log.LogTelemetry("sdk/container/publish/success", ContextProperties());
+        }
+
+        public void LogUnknownRepository()
+        {
+            var props = ContextProperties();
+            props.Add("error", "unknown_repository");
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+        public void LogCredentialFailure(SourceImageReference _)
+        {
+            var props = ContextProperties();
+            props.Add("error", "credential_failure");
+            props.Add("direction", "pull");
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+        public void LogCredentialFailure(DestinationImageReference d)
+        {
+            var props = ContextProperties();
+            props.Add("error", "credential_failure");
+            props.Add("direction", "push");
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+        public void LogRIDMismatch(string desiredRid, string[] availableRids)
+        {
+            var props = ContextProperties();
+            props.Add("error", "rid_mismatch");
+            props.Add("target_rid", desiredRid);
+            props.Add("available_rids", string.Join(",", availableRids));
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+        public void LogMissingLocalBinary()
+        {
+            var props = ContextProperties();
+            props.Add("error", "missing_binary");
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+        public void LogLocalLoadError()
+        {
+            var props = ContextProperties();
+            props.Add("error", "local_load");
+            Log.LogTelemetry("sdk/container/publish/error", props);
+        }
+
+    }
 }
