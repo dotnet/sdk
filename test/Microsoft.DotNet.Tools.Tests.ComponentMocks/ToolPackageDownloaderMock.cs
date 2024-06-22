@@ -308,7 +308,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             bool isGlobalTool = false)
         {
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
-            var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
 
             if (string.IsNullOrEmpty(packageId.ToString()))
             {

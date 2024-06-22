@@ -398,11 +398,16 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 versionRange = VersionRange.Parse(versionString);
             }
 
-            var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
-            var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-            var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true, verbosityOptions: verbosity);
+            var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
+                verboseLogger: nugetLogger,
+                isNuGetTool: true,
+                verbosityOptions: verbosity);
 
-            var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
+            var packageSourceLocation = new PackageSourceLocation(
+                nugetConfig: packageLocation.NugetConfig,
+                rootConfigDirectory: packageLocation.RootConfigDirectory,
+                additionalSourceFeeds: packageLocation.AdditionalFeeds);
 
             return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
         }
