@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             {
                 TemplatePath = templateLocation,
                 DoNotPrependCallerMethodNameToScenarioName = true,
-                ScenarioName = $"{folderName.Substring(folderName.IndexOf("-") + 1)}{argsScenarioName}"
+                ScenarioName = $"{folderName.Substring(folderName.IndexOf('-') + 1)}{argsScenarioName}"
             }
              .WithInstantiationThroughTemplateCreatorApi(templateArgs)
              .WithCustomScrubbers(

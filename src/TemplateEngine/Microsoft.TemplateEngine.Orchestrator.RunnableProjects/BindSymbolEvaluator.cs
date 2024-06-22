@@ -147,10 +147,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             string? prefix = null;
             string binding = configuredBinding;
-            if (configuredBinding.Contains(":"))
+            if (configuredBinding.Contains(':'))
             {
-                prefix = configuredBinding.Substring(0, configuredBinding.IndexOf(":")).Trim();
-                binding = configuredBinding.Substring(configuredBinding.IndexOf(":") + 1).Trim();
+                prefix = configuredBinding.Substring(0, configuredBinding.IndexOf(':')).Trim();
+                binding = configuredBinding.Substring(configuredBinding.IndexOf(':') + 1).Trim();
             }
             if (string.IsNullOrWhiteSpace(binding))
             {
