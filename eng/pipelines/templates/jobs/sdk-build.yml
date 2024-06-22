@@ -59,18 +59,6 @@ jobs:
         inputs:
           targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
           artifactName: BuildConfiguration
-    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - ${{ if eq(parameters.pool.os, 'windows') }}:
-        - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-          displayName: Setup Private Feeds Credentials
-          env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
-      # The PowerShell script above would work fine on Linux/Mac, but the Linux containers don't have PowerShell installed.
-      - ${{ else }}:
-        - script: . $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
-          displayName: Setup Private Feeds Credentials
-          env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -113,7 +101,6 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -138,6 +125,7 @@ jobs:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>

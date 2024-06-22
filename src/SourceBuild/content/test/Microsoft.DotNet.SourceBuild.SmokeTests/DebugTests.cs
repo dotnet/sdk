@@ -30,7 +30,7 @@ public class DebugTests : SdkTests
         StringBuilder issueDetails = new();
         foreach (var fileName in fileNames)
         {
-            if (!IsElfFile(fileName))
+            if (!IsElfFile(fileName) || SkipFile(fileName))
             {
                 continue;
             }
@@ -68,6 +68,14 @@ public class DebugTests : SdkTests
     {
         string fileStdOut = ExecuteHelper.ExecuteProcessValidateExitCode("file", $"{fileName}", OutputHelper);
         return Regex.IsMatch(fileStdOut, @"ELF 64-bit [LM]SB (?:pie )?(?:executable|shared object)");
+    }
+
+    private static bool SkipFile(string path)
+    {
+        string fileName = Path.GetFileName(path);
+
+        // 'ilc' is a NativeAOT-built application which doesn't meet the expectations set by the test.
+        return fileName == "ilc";
     }
 
     private ScanResult ScanFile(string fileName)

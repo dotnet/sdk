@@ -213,6 +213,51 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
+        [Fact]
+        public void UpdateWorkloadSetViaGlobalJson()
+        {
+            InstallSdk();
+
+            var versionToUpdateTo = "8.0.300-preview.0.24217.2";
+            var directory = "C:\\SdkTesting";
+
+            string originalVersion = GetWorkloadVersion();
+
+            var rollback = GetRollback(directory);
+
+            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo}""}}}}").Execute().Should().Pass();
+
+            GetWorkloadVersion(directory).Should().Be(versionToUpdateTo);
+
+            // The version should have changed but not yet the manifests. Since we expect both, getting the rollback should fail.
+            var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
+               .WithWorkingDirectory(directory)
+               .WithIsReadOnly(true)
+               .Execute();
+
+            result.Should().Fail();
+            result.StdErr.Should().Contain("FileNotFoundException");
+            result.StdErr.Should().Contain(versionToUpdateTo);
+
+            AddNuGetSource(@"C:\SdkTesting\workloadsets", directory);
+
+            VM.CreateRunCommand("dotnet", "workload", "update").WithWorkingDirectory(directory).Execute().Should().Pass();
+
+            GetRollback(directory).Should().NotBe(rollback);
+        }
+
+        string GetWorkloadVersion(string workingDirectory = null)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
+                .WithWorkingDirectory(workingDirectory)
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return result.StdOut;
+        }
+
         string GetUpdateMode()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "config", "--update-mode")
@@ -222,6 +267,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.Should().Pass();
 
             return result.StdOut;
+        }
+
+        void AddNuGetSource(string source, string directory = null)
+        {
+            VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
+                .WithWorkingDirectory(directory)
+                .WithDescription($"Add {source} to NuGet.config")
+                .Execute()
+                .Should()
+                .Pass();
         }
     }
 }
