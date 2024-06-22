@@ -232,7 +232,7 @@ internal sealed class DockerCli
                     {
                         if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure", out var secure) && !secure.GetBoolean())
                         {
-                            if (property.Name.Equals(registryDomain, StringComparison.Ordinal))
+                            if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                             {
                                 return true;
                             }
@@ -248,7 +248,7 @@ internal sealed class DockerCli
                 {
                     if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure", out var insecure) && insecure.GetBoolean())
                     {
-                        if (property.Name.Equals(registryDomain, StringComparison.Ordinal))
+                        if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }

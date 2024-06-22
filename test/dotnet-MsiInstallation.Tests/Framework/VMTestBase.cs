@@ -168,9 +168,10 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             return result;
         }
 
-        protected WorkloadSet GetRollback()
+        protected WorkloadSet GetRollback(string directory = null)
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
+                .WithWorkingDirectory(directory)
                 .WithIsReadOnly(true)
                 .Execute();
 
