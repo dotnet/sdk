@@ -118,7 +118,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         if (imageBuilder is null)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
-
             return !Log.HasLoggedErrors;
         }
 

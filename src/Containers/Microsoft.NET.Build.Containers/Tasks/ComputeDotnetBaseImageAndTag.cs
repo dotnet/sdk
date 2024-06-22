@@ -117,7 +117,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
             if (ComputeRepositoryAndTag(out var repository, out var tag))
             {
                 ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
-                LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag);
+                LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
             }
             return !Log.HasLoggedErrors;
         }
@@ -211,7 +211,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 // in question, and the app is globalized, we can help and add -extra so the app will actually run
 
                 if (
-                    (!IsMuslRid && ContainerFamily.EndsWith("-chiseled")) // default for linux RID
+                    (!IsMuslRid && ContainerFamily!.EndsWith("-chiseled")) // default for linux RID
                     && !UsesInvariantGlobalization
                     && versionAllowsUsingAOTAndExtrasImages
                     // the extras only became available on the stable tags of the FirstVersionWithNewTaggingScheme
