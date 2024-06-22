@@ -19,6 +19,48 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
+        [Fact]
+        public void LinkInServerGc()
+        {
+            const string projectName = "PrintGc";
+            const string targetFramework = "net9.0";
+            var testProject = new TestProject()
+            {
+                Name = projectName,
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            testProject.SourceFiles[$"{projectName}.cs"] = """
+using System;
+Console.WriteLine("IsServerGC: " + System.Runtime.GCSettings.IsServerGc);
+""";
+
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["IlcLinkServerGc"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("IsServerGC: false");
+
+            command = new RunExeCommand(Log, publishedExe)
+                .WithEnvironmentVariable("DOTNET_gcServer", "1")
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("IsServerGC: true");
+        }
+
         [RequiresMSBuildVersionTheory("17.8.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
