@@ -71,6 +71,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             OutputRegistry,
             LocalRegistry);
 
+        LogPublishOperationTelemetry(sourceImageReference, destinationImageReference);
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
@@ -154,6 +156,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             return false;
         }
+
+
 
         BuiltImage builtImage = imageBuilder.Build();
         cancellationToken.ThrowIfCancellationRequested();
@@ -325,4 +329,45 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             logWarning: s => Log.LogWarningWithCodeFromResources(s),
             logError: (s, a) => { if (a is null) Log.LogErrorWithCodeFromResources(s); else Log.LogErrorWithCodeFromResources(s, a); });
     }
+
+    private void LogPublishOperationTelemetry(SourceImageReference source, DestinationImageReference destination)
+    {
+        var telemetryData = new PublishTelemetryData(
+            source.Registry is not null ? GetRegistryType(source.Registry) : null,
+            null, // we don't support local pull yet, but we may in the future
+            destination.RemoteRegistry is not null ? GetRegistryType(destination.RemoteRegistry) : null,
+            destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry) : null);
+
+        Log.LogTelemetry("sdk/container/publish", new Dictionary<string, string?>
+        {
+            { nameof(telemetryData.RemotePullType), telemetryData.RemotePullType?.ToString() },
+            { "LocalPullType", telemetryData.LocalPullType?.ToString() },
+            { "RemotePushType", telemetryData.RemotePushType?.ToString() },
+            { "LocalPushType", telemetryData.LocalPushType?.ToString() }
+        });
+
+    }
+
+    private RegistryType GetRegistryType(Registry r)
+    {
+        if (r.IsGithubPackageRegistry) return RegistryType.GitHub;
+        if (r.IsAmazonECRRegistry) return RegistryType.AWS;
+        if (r.IsAzureContainerRegistry) return RegistryType.Azure;
+        if (r.IsGoogleArtifactRegistry) return RegistryType.Google;
+        if (r.IsDockerHub) return RegistryType.DockerHub;
+        return RegistryType.Other;
+    }
+
+    private LocalStorageType GetLocalStorageType(ILocalRegistry r)
+    {
+        if (r is ArchiveFileRegistry) return LocalStorageType.Tarball;
+        var d = r as DockerCli;
+        System.Diagnostics.Debug.Assert(d != null, "Unknown local registry type");
+        if (d.GetCommand() == DockerCli.DockerCommand) return LocalStorageType.Docker;
+        else return LocalStorageType.Podman;
+    }
+
+    private record class PublishTelemetryData(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
+    private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, Other }
+    private enum LocalStorageType { Docker, Podman, Tarball }
 }

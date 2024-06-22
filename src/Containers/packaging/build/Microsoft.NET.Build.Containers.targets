@@ -38,12 +38,10 @@
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
 
     <ComputeDotnetBaseImageAndTag
-      Condition="$(_ContainerIsUsingMicrosoftDefaultImages)"
+      UserBaseImage="$(ContainerBaseImage)"
       SdkVersion="$(NetCoreSdkVersion)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
       FrameworkReferences="@(FrameworkReference)"

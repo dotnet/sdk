@@ -140,6 +140,8 @@ internal sealed class Registry
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
 
+    public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
     /// parallel uploads be more conservative and upload one layer at a time.
