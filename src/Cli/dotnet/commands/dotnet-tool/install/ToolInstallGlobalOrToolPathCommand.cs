@@ -170,7 +170,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             verbosity: _verbosity,
                             isGlobalTool: true);
 
-                    EnsureVersionIsDifferent(oldPackageNullable, nugetVersion);
+                    if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
+                    {
+                        _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId).Green());
+
+                        scope.Complete();
+                        return 0;
+                    }
 
                     RunWithHandlingUninstallError(() =>
                     {
@@ -183,19 +189,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }, packageId);
                 }
 
-                IToolPackage newInstalledPackage = null;
-
                 RunWithHandlingInstallError(() =>
                 {
-                    newInstalledPackage = toolPackageDownloader.InstallPackage(
-                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
-                            packageId: packageId,
-                            versionRange: versionRange,
-                            targetFramework: _framework,
-                            verbosity: _verbosity,
-                            isGlobalTool: true,
-                            isGlobalToolRollForward: _allowRollForward
-                        );
+                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
+                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                        packageId: packageId,
+                        versionRange: versionRange,
+                        targetFramework: _framework,
+                        verbosity: _verbosity,
+                        isGlobalTool: true,
+                        isGlobalToolRollForward: _allowRollForward
+                    );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
 
@@ -237,14 +241,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
         
-        private void EnsureVersionIsDifferent(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
+        private bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
         {
-            if (oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version))
-            {
-                throw new GracefulException(
-                    messages: [string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId)],
-                    isUserError: false);
-            }
+            return oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version);
         }
 
         private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)

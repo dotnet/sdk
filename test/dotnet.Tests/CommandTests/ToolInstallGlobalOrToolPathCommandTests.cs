@@ -400,11 +400,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
             _reporter.Clear();
 
-            var action = () => toolInstallGlobalOrToolPathCommand.Execute();
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
 
-            action
-                .Should().Throw<GracefulException>()
-                .WithMessage(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId));
+            _reporter.Lines.Should().Equal(string.Format(LocalizableStrings.ToolAlreadyInstalled, PackageId).Green());
         }
 
         [Fact]
