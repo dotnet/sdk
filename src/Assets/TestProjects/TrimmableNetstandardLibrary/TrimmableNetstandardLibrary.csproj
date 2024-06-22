@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(testAsset.props))" />
 
   <PropertyGroup>
     <!-- Test infra replaces this with the value of CurrentTargetFramework so we can compare against it below. -->
