@@ -351,7 +351,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
         }
 
-        public interface IManagedInstallerMock : IInstaller, ISerializableInstaller { }
+        public interface IManagedInstallerMock : IInstaller, ISerializableInstaller;
 
         internal IManagedInstallerMock GetInstallerMock(IInstallerFactory factory)
         {
