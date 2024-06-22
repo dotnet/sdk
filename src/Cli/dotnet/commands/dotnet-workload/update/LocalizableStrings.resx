@@ -160,6 +160,6 @@
     <value>No workload update found.</value>
   </data>
   <data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
-    <value>Workload version {0} not found.</value>
+    <value>Workload version {0} not found. Adding a feed that contains it to your NuGet.config may help.</value>
   </data>
 </root>

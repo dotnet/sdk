@@ -123,6 +123,13 @@ namespace Microsoft.DotNet.Workloads.Workload
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
             }
 
+            // Delete the current advertising manifest because if we fail to find the right workload version, we want to fail.
+            var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
+            if (Directory.Exists(advertisingPackagePath))
+            {
+                Directory.Delete(advertisingPackagePath, recursive: true);
+            }
+
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
             return TryInstallWorkloadSet(context, out updates, throwOnFailure: true);
         }

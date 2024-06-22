@@ -73,8 +73,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionRequestedNotFound">
-        <source>Workload version {0} not found.</source>
-        <target state="translated">找不到工作負載版本 {0}。</target>
+        <source>Workload version {0} not found. Adding a feed that contains it to your NuGet.config may help.</source>
+        <target state="needs-review-translation">找不到工作負載版本 {0}。</target>
         <note />
       </trans-unit>
     </body>
