@@ -374,6 +374,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         else return LocalStorageType.Podman;
     }
 
+    /// <summary>
+    /// Interesting data about the container publish - used to track the usage rates of various sources/targets of the process
+    /// and to help diagnose issues with the container publish overall.
+    /// </summary>
+    /// <param name="RemotePullType">If the base image came from a remote registry, what kind of registry was it?</param>
+    /// <param name="LocalPullType">If the base image came from a local store of some kind, what kind of store was it?</param>
+    /// <param name="RemotePushType">If the new image is being pushed to a remote registry, what kind of registry is it?</param>
+    /// <param name="LocalPushType">If the new image is being stored in a local store of some kind, what kind of store is it?</param>
     private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
     private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
     private enum LocalStorageType { Docker, Podman, Tarball }

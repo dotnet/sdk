@@ -123,51 +123,6 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
     }
 
-    private void LogNoInferencePerformedTelemetry()
-    {
-        // we should only log the base image, tag, containerFamily if we _know_ they are .NET's MCR images
-        string? userBaseImage = null;
-        string? userTag = null;
-        string? containerFamily = null;
-        if (UserBaseImage is not null && UserImageIsMicrosoftBaseImage)
-        {
-            if (ContainerHelpers.TryParseFullyQualifiedContainerName(UserBaseImage, out var containerRegistry, out var containerName, out var containerTag, out var _, out bool isRegistrySpecified))
-            {
-                userBaseImage = $"{containerRegistry}/{containerName}";
-                userTag = containerTag;
-                containerFamily = ContainerFamily;
-            }
-        }
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, IsAspNetCoreProject ? ProjectType.AspNetCore : ProjectType.Console, IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent, UsesInvariantGlobalization, TargetRuntimeIdentifier);
-        LogTelemetryData(telemetryData);
-    }
-
-    private void LogInferencePerformedTelemetry(string imageName, string tag)
-    {
-        // for all inference use cases we will use .NET's images, so we can safely log name, tag, and family
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, IsAspNetCoreProject ? ProjectType.AspNetCore : ProjectType.Console, IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent, UsesInvariantGlobalization, TargetRuntimeIdentifier);
-        LogTelemetryData(telemetryData);
-    }
-
-    private string ParseSemVerToMajorMinor(string semver) => SemanticVersion.Parse(semver).ToString("x.y", VersionFormatter.Instance);
-
-    private void LogTelemetryData(InferenceTelemetryData telemetryData)
-    {
-        var telemetryProperties = new Dictionary<string, string?>
-        {
-            { nameof(telemetryData.InferencePerformed), telemetryData.InferencePerformed.ToString() },
-            { nameof(telemetryData.TargetFramework), telemetryData.TargetFramework },
-            { nameof(telemetryData.BaseImage), telemetryData.BaseImage },
-            { nameof(telemetryData.BaseImageTag), telemetryData.BaseImageTag },
-            { nameof(telemetryData.ContainerFamily), telemetryData.ContainerFamily },
-            { nameof(telemetryData.ProjectType), telemetryData.ProjectType.ToString() },
-            { nameof(telemetryData.PublishMode), telemetryData.PublishMode.ToString() },
-            { nameof(telemetryData.IsInvariant), telemetryData.IsInvariant.ToString() },
-            { nameof(telemetryData.TargetRuntime), telemetryData.TargetRuntime }
-        };
-        Log.LogTelemetry("sdk/container/inference", telemetryProperties);
-    }
-
     private string UbuntuCodenameForSDKVersion(SemanticVersion version)
     {
         if (version >= SemanticVersion.Parse("8.0.300"))
@@ -342,8 +297,55 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         };
     }
 
-
     private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/dotnet") ?? false;
+
+    private void LogNoInferencePerformedTelemetry()
+    {
+        // we should only log the base image, tag, containerFamily if we _know_ they are .NET's MCR images
+        string? userBaseImage = null;
+        string? userTag = null;
+        string? containerFamily = null;
+        if (UserBaseImage is not null && UserImageIsMicrosoftBaseImage)
+        {
+            if (ContainerHelpers.TryParseFullyQualifiedContainerName(UserBaseImage, out var containerRegistry, out var containerName, out var containerTag, out var _, out bool isRegistrySpecified))
+            {
+                userBaseImage = $"{containerRegistry}/{containerName}";
+                userTag = containerTag;
+                containerFamily = ContainerFamily;
+            }
+        }
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        LogTelemetryData(telemetryData);
+    }
+
+    private void LogInferencePerformedTelemetry(string imageName, string tag)
+    {
+        // for all inference use cases we will use .NET's images, so we can safely log name, tag, and family
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        LogTelemetryData(telemetryData);
+    }
+
+    private PublishMode GetTelemetryPublishMode() => IsAotPublished ? PublishMode.AOT : IsTrimmed ? PublishMode.Trimmed : IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent;
+    private ProjectType GetTelemetryProjectType() => IsAspNetCoreProject ? ProjectType.AspNetCore : ProjectType.Console;
+
+    private string ParseSemVerToMajorMinor(string semver) => SemanticVersion.Parse(semver).ToString("x.y", VersionFormatter.Instance);
+
+    private void LogTelemetryData(InferenceTelemetryData telemetryData)
+    {
+        var telemetryProperties = new Dictionary<string, string?>
+        {
+            { nameof(telemetryData.InferencePerformed), telemetryData.InferencePerformed.ToString() },
+            { nameof(telemetryData.TargetFramework), telemetryData.TargetFramework },
+            { nameof(telemetryData.BaseImage), telemetryData.BaseImage },
+            { nameof(telemetryData.BaseImageTag), telemetryData.BaseImageTag },
+            { nameof(telemetryData.ContainerFamily), telemetryData.ContainerFamily },
+            { nameof(telemetryData.ProjectType), telemetryData.ProjectType.ToString() },
+            { nameof(telemetryData.PublishMode), telemetryData.PublishMode.ToString() },
+            { nameof(telemetryData.IsInvariant), telemetryData.IsInvariant.ToString() },
+            { nameof(telemetryData.TargetRuntime), telemetryData.TargetRuntime }
+        };
+        Log.LogTelemetry("sdk/container/inference", telemetryProperties);
+    }
 
 
     /// <summary>
@@ -354,10 +356,10 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// <param name="BaseImage">If the user specified a Microsoft image or we inferred one, this will be the name of that image. Otherwise null so we can't leak customer data.</param>
     /// <param name="BaseImageTag">If the user specified a Microsoft image or we inferred one, this will be the tag of that image. Otherwise null so we can't leak customer data.</param>
     /// <param name="ContainerFamily">If the user specified a ContainerFamily for our images or we inserted one during inference this will be here. Otherwise null so we can't leak customer data.</param>
-    /// <param name="ProjectType"></param>
-    /// <param name="PublishMode"></param>
-    /// <param name="IsInvariant"></param>
-    /// <param name="TargetRuntime"></param>
+    /// <param name="ProjectType">Classifies the project into categories - currently only the broad categories of web/console are known.</param>
+    /// <param name="PublishMode">Categorizes the publish mode of the app - FDD, SC, Trimmed, AOT in rough order of complexity/container customization</param>
+    /// <param name="IsInvariant">We make inference decisions on the invariant-ness of the project, so it's useful to track how often that is used.</param>
+    /// <param name="TargetRuntime">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
     private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string TargetRuntime);
     private enum ProjectType
     {
@@ -367,7 +369,9 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     private enum PublishMode
     {
         FrameworkDependent,
-        SelfContained
+        SelfContained,
+        Trimmed,
+        AOT
     }
 
 }
