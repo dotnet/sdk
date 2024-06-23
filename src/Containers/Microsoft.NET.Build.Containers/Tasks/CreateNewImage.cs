@@ -356,6 +356,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     private RegistryType GetRegistryType(Registry r)
     {
+        if (r.IsMCR) return RegistryType.MCR;
         if (r.IsGithubPackageRegistry) return RegistryType.GitHub;
         if (r.IsAmazonECRRegistry) return RegistryType.AWS;
         if (r.IsAzureContainerRegistry) return RegistryType.Azure;
@@ -374,7 +375,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     }
 
     private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
-    private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, Other }
+    private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
     private enum LocalStorageType { Docker, Podman, Tarball }
 
     private class Telemetry(Microsoft.Build.Utilities.TaskLoggingHelper Log, PublishTelemetryContext context)

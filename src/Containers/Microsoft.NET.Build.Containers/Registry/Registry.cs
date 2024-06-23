@@ -123,6 +123,11 @@ internal sealed class Registry
     public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
 
     /// <summary>
+    /// Is this registry the public Microsoft Container Registry.
+    /// </summary>
+    public bool IsMCR => RegistryName.Equals("mcr.microsoft.com", StringComparison.Ordinal);
+
+    /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
     /// </summary>
     public bool IsDockerHub => RegistryName.Equals(ContainerHelpers.DockerRegistryAlias, StringComparison.Ordinal)
