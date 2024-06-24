@@ -22,6 +22,17 @@ Generally this mixing of components is fine because Visual Studio will install a
 generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
 than the currently running version '4.8.0.0'.
 
+This torn state is a common customer setup:
+
+|Visual Studio Version | Match% | Float % | Torn % |
+| --- | --- | --- | --- |
+| 16.11 | 81.4% | 10.8% | 7.8% |
+| 17.2 | 91% | 8% | 1% |
+| 17.4 | 91.5% | 5.7% | 2.7% |
+| 17.6 | 91.6% | 5% | 3.5% |
+| 17.7 | 94.9% | 2.2% | 3% |
+| 17.8 | 96% | 0% | 4% |
+
 To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to the following:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
@@ -35,7 +46,7 @@ Specifically we will be
 1. Changing msbuild to use a compiler from the .NET SDK
 2. Changing Visual Studio to use analyzers from Visual Studio
 
-In addition to making our builds more reliable this will also massively simplify our analyzer development strategy. Analyzers following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
+In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
 
 ## Motivations
 
@@ -60,11 +71,11 @@ This design has a number of goals:
 
 ## MSBuild using .NET SDK Compiler
 
-The .NET SDK will start producing a package named Microsoft.NETSdk.Compiler.Roslyn. This will contain a .NET Framework version of the Roslyn compiler that matches .NET Core version. This will be published as a part of the .NET SDK release process meaning it's available for all publicly available .NET SDKs.
+The .NET SDK will start producing a package named Microsoft.Net.Sdk.Compilers.Toolset. This will contain a .NET Framework version of the Roslyn compiler that matches .NET Core version. This will be published as a part of the .NET SDK release process meaning it's available for all publicly available .NET SDKs.
 
-The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected the matching Microsoft.NETSDK.Compiler.Roslyn package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
+The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected the matching Microsoft.Net.Sdk.Compilers.Toolset package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
 
-One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider that when a solution has a mix of .NET SDK style projects and legacy projects then in a torn state the .NET SDK projects will use the .NET SDK compiler will legacy projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
+One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider a solution that has a mix of .NET SDK style projects and non-SDK .NET projects. In a torn the .NET SDK projects will use the .NET SDK compiler and non-SDK .NET projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
 
 ## Visual Studio using Visual Studio Analyzers
 
@@ -117,11 +128,13 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could us
 
 ## Related Issues
 
-- https://github.com/dotnet/roslyn/issues/72672
-- https://github.com/dotnet/installer/pull/19144
+- [Roslyn tracking issue for torn state](https://github.com/dotnet/roslyn/issues/72672)
+- [MSBuild property for torn state detection](https://github.com/dotnet/installer/pull/19144)
+- [Long term build-server shutdown issue](https://github.com/dotnet/msbuild/issues/10035)
 
 [microsoft-common-tasks]: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks#L106-L109
 [matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
+[sdk-lifecycle]: https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#lifecycle
 [pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
 [setup-dotnet]: https://github.com/actions/setup-dotnet
@@ -131,12 +144,12 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could us
 This will be moved to an issue when this PR is opened against dotnet/sdk proper:
 
 - [ ]: Flow the Micosoft.Net.Compilers.Toolset.Framework package to the .NET SDK
-- [ ]: Create a new package Micosoft.NETSdk.Compiler.Roslyn in .NET SDK.
+- [ ]: Create a new package Micosoft.Microsoft.Net.Sdk.Compilers.Toolset in .NET SDK.
   - [ ]: The contents of this package will include the contents of the `tasks\net472` folder in the Microsoft.Net.Compilers.Toolset.Framework package. This subset is all that is needed and makes the package not usable via `<PackageReference>`. The latter reduces the incentive for customers to use it directly.
   - [ ]: The contents will include a README.md stating the package is **not** supported for direct user consumption.
   - [ ]: The package will follow the versioning scheme of the .NET SDK.
   - [ ]: The package will be unlisted (ideal but not a hard requirement)
 - [ ]: Change the Sdk.targets file to have copies of the following three `<UsingTasks>` from [Microsoft.Common.tasks][microsoft-common-tasks]. Having a copy in Sdk.targets means that resetting `$(RoslynTargetsPath)` during build will change the chosen compiler.
 - [ ]: When the .NET SDK detects a torn state
-  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.NETSdk.Compiler.Roslyn package
+  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.Net.Sdk.Compilers.Toolset package
   - [ ]: Change `$(RoslynTargetsPath)` to point into the package contents
