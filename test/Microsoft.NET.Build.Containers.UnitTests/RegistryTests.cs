@@ -537,7 +537,7 @@ public class RegistryTests : IDisposable
         var environment = new Dictionary<string, string>();
         if (insecureRegistriesEnvvar is not null)
         {
-            environment["SDK_CONTAINER_INSECURE_REGISTRIES"] = insecureRegistriesEnvvar;
+            environment["DOTNET_CONTAINER_INSECURE_REGISTRIES"] = insecureRegistriesEnvvar;
         }
 
         var registrySettings = new RegistrySettings(registryName, new MockEnvironmentProvider(environment));
