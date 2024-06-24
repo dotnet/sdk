@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                 if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
                 {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId).Green());
+                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId, oldPackageNullable.Version.ToNormalizedString()).Green());
                     return 0;
                 }   
             }

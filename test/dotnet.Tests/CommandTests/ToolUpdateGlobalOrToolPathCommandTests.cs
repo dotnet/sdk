@@ -292,7 +292,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
-                _packageId));
+                _packageId, HigherPackageVersion));
         }
 
         [Fact]
@@ -307,7 +307,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.First().Should().Contain(string.Format(
                 Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
-                _packageId));
+                _packageId, HigherPreviewPackageVersion));
         }
 
         [Fact]
