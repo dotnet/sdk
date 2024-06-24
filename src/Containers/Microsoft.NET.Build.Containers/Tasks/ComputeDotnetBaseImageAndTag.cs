@@ -325,7 +325,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         LogTelemetryData(telemetryData);
     }
 
-    private PublishMode GetTelemetryPublishMode() => IsAotPublished ? PublishMode.AOT : IsTrimmed ? PublishMode.Trimmed : IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent;
+    private PublishMode GetTelemetryPublishMode() => IsAotPublished ? PublishMode.Aot : IsTrimmed ? PublishMode.Trimmed : IsSelfContained ? PublishMode.SelfContained : PublishMode.FrameworkDependent;
     private ProjectType GetTelemetryProjectType() => IsAspNetCoreProject ? ProjectType.AspNetCore : ProjectType.Console;
 
     private string ParseSemVerToMajorMinor(string semver) => SemanticVersion.Parse(semver).ToString("x.y", VersionFormatter.Instance);
@@ -371,7 +371,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         FrameworkDependent,
         SelfContained,
         Trimmed,
-        AOT
+        Aot
     }
 
 }

@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             {
                 if (eventProperties.TryGetValue(propertyToBeHashed, out string value))
                 {
-                    // Lets lazy allocate in case there is tons of telemetry 
+                    // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new Dictionary<string, string>(eventProperties);
                     properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
                 }
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             {
                 if (eventProperties.TryGetValue(propertyToBeMeasured, out string value))
                 {
-                    // Lets lazy allocate in case there is tons of telemetry 
+                    // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new Dictionary<string, string>(eventProperties);
                     properties.Remove(propertyToBeMeasured);
                     if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
