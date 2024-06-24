@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         // The _fooOneTemplate is a non-match because of a framework choice param value mismatch.
         // But the _fooTwoTemplate matches because the framework choice is valid for that template.
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Fails due to matching on template options is not implemented.")]
+        [Fact]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task CacheSearchCliSymbolNameFilterTest()
         {
@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
         // test that an invalid symbol makes the search be a non-match
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Fails due to matching on template options is not implemented.")]
+        [Fact]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task CacheSearchCliSymbolNameMismatchFilterTest()
         {
@@ -444,9 +444,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             }
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Not relevant due to matching on template options is not implemented.")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public async Task CacheSkipInvalidTemplatesTest()
         {
             string cacheLocation = TestUtils.CreateTemporaryFolder();

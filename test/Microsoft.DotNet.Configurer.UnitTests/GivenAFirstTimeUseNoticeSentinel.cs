@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMockBuilder = FileSystemMockBuilder.Create();
         }
 
-        [Fact(Skip = "Product.Version not set correctly when running tests")]
+        [Fact]
         public void TheSentinelHasTheCurrentVersionInItsName()
         {
             FirstTimeUseNoticeSentinel.SENTINEL.Should().Contain($"{Product.Version}");

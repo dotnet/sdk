@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact(Skip = "Test app base folder doesn't have Sdks")]
+        [Fact]
         public void ItSetsMSBuildSDKsPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";

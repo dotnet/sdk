@@ -9,7 +9,7 @@ namespace EndToEnd.Tests
 {
     public class TelemetryOptOutDefault : TestBase
     {
-        [Fact(Skip = "TODO: This test can only be ran in CI because the local build does not adjust telemetry settings.")]
+        [Fact]
         public void TelemetryOptOutDefaultAttribute()
         {
             var versionCommand = new DotnetCommand().ExecuteWithCapturedOutput("--version");
