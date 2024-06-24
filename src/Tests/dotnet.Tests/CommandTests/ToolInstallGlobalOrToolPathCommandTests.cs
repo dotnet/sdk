@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using NuGetPackageDownloaderLocalizableStrings = Microsoft.DotNet.Cli.NuGetPackageDownloader.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 
@@ -814,6 +815,20 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
 
             _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockInstructionText));
+        }
+
+        [Fact]
+        public void WhenInstallItDoesNotSkipNuGetPackageVerfication()
+        {
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                 _parseResult,
+                 _createToolPackageStoreDownloaderUninstaller,
+                 _createShellShimRepository,
+                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                 _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            _reporter.Lines.Should().NotContain(l => l.Contains(NuGetPackageDownloaderLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
         [Fact]
