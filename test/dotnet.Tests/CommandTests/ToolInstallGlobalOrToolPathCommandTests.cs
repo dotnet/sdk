@@ -376,7 +376,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void WhenInstallTheSpecificSameVersionTwiceItShouldFail()
+        public void WhenInstallTheSpecificSameVersionTwiceItShouldNoop()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
 
