@@ -12,8 +12,7 @@ internal class RegistrySettings
     {
         environment ??= new EnvironmentProvider();
 
-        ChunkedUploadSizeBytes = Environment.GetEnvironmentVariable(EnvVariables.ChunkedUploadSizeBytes) is not null ?
-            environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes) :
+        ChunkedUploadSizeBytes = environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes) ??
             environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytesLegacy);
         ForceChunkedUpload = Environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
             environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false) :
