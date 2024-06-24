@@ -68,7 +68,6 @@ internal class RegistrySettings
         internal const string ParallelUploadEnabledLegacy = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
 
         internal const string InsecureRegistries = "DOTNET_CONTAINER_INSECURE_REGISTRIES";
-        internal const string InsecureRegistriesLegacy = "SDK_CONTAINER_INSECURE_REGISTRIES";
     }
 
     private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)
