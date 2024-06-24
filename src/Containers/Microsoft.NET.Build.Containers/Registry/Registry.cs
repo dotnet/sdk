@@ -125,7 +125,7 @@ internal sealed class Registry
     /// <summary>
     /// Is this registry the public Microsoft Container Registry.
     /// </summary>
-    public bool IsMCR => RegistryName.Equals("mcr.microsoft.com", StringComparison.Ordinal);
+    public bool IsMcr => RegistryName.Equals("mcr.microsoft.com", StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.

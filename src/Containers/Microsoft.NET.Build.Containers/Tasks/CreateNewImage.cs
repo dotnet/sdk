@@ -105,7 +105,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
             catch (BaseImageNotFoundException e)
             {
-                telemetry.LogRIDMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
+                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
                 return !Log.HasLoggedErrors;
             }
@@ -356,7 +356,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     private RegistryType GetRegistryType(Registry r)
     {
-        if (r.IsMCR) return RegistryType.MCR;
+        if (r.IsMcr) return RegistryType.MCR;
         if (r.IsGithubPackageRegistry) return RegistryType.GitHub;
         if (r.IsAmazonECRRegistry) return RegistryType.AWS;
         if (r.IsAzureContainerRegistry) return RegistryType.Azure;
@@ -424,7 +424,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             Log.LogTelemetry("sdk/container/publish/error", props);
         }
 
-        public void LogRIDMismatch(string desiredRid, string[] availableRids)
+        public void LogRidMismatch(string desiredRid, string[] availableRids)
         {
             var props = ContextProperties();
             props.Add("error", "rid_mismatch");
