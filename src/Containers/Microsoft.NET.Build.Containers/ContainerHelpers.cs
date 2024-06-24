@@ -17,8 +17,10 @@ namespace Microsoft.NET.Build.Containers;
 public static class ContainerHelpers
 {
     internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
+    internal const string HostObjectUserLegacy = "SDK_CONTAINER_REGISTRY_UNAME";
 
     internal const string HostObjectPass = "DOTNET_CONTAINER_REGISTRY_PWORD";
+    internal const string HostObjectPassLegacy = "SDK_CONTAINER_REGISTRY_PWORD";
 
     internal const string DockerRegistryAlias = "docker.io";
     

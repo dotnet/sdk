@@ -12,9 +12,15 @@ internal class RegistrySettings
     {
         environment ??= new EnvironmentProvider();
 
-        ChunkedUploadSizeBytes = environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes);
-        ForceChunkedUpload = environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false);
-        ParallelUploadEnabled = environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true);
+        ChunkedUploadSizeBytes = Environment.GetEnvironmentVariable(EnvVariables.ChunkedUploadSizeBytes) is not null ?
+            environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes) :
+            environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytesLegacy);
+        ForceChunkedUpload = Environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
+            environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false) :
+            environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUploadLegacy, defaultValue: false);
+        ParallelUploadEnabled = Environment.GetEnvironmentVariable(EnvVariables.ParallelUploadEnabled) is not null ?
+            environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true) :
+            environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabledLegacy, defaultValue: true);
 
         if (registryName is not null)
         {
@@ -54,11 +60,15 @@ internal class RegistrySettings
     internal struct EnvVariables
     {
         internal const string ChunkedUploadSizeBytes = "DOTNET_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES";
+        internal const string ChunkedUploadSizeBytesLegacy = "SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES";
 
         internal const string ForceChunkedUpload = "DOTNET_CONTAINER_DEBUG_REGISTRY_FORCE_CHUNKED_UPLOAD";
+        internal const string ForceChunkedUploadLegacy = "SDK_CONTAINER_DEBUG_REGISTRY_FORCE_CHUNKED_UPLOAD";
         internal const string ParallelUploadEnabled = "DOTNET_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
+        internal const string ParallelUploadEnabledLegacy = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
 
         internal const string InsecureRegistries = "DOTNET_CONTAINER_INSECURE_REGISTRIES";
+        internal const string InsecureRegistriesLegacy = "SDK_CONTAINER_INSECURE_REGISTRIES";
     }
 
     private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)
