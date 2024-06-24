@@ -33,6 +33,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         protected abstract SyntaxNode MakeInternal(SyntaxNode node);
 
-        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(MakeTypesInternal<SymbolKind>.RuleId);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(MakeTypesInternal.RuleId);
     }
 }

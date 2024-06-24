@@ -39,6 +39,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             "System.ApplicationException"
         };
 
+        private static readonly ImmutableHashSet<OutputKind> s_excludedOutputKinds =
+            ImmutableHashSet.Create(OutputKind.ConsoleApplication, OutputKind.WindowsApplication, OutputKind.WindowsRuntimeApplication);
+
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -49,9 +52,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext csContext)
         {
-            // Get named type symbols for targetted exception types
+            if (s_excludedOutputKinds.Contains(csContext.Compilation.Options.OutputKind))
+            {
+                return;
+            }
+
+            var typeProvider = WellKnownTypeProvider.GetOrCreate(csContext.Compilation);
+            // Get named type symbols for targeted exception types
             ImmutableHashSet<INamedTypeSymbol> exceptionTypes = s_exceptionTypeNames
-                .Select(csContext.Compilation.GetOrCreateTypeByMetadataName)
+                .Select(typeProvider.GetOrCreateTypeByMetadataName)
                 .WhereNotNull()
                 .ToImmutableHashSet();
 
