@@ -37,7 +37,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Publish60Hosted_Works()
         {
             // Arrange
