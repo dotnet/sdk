@@ -83,13 +83,13 @@ One downside to this approach is that it is possible to end up with two VBCSComp
 
 Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
 
-This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy with our current distribution strategy.
+This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current
 
-This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out to work well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintenance cost.
+This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintanence cost.
 
 This also means these analyzers can vastly simplify their development model by always targeting the latest version of Roslyn. There is no more need to multi-target because the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
 
-This does mean that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagnostics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make for reliability. Customers who wish to have a consistent experience between IDE and build should not operate in a torn state.
+This does mean that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make for reliability. Customers who wish to have a consistent experience between design time should not operate in a torn state.
 
 ## .NET SDK in box analyzers target oldest
 
@@ -100,6 +100,8 @@ This strategy should be considered short term. The Roslyn API is under constant 
 ### NuGet based analyzers
 
 Analyzers which ship via NuGet will continue to following the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support.
+
+In the case of [multi-targeting][issue-analyzer-mt] this proposal is effectively a no-op. Analyzer multi-targeting is already based off of Roslyn versions, not .NET SDK versions, hence the proper version of the analyzer will still load in a torn state. The version of the Roslyn compiler in a torn state for msbuild is the same used for dotnet build hence it's already a scenario the analyzer needs to support.
 
 ## Alternative
 
@@ -112,16 +114,21 @@ Technically in box analyzers can have a multi-targeting strategy just as NuGet b
 Instead of `<PackageDownload>` the toolset package could be installed via `<PackageReference>`. This is how the existing Microsoft.Net.Compilers.Toolset package works today. This has a number of disadvantages:
 
 1. PackageReferences are not side effect free and have been shown to cause issues in complex builds. For example this package did not work by default in the Visual Studio or Bing builds. Deploying this at scale to all our customers will almost ceratinly cause issues.
-2. This approach does not solve all scenarios. The mechanics of restore mean that the compiler is not swapped until part way through the build. Build operations that happen earlier, such as legacy WPF, will still use the Visual Studio compiler and hence experience analyzer compatibility issues.
+2. This approach does not solve all scenarios. The mechanics of restore mean that the compiler is not swapped until part way through the build. Build operations that happen earlier, such as [legacy WPF][issue-legacy-wpf], will still use the Visual Studio compiler and hence experience analyzer compatibility issues.
 3. Mixing builds that do and do not restore can lead to different build outcomes as they can end up choosing different compilers. Mixing the version of msbuild / dotnet msbuild can also lead to strange outcomes as they can end up choosing different compilers.
 
 ### Install the Framework compiler
 
-An alternative is simply shipping both Roslyn compilers in the Windows .NET SDK. This means there is no need for a `<PackageDownload>` step as the compiler is always there. This is a simpler build but it means that all .NET SDK installs on Windows will increase by ~6-7%.
+An alternative is simply shipping both Roslyn compilers in the Windows .NET SDK. This means there is no need for a `<PackageDownload>` step as the compiler is always there. This is a simpler build but it means that all .NET SDK installs on Windows will incease by ~6-7%.
+
+This approach does have downsides:
+
+1. The Windows .NET SDK increased in size even when it's not needed. For example our main Windows containers do not install Visual Studio hence are never in a torn state yet they'll see increased size cost here. Changing the .NET SDK such that these extra compilers are only installed sometimes would add significant complexity to our installer setup.
+2. This will make the Windows and Linux .NET SDK's visibly different in layout. Comparing them will show different contents which could be confusing to customers. At the same time the current proposal is functionally the same, it just changes where the framework compilers are placed on disk and that also could be confusing to customers.
 
 ### Use the .NET Core compiler
 
-Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could use the .NET Core Roslyn it comes with. That would have virtually no real compatibility issues. This has a number of disadvantages:
+Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could just use the .NET Core Roslyn it comes with. That would have virtually no real compatibility issues. This has a number of disadvantages:
 
 1. Changes the process name from VBCSCompiler to `dotnet`. That seems insignificant but the process name is important as it's referenced in a lot of build scripts. This would be a subtle breaking change that we'd have to work with customers on.
 2. This would make Visual Studio dependent on the servicing lifetime of the .NET Core runtime in the SDK. That has a very different lifetime and could lead to surprising outcomes down the road. For example if policy removed out of support runtimes from machines it would break the Visual Studio build.
@@ -135,9 +142,11 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could us
 [microsoft-common-tasks]: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks#L106-L109
 [matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
 [sdk-lifecycle]: https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#lifecycle
-[pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
 [setup-dotnet]: https://github.com/actions/setup-dotnet
+[pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
+[issue-analyzer-mt]: https://github.com/dotnet/sdk/issues/20355
+[issue-legacy-wpf]: https://github.com/dotnet/wpf/issues/9112
 
 ## Work Breakdown
 
