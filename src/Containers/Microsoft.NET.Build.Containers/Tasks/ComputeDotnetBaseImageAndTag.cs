@@ -113,7 +113,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
         else
         {
-            var defaultRegistry = "mcr.microsoft.com";
+            var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
             if (ComputeRepositoryAndTag(out var repository, out var tag))
             {
                 ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
