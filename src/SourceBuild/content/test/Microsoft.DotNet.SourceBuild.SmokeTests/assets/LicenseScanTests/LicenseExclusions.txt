@@ -113,7 +113,6 @@ src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 #
 
 # Build asset, not applicable to source
-src/roslyn-analyzers/assets/EULA.txt|ms-net-library
 
 #
 # roslyn
