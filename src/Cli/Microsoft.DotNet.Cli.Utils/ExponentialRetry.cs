@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Cli.Utils
             get
             {
                 yield return TimeSpan.FromSeconds(0); // first retry immediately
-                var seconds = 5;
+                var seconds = 1;
                 while (true)
                 {
                     yield return TimeSpan.FromSeconds(seconds);
-                    seconds *= 10;
+                    seconds *= 5;
                 }
             }
         }
