@@ -112,6 +112,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string NETCoreSdkRuntimeIdentifier { get; set; }
 
+        public string NETCoreSdkPortableRuntimeIdentifier { get; set; }
+
         [Required]
         public string NetCoreRoot { get; set; }
 
@@ -780,7 +782,19 @@ namespace Microsoft.NET.Build.Tasks
 
                 // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
                 var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-                var hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, NETCoreSdkRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
+                string hostRuntimeIdentifier = null;
+                // When a non-portable SDK publishes for its non-portable RID specifically, prefer a non-portable host package.
+                string portableSdkRid = !string.IsNullOrEmpty(NETCoreSdkPortableRuntimeIdentifier) ? NETCoreSdkPortableRuntimeIdentifier : RuntimeIdentifier;
+                bool isNonPortablePublish = RuntimeIdentifier == NETCoreSdkRuntimeIdentifier && NETCoreSdkRuntimeIdentifier != portableSdkRid;
+                if (isNonPortablePublish)
+                {
+                    hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, NETCoreSdkRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
+                }
+                // Otherwise, non-portable SDKs behave the same as portable SDKs.
+                if (hostRuntimeIdentifier == null)
+                {
+                    hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, portableSdkRid, packSupportedRuntimeIdentifiers, out bool wasInGraph);
+                }
                 if (hostRuntimeIdentifier == null)
                 {
                     return ToolPackSupport.UnsupportedForHostRuntimeIdentifier;

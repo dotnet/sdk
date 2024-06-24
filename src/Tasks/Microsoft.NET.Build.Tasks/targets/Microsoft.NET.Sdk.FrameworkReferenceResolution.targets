@@ -132,6 +132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
                                 UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
                                 NETCoreSdkVersion="$(NETCoreSdkVersion)">
 
