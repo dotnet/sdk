@@ -72,13 +72,13 @@ One downside to this approach is that it is possible to end up with two VBCSComp
 
 Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
 
-This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current
+This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy with our current distribution strategy.
 
-This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintanence cost.
+This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out to work well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintenance cost.
 
 This also means these analyzers can vastly simplify their development model by always targeting the latest version of Roslyn. There is no more need to multi-target because the version of the compiler the analyzer will be used with is known at ship time for all core build scenarios.
 
-This does mean that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagonstics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make for reliability. Customers who wish to have a consistent experience between design time should not operate in a torn state.
+This does mean that our design time experience can differ from our command line experience when customers are in a torn state. Specifically it's possible, even likely in some cases, that the diagnostics produced by design time builds will differ from command line builds. That is a trade off that we are willing to make for reliability. Customers who wish to have a consistent experience between IDE and build should not operate in a torn state.
 
 ## .NET SDK in box analyzers target oldest
 
@@ -106,11 +106,11 @@ Instead of `<PackageDownload>` the toolset package could be installed via `<Pack
 
 ### Install the Framework compiler
 
-An alternative is simply shipping both Roslyn compilers in the Windows .NET SDK. This means there is no need for a `<PackageDownload>` step as the compiler is always there. This is a simpler build but it means that all .NET SDK installs on Windows will incease by ~6-7%.
+An alternative is simply shipping both Roslyn compilers in the Windows .NET SDK. This means there is no need for a `<PackageDownload>` step as the compiler is always there. This is a simpler build but it means that all .NET SDK installs on Windows will increase by ~6-7%.
 
 ### Use the .NET Core compiler
 
-Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could just use the .NET Core Roslyn it comes with. That would have virtually no real compatibility issues. This has a number of disadvantages:
+Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could use the .NET Core Roslyn it comes with. That would have virtually no real compatibility issues. This has a number of disadvantages:
 
 1. Changes the process name from VBCSCompiler to `dotnet`. That seems insignificant but the process name is important as it's referenced in a lot of build scripts. This would be a subtle breaking change that we'd have to work with customers on.
 2. This would make Visual Studio dependent on the servicing lifetime of the .NET Core runtime in the SDK. That has a very different lifetime and could lead to surprising outcomes down the road. For example if policy removed out of support runtimes from machines it would break the Visual Studio build.
