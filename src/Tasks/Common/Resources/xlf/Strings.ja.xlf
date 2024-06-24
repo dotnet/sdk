@@ -878,6 +878,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1138: ターゲット フレームワーク '{0}' はサポートされていません。今後、セキュリティ更新プログラムを受け取ることはありません。サポート ポリシーの詳細については、{1} をご覧ください。</target>
         <note>{StrBegin="NETSDK1138: "}</note>
       </trans-unit>
+      <trans-unit id="TargetFrameworkIsNotRecommended">
+        <source>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</source>
+        <target state="new">NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</target>
+        <note>{StrBegin="NETSDK1215: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkWithSemicolon">
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>
         <target state="translated">NETSDK1046: TargetFramework 値 '{0}' が無効です。複数をターゲットとするには、代わりに 'TargetFrameworks' プロパティを使用してください。</target>

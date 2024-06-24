@@ -878,6 +878,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1138: '{0}' hedef çerçevesi destek kapsamı dışında ve gelecekte güvenlik güncelleştirmeleri almayacak. Lütfen destek ilkesi hakkında daha fazla bilgi için şuraya bakın: {1}.</target>
         <note>{StrBegin="NETSDK1138: "}</note>
       </trans-unit>
+      <trans-unit id="TargetFrameworkIsNotRecommended">
+        <source>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</source>
+        <target state="new">NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</target>
+        <note>{StrBegin="NETSDK1215: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkWithSemicolon">
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>
         <target state="translated">NETSDK1046: '{0}' TargetFramework değeri geçerli değil. Çoklu hedefleme için 'TargetFrameworks' özelliğini kullanın.</target>
