@@ -102,7 +102,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return ExecuteWithRetry(
                     action: () => Execute(enumerableArgs),
                     shouldStopRetry: SuccessOrNotTransientRestoreError,
-                    maxRetryCount: 3,
+                    maxRetryCount: 2,
                     timer: () => Timer(Intervals),
                     taskDescription: "Run command while retry transient restore error")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
