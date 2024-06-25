@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Cli
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
         private readonly List<NamedPipeServer> _namedPipeServers = new();
+        private readonly List<Task> _taskModuleName = [];
+        private readonly ConcurrentBag<Task> _testsRun = [];
         private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
         private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];

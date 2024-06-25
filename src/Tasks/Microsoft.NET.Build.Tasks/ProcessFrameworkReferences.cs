@@ -788,16 +788,21 @@ namespace Microsoft.NET.Build.Tasks
 
                 var runtimePackName = packNamePattern.Replace("**RID**", hostRuntimeIdentifier);
 
-                if (EnableRuntimePackDownload)
+                var runtimePackItem = new TaskItem(runtimePackName);
+                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
+                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+
+                string runtimePackPath = GetPackPath(runtimePackName, packVersion);
+                if (runtimePackPath != null)
+                {
+                    runtimePackItem.SetMetadata(MetadataKeys.PackageDirectory, runtimePackPath);
+                }
+                else if (EnableRuntimePackDownload)
                 {
                     // We need to download the runtime pack
                     runtimePackToDownload = new TaskItem(runtimePackName);
                     runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
                 }
-
-                var runtimePackItem = new TaskItem(runtimePackName);
-                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
-                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
 
                 switch (toolPackType)
                 {

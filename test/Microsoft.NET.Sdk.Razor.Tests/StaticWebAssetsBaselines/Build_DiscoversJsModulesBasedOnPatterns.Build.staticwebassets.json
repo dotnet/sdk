@@ -212,6 +212,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -249,51 +253,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "ComponentApp.__fingerprint__.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
         },
         {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -339,6 +302,59 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "ComponentApp.__fingerprint__.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ComponentApp.bundle.scp.css.gz"
         }
       ]
     },
@@ -414,7 +430,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -516,7 +532,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -545,8 +561,16 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "ComponentApp.styles.css.gz"
         }
       ]
     },
@@ -622,7 +646,7 @@
         },
         {
           "Name": "Cache-Control",
-          "Value": "no-cache"
+          "Value": "max-age=31536000, immutable"
         },
         {
           "Name": "Content-Encoding",
@@ -765,6 +789,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },
@@ -865,6 +893,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     },

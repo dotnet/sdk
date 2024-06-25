@@ -175,8 +175,6 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(27768);
-
 #if RELEASE
             return GetVSTestCliCommand();
 #else
