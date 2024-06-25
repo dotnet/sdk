@@ -75,7 +75,7 @@ The .NET SDK will start producing a package named Microsoft.Net.Sdk.Compilers.To
 
 The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected the matching Microsoft.Net.Sdk.Compilers.Toolset package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
 
-One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider a solution that has a mix of .NET SDK style projects and non-SDK .NET projects. In a torn the .NET SDK projects will use the .NET SDK compiler and non-SDK .NET projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
+One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider a solution that has a mix of .NET SDK style projects and non-SDK .NET projects. In a torn state the .NET SDK projects will use the .NET SDK compiler and non-SDK .NET projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
 
 ## Visual Studio using Visual Studio Analyzers
 
