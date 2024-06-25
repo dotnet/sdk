@@ -14,27 +14,37 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         {
             // This is the default format for symbol.ToDisplayString;
             SymbolDisplayFormat format = SymbolDisplayFormat.CSharpErrorMessageFormat;
-            format = format.WithMemberOptions(format.MemberOptions | SymbolDisplayMemberOptions.IncludeType);
+            format = format.AddMemberOptions(SymbolDisplayMemberOptions.IncludeType);
+            format = format.AddParameterOptions(SymbolDisplayParameterOptions.IncludeExtensionThis);
 
-            DisplayFormat = format.WithParameterOptions(format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis);
+            DisplayFormat = format;
 
             // Remove ? annotations from reference types as we want to map the APIs without nullable annotations
             // and have a special rule to catch those differences.
             // Also don't use keyword names for special types. This makes the comparison more accurate when no
             // references are running or if one side has references and the other doesn't.
-            format = format.WithMiscellaneousOptions(format.MiscellaneousOptions &
-                ~SymbolDisplayMiscellaneousOptions.UseSpecialTypes &
-                ~SymbolDisplayMiscellaneousOptions.UseErrorTypeSymbolName &
-                ~SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+            format = format.RemoveMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                SymbolDisplayMiscellaneousOptions.UseErrorTypeSymbolName |
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
             // Remove ref/out from parameters to compare APIs when building the mappers.
-            s_comparisonFormat = format.WithParameterOptions((format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis) & ~SymbolDisplayParameterOptions.IncludeParamsRefOut);
+            s_comparisonFormat = format.RemoveParameterOptions(SymbolDisplayParameterOptions.IncludeParamsRefOut);
         }
 
-        public static string ToComparisonDisplayString(this ISymbol symbol) =>
-            symbol.ToDisplayString(s_comparisonFormat)
+        public static string ToComparisonDisplayString(this ISymbol symbol)
+        {
+            var parts = symbol.ToDisplayParts(s_comparisonFormat);
+
+            // Type parameter names are not significant. Remove these leaving behind
+            // Angle brackets and commas for each parameter > 1.
+            parts = parts.RemoveAll(p => p.Kind == SymbolDisplayPartKind.TypeParameterName);
+
+            return parts
+                  .ToDisplayString()
                   .Replace("System.IntPtr", "nint") // Treat IntPtr and nint as the same
                   .Replace("System.UIntPtr", "nuint"); // Treat UIntPtr and nuint as the same
+        }
 
         public static IEnumerable<ITypeSymbol> GetAllBaseTypes(this ITypeSymbol type)
         {
