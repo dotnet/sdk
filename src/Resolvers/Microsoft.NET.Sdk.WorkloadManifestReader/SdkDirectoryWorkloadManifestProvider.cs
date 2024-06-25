@@ -170,9 +170,36 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet == null && availableWorkloadSets.Any())
             {
-                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
+                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
+        }
+
+        private static int VersionCompare(string first, string second)
+        {
+            if (first.Equals(second))
+            {
+                return 0;
+            }
+
+            var firstDash = first.IndexOf('-');
+            var secondDash = second.IndexOf('-');
+            firstDash = firstDash < 0 ? first.Length : firstDash;
+            secondDash = secondDash < 0 ? second.Length : secondDash;
+
+            var firstVersion = new Version(first.Substring(0, firstDash));
+            var secondVersion = new Version(second.Substring(0, secondDash));
+
+            var comparison = firstVersion.CompareTo(secondVersion);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            var modifiedFirst = "1.1.1" + (firstDash == first.Length ? string.Empty : first.Substring(firstDash));
+            var modifiedSecond = "1.1.1" + (secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+
+            return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
         }
 
         void ThrowExceptionIfManifestsNotAvailable()
@@ -240,10 +267,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             void ProbeDirectory(string manifestDirectory, string featureBand)
             {
-                (string? id, string? finalManifestDirectory, ReleaseVersion? version) = ResolveManifestDirectory(manifestDirectory);
+                (string? id, string? finalManifestDirectory, string? version) = ResolveManifestDirectory(manifestDirectory);
                 if (id != null && finalManifestDirectory != null)
                 {
-                    AddManifest(id, finalManifestDirectory, featureBand, version?.ToString() ?? Path.GetFileName(manifestDirectory));
+                    AddManifest(id, finalManifestDirectory, featureBand, version ?? Path.GetFileName(manifestDirectory));
                 }
             }
 
@@ -348,7 +375,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Given a folder that may directly include a WorkloadManifest.json file, or may have the workload manifests in version subfolders, choose the directory
         /// with the latest workload manifest.
         /// </summary>
-        private (string? id, string? manifestDirectory, ReleaseVersion? version) ResolveManifestDirectory(string manifestDirectory)
+        private (string? id, string? manifestDirectory, string? version) ResolveManifestDirectory(string manifestDirectory)
         {
             string manifestId = Path.GetFileName(manifestDirectory);
             if (_outdatedManifestIds.Contains(manifestId) ||
@@ -361,18 +388,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     .Where(dir => File.Exists(Path.Combine(dir, "WorkloadManifest.json")))
                     .Select(dir =>
                     {
-                        ReleaseVersion? releaseVersion = null;
-                        ReleaseVersion.TryParse(Path.GetFileName(dir), out releaseVersion);
-                        return (directory: dir, version: releaseVersion);
-                    })
-                    .Where(t => t.version != null)
-                    .OrderByDescending(t => t.version)
-                    .ToList();
+                        return (directory: dir, version: Path.GetFileName(dir));
+                    });
 
             //  Assume that if there are any versioned subfolders, they are higher manifest versions than a workload manifest directly in the specified folder, if it exists
             if (manifestVersionDirectories.Any())
             {
-                return (manifestId, manifestVersionDirectories.First().directory, manifestVersionDirectories.First().version);
+                var maxVersionDirectory = manifestVersionDirectories.Aggregate((d1, d2) => VersionCompare(d1.version, d2.version) > 0 ? d1 : d2);
+                return (manifestId, maxVersionDirectory.directory, maxVersionDirectory.version);
             }
             else if (File.Exists(Path.Combine(manifestDirectory, "WorkloadManifest.json")))
             {
@@ -380,7 +403,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 try
                 {
                     var manifestContents = WorkloadManifestReader.ReadWorkloadManifest(manifestId, File.OpenRead(manifestPath), manifestPath);
-                    return (manifestId, manifestDirectory, new ReleaseVersion(manifestContents.Version));
+                    return (manifestId, manifestDirectory, manifestContents.Version);
                 }
                 catch
                 { }
