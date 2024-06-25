@@ -60,6 +60,9 @@ jobs:
           targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
           artifactName: BuildConfiguration
 
+    # Populate internal runtime variables.
+    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: eng/common/build.ps1

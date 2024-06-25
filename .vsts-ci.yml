@@ -27,8 +27,6 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
-# Variables used: dotnetbuilds-internal-container-read-token-base64
-- group: DotNetBuilds storage account read tokens
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
