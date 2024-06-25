@@ -3,6 +3,8 @@ From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Tue, 25 Jun 2024 16:39:09 +0200
 Subject: [PATCH] Disable netstandard1.x warning
 
+Backport: https://github.com/dotnet/source-build-reference-packages/pull/973
+
 ---
  Directory.Build.props | 2 ++
  1 file changed, 2 insertions(+)
