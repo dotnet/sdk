@@ -83,7 +83,7 @@ One downside to this approach is that it is possible to end up with two VBCSComp
 
 Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
 
-This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current
+This approach enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but very hard to satisfy in our current setup.
 
 This approach is already taken by [the Razor generator][code-razor-vs-load]. This work was done for other reliability reasons but turned out working well for this scenario. There is initial upfront work to get the Visual Studio copy loading in design time builds but it has virtually zero maintenance cost.
 
@@ -157,7 +157,7 @@ There is only one version of the DevKit extension. It is released using the late
 - [Long term build-server shutdown issue](https://github.com/dotnet/msbuild/issues/10035)
 
 [microsoft-common-tasks]: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks#L106-L109
-[matrix-of-paine]: https://aka.ms/dotnet/matrix-of-paine
+[matrix-of-paine]: https://aka.ms/dotnet/matrixofpaine
 [sdk-lifecycle]: https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#lifecycle
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
 [setup-dotnet]: https://github.com/actions/setup-dotnet
