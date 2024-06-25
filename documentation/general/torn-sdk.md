@@ -164,18 +164,3 @@ There is only one version of the DevKit extension. It is released using the late
 [pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [issue-analyzer-mt]: https://github.com/dotnet/sdk/issues/20355
 [issue-legacy-wpf]: https://github.com/dotnet/wpf/issues/9112
-
-## Work Breakdown
-
-This will be moved to an issue when this PR is opened against dotnet/sdk proper:
-
-- [ ]: Flow the Micosoft.Net.Compilers.Toolset.Framework package to the .NET SDK
-- [ ]: Create a new package Micosoft.Microsoft.Net.Sdk.Compilers.Toolset in .NET SDK.
-  - [ ]: The contents of this package will include the contents of the `tasks\net472` folder in the Microsoft.Net.Compilers.Toolset.Framework package. This subset is all that is needed and makes the package not usable via `<PackageReference>`. The latter reduces the incentive for customers to use it directly.
-  - [ ]: The contents will include a README.md stating the package is **not** supported for direct user consumption.
-  - [ ]: The package will follow the versioning scheme of the .NET SDK.
-  - [ ]: The package will be unlisted (ideal but not a hard requirement)
-- [ ]: Change the Sdk.targets file to have copies of the following three `<UsingTasks>` from [Microsoft.Common.tasks][microsoft-common-tasks]. Having a copy in Sdk.targets means that resetting `$(RoslynTargetsPath)` during build will change the chosen compiler.
-- [ ]: When the .NET SDK detects a torn state
-  - [ ]: Use a `<PackageDownload>` to acquire the Microsoft.Net.Sdk.Compilers.Toolset package
-  - [ ]: Change `$(RoslynTargetsPath)` to point into the package contents
