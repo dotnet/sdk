@@ -133,7 +133,24 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could ju
 1. Changes the process name from VBCSCompiler to `dotnet`. That seems insignificant but the process name is important as it's referenced in a lot of build scripts. This would be a subtle breaking change that we'd have to work with customers on.
 2. This would make Visual Studio dependent on the servicing lifetime of the .NET Core runtime in the SDK. That has a very different lifetime and could lead to surprising outcomes down the road. For example if policy removed out of support runtimes from machines it would break the Visual Studio build.
 
-## Related Issues
+## Misc
+
+### Visual Studio Code
+
+This is how Visual Studio Code fits into our matrix:
+
+| Scenario | Loads Roslyn | Loads Analyzers / Generators |
+| --- | --- | --- |
+| msbuild | From Visual Studio | From .NET SDK |
+| dotnet msbuild | From .NET SDK | From .NET SDK |
+| Visual Studio Design Time | From Visual Studio | From Both |
+| DevKit | From DevKit | From .NET SDK |
+
+On the surface it seems like VS Code has the same issues as Visual Studio does today. However this is not the case. Visual Studio is problematic because at any given time there can be ~5 different versions in active support each with a different version of the compiler. Every Visual Studio but the latest is an older compiler that run into issues with analyzers.
+
+There is only one version of the DevKit extension. It is released using the latest compilers from roslyn at a very high frequency. That frequency is so high that the chance it has an older compiler than the newest .NET SDK is virtually zero. That means at the moment there is no need to solve the problem here. If DevKit changes its release cadance in the future this may need to be revisited.
+
+### Related Issues
 
 - [Roslyn tracking issue for torn state](https://github.com/dotnet/roslyn/issues/72672)
 - [MSBuild property for torn state detection](https://github.com/dotnet/installer/pull/19144)
