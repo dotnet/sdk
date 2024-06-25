@@ -1,0 +1,22 @@
+From b3a1763c33b6b59972aed17f8d4be34f86cf4262 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 25 Jun 2024 16:39:09 +0200
+Subject: [PATCH] Disable netstandard1.x warning
+
+---
+ Directory.Build.props | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 340ca78f2..d85a0d1f0 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -17,6 +17,8 @@
+       equality with real packages.
+     -->
+     <Serviceable />
++    <!-- TODO: Remove netstandard1.x TFMs. https://github.com/dotnet/source-build/issues/4482 -->
++    <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
+   </PropertyGroup>
+ 
+ </Project>
