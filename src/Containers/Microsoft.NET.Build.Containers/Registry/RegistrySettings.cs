@@ -8,6 +8,20 @@ namespace Microsoft.NET.Build.Containers;
 
 internal class RegistrySettings
 {
+    public RegistrySettings(string? registryName = null, IEnvironmentProvider? environment = null)
+    {
+        environment ??= new EnvironmentProvider();
+
+        ChunkedUploadSizeBytes = environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes);
+        ForceChunkedUpload = environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false);
+        ParallelUploadEnabled = environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true);
+
+        if (registryName is not null)
+        {
+            IsInsecure = IsInsecureRegistry(environment, registryName);
+        }
+    }
+
     private const int DefaultChunkSizeBytes = 1024 * 64;
     private const int FiveMegs = 5_242_880;
 
@@ -17,12 +31,12 @@ internal class RegistrySettings
     /// <remarks>
     /// Our default of 64KB is very conservative, so raising this to 1MB or more can speed up layer uploads reasonably well.
     /// </remarks>
-    internal int? ChunkedUploadSizeBytes { get; init; } = Env.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes);
+    internal int? ChunkedUploadSizeBytes { get; init; }
 
     /// <summary>
     /// Allows to force chunked upload for debugging purposes.
     /// </summary>
-    internal bool ForceChunkedUpload { get; init; } = Env.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false);
+    internal bool ForceChunkedUpload { get; init; }
 
     /// <summary>
     /// Whether we should upload blobs in parallel (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
@@ -30,7 +44,12 @@ internal class RegistrySettings
     /// <remarks>
     /// Enabling this can swamp some registries, so this is an escape hatch.
     /// </remarks>
-    internal bool ParallelUploadEnabled { get; init; } = Env.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true);
+    internal bool ParallelUploadEnabled { get; init; }
+
+    /// <summary>
+    /// Allows ignoring https certificate errors and changing to http when the endpoint is not an https endpoint.
+    /// </summary>
+    internal bool IsInsecure { get; init; }
 
     internal struct EnvVariables
     {
@@ -38,5 +57,30 @@ internal class RegistrySettings
 
         internal const string ForceChunkedUpload = "SDK_CONTAINER_DEBUG_REGISTRY_FORCE_CHUNKED_UPLOAD";
         internal const string ParallelUploadEnabled = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
+
+        internal const string InsecureRegistries = "SDK_CONTAINER_INSECURE_REGISTRIES";
+    }
+
+    private static bool IsInsecureRegistry(IEnvironmentProvider environment, string registryName)
+    {
+        // Always allow insecure access to 'localhost'.
+        if (registryName.StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ||
+            registryName.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // SDK_CONTAINER_INSECURE_REGISTRIES is a semicolon separated list of insecure registry names.
+        string? insecureRegistriesEnv = environment.GetEnvironmentVariable(EnvVariables.InsecureRegistries);
+        if (insecureRegistriesEnv is not null)
+        {
+            string[] insecureRegistries = insecureRegistriesEnv.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (Array.Exists(insecureRegistries, registry => registryName.Equals(registry, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+        }
+
+        return DockerCli.IsInsecureRegistry(registryName);
     }
 }
