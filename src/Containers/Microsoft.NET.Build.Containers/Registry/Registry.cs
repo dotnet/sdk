@@ -120,7 +120,12 @@ internal sealed class Registry
     /// <summary>
     /// Check to see if the registry is GitHub Packages, which always uses ghcr.io.
     /// </summary>
-    public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
+    public bool IsGithubPackageRegistry => RegistryName.StartsWith(RegistryConstants.GitHubPackageRegistryDomain, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Is this registry the public Microsoft Container Registry.
+    /// </summary>
+    public bool IsMcr => RegistryName.Equals(RegistryConstants.MicrosoftContainerRegistryDomain, StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
@@ -139,6 +144,8 @@ internal sealed class Registry
     {
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
+
+    public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
