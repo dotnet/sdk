@@ -2,9 +2,9 @@
 
 ## Terminology
 
-- msbuild: refers the .NET Framework based msbuild included with Visual Studio.
-- dotnet msbuild: refers to the .NET Core based msbuild included with the .NET SDK.
-- analyzers: this document will use analyzers to refer to both analyzers and generators.
+- **msbuild**: refers the .NET Framework based msbuild included with Visual Studio.
+- **dotnet msbuild**: refers to the .NET Core based msbuild included with the .NET SDK.
+- **analyzers**: this document will use analyzers to refer to both analyzers and generators.
 
 ## Summary
 
@@ -19,8 +19,8 @@ Visual Studio and .NET SDK are separate products but they are intertwined in com
 Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. That is the compiler and analyzers are the same hence mixing poses no real issue. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... However when the .NET SDK is not paired with the Visual Studio version,then compatibility issues can, and will, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
 
 > CSC : warning CS9057: The analyzer assembly '..\dotnet\sdk\8.0.200\Sdks\Microsoft.NET.Sdk.Razor\source-
-generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
-than the currently running version '4.8.0.0'.
+> generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
+> than the currently running version '4.8.0.0'.
 
 This torn state is a common customer setup:
 
