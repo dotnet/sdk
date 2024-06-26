@@ -86,6 +86,13 @@ internal sealed class ProjectLauncher(
 
         foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
         {
+            // ignore dotnet-watch reserved variables -- these shouldn't be set by the project
+            if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase) ||
+                name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             environmentBuilder.SetVariable(name, value);
         }
 

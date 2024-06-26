@@ -116,10 +116,18 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             }
 
+            FileItem? changedFile;
+
             OnFileChange += FileChangedCallback;
-            startedWatching?.Invoke();
-            var changedFile = await fileChangedSource.Task;
-            OnFileChange -= FileChangedCallback;
+            try
+            {
+                startedWatching?.Invoke();
+                changedFile = await fileChangedSource.Task;
+            }
+            finally
+            {
+                OnFileChange -= FileChangedCallback;
+            }
 
             return changedFile;
         }

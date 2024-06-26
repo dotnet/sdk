@@ -43,8 +43,8 @@ namespace Microsoft.DotNet.Watcher
 
             throw new InvalidOperationException();
 
-            static bool AcceptKey(ConsoleKey key)
-                => key is ConsoleKey.Y or ConsoleKey.N or ConsoleKey.A or ConsoleKey.V;
+            static bool AcceptKey(ConsoleKeyInfo info)
+                => info is { Key: ConsoleKey.Y or ConsoleKey.N or ConsoleKey.A or ConsoleKey.V, Modifiers: ConsoleModifiers.None };
         }
     }
 }

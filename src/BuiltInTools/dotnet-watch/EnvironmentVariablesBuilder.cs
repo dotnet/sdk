@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watcher
 {
     internal sealed class EnvironmentVariablesBuilder
@@ -42,24 +44,16 @@ namespace Microsoft.DotNet.Watcher
 
         public void SetDirective(string name, string value)
         {
-            // Values that need to be aggregated:
-            if (name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase))
-            {
-                DotNetStartupHookDirective.Add(value);
-                return;
-            }
+            // should use DotNetStartupHookDirective
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
 
             _directives[name] = value;
         }
 
         public void SetVariable(string name, string value)
         {
-            // Values that need to be aggregated:
-            if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase))
-            {
-                AspNetCoreHostingStartupAssembliesVariable.Add(value);
-                return;
-            }
+            // should use AspNetCoreHostingStartupAssembliesVariable
+            Debug.Assert(!name.Equals(name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase)));
 
             _variables[name] = value;
         }

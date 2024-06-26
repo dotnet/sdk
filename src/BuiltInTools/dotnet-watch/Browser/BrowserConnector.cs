@@ -35,13 +35,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _servers.Clear();
             }
 
-            foreach (var server in serversToDispose)
+            await Task.WhenAll(serversToDispose.Select(async server =>
             {
                 if (server != null)
                 {
                     await server.DisposeAsync();
                 }
-            }
+            }));
         }
 
         public async ValueTask<BrowserRefreshServer?> LaunchOrRefreshBrowserAsync(
