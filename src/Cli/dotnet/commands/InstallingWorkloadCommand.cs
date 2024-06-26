@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected IWorkloadManifestUpdater _workloadManifestUpdater;
 
         protected bool UseRollback => !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-        protected bool SpecifiedWorkloadSetVersionOnCommandLine => !string.IsNullOrEmpty(_workloadSetVersionFromCommandLine);
+        protected bool SpecifiedWorkloadSetVersionOnCommandLine => !string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine);
         protected bool SpecifiedWorkloadSetVersionInGlobalJson => !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson);
 
         public InstallingWorkloadCommand(
@@ -115,7 +115,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, and SpecifiedWorkloadSetVersionInGlobalJson is true
-
         }
 
         protected static Dictionary<string, string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
@@ -131,8 +130,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         static InstallStateContents GetCurrentInstallState(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
-            return installStateContents;
+            return InstallStateContents.FromPath(path);
         }
 
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
@@ -142,18 +140,18 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected void UpdateWorkloadManifests(ITransactionContext context, DirectoryPath? offlineCache)
         {
-            var updateUsingWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
-            if (UseRollback && updateUsingWorkloadSets)
+            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+            if (UseRollback && updateToLatestWorkloadSet)
             {
                 // Rollback files are only for loose manifests. Update the mode to be loose manifests.
                 Reporter.WriteLine(Update.LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
-                updateUsingWorkloadSets = false;
+                updateToLatestWorkloadSet = false;
             }
 
             if (SpecifiedWorkloadSetVersionOnCommandLine)
             {
-                updateUsingWorkloadSets = false;
+                updateToLatestWorkloadSet = false;
 
                 //  If a workload set version is specified, then switch to workload set update mode
                 //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
@@ -167,14 +165,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ??_workloadSetVersionFromCommandLine;
             if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback)
             {
-                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateUsingWorkloadSets, offlineCache).Wait();
-                if (updateUsingWorkloadSets)
+                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
+                if (updateToLatestWorkloadSet)
                 {
                     resolvedWorkloadSetVersion = _workloadManifestUpdater.GetAdvertisedWorkloadSetVersion();
                 }
             }
 
-            if (updateUsingWorkloadSets && resolvedWorkloadSetVersion == null)
+            if (updateToLatestWorkloadSet && resolvedWorkloadSetVersion == null)
             {
                 Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
                 return;

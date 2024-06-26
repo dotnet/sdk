@@ -267,13 +267,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             context.Run(
                 action: () =>
                 {
-                    Elevate();
-
                     DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
                     InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
 
                     if (plannedAction == InstallAction.Install)
                     {
+                        Elevate();
+
                         ExecutePackage(msi, plannedAction, msiPackageId);
 
                         // Update the reference count against the MSI.
@@ -316,7 +316,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             //  Unwrap AggregateException caused by switch from async to sync
             catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
             {
-                throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex);
+                throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
             }
             VerifyPackage(msi);
 

@@ -501,7 +501,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             foreach (var manifestRoot in _manifestRoots.Reverse())
             {
-                //  We don't automatically fall back to a previous band
                 var workloadSetsRoot = Path.Combine(manifestRoot, workloadSetFeatureBand.ToString(), WorkloadSetsFolderName);
                 if (Directory.Exists(workloadSetsRoot))
                 {

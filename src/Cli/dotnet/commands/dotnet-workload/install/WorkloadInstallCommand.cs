@@ -125,15 +125,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     if (string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                     {
                         var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                        if (File.Exists(installStateFilePath))
+                        var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                        //  If install state has pinned workload set or manifest versions, then don't update workloads
+                        if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
                         {
-                            var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                            //  If install state has pinned workload set or manifest versions, then don't update workloads
-                            if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
-                            {
-                                //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
-                                shouldUpdateWorkloads = false;
-                            }
+                            //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
+                            shouldUpdateWorkloads = false;
                         }
                     }
 

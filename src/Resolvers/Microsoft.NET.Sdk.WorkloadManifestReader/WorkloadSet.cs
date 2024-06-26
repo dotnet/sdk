@@ -169,7 +169,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (preReleaseOrBuild != null)
             {
-                packageVersion += '-' + preReleaseOrBuild;
+                //  Figure out if we split on a '-' or '+'
+                char separator = setVersion[sections[0].Length];
+                packageVersion += separator + preReleaseOrBuild;
             }
 
             return packageVersion;
