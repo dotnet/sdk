@@ -780,9 +780,14 @@ namespace Microsoft.NET.Build.Tasks
                 var packNamePattern = knownPack.GetMetadata(packName + "PackNamePattern");
                 var packSupportedRuntimeIdentifiers = knownPack.GetMetadata(packName + "RuntimeIdentifiers").Split(';');
 
-                // When publishing for the RuntimeIdentifier that matches NETCoreSdkPortableRuntimeIdentifier, prefer NETCoreSdkPortableRuntimeIdentifier for the host.
-                // This makes us use a portable ILCompiler when publishing for a portable RID on a non-portable SDK.
-                string hostRuntimeIdentifier = RuntimeIdentifier == NETCoreSdkPortableRuntimeIdentifier ? NETCoreSdkPortableRuntimeIdentifier : NETCoreSdkRuntimeIdentifier;
+                // When publishing for the non-portable RID that matches NETCoreSdkRuntimeIdentifier, prefer NETCoreSdkRuntimeIdentifier for the host.
+                // Otherwise prefer the NETCoreSdkPortableRuntimeIdentifier.
+                // This makes non-portable SDKs behave the same as portable SDKs except for the specific case of targetting the non-portable RID.
+                // It also enables the non-portable ILCompiler to be packaged separately from the SDK and
+                // only required when publishing for the non-portable SDK RID.
+                string portableSdkRid = !string.IsNullOrEmpty(NETCoreSdkPortableRuntimeIdentifier) ? NETCoreSdkPortableRuntimeIdentifier : NETCoreSdkRuntimeIdentifier;
+                bool targetsNonPortableSdkRid = RuntimeIdentifier == NETCoreSdkRuntimeIdentifier && NETCoreSdkRuntimeIdentifier != portableSdkRid;
+                string hostRuntimeIdentifier = targetsNonPortableSdkRid ? NETCoreSdkRuntimeIdentifier : portableSdkRid;
                 // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
                 var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
                 hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, hostRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
