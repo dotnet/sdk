@@ -48,6 +48,7 @@
     <Compile Include="KnownStrings.cs" />
     <Compile Include="DockerLoadException.cs" />
     <Compile Include="LocalDaemons/DockerCli.cs" />
+    <Compile Include="Registry/RegistryConstants.cs" />
     <Compile Include="Tasks/ParseContainerProperties.cs" />
     <Compile Include="Tasks/CreateNewImage.Interface.cs" />
     <Compile Include="Tasks/CreateNewImageToolTask.cs" />
