@@ -52,13 +52,13 @@ namespace Microsoft.Extensions.Tools.Internal
                     else
                     {
                         WriteLine(keyDisplay, ConsoleColor.DarkRed);
-                        tcs.TrySetException(new ArgumentException($"Invalid key {key.KeyChar} entered."));
+                        tcs.TrySetException(new ArgumentException($"Invalid key '{keyDisplay}' entered."));
                     }
                 }
 
                 static string GetDisplayString(ConsoleKeyInfo key)
                 {
-                    var keyDisplay = key.KeyChar.ToString();
+                    var keyDisplay = (key.Modifiers == ConsoleModifiers.None) ? key.KeyChar.ToString() : key.Key.ToString();
 
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
                     {

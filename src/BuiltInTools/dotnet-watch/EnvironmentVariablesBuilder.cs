@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Watcher
         public void SetVariable(string name, string value)
         {
             // should use AspNetCoreHostingStartupAssembliesVariable
-            Debug.Assert(!name.Equals(name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase)));
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase));
 
             _variables[name] = value;
         }
