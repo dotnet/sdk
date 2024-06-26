@@ -262,7 +262,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return result.StdOut;
         }
-		
+
+        [Fact]
         public void UpdateShouldNotPinWorkloadSet()
         {
             InstallSdk();

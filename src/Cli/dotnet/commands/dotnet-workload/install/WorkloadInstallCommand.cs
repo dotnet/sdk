@@ -112,31 +112,31 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 bool shouldUpdateWorkloads = !_skipManifestUpdate;
 
-                //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
-                //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
-                //  workload set installed yet, and trying to list the available workloads would throw an error
-                if (!shouldUpdateWorkloads || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
-                {
-                    ValidateWorkloadIdsInput();
-                }
-
-                if (string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-                {
-                    var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                    if (File.Exists(installStateFilePath))
-                    {
-                        var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                        //  If install state has pinned workload set or manifest versions, then don't update workloads
-                        if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
-                        {
-                            //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
-                            shouldUpdateWorkloads = false;
-                        }
-                    }
-                }
-
                 try
                 {
+                    //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
+                    //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                    //  workload set installed yet, and trying to list the available workloads would throw an error
+                    if (!shouldUpdateWorkloads || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                    {
+                        ValidateWorkloadIdsInput();
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                    {
+                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                        if (File.Exists(installStateFilePath))
+                        {
+                            var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                            //  If install state has pinned workload set or manifest versions, then don't update workloads
+                            if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
+                            {
+                                //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
+                                shouldUpdateWorkloads = false;
+                            }
+                        }
+                    }
+
                     Reporter.WriteLine();
 
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);

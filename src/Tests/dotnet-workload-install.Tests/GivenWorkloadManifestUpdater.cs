@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, userProfileDir: Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
             var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
+            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates.Select(u => u.ToManifestVersionUpdate()));
         }
 
 
@@ -194,7 +194,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, userProfileDir: Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
             var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
+            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates.Select(u => u.ToManifestVersionUpdate()));
         }
 
         [Theory]
@@ -443,7 +443,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
             var manifestUpdates = manifestUpdater.CalculateManifestRollbacks(rollbackDefPath);
-            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
+            manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates.Select(u => u.ToManifestVersionUpdate()));
         }
 
         [Fact]
