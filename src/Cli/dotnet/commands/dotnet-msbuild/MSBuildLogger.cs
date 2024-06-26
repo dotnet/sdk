@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
         internal const string BuildTelemetryEventName = "build";
         internal const string LoggingConfigurationTelemetryEventName = "loggingConfiguration";
 
+        internal const string AndroidSdkFastDeploymentTelemetryEventName = "AndroidSdkFastDeployment";
         internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
         internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
         internal const string WorkloadPublishPropertiesTelemetryEventName = "WorkloadPublishProperties";
@@ -139,6 +140,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
                         toBeMeasured: new[] { "FileLoggersCount" });
                     break;
                 // Pass through events that don't need special handling
+                case AndroidSdkFastDeploymentTelemetryEventName:
                 case SdkTaskBaseCatchExceptionTelemetryEventName:
                 case PublishPropertiesTelemetryEventName:
                 case ReadyToRunTelemetryEventName:

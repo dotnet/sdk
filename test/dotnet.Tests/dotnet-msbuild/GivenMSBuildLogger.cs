@@ -71,6 +71,28 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Fact]
+        public void ItDoesNotMaskAndroidSdkFastDeploymentTelemetry()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.AndroidSdkFastDeploymentTelemetryEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "someNullProperty", "null"},
+                    { "otherProperty", "otherProperty value"}
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.EventName.Should().Be(MSBuildLogger.AndroidSdkFastDeploymentTelemetryEventName);
+            fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(2);
+            fakeTelemetry.LogEntry.Properties["someNullProperty"].Should().Be("null");
+            fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
+        }
+
+        [Fact]
         public void ItDoesNotMaskReadyToRunTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
