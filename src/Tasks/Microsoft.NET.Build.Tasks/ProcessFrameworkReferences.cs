@@ -780,12 +780,11 @@ namespace Microsoft.NET.Build.Tasks
                 var packNamePattern = knownPack.GetMetadata(packName + "PackNamePattern");
                 var packSupportedRuntimeIdentifiers = knownPack.GetMetadata(packName + "RuntimeIdentifiers").Split(';');
 
-                // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
-                var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
                 // When publishing for the RuntimeIdentifier that matches NETCoreSdkPortableRuntimeIdentifier, prefer NETCoreSdkPortableRuntimeIdentifier for the host.
                 // This makes us use a portable ILCompiler when publishing for a portable RID on a non-portable SDK.
                 string hostRuntimeIdentifier = RuntimeIdentifier == NETCoreSdkPortableRuntimeIdentifier ? NETCoreSdkPortableRuntimeIdentifier : NETCoreSdkRuntimeIdentifier;
-                // Find the best ILCompiler for hostRuntimeIdentifier.
+                // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
+                var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
                 hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, hostRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
                 if (hostRuntimeIdentifier == null)
                 {
