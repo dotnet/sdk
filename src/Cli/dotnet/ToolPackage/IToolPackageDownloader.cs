@@ -9,7 +9,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal interface IToolPackageDownloader
     {
-        IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        IToolPackage InstallPackage(PackageLocation packageLocation,
+            PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
@@ -18,9 +19,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         );
 
         NuGetVersion GetNuGetVersion(
-            PackageLocation packageLocation, PackageId packageId,
+            PackageLocation packageLocation,
+            PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false);
+            bool isGlobalTool = false
+        );
     }
 }
