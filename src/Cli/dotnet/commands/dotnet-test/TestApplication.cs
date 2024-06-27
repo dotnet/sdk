@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Cli
         private readonly string[] _args;
 
         public event EventHandler<HelpEventArgs> HelpRequested;
+        //public event EventHandler<EventArgs> TestResultReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
         public string ModuleName => _modulePath;
@@ -26,11 +27,7 @@ namespace Microsoft.DotNet.Cli
 
         public async Task RunAsync()
         {
-            if (!File.Exists(_modulePath))
-            {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
-                return;
-            }
+            AssertModulePathExists();
 
             bool isDll = _modulePath.EndsWith(".dll");
             ProcessStartInfo processStartInfo = new()
@@ -46,6 +43,33 @@ namespace Microsoft.DotNet.Cli
             await Process.Start(processStartInfo).WaitForExitAsync();
         }
 
+        public async Task RunHelpAsync()
+        {
+            AssertModulePathExists();
+
+            bool isDll = _modulePath.EndsWith(".dll");
+            ProcessStartInfo processStartInfo = new()
+            {
+                FileName = isDll ?
+                Environment.ProcessPath :
+                _modulePath,
+                Arguments = BuildHelpArgs(isDll)
+            };
+
+            VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+
+            await Process.Start(processStartInfo).WaitForExitAsync();
+        }
+
+        private void AssertModulePathExists()
+        {
+            if (!File.Exists(_modulePath))
+            {
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
+                return;
+            }
+        }
+
         private string BuildArgs(bool isDll)
         {
             StringBuilder builder = new();
@@ -58,6 +82,18 @@ namespace Microsoft.DotNet.Cli
                 : string.Empty);
 
             builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
+
+            return builder.ToString();
+        }
+
+        private string BuildHelpArgs(bool isDll)
+        {
+            StringBuilder builder = new();
+
+            if (isDll)
+                builder.Append($"exec {_modulePath} ");
+
+            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
 
             return builder.ToString();
         }

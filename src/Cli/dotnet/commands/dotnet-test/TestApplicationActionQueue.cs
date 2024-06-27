@@ -3,7 +3,7 @@
 
 using System.Threading.Channels;
 
-namespace Microsoft.DotNet.Cli.commands.dotnet_test
+namespace Microsoft.DotNet.Cli
 {
     internal class TestApplicationActionQueue
     {
@@ -11,12 +11,12 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         private readonly List<Task> _readers = [];
         private readonly List<Task> _writers = [];
 
-        public TestApplicationActionQueue(int dop)
+        public TestApplicationActionQueue(int dop, Action<TestApplication> action)
         {
             // Add readers to the channel, to read the test applications
             for (int i = 0; i < dop; i++)
             {
-                _readers.Add(Task.Run(async () => await Read()));
+                _readers.Add(Task.Run(async () => await Read(action)));
             }
         }
 
@@ -36,13 +36,13 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
             _channel.Writer.Complete();
         }
 
-        private async Task Read()
+        private async Task Read(Action<TestApplication> action)
         {
             while (await _channel.Reader.WaitToReadAsync())
             {
-                if (_channel.Reader.TryRead(out TestApplication testApplication))
+                if (_channel.Reader.TryRead(out TestApplication testApp))
                 {
-                    await testApplication.RunAsync();
+                    action(testApp);
                 }
             }
         }

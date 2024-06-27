@@ -4,10 +4,10 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
-using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -33,13 +33,34 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = ContainsHelpOption(parseResult.GetArguments()) ? [CliConstants.HelpOptionKey] : [];
+            DebuggerUtility.AttachCurrentProcessToVSProcessPID(34544);
+            _args = parseResult.GetArguments();
 
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestCommandParser.DegreeOfParallelism), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
-            actionQueue = new(degreeOfParallelism);
+
+            if (ContainsHelpOption(_args))
+            {
+                actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    testApp.HelpRequested += OnHelpRequested;
+                    testApp.ErrorReceived += OnErrorReceived;
+
+                    await testApp.RunHelpAsync();
+                });
+            }
+            else
+            {
+                actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    //testApp.TestResultReceived += OnTestResultReceived;
+                    testApp.ErrorReceived += OnErrorReceived;
+
+                    await testApp.RunAsync();
+                });
+            }
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
@@ -49,6 +70,7 @@ namespace Microsoft.DotNet.Cli
             ForwardingAppImplementation msBuildForwardingApp = new(
                 GetMSBuildExePath(),
                 [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                "-bl",
                         $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                         "-verbosity:q"]);
             int getTestsProjectResult = msBuildForwardingApp.Execute();
@@ -138,14 +160,11 @@ namespace Microsoft.DotNet.Cli
         private TestApplication GenerateTestApplication(string modulePath)
         {
             var testApplication = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-
-            if (ContainsHelpOption(_args))
-            {
-                testApplication.HelpRequested += OnHelpRequested;
-            }
-            testApplication.ErrorReceived += OnErrorReceived;
-
             return testApplication;
+        }
+
+        private void OnTestResultReceived(object sender, EventArgs args)
+        {
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
