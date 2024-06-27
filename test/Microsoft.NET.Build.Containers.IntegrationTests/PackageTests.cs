@@ -42,6 +42,7 @@ public class PackageTests
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
+            "System.Text.Json",
             "Valleysoft.DockerCredsProvider",
             "Microsoft.Extensions.Logging",
             "Microsoft.Extensions.Logging.Abstractions"
