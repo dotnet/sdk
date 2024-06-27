@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" />
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
