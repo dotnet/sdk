@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceededStableVersionNoChange,
+                Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
                 _packageId, HigherPackageVersion));
         }
 
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceededPreVersionNoChange,
+                Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
                 _packageId, HigherPreviewPackageVersion));
         }
 
