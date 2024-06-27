@@ -91,24 +91,25 @@ src/roslyn/**/CodeAnalysisTest/**/*.blah
 src/roslyn/**/CodeAnalysisTest/**/*.RES
 
 # runtime
-src/runtime/src/mono/mono/eglib/test/*.txt
-src/runtime/src/mono/mono/tests/exiting/*.out
-src/runtime/src/**/tests/**/*.res
-src/runtime/src/**/tests/**/*.resources
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/gRPC/grpc-dotnet/testassets/Certs/InteropTests/server1.pfx
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.mibc
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.nettrace
-src/runtime/src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/baselines/ReaderWriter_C14N_BaselineXML_Binary.xml
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/NetModule/*.mod
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/WinRT/Lib.winmd
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/Misc/CPPClassLibrary2.obj
-src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-256color
-src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
-src/runtime/src/mono/wasm/testassets/**/*.dat
-src/runtime/src/mono/wasm/testassets/**/*.o
 src/runtime/src/libraries/**/tests/**/*.dll
 src/runtime/src/libraries/**/tests/**/*.exe
 src/runtime/src/libraries/**/tests/**/*.pdb
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-256color
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/Misc/CPPClassLibrary2.obj
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/NetModule/*.mod
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/WinRT/Lib.winmd
+src/runtime/src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/baselines/ReaderWriter_C14N_BaselineXML_Binary.xml
+src/runtime/src/mono/mono/eglib/test/*.txt
+src/runtime/src/mono/mono/tests/exiting/*.out
+src/runtime/src/mono/wasm/testassets/**/*.dat
+src/runtime/src/mono/wasm/testassets/**/*.o
+src/runtime/src/native/external/LinuxTracepoints/TestOutput/EventHeaderInterceptorLE64.dat
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.mibc
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.nettrace
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/gRPC/grpc-dotnet/testassets/Certs/InteropTests/server1.pfx
+src/runtime/src/**/tests/**/*.res
+src/runtime/src/**/tests/**/*.resources
 
 # sdk
 src/sdk/src/Assets/TestProjects/**/*.dat
