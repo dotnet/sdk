@@ -20,6 +20,9 @@
     <NoWarn>$(NoWarn);CS8002</NoWarn>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
