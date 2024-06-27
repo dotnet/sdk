@@ -87,9 +87,11 @@ namespace Microsoft.DotNet.Watcher.Internal
                 try
                 {
                     // Do not report changes to files that happened during build:
-                    if (Math.Max(File.GetCreationTimeUtc(path).Ticks, File.GetLastWriteTimeUtc(path).Ticks) < buildCompletionTime.Ticks)
+                    var creationTime = File.GetCreationTimeUtc(path);
+                    var writeTime = File.GetLastWriteTimeUtc(path);
+                    if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
                     {
-                        reporter.Verbose($"Ignoring file updated during build: '{path}'.");
+                        reporter.Verbose($"Ignoring file updated during build: '{path}' ({creationTime.Ticks},{writeTime.Ticks} < {buildCompletionTime.Ticks}).");
                         return;
                     }
                 }

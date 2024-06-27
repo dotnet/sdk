@@ -26,7 +26,7 @@ public abstract class DotNetWatchTestBase : IDisposable
     public void UpdateSourceFile(string path, string text)
     {
         File.WriteAllText(path, text, Encoding.UTF8);
-        Logger.WriteLine($"File '{path}' updated.");
+        Logger.WriteLine($"File '{path}' updated (timestamp: {File.GetLastWriteTimeUtc(path).Ticks}).");
     }
 
     public void UpdateSourceFile(string path, Func<string, string> contentTransform)
