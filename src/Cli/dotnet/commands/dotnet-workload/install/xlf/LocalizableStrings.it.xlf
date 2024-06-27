@@ -22,10 +22,20 @@
         <target state="translated">Impossibile utilizzare contemporaneamente le opzioni {0} e {1}. Se si esegue l'installazione da un file di rollback, rimuovere {0}. In caso contrario, rimuovere {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">Impossibile specificare una determinata versione del carico di lavoro nella riga di comando tramite --version o --from-history quando è già specificata una versione nel file global.json {0}. Per aggiornare la versione del carico di lavoro installata a livello globale, eseguire il comando all'esterno del percorso contenente tale file global.json o aggiornare la versione specificata nel file di global.json ed eseguire "dotnet workload update".</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
+        <note>"workloadVersion" is a literal value and should not be translated.</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>

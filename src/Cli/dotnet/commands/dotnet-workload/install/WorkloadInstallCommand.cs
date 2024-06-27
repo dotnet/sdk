@@ -43,8 +43,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
-
-            
         }
 
         private void ValidateWorkloadIdsInput()
@@ -108,30 +106,26 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
             }
+            else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionOnCommandLine)
+            {
+                throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndVersion,
+                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
+            }
+            else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson)
+            {
+                throw new GracefulException(string.Format(LocalizableStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
+                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
+            }
             else
             {
-                bool shouldUpdateWorkloads = !_skipManifestUpdate;
-
                 try
                 {
                     //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
-                    //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                    //  set version specified, and we might install that workload version, then we don't do that check here, because we might not have the right
                     //  workload set installed yet, and trying to list the available workloads would throw an error
-                    if (!shouldUpdateWorkloads || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                    if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
                     {
                         ValidateWorkloadIdsInput();
-                    }
-
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-                    {
-                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                        var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                        //  If install state has pinned workload set or manifest versions, then don't update workloads
-                        if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
-                        {
-                            //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
-                            shouldUpdateWorkloads = false;
-                        }
                     }
 
                     Reporter.WriteLine();

@@ -322,6 +322,13 @@
   <data name="CannotCombineSkipManifestAndRollback" xml:space="preserve">
     <value>Cannot use the {0} and {1} options together. If installing from a rollback file, remove {0}. Otherwise, remove {1}</value>
   </data>
+  <data name="CannotCombineSkipManifestAndVersion" xml:space="preserve">
+    <value>Cannot use the {0} and {1} options together.  Remove one of the options.</value>
+  </data>
+  <data name="CannotUseSkipManifestWithGlobalJsonWorkloadVersion" xml:space="preserve">
+    <value>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</value>
+    <comment>"workloadVersion" is a literal value and should not be translated.</comment>
+  </data>
   <data name="SkipSignCheckOptionDescription" xml:space="preserve">
     <value>Skip signature verification of workload packages and installers.</value>
   </data>

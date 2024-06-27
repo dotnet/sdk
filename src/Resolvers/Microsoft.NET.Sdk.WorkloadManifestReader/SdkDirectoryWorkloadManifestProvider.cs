@@ -122,7 +122,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
             _useManifestsFromInstallState = true;
-            var availableWorkloadSets = GetAvailableWorkloadSets();
+            var availableWorkloadSets = GetAvailableWorkloadSets(_sdkVersionBand);
 
             bool TryGetWorkloadSet(string workloadSetVersion, out WorkloadSet? workloadSet)
             {
@@ -491,29 +491,53 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
-            return GetAvailableWorkloadSets(_sdkVersionBand);
+            return GetAvailableWorkloadSetsInternal(null);
         }
 
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets(SdkFeatureBand workloadSetFeatureBand)
+        {
+            return GetAvailableWorkloadSetsInternal(workloadSetFeatureBand);
+        }
+
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSetsInternal(SdkFeatureBand? workloadSetFeatureBand)
         {
             //  How to deal with cross-band workload sets?
             Dictionary<string, WorkloadSet> availableWorkloadSets = new Dictionary<string, WorkloadSet>();
 
             foreach (var manifestRoot in _manifestRoots.Reverse())
             {
-                var workloadSetsRoot = Path.Combine(manifestRoot, workloadSetFeatureBand.ToString(), WorkloadSetsFolderName);
-                if (Directory.Exists(workloadSetsRoot))
+                if (workloadSetFeatureBand != null)
                 {
-                    foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
+                    //  Get workload sets for specific feature band
+                    var featureBandDirectory = Path.Combine(manifestRoot, workloadSetFeatureBand.Value.ToString());
+                    AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
+                }
+                else
+                {
+                    //  Get workload sets for all feature bands 
+                    foreach (var featureBandDirectory in Directory.GetDirectories(manifestRoot))
                     {
-                        var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
-                        var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, workloadSetFeatureBand);
-                        availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                        AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
                     }
                 }
             }
 
             return availableWorkloadSets;
+
+            static void AddWorkloadSetsForFeatureBand(Dictionary<string, WorkloadSet> availableWorkloadSets, string featureBandDirectory)
+            {
+                var featureBand = new SdkFeatureBand(Path.GetFileName(featureBandDirectory));
+                var workloadSetsRoot = Path.Combine(featureBandDirectory, WorkloadSetsFolderName);
+                if (Directory.Exists(workloadSetsRoot))
+                {
+                    foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
+                    {
+                        var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
+                        var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
+                        availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                    }
+                }
+            }
         }
 
         public string GetSdkFeatureBand()

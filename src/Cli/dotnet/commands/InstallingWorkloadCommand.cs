@@ -36,6 +36,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
         protected string _workloadSetVersionFromCommandLine;
+        protected string _globalJsonPath;
         protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
@@ -99,12 +100,12 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadInstallerFromConstructor = workloadInstaller;
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
 
-            var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-            _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+            _globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+            _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPath);
 
             if (SpecifiedWorkloadSetVersionInGlobalJson && (SpecifiedWorkloadSetVersionOnCommandLine || UseRollback))
             {
-                throw new GracefulException(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath), isUserError: true);
+                throw new GracefulException(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, _globalJsonPath), isUserError: true);
             }
 
             if (SpecifiedWorkloadSetVersionOnCommandLine && UseRollback)
