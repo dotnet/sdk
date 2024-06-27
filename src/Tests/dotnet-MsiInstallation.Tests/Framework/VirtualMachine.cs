@@ -360,7 +360,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             {
                 var targetSharePath = VMPathToSharePath(action.TargetPath);
 
-                CopyDirectory(action.SourcePath, targetSharePath);
+                var result = new RunExeCommand(Log, "robocopy", action.SourcePath, targetSharePath, "/mir")
+                    .Execute()
+                    .ExitCode.Should().BeLessThan(8);   //  Robocopy error exit codes are 8 or higher
 
                 return VMActionResult.Success();
             }
@@ -469,24 +471,6 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             ProcessDirectory(info, path);
 
             return sb.ToString();
-        }
-
-        static void CopyDirectory(string sourcePath, string destPath)
-        {
-            if (!Directory.Exists(destPath))
-            {
-                Directory.CreateDirectory(destPath);
-            }
-
-            foreach (var dir in Directory.GetDirectories(sourcePath))
-            {
-                CopyDirectory(dir, Path.Combine(destPath, Path.GetFileName(dir)));
-            }
-
-            foreach (var file in Directory.GetFiles(sourcePath))
-            {
-                new FileInfo(file).CopyTo(Path.Combine(destPath, Path.GetFileName(file)), true);
-            }
         }
 
         string VMPathToSharePath(string vmPath)

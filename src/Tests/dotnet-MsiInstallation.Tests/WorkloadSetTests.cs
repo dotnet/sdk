@@ -3,16 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
     public class WorkloadSetTests : VMTestBase
     {
+        readonly string SdkTestingDirectory = @"C:\SdkTesting";
+
         public WorkloadSetTests(ITestOutputHelper log) : base(log)
         {
         }
@@ -218,25 +222,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
-        [Fact]
-        public void UpdateWorkloadSetViaGlobalJson()
+        void SetupWorkloadSetInGlobalJson(out WorkloadSet originalRollback)
         {
             InstallSdk();
 
             var versionToUpdateTo = "8.0.300-preview.0.24217.2";
-            var directory = "C:\\SdkTesting";
 
             string originalVersion = GetWorkloadVersion();
 
-            var rollback = GetRollback(directory);
+            originalRollback = GetRollback(SdkTestingDirectory);
 
             VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo}""}}}}").Execute().Should().Pass();
 
-            GetWorkloadVersion(directory).Should().Be(versionToUpdateTo);
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be(versionToUpdateTo);
 
             // The version should have changed but not yet the manifests. Since we expect both, getting the rollback should fail.
             var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
-               .WithWorkingDirectory(directory)
+               .WithWorkingDirectory(SdkTestingDirectory)
                .WithIsReadOnly(true)
                .Execute();
 
@@ -244,23 +246,52 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.StdErr.Should().Contain("FileNotFoundException");
             result.StdErr.Should().Contain(versionToUpdateTo);
 
-            AddNuGetSource(@"C:\SdkTesting\workloadsets", directory);
-
-            VM.CreateRunCommand("dotnet", "workload", "update").WithWorkingDirectory(directory).Execute().Should().Pass();
-
-            GetRollback(directory).Should().NotBe(rollback);
+            AddNuGetSource(@"C:\SdkTesting\workloadsets", SdkTestingDirectory);
+            
         }
 
-        string GetWorkloadVersion(string workingDirectory = null)
+        [Fact]
+        public void UpdateWorkloadSetViaGlobalJson()
         {
-            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
-                .WithWorkingDirectory(workingDirectory)
-                .WithIsReadOnly(true)
-                .Execute();
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
 
-            result.Should().Pass();
+            VM.CreateRunCommand("dotnet", "workload", "update").WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
+            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
+        }
 
-            return result.StdOut;
+        [Fact]
+        public void InstallWorkloadSetViaGlobalJson()
+        {
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
+                .WithWorkingDirectory(SdkTestingDirectory)
+                .Execute().Should().Pass();
+
+            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
+        }
+
+        [Fact]
+        public void InstallWithGlobalJsonAndSkipManifestUpdate()
+        {
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update")
+                .WithWorkingDirectory(SdkTestingDirectory)
+                .Execute().Should().Fail()
+                .And.HaveStdErrContaining("--skip-manifest-update")
+                .And.HaveStdErrContaining(Path.Combine(SdkTestingDirectory, "global.json"));
+        }
+
+        [Fact]
+        public void InstallWithVersionAndSkipManifestUpdate()
+        {
+            InstallSdk();
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update", "--version", "8.0.300-preview.0.24178.1")
+                .Execute().Should().Fail()
+                .And.HaveStdErrContaining("--skip-manifest-update")
+                .And.HaveStdErrContaining("--sdk-version");
         }
 
         [Fact]
@@ -305,6 +336,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
+        string GetWorkloadVersion(string workingDirectory = null)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
+                .WithWorkingDirectory(workingDirectory)
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return result.StdOut;
+        }
         string GetUpdateMode()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "config", "--update-mode")
