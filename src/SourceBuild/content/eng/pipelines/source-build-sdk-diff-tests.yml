@@ -11,7 +11,8 @@ resources:
   pipelines:
   - pipeline: dotnet-source-build
     source: dotnet-source-build
-    # For releases branches only run on internal/release branches because that's were dependencies flow.
+    # For releases branches only run on internal/release branches because that's where dependencies flow.
+
     # Previews don't have internal/release branches so they must be run from non-internal release branches.
     trigger:
       branches:
