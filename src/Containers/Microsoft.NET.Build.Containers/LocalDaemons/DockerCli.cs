@@ -53,15 +53,7 @@ internal sealed class DockerCli
     {
         foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
         {
-            string exeSuffix =
-#if NET
-                FileNameSuffixes.CurrentPlatform.Exe;
-#else
-                // Avoid dependencies from Microsoft.DotNet.Cli.Utils reference for VS/net472
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
-#endif
-
-            string fullPath = Path.Combine(directory, command + exeSuffix);
+            string fullPath = Path.Combine(directory, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"{command}.exe" : command);
             if (File.Exists(fullPath))
             {
                 return fullPath;
