@@ -377,5 +377,39 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             lockFile.Targets.Add(lockFileTarget);
             new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
         }
+
+        public NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false)
+        {
+            ILogger nugetLogger = new NullLogger();
+
+            if (verbosity.IsDetailedOrDiagnostic())
+            {
+                nugetLogger = new NuGetConsoleLogger();
+            }
+
+            if (versionRange == null)
+            {
+                var versionString = "*";
+                versionRange = VersionRange.Parse(versionString);
+            }
+
+            var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
+                verboseLogger: nugetLogger,
+                isNuGetTool: true,
+                verbosityOptions: verbosity);
+
+            var packageSourceLocation = new PackageSourceLocation(
+                nugetConfig: packageLocation.NugetConfig,
+                rootConfigDirectory: packageLocation.RootConfigDirectory,
+                additionalSourceFeeds: packageLocation.AdditionalFeeds);
+
+            return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+        }
     }
 }

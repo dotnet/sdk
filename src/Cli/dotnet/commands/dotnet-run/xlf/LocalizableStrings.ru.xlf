@@ -47,9 +47,9 @@ Make the profile names distinct.</source>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
-        <source>Only one project can be specified at a time using the `-p` option.</source>
-        <target state="translated">С помощью параметра "-p" можно указать только один проект за раз.</target>
-        <note />
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="needs-review-translation">С помощью параметра "-p" можно указать только один проект за раз.</target>
+        <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
@@ -73,8 +73,8 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="translated">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
-        <note />
+        <target state="needs-review-translation">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
+        <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -133,8 +133,8 @@ The current {1} is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="translated">Предупреждение NETSDK1174: сокращение "-p" для "--project" не рекомендуется. Используйте "--project".</target>
-        <note />
+        <target state="needs-review-translation">Предупреждение NETSDK1174: сокращение "-p" для "--project" не рекомендуется. Используйте "--project".</target>
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
