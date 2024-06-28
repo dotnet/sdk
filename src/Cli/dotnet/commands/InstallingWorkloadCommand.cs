@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly string _downloadToCacheOption;
         protected readonly string _dotnetPath;
         protected readonly string _userProfileDir;
+        protected readonly string _workloadRootDir;
         protected readonly bool _checkIfManifestExist;
         protected readonly ReleaseVersion _sdkVersion;
         protected readonly SdkFeatureBand _sdkFeatureBand;
@@ -86,6 +87,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _userProfileDir = creationResult.UserProfileDir;
             _sdkVersion = creationResult.SdkVersion;
             _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
+            _workloadRootDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetPath;
             _workloadResolver = creationResult.WorkloadResolver;
             _targetSdkVersion ??= _sdkVersion;
 
@@ -118,7 +120,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             // Ensure workload set mode is set to 'workloadset'
             // Do not skip checking the mode first, as setting it triggers
             // an admin authorization popup for MSI-based installs.
-            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
             {
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
             }

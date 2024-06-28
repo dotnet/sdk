@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                     {
-                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _workloadRootDir), "default.json");
                         if (File.Exists(installStateFilePath))
                         {
                             var installStateContents = InstallStateContents.FromPath(installStateFilePath);
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             if (!skipManifestUpdate)
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _workloadRootDir), "default.json");
                 var installState = InstallStateContents.FromPath(installStateFilePath);
                 if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) &&
                     (installState?.Manifests is not null || installState?.WorkloadVersion is not null))
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                     workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
-                    var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+                    var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
                     useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
                     _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();

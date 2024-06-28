@@ -29,15 +29,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         public IWorkloadResolverFactory.CreationResult Create(string globalJsonStartDir = null)
         {
-            var result = new IWorkloadResolverFactory.CreationResult();
+            var result = new IWorkloadResolverFactory.CreationResult
+            {
+                SdkVersion = new ReleaseVersion(Product.Version),
+                DotnetPath = Path.GetDirectoryName(Environment.ProcessPath),
+                UserProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath
+            };
 
-            result.SdkVersion = new ReleaseVersion(Product.Version);
-
-            result.DotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
-            result.UserProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            globalJsonStartDir = globalJsonStartDir ?? Environment.CurrentDirectory;
-
-            string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(globalJsonStartDir);
+            string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(globalJsonStartDir ?? Environment.CurrentDirectory);
 
             var sdkWorkloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(result.DotnetPath, result.SdkVersion.ToString(), result.UserProfileDir, globalJsonPath);
 

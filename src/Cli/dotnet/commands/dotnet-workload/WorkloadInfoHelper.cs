@@ -31,12 +31,14 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             string userProfileDir = null,
             IWorkloadResolver workloadResolver = null)
         {
-            DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
             _currentSdkFeatureBand = new SdkFeatureBand(currentSdkReleaseVersion);
 
             _targetSdkVersion = targetSdkVersion;
             userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
+            DotnetPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(Path.GetDirectoryName(Environment.ProcessPath), _currentSdkFeatureBand.ToString()) ?
+                                        userProfileDir :
+                                        Path.GetDirectoryName(Environment.ProcessPath));
             ManifestProvider =
                 new SdkDirectoryWorkloadManifestProvider(DotnetPath,
                     string.IsNullOrWhiteSpace(_targetSdkVersion)
