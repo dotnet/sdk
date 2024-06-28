@@ -555,13 +555,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>51176f0bf2446f15dbd067b0001bce84b84a42f6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24256.1">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24327.2">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>1d98f4c0a5b25b72465fe075dd5f24b45ef15c8e</Sha>
+      <Sha>50d348db96960cbfcd79e869fb7d3b8a9e62e5e4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24256.1">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24327.2">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>1d98f4c0a5b25b72465fe075dd5f24b45ef15c8e</Sha>
+      <Sha>50d348db96960cbfcd79e869fb7d3b8a9e62e5e4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24279.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
