@@ -8,7 +8,7 @@
 
 ## Summary
 
-Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product.
+Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product. This table represents how the products currently function:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
@@ -108,6 +108,10 @@ In the case of [multi-targeting][issue-analyzer-mt] this proposal is effectively
 ### .NET SDK in box analyzers multi-target
 
 Technically in box analyzers can have a multi-targeting strategy just as NuGet based analyzers do. This is actively discouraged because it leads to unnecessary increases in .NET SDK sizes. The time spent implementing multi-targeting is likely better spent moving to a dual insertion to keep .NET SDK sizes down and provide a consistent experience with other analyzers.
+
+### .NET SDK in box analyzers use light up
+
+In box could also employ a light up strategy. Essentially reference older versions of the compiler and use reflection to opportunistically discover + use newer APIs. This is successfully employed in analyzers like StyleCop.
 
 ### PackageReference
 
