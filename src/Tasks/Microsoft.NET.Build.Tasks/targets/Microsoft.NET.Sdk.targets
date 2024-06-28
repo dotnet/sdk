@@ -504,6 +504,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_AggressiveAttributeTrimming)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.DefaultValueAttribute.IsSupported"
+                                    Condition="'$(_DefaultValueAttributeSupport)' != ''"
+                                    Value="$(_DefaultValueAttributeSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.Design.IDesignerHost.IsSupported"
+                                    Condition="'$(_DesignerHostSupport)' != ''"
+                                    Value="$(_DesignerHostSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"
                                     Condition="'$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)' != ''"
                                     Value="$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)"
@@ -527,6 +537,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Tracing.EventSource.IsSupported"
                                     Condition="'$(EventSourceSupport)' != ''"
                                     Value="$(EventSourceSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Drawing.Design.UITypeEditor.IsSupported"
+                                    Condition="'$(_WinFormsUITypeEditorSupport)' != ''"
+                                    Value="$(_WinFormsUITypeEditorSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.GC.Concurrent"
@@ -676,6 +691,41 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
                                     Condition="'$(UseWindowsThreadPool)' != ''"
                                     Value="$(UseWindowsThreadPool)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.ActiveXImpl.IsSupported"
+                                    Condition="'$(_ActiveXImplSupport)' != ''"
+                                    Value="$(_ActiveXImplSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Binding.IsSupported"
+                                    Condition="'$(_WinFormsBindingSupport)' != ''"
+                                    Value="$(_WinFormsBindingSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Control.AreDesignTimeFeaturesSupported"
+                                    Condition="'$(_WinFormsDesignTimeFeaturesSupport)' != ''"
+                                    Value="$(_WinFormsDesignTimeFeaturesSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Control.UseComponentModelRegisteredTypes"
+                                    Condition="'$(_UseComponentModelRegisteredTypes)' != ''"
+                                    Value="$(_UseComponentModelRegisteredTypes)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.ImageIndexConverter.IsSupported"
+                                    Condition="'$(_WinFormsImageIndexConverterSupport)' != ''"
+                                    Value="$(_WinFormsImageIndexConverterSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.MdiWindowDialog.IsSupported"
+                                    Condition="'$(_MdiWindowDialogSupport)' != ''"
+                                    Value="$(_MdiWindowDialogSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Primitives.TypeConverterHelper.UseComponentModelRegisteredTypes"
+                                    Condition="'$(_UseComponentModelRegisteredTypes)' != ''"
+                                    Value="$(_UseComponentModelRegisteredTypes)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
