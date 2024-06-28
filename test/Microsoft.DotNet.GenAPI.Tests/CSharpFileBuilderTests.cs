@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,33 +25,41 @@ namespace Microsoft.DotNet.GenAPI.Tests
         private static SyntaxTree GetSyntaxTree(string syntax) =>
             CSharpSyntaxTree.ParseText(syntax);
 
-        private void RunTest(string original,
+        private static void RunTest(string original,
             string expected,
             bool includeInternalSymbols = true,
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
             string excludedAttributeFile = null,
+            string includeDocIdFile = null,
             [CallerMemberName] string assemblyName = "")
         {
             StringWriter stringWriter = new();
 
             // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+            ISymbolFilter typeFilter = new AccessibilitySymbolFilter(
                 includeInternalSymbols,
                 includeEffectivelyPrivateSymbols,
                 includeExplicitInterfaceImplementationSymbols);
 
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
+            if (includeDocIdFile is not null)
+            {
+                typeFilter = new CompositeSymbolFilter(mode: CompositeSymbolFilterMode.Or,
+                    typeFilter,
+                    DocIdSymbolFilter.CreateFromFiles(new[] { includeDocIdFile }, includeDocIds: true));
+            }
+
+            CompositeSymbolFilter symbolFilter = new(mode: CompositeSymbolFilterMode.And,
+                new ImplicitSymbolFilter(),
+                typeFilter);
 
             CompositeSymbolFilter attributeDataSymbolFilter = new();
             if (excludedAttributeFile is not null)
             {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
+                attributeDataSymbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(new[] { excludedAttributeFile }));
             }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            attributeDataSymbolFilter.Add(typeFilter);
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 new ConsoleLog(MessageImportance.Low),
@@ -3047,6 +3056,84 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false);
+        }
+
+
+        [Fact]
+        public void TestIncludeOOBInternalAttribute()
+        {
+            using TempDirectory root = new();
+            string includeDocIdFilePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.WriteAllText(includeDocIdFilePath, """
+            T:System.Runtime.CompilerServices.CollectionBuilderAttribute
+            """);
+
+            RunTest(original: """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
+                    using System.Runtime.CompilerServices;
+                    namespace a
+                    {
+                        #pragma warning disable CS0436
+                        [CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        #pragma warning restore CS0436
+                        public class LineBuffer : IEnumerable<char>
+                        {
+                            public LineBuffer(ReadOnlySpan<char> buffer) { }
+
+                            public IEnumerator<char> GetEnumerator() => default!;
+                            IEnumerator IEnumerable.GetEnumerator() => default!;
+                        }
+
+                        public static class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(ReadOnlySpan<char> values) => new LineBuffer(values);
+                        }
+                    }
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
+                        {
+                            public Type BuilderType { get; } = builderType;
+
+                            public string MethodName { get; } = methodName;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        [System.Runtime.CompilerServices.CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        public partial class LineBuffer : System.Collections.Generic.IEnumerable<char>, System.Collections.IEnumerable
+                        {
+                            public LineBuffer(System.ReadOnlySpan<char> buffer) { }
+
+                            public System.Collections.Generic.IEnumerator<char> GetEnumerator() { throw null; }
+
+                            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                        }
+
+                        public static partial class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(System.ReadOnlySpan<char> values) { throw null; }
+                        }
+                    }
+
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed partial class CollectionBuilderAttribute : Attribute
+                        {
+                            public CollectionBuilderAttribute(Type builderType, string methodName) { }
+
+                            public Type BuilderType { get { throw null; } }
+
+                            public string MethodName { get { throw null; } }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                includeDocIdFile: includeDocIdFilePath);
         }
     }
 }

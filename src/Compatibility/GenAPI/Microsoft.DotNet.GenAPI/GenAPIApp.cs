@@ -18,6 +18,40 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public static class GenAPIApp
     {
+        // Attributes that can work with local definition and no runtime support to light up
+        // public API behavior in the language / compiler that are not defined in all supported frameworks
+        // see https://github.com/dotnet/roslyn/blob/859f94ef2d8bf88527217bc9ad7661b6fbdf33a9/src/Compilers/Core/Portable/Symbols/Attributes/AttributeDescription.cs#L343
+        private static readonly string[] s_compilerAttributes =
+        [
+            // init feature
+            "T:System.Runtime.CompilerServices.IsExternalInit",
+
+            // interpolated string handler
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
+
+            // required members
+            "T:System.Runtime.CompilerServices.RequiredMemberAttribute",
+            "T:System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
+            "T:System.Diagnostics.CodeAnalysis.CompilerFeatureRequiredAttribute",
+
+            // collection expressions
+            "T:System.Runtime.CompilerServices.CollectionBuilderAttribute",
+
+            // User authored Nullable attributes
+            "T:System.Diagnostics.CodeAnalysis.AllowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DisallowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullAttribute ",
+            "T:System.Diagnostics.CodeAnalysis.NotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullAtribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute"
+        ];
+
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
@@ -29,6 +63,8 @@ namespace Microsoft.DotNet.GenAPI
             string? exceptionMessage,
             string[]? excludeApiFiles,
             string[]? excludeAttributesFiles,
+            bool excludeInternalCompilerAttributes,
+            string[]? includeApiFiles,
             bool respectInternals,
             bool includeAssemblyAttributes)
         {
@@ -44,27 +80,45 @@ namespace Microsoft.DotNet.GenAPI
 
             string headerFileText = ReadHeaderFile(headerFile);
 
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                respectInternals,
+            ISymbolFilter typeFilter = new AccessibilitySymbolFilter(respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
+
+            if (includeApiFiles is not null || !excludeInternalCompilerAttributes)
+            {
+                CompositeSymbolFilter compositeTypeFilter = new(mode: CompositeSymbolFilterMode.Or, typeFilter);
+
+                if (includeApiFiles is not null)
+                {
+                    DocIdSymbolFilter includeApiFilesFilter = DocIdSymbolFilter.CreateFromFiles(includeApiFiles, includeDocIds: true);
+                    compositeTypeFilter.Add(includeApiFilesFilter);
+                }
+
+                if (!excludeInternalCompilerAttributes)
+                {
+                    DocIdSymbolFilter excludeInternalCompilerAttributesFilter = new(s_compilerAttributes, includeDocIds: true);
+                    compositeTypeFilter.Add(excludeInternalCompilerAttributesFilter);
+                }
+
+                typeFilter = compositeTypeFilter;
+            }
 
             // Configure the symbol filter
             CompositeSymbolFilter symbolFilter = new();
             if (excludeApiFiles is not null)
             {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
+                symbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(excludeApiFiles));
             }
             symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
+            symbolFilter.Add(typeFilter);
 
             // Configure the attribute data symbol filter
             CompositeSymbolFilter attributeDataSymbolFilter = new();
             if (excludeAttributesFiles is not null)
             {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
+                attributeDataSymbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(excludeAttributesFiles));
             }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            attributeDataSymbolFilter.Add(typeFilter);
 
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
