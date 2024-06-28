@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
@@ -336,10 +337,17 @@ namespace Microsoft.NET.Build.Tasks
                 throw new BuildErrorException(Strings.AssetsFileNotSet);
             }
 
-            ReadItemGroups();
-            SetImplicitMetadataForCompileTimeAssemblies();
-            SetImplicitMetadataForFrameworkAssemblies();
-            LogMessagesToMSBuild();
+            try
+            {
+                ReadItemGroups();
+                SetImplicitMetadataForCompileTimeAssemblies();
+                SetImplicitMetadataForFrameworkAssemblies();
+                LogMessagesToMSBuild();
+            }
+            catch (AcceptableNullReferenceException nre)
+            {
+                Log.LogError(Strings.ItemMissingValue, nre.Message);
+            }
         }
 
         private void ReadItemGroups()
@@ -1114,7 +1122,19 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var placeholder = WritePlaceholder();
                 _itemCount = 0;
-                writeItems();
+                try
+                {
+                    writeItems();
+                }
+                catch (NullReferenceException)
+                {
+                    // If one of the items has null metadata, it may throw a null reference exception in trying
+                    // to write it here. This may be unexpected but is more likely to be "accept default"
+                    // behavior. Regardless, we may have corrupted this stream, so we can't reuse it. Throw a
+                    // user-visible but graceful exception.
+                    throw new AcceptableNullReferenceException(writeItems.GetMethodInfo().Name);
+                }
+
                 FlushMetadata();
                 WriteToPlaceholder(placeholder, _itemCount);
             }
@@ -1943,6 +1963,10 @@ namespace Microsoft.NET.Build.Tasks
 
                 throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
             }
+        }
+
+        private class AcceptableNullReferenceException(string message) : NullReferenceException(message)
+        {
         }
     }
 }
