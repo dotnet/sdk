@@ -9,9 +9,8 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly Channel<TestApplication> _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions() { SingleReader = false, SingleWriter = false });
         private readonly List<Task> _readers = [];
-        private readonly List<Task> _writers = [];
 
-        public TestApplicationActionQueue(int dop, Action<TestApplication> action)
+        public TestApplicationActionQueue(int dop, Func<TestApplication, Task> action)
         {
             // Add readers to the channel, to read the test applications
             for (int i = 0; i < dop; i++)
@@ -22,7 +21,8 @@ namespace Microsoft.DotNet.Cli
 
         public void Enqueue(TestApplication testApplication)
         {
-            _writers.Add(Task.Run(() => _channel.Writer.TryWrite(testApplication)));
+            if (!_channel.Writer.TryWrite(testApplication))
+                throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication.ModulePath}");
         }
 
         public void WaitAllActions()
@@ -36,13 +36,13 @@ namespace Microsoft.DotNet.Cli
             _channel.Writer.Complete();
         }
 
-        private async Task Read(Action<TestApplication> action)
+        private async Task Read(Func<TestApplication, Task> action)
         {
             while (await _channel.Reader.WaitToReadAsync())
             {
                 if (_channel.Reader.TryRead(out TestApplication testApp))
                 {
-                    action(testApp);
+                    await action(testApp);
                 }
             }
         }

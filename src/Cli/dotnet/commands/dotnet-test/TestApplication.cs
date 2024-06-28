@@ -16,11 +16,11 @@ namespace Microsoft.DotNet.Cli
         //public event EventHandler<EventArgs> TestResultReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
-        public string ModuleName => _modulePath;
+        public string ModulePath => _modulePath;
 
-        public TestApplication(string moduleName, string pipeName, string[] args)
+        public TestApplication(string modulePath, string pipeName, string[] args)
         {
-            _modulePath = moduleName;
+            _modulePath = modulePath;
             _pipeName = pipeName;
             _args = args;
         }

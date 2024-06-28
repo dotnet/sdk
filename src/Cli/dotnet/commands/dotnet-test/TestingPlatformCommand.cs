@@ -3,11 +3,11 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -33,7 +33,6 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(34544);
             _args = parseResult.GetArguments();
 
             // User can decide what the degree of parallelism should be
@@ -125,7 +124,8 @@ namespace Microsoft.DotNet.Cli
             if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
             {
                 var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                testApplication?.OnCommandLineOptionMessages(commandLineOptionMessages);
+                Debug.Assert(testApplication is not null);
+                testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
