@@ -189,8 +189,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--source", @"c:\SdkTesting\workloadsets")
                 .Execute()
                 .Should()
-                .Fail();
-
+                .Pass()
+                .And.HaveStdOutContaining("No workload update found");
 
             VM.CreateRunCommand("dotnet", "workload", "search")
                 .WithIsReadOnly(true)
