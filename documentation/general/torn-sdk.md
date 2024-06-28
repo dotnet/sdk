@@ -79,6 +79,8 @@ One downside to this approach is that it is possible to end up with two VBCSComp
 
 ## Visual Studio using Visual Studio Analyzers
 
+Analyzers are required to function in all of our currently supported Visual Studio versions. This design proposal does not change this requirement. Instead it seeks to simplify the set of scenarios that analyzers need to consider by making compiler versions more predictable. It also helps establish a simple path for inbox analyzers to simply use the latest Roslyn in their development.
+
 ### .NET SDK in box analyzers dual insert
 
 Analyzers which ship in the .NET SDK box will change to having a copy checked into Visual Studio. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded. Roslyn already understands how to prefer Visual Studio copies of analyzers. That work will need to be extended a bit but that is pretty straight forward code.
@@ -141,13 +143,13 @@ Instead of downloading a .NET Framework Roslyn in a torn state, the SDK could ju
 
 ### Visual Studio Code
 
-This is how Visual Studio Code fits into our matrix:
+This is how Visual Studio Code fits into our matrix after this work is complete:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
-| msbuild | From Visual Studio | From .NET SDK |
+| msbuild | From .NET SDK | From .NET SDK |
 | dotnet msbuild | From .NET SDK | From .NET SDK |
-| Visual Studio Design Time | From Visual Studio | From Both |
+| Visual Studio Design Time | From Visual Studio | From Visuaal Studio |
 | DevKit | From DevKit | From .NET SDK |
 
 On the surface it seems like VS Code has the same issues as Visual Studio does today. However this is not the case. Visual Studio is problematic because at any given time there can be ~5 different versions in active support each with a different version of the compiler. Every Visual Studio but the latest is an older compiler that run into issues with analyzers.
