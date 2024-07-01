@@ -147,6 +147,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
                         if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) &&
+                            !SpecifiedWorkloadSetVersionOnCommandLine &&
+                            !SpecifiedWorkloadSetVersionInGlobalJson &&
                             InstallStateContents.FromPath(installStateFilePath) is InstallStateContents installState &&
                             (installState.Manifests != null || installState.WorkloadVersion != null))
                         {

@@ -247,7 +247,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.StdErr.Should().Contain(versionToUpdateTo);
 
             AddNuGetSource(@"C:\SdkTesting\workloadsets", SdkTestingDirectory);
-            
         }
 
         [Fact]
@@ -292,6 +291,52 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Execute().Should().Fail()
                 .And.HaveStdErrContaining("--skip-manifest-update")
                 .And.HaveStdErrContaining("--sdk-version");
+        }
+
+        [Fact]
+        public void InstallWithVersionWhenPinned()
+        {
+            InstallSdk();
+
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            string originalVersion = GetWorkloadVersion();
+            originalVersion.Should().NotBe("8.0.300-preview.0.24178.1");
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", "8.0.300-preview.0.24178.1")
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24178.1");
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--version", "8.0.300-preview.0.24217.2")
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
+        }
+
+        [Fact]
+        public void InstallWithGlobalJsonWhenPinned()
+        {
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
+
+            //AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            string originalVersion = GetWorkloadVersion();
+            originalVersion.Should().NotBe("8.0.300-preview.0.24178.1");
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", "8.0.300-preview.0.24178.1")
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24178.1");
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
+                .WithWorkingDirectory(SdkTestingDirectory)
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be("8.0.300-preview.0.24217.2");
+
+            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
+
         }
 
         [Fact]
