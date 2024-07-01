@@ -39,6 +39,7 @@
     <TieredCompilationQuickJitForLoops>true</TieredCompilationQuickJitForLoops>
     <TieredPGO>true</TieredPGO>
     <StartupHookSupport>false</StartupHookSupport>
+    <StackTraceSupport>false</StackTraceSupport>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
