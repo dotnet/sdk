@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-preview.7.24327.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-preview.7.24330.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>417561069f725e97b363c7fb573649d4204debc9</Sha>
+      <Sha>81ab22e8bf15861237b11d3900ff49de07ee3844</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-preview.7.24327.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-preview.7.24330.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>417561069f725e97b363c7fb573649d4204debc9</Sha>
+      <Sha>81ab22e8bf15861237b11d3900ff49de07ee3844</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-preview.7.24327.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-preview.7.24330.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>417561069f725e97b363c7fb573649d4204debc9</Sha>
+      <Sha>81ab22e8bf15861237b11d3900ff49de07ee3844</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.9.0" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.9.0" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.9.0" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.9.0" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
@@ -226,46 +226,46 @@
       <Sha>5b69fd31169dd07ced917329bbb483f3b73ea98f</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="System.CodeDom" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.CodeDom" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.ProtectedData" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.Security.Cryptography.ProtectedData" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encoding.CodePages" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.Text.Encoding.CodePages" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="System.Resources.Extensions" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.Resources.Extensions" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.7.24328.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.7.24330.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>20bdac2df93c5b2bde13a4198f45c83a4b5f686c</Sha>
+      <Sha>23d9283a3ee3899a984d694457da8bcadae79ff8</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.7.24328.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.7.24330.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>20bdac2df93c5b2bde13a4198f45c83a4b5f686c</Sha>
+      <Sha>23d9283a3ee3899a984d694457da8bcadae79ff8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.7.24328.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.7.24330.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>20bdac2df93c5b2bde13a4198f45c83a4b5f686c</Sha>
+      <Sha>23d9283a3ee3899a984d694457da8bcadae79ff8</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.7.24328.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.7.24330.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>20bdac2df93c5b2bde13a4198f45c83a4b5f686c</Sha>
+      <Sha>23d9283a3ee3899a984d694457da8bcadae79ff8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.7.24327.6" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.7.24329.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>285877a14800c5e4b598f677f104c372c1eba225</Sha>
+      <Sha>a1fc788c2fb5218da93803c9c98bd35862c10252</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.7.24329.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -382,13 +382,13 @@
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.7.24326.4" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.7.24329.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>6bf29db65a28bab6270ca7c7c16f2144f14cbc62</Sha>
+      <Sha>2a6733dc972bbe0e4bb0489385fb7ce42163bf66</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.7.24327.6" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.7.24329.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>285877a14800c5e4b598f677f104c372c1eba225</Sha>
+      <Sha>a1fc788c2fb5218da93803c9c98bd35862c10252</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24317.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -495,29 +495,29 @@
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -551,9 +551,9 @@
       <Sha>ede13bd35571c0c8b0c01edcb057031904c5c955</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-preview.7.24327.11">
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-preview.7.24328.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d88e6680e1f9e2cb4f5ee428aa169ab715158eab</Sha>
+      <Sha>a900bbf6fcf33fa2e799ed599ab86e00d6124c05</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24327.2">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
