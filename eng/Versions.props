@@ -338,8 +338,8 @@
     <DotNetExe>$(_DotNetHiveRoot)dotnet$(ExeExtension)</DotNetExe>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <AspireFeatureBand>9.0.100-preview.1</AspireFeatureBand>
-    <MicrosoftNETSdkAspireManifest90100preview1PackageVersion>9.0.0-preview.2.24163.9</MicrosoftNETSdkAspireManifest90100preview1PackageVersion>
+    <AspireFeatureBand>8.0.100</AspireFeatureBand>
+    <MicrosoftNETSdkAspireManifest80100PackageVersion>8.0.1</MicrosoftNETSdkAspireManifest80100PackageVersion>
     <MauiFeatureBand>9.0.100-preview.1</MauiFeatureBand>
     <MauiWorkloadManifestVersion>9.0.0-preview.1.9973</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>34.99.0-preview.1.151</XamarinAndroidWorkloadManifestVersion>
