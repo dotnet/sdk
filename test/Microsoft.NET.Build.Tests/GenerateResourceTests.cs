@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void DependentUponTest(string targetFramework, bool isExe)
         {
