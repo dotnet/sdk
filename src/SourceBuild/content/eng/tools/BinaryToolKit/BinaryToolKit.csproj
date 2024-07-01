@@ -4,6 +4,7 @@
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CustomPackageVersionsProps></CustomPackageVersionsProps>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
