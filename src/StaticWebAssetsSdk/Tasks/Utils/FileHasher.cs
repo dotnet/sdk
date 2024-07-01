@@ -16,6 +16,14 @@ internal static class FileHasher
         return ToBase36(hashBytes);
     }
 
+    internal static string HashString(string relativePath)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(relativePath);
+        var hashBytes = sha256.ComputeHash(bytes);
+        return ToBase36(hashBytes);
+    }
+
     internal static string ToBase36(byte[] hash)
     {
         const string chars = "0123456789abcdefghijklmnopqrstuvwxyz";

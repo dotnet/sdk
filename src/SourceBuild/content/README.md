@@ -142,7 +142,7 @@ You can also build the repository using a Docker image which has the required pr
 The example below creates a Docker volume named `vmr` and clones and builds the VMR there.
 
 ```sh
-docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
+docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 git clone https://github.com/dotnet/dotnet .
 
 # - Microsoft based build
@@ -152,7 +152,7 @@ git clone https://github.com/dotnet/dotnet .
 ./prep-source-build.sh && ./build.sh -sb --clean-while-building
 
 mkdir -p $HOME/.dotnet
-tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.9-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 ```
 

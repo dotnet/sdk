@@ -105,7 +105,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </MSBuild>
 
       <ItemGroup>
-        <_ResolvedReferencedProjectBuildStaticWebAssets
+        <_ResolvedReferencedProjectBuildStaticWebAssetCandidates
           Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
           Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'"
           KeepMetadata="@(_StaticWebAssetCanonicalMetadata)" />
@@ -116,12 +116,22 @@ Copyright (c) .NET Foundation. All rights reserved.
           KeepMetadata="@(_StaticWebAssetEndpointCanonicalMetadata)" />
       </ItemGroup>
 
-      <DefineStaticWebAssetEndpoints
-        CandidateAssets="@(_ResolvedReferencedProjectBuildStaticWebAssets)"
-        ExistingEndpoints="@(_ResolvedReferencedProjectBuildStaticWebAssetEndpoints)"
+      <UpdateExternallyDefinedStaticWebAssets Condition="@(_ResolvedReferencedProjectBuildStaticWebAssetCandidates) != ''"
+        Assets="@(_ResolvedReferencedProjectBuildStaticWebAssetCandidates)"
+        Endpoints="@(_ReferencedProjectBuildStaticWebAssetEndpointsUpdateCandidates)"
+        FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
+      >
+        <Output TaskParameter="UpdatedAssets" ItemName="_ResolvedReferencedProjectBuildStaticWebAssets" />
+        <Output TaskParameter="UpdatedEndpoints" ItemName="_ReferencedProjectBuildStaticWebAssetEndpoints" />
+        <Output TaskParameter="AssetsWithoutEndpoints" ItemName="_ReferencedProjectBuildStaticWebAssetsWithoutEndpoints" />
+      </UpdateExternallyDefinedStaticWebAssets>
+
+      <DefineStaticWebAssetEndpoints Condition="'@(_ReferencedProjectBuildStaticWebAssetsWithoutEndpoints)' != ''"
+        CandidateAssets="@(_ReferencedProjectBuildStaticWebAssetsWithoutEndpoints)"
+        ExistingEndpoints=""
         ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
       >
-        <Output TaskParameter="Endpoints" ItemName="_MissingReferencedProjectBuildStaticWebAssetEndpoints" />
+        <Output TaskParameter="Endpoints" ItemName="_ResolvedReferencedProjectBuildStaticWebAssetEndpoints" />
       </DefineStaticWebAssetEndpoints>
 
       <ItemGroup>
@@ -129,7 +139,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <StaticWebAsset Include="@(_ResolvedReferencedProjectBuildStaticWebAssets)" />
 
         <StaticWebAssetEndpoint Include="@(_ResolvedReferencedProjectBuildStaticWebAssetEndpoints)" />
-        <StaticWebAssetEndpoint Include="@(_MissingReferencedProjectBuildStaticWebAssetEndpoints)" />
 
         <StaticWebAssetDiscoveryPattern
           Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
