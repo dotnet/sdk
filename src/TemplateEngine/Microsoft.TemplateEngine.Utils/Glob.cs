@@ -236,7 +236,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             public bool CanConsume(string test, int startAt, out int endPosition)
             {
-                int nextSlash = test.IndexOf("/", startAt, StringComparison.Ordinal);
+                int nextSlash = test.IndexOf('/', startAt);
 
                 if (nextSlash > -1)
                 {

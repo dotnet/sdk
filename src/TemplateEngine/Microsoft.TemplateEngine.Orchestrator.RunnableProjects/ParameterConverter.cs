@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Utils
                 return null;
             }
 
-            if (!literal.Contains("\""))
+            if (!literal.Contains('"'))
             {
                 if (TryResolveBooleanValue(literal, out bool parsedBool))
                 {
