@@ -68,6 +68,7 @@
 /test/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink-contrib @AntonLapounov @dotnet/dotnet-cli
+# Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
