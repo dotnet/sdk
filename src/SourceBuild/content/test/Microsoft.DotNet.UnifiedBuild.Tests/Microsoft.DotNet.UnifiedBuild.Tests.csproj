@@ -4,7 +4,6 @@
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
     <UBTestsWarnOnContentDiffs>true</UBTestsWarnOnContentDiffs>
-    <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
     <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
   </PropertyGroup>
 
