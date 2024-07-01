@@ -30,6 +30,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
 
@@ -114,7 +117,7 @@
     <None Include="..\Common\Resources\xlf\**\*" LinkBase="Resources\xlf" />
     <UpToDateCheckInput Include="@(None)" />
   </ItemGroup>
-  
+
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
     <PropertyGroup>
       <_NugetBuildTasksPackPath>$(NuGetPackageRoot)nuget.build.tasks.pack\$(NuGetBuildTasksPackageVersion)</_NugetBuildTasksPackPath>
@@ -154,5 +157,5 @@
   <Target Name="GetTargetPath" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>
