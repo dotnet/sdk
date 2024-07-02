@@ -86,12 +86,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
 
-    <!-- Mark 'UseUwp' and 'UseWinUI' as visible, as the analyzer bundled in the Windows SDK framework package uses
-         these two properties and the list of referenced assemblies to emit diagnostics in unsupported scenarios. -->
-    <CompilerVisibleProperty Include="UseUwp" />
-    <CompilerVisibleProperty Include="UseWinUI" />
-
-    <!-- We also need to make this CsWinRT feature switch property compiler visible, as the projections/authoring generators use it -->
+    <!-- Mark 'CsWinRTUseWindowsUIXamlProjections' as compiler visible, so the analyzers bundled in the Windows SDK projections can see it -->
     <CompilerVisibleProperty Include="CsWinRTUseWindowsUIXamlProjections" />
   </ItemGroup>
 
