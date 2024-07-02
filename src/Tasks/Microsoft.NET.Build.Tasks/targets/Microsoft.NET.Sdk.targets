@@ -220,24 +220,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     </RebuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
+          This is to reduce 'tearing'/depdendency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
+    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
+  </PropertyGroup>
 
-    <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
-         If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
-         a duplicate PackageReference. This makes it more explicit that that is not supported. -->
-    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
-        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
+  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+    <RoslynTargetsPath>$(NuGetPackageRoot)\Microsoft.Net.Sdk.Compilers.Toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+  </PropertyGroup>
 
-    <PropertyGroup>
-      <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
-           This is to reduce 'tearing'/depdendency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
-      <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
-    </PropertyGroup>
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.CopyRefAssembly" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Csc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
 
-    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' ">
-      <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
+  <Target Name="_DownloadMicrosoftNetSdkCompilersToolsetPackage" Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'" BeforeTargets="CollectPackageReferences">
+    <ItemGroup>
+      <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
     </ItemGroup>
-
   </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.

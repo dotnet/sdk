@@ -35,7 +35,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1182,
             1183,
             1190,
-            1192
+            1192,
+            1205, // NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.
         };
 
         //ILLink lives in other repos and violated the _info requirement for no error code

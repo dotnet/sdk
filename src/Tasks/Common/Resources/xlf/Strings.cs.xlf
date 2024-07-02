@@ -112,11 +112,6 @@
         <target state="translated">NETSDK1001: Je potřeba zadat alespoň jednu možnou cílovou architekturu.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
-      <trans-unit id="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework">
-        <source>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</source>
-        <target state="translated">NETSDK1205: Balíček Microsoft.Net.Compilers.Toolset.Framework by neměl být nastaven přímo. Pokud ho potřebujete, nastavte vlastnost BuildWithNetFrameworkHostedCompiler na hodnotu true.</target>
-        <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: Nelze najít hostitele aplikace pro {0}. {0} může být neplatný identifikátor modulu runtime (RID). Další informace o identifikátoru RID najdete na adrese https://aka.ms/rid-catalog.</target>
