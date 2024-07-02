@@ -69,11 +69,32 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FrameworkReference Condition=" '$(UseUwp)' != 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- Mark 'UseUwp' and 'UseWinUI' as visible, as the analyzer bundled in the Windows SDK framework package uses
-       these two properties and the list of referenced assemblies to emit diagnostics in unsupported scenarios. -->
+  <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
+       This is to ensure that using the full Windows SDK projections will work correctly.
+       We still allow users to override this, which can help in mixed WinAppSDK scenarios. -->
+  <PropertyGroup>
+    <CsWinRTUseWindowsUIXamlProjections Condition=" '$(CsWinRTUseWindowsUIXamlProjections)' == '' and '$(UseUwp)' == 'true' ">true</CsWinRTUseWindowsUIXamlProjections>
+    <CsWinRTUseWindowsUIXamlProjections Condition=" '$(CsWinRTUseWindowsUIXamlProjections)' == '' ">false</CsWinRTUseWindowsUIXamlProjections>
+  </PropertyGroup>
+
   <ItemGroup>
+
+    <!-- Mark 'UseUwp' and 'UseWinUI' as visible, as the analyzer bundled in the Windows SDK framework package uses
+         these two properties and the list of referenced assemblies to emit diagnostics in unsupported scenarios. -->
     <CompilerVisibleProperty Include="UseUwp" />
     <CompilerVisibleProperty Include="UseWinUI" />
+
+    <!-- We also need to make this CsWinRT feature switch property compiler visible, as the projections/authoring generators use it -->
+    <CompilerVisibleProperty Include="CsWinRTUseWindowsUIXamlProjections" />
+  </ItemGroup>
+
+  <!-- Configure the Windows.UI.Xaml.* projections feature switch for CsWinRT from here. This is
+       needed because there's no .targets from CsWinRT that's used when CsWinRT itself is not being
+       directly referenced in the project. For instance, in a normal application (not authoring).  -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS"
+                                    Value="$(CsWinRTUseWindowsUIXamlProjections)"
+                                    Trim="true" />
   </ItemGroup>
 
   <Target Name="_ErrorOnUnresolvedWindowsSDKAssemblyConflict"
