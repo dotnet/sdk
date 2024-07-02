@@ -64,6 +64,8 @@ jobs:
           arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
         env:
           Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
       - powershell: eng\common\build.ps1
                   $(_CIBuild)
