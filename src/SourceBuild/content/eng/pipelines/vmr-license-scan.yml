@@ -10,7 +10,18 @@ schedules:
     - internal/release/*.0.1xx*
 
 pr: none
-trigger: none
+
+# Always trigger a run when changes are made to the license test implementation or baselines
+trigger: 
+  branches:
+    include:
+    - main
+    - release/*.0.1xx*
+    - internal/release/*.0.1xx*
+  paths:
+    include:
+    - test/Microsoft.DotNet.SourceBuild.SmokeTests/LicenseScanTests.cs
+    - test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
 
 parameters:
 # Provides a way to scan a specific repo. If not provided, all repos of the VMR will be scanned.

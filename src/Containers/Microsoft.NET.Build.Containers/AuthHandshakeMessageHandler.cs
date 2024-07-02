@@ -157,8 +157,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
         // Allow overrides for auth via environment variables
-        string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
-        string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass);
+        string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser) ?? Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUserLegacy);
+        string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass) ?? Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPassLegacy);
 
         // fetch creds for the host
         DockerCredentials? privateRepoCreds;
