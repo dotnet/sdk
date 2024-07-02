@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
     {
         public string DefaultRootState { get; set; }
 
-        public List<SerializableVMStateTree> VMStates { get; set; }
+        public List<SerializableVMStateTree> VMStates { get; set; } = new();
 
         public VMState ToVMState()
         {

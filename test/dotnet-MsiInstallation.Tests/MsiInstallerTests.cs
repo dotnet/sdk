@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("android");
+            InstallWorkload("android", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -95,9 +95,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("android");
+            InstallWorkload("android", skipManifestUpdate: true);
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var originalManifests = GetRollback();
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
 
             ListWorkloads().Should().Contain("wasm-tools");
 
@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void InstallStateShouldBeRemovedOnSdkUninstall()
         {
             InstallSdk();
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
             ApplyRC1Manifests();
             var featureBand = new SdkFeatureBand(SdkInstallerVersion);
             var installStatePath = $@"c:\ProgramData\dotnet\workloads\x64\{featureBand}\InstallState\default.json";
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void UpdateWithRollback()
         {
             InstallSdk();
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
             ApplyRC1Manifests();
 
             TestWasmWorkload();
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             ApplyRC1Manifests();
             var workloadVersion = GetWorkloadVersion();
             
-            InstallWorkload("aspire");
+            InstallWorkload("aspire", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(workloadVersion);
         }
@@ -257,6 +257,26 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void ApplyRollbackShouldNotUpdateAdvertisingManifests()
         {
             throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TestAspire()
+        {
+            InstallSdk();
+
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/internal/_packaging/8.0.300-rtm.24224.15-shipping/nuget/v3/index.json");
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspire-d215c528/nuget/v3/index.json");
+
+            //VM.CreateRunCommand("powershell", "-Command", "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }")
+            //    .Execute().Should().Pass();
+
+            InstallWorkload("aspire", skipManifestUpdate: true);
+
+            VM.CreateRunCommand("dotnet", "new", "aspire-starter", "-o", "Aspire-StarterApp01")
+                .WithWorkingDirectory(@"c:\SdkTesting")
+                .Execute()
+                .Should()
+                .Pass();
         }
 
 

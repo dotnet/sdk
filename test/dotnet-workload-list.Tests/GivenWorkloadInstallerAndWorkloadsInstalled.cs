@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Runtime.CompilerServices;
+using ManifestReaderTests;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         private WorkloadListCommand _workloadListCommand;
         private string _testDirectory;
 
-        private List<ManifestUpdateWithWorkloads> _mockManifestUpdates;
+        private List<(TestManifestUpdate update, WorkloadCollection workloads)> _mockManifestUpdates;
 
         private MockNuGetPackageDownloader _nugetDownloader;
         private string _dotnetRoot;
@@ -32,7 +34,12 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
         }
 
-        private void Setup(string identifier)
+        private IEnumerable<ManifestUpdateWithWorkloads> GetManifestUpdatesForMock()
+        {
+            return _mockManifestUpdates.Select(u => new ManifestUpdateWithWorkloads(u.update.ToManifestVersionUpdate(), u.workloads));
+        }
+
+        private void Setup([CallerMemberName] string identifier = "")
         {
             _testDirectory = _testAssetsManager.CreateTestDirectory(identifier: identifier).Path;
             _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
@@ -42,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _mockManifestUpdates = new()
             {
                 new(
-                    new ManifestVersionUpdate(
+                    new TestManifestUpdate(
                         new ManifestId("manifest1"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
@@ -58,7 +65,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                             WorkloadDefinitionKind.Dev, null, null, null)
                     }),
                 new(
-                    new ManifestVersionUpdate(
+                    new TestManifestUpdate(
                         new ManifestId("manifest-other"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
@@ -72,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                             WorkloadDefinitionKind.Dev, null, null, null)
                     }),
                 new(
-                    new ManifestVersionUpdate(
+                    new TestManifestUpdate(
                         new ManifestId("manifest-older-version"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
@@ -92,21 +99,31 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 "dotnet", "workload", "list", "--machine-readable", InstallingWorkloadCommandParser.VersionOption.Name, "7.0.100"
             });
 
+
+            var manifestProvider = new MockManifestProvider(_mockManifestUpdates.Select(u =>
+            {
+                string manifestFile = Path.Combine(_testDirectory, u.update.ManifestId.ToString() + ".json");
+                File.WriteAllText(manifestFile, GivenWorkloadManifestUpdater.GetManifestContent(u.update.ExistingVersion));
+                return (u.update.ManifestId.ToString(), manifestFile, u.update.ExistingVersion.ToString(), u.update.ExistingFeatureBand.ToString());
+            }).ToArray());
+            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, _dotnetRoot);
+
             _workloadListCommand = new WorkloadListCommand(
                 listParseResult,
                 _reporter,
                 nugetPackageDownloader: _nugetDownloader,
-                workloadManifestUpdater: new MockWorkloadManifestUpdater(_mockManifestUpdates),
+                workloadManifestUpdater: new MockWorkloadManifestUpdater(GetManifestUpdatesForMock()),
                 userProfileDir: _testDirectory,
                 currentSdkVersion: CurrentSdkVersion,
                 dotnetDir: _dotnetRoot,
-                workloadRecordRepo: new MockMatchingFeatureBandInstallationRecordRepository());
+                workloadRecordRepo: new MockMatchingFeatureBandInstallationRecordRepository(),
+                workloadResolver: workloadResolver);
         }
 
         [Fact]
         public void ItShouldGetAvailableUpdate()
         {
-            Setup(nameof(ItShouldGetAvailableUpdate));
+            Setup();
             WorkloadListCommand.UpdateAvailableEntry[] result =
                 _workloadListCommand.GetUpdateAvailable(new List<WorkloadId> { new("xamarin-android") }).ToArray();
 
@@ -120,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [Fact]
         public void ItShouldGetListOfWorkloadWithCurrentSdkVersionBand()
         {
-            Setup(nameof(ItShouldGetListOfWorkloadWithCurrentSdkVersionBand));
+            Setup();
             _workloadListCommand.Execute();
             _reporter.Lines.Should().Contain(c => c.Contains("\"installed\":[\"xamarin-android\"]"));
         }
@@ -135,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 }),
                 _reporter,
                 nugetPackageDownloader: _nugetDownloader,
-                workloadManifestUpdater: new MockWorkloadManifestUpdater(_mockManifestUpdates),
+                workloadManifestUpdater: new MockWorkloadManifestUpdater(null),
                 userProfileDir: _testDirectory,
                 currentSdkVersion: CurrentSdkVersion,
                 dotnetDir: _dotnetRoot,
@@ -155,7 +172,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 }),
                 _reporter,
                 nugetPackageDownloader: _nugetDownloader,
-                workloadManifestUpdater: new MockWorkloadManifestUpdater(_mockManifestUpdates),
+                workloadManifestUpdater: new MockWorkloadManifestUpdater(null),
                 userProfileDir: _testDirectory,
                 currentSdkVersion: "6.0.101",
                 dotnetDir: _dotnetRoot,
