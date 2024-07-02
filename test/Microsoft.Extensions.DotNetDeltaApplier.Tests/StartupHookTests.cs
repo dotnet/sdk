@@ -8,60 +8,21 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
         {
-            // Arrange
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = typeof(StartupHook).Assembly.Location
-            };
-
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
-
-            // Assert
-            Assert.True(string.IsNullOrEmpty(environmentVariables["DOTNET_STARTUP_HOOKS"]));
+            Assert.Equal("", StartupHook.RemoveCurrentAssembly(typeof(StartupHook).Assembly.Location));
         }
 
         [Fact]
         public void ClearHotReloadEnvironmentVariables_PreservedOtherStartupHooks()
         {
-            // Arrange
             var customStartupHook = "/path/mycoolstartup.dll";
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook,
-            };
-
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
-
-            // Assert
-            Assert.Equal(customStartupHook, environmentVariables["DOTNET_STARTUP_HOOKS"]);
+            Assert.Equal(customStartupHook, StartupHook.RemoveCurrentAssembly(typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook));
         }
 
         [Fact]
         public void ClearHotReloadEnvironmentVariables_RemovesHotReloadStartup_InCaseInvariantManner()
         {
-            // Arrange
             var customStartupHook = "/path/mycoolstartup.dll";
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = customStartupHook + Path.PathSeparator + typeof(StartupHook).Assembly.Location.ToUpperInvariant(),
-            };
-
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
-
-            // Assert
-            Assert.Equal(customStartupHook, environmentVariables["DOTNET_STARTUP_HOOKS"]);
+            Assert.Equal(customStartupHook, StartupHook.RemoveCurrentAssembly(customStartupHook + Path.PathSeparator + typeof(StartupHook).Assembly.Location.ToUpperInvariant()));
         }
     }
 }

@@ -3,19 +3,23 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Watcher.Tools;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
     internal sealed class WatchableApp : IDisposable
     {
+        // Test apps should output this message as soon as they start running:
         private const string StartedMessage = "Started";
+
+        // Test apps should output this message as soon as they exit:
         private const string ExitingMessage = "Exiting";
-        private const string WatchStartedMessage = "dotnet watch ⌚ Started";
-        private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
+
         private const string WatchErrorOutputEmoji = "❌";
-        private const string WaitingForFileChangeMessage = "dotnet watch ⏳ Waiting for a file to change";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
-        private const string HotReloadSessionStarted = "dotnet watch 🔥 Hot Reload session started.";
+
+        private static readonly string s_waitingForChanges = GetLinePrefix(MessageDescriptor.WaitingForChanges);
+        private static readonly string s_waitingForFileChangeBeforeRestarting = GetLinePrefix(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
         public readonly ITestOutputHelper Logger;
         private bool _prepared;
@@ -32,6 +36,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
 
         public bool UsePollingWatcher { get; set; }
+
+        private static string GetLinePrefix(MessageDescriptor descriptor)
+            => $"dotnet watch {descriptor.Emoji} {descriptor.Format}";
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -60,28 +67,29 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
 
-        public Task AssertRestarted()
+        public Task AssertStarted()
             => AssertOutputLineEquals(StartedMessage);
 
         /// <summary>
-        ///  Must be called before updating any source files.
-        ///  Document content is captured at session start and if any source files are updated before that
-        ///  changes will not be detected since the captured file content won't match the PDB checksums.
+        /// Wait till file watcher starts watching for file changes.
         /// </summary>
-        public Task WaitForSessionStarted()
-            => AssertOutputLineStartsWith(HotReloadSessionStarted);
+        public Task AssertWaitingForChanges()
+            => AssertOutputLineStartsWith(s_waitingForChanges);
 
-        public Task AssertWaitingForFileChange()
-            => AssertOutputLineStartsWith(WaitingForFileChangeMessage);
+        public async Task AssertWaitingForFileChangeBeforeRestarting()
+        {
+            // wait for user facing message:
+            await AssertOutputLineStartsWith(s_waitingForFileChangeBeforeRestarting);
+
+            // wait for the file watcher to start watching for changes:
+            await AssertWaitingForChanges();
+        }
 
         public Task AssertFileChanged()
             => AssertOutputLineStartsWith(WatchFileChanged);
 
-        public async Task AssertExited()
-        {
-            await AssertOutputLineStartsWith(ExitingMessage);
-            await AssertOutputLineStartsWith(WatchExitedMessage);
-        }
+        public Task AssertExiting()
+            => AssertOutputLineStartsWith(ExitingMessage);
 
         private void Prepare(string projectDirectory)
         {
@@ -102,18 +110,12 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             Prepare(projectDirectory);
 
-            var args = new List<string>
-            {
-                "watch",
-            };
-            args.AddRange(DotnetWatchArgs);
-            args.AddRange(arguments);
-
-            var commandSpec = new DotnetCommand(Logger, args.ToArray())
+            var commandSpec = new DotnetCommand(Logger, ["watch", .. DotnetWatchArgs, .. arguments])
             {
                 WorkingDirectory = workingDirectory ?? projectDirectory,
             };
 
+            commandSpec.WithEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES", "1");
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
 
@@ -130,24 +132,6 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             Process = new AwaitableProcess(commandSpec, Logger);
             Process.Start();
-        }
-
-        public async Task StartWatcherAsync(
-            TestAsset asset,
-            string relativeProjectDirectory = null,
-            IEnumerable<string> applicationArguments = null,
-            string workingDirectory = null,
-            TestFlags testFlags = TestFlags.RunningAsTest)
-        {
-            var args = new[] { "run", "--" };
-            if (applicationArguments != null)
-            {
-                args = args.Concat(applicationArguments).ToArray();
-            }
-
-            Start(asset, args, relativeProjectDirectory, workingDirectory, testFlags);
-
-            await AssertOutputLineStartsWith(WatchStartedMessage);
         }
 
         public void Dispose()

@@ -12,44 +12,74 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier
+    internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
+        private bool _changeApplicationErrorFailed;
 
-        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
+        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
-            base.Initialize(project, namedPipeName, cancellationToken);
-
             _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-            _capabilitiesTask = Task.Run(async () =>
+
+            // It is important to establish the connection (WaitForConnectionAsync) before we return,
+            // otherwise the client wouldn't be able to connect.
+            // However, we don't want to wait for the task to complete, so that we can start the client process.
+            _capabilitiesTask = ConnectAsync();
+
+            async Task<ImmutableArray<string>> ConnectAsync()
             {
-                reporter.Verbose($"Connecting to the application.");
+                try
+                {
+                    Reporter.Verbose($"Waiting for application to connect to pipe {namedPipeName}.");
 
-                await _pipe.WaitForConnectionAsync(cancellationToken);
+                    await _pipe.WaitForConnectionAsync(cancellationToken);
 
-                // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
+                    // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
-                return capabilities.Split(' ').ToImmutableArray();
-            });
+                    var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                    Reporter.Verbose($"Capabilities: '{capabilities}'");
+                    return capabilities.Split(' ').ToImmutableArray();
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    // pipe might throw another exception when forcibly closed on process termination:
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Reporter.Error($"Failed to read capabilities: {e.Message}");
+                    }
+
+                    return [];
+                }
+            }
         }
 
+        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            // Should only be called after CreateConnection
+            => _capabilitiesTask ?? throw new InvalidOperationException();
+
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-            => _capabilitiesTask ?? Task.FromResult(ImmutableArray<string>.Empty);
+            // Should only be called after CreateConnection
+            => _capabilitiesTask ?? throw new InvalidOperationException();
 
         public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
-            if (_capabilitiesTask is null || !_capabilitiesTask.IsCompletedSuccessfully || _pipe is null || !_pipe.IsConnected)
+            // Should only be called after CreateConnection
+            Debug.Assert(_capabilitiesTask != null);
+
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            if (_changeApplicationErrorFailed)
             {
-                // The client isn't listening
-                reporter.Verbose("No client connected to receive delta updates.");
+                Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", "🔥");
                 return ApplyStatus.Failed;
             }
 
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
+                Reporter.Verbose("No updates applicable to this process", "🔥");
                 return ApplyStatus.NoChangesApplied;
             }
 
@@ -59,15 +89,42 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ilDelta: update.ILDelta.ToArray(),
                 update.UpdatedTypes.ToArray())).ToArray());
 
-            await payload.WriteAsync(_pipe, cancellationToken);
-            await _pipe.FlushAsync(cancellationToken);
-
-            if (!await ReceiveApplyUpdateResult(cancellationToken))
+            var success = false;
+            var canceled = false;
+            try
             {
-                return ApplyStatus.Failed;
+                await payload.WriteAsync(_pipe, cancellationToken);
+                await _pipe.FlushAsync(cancellationToken);
+                success = await ReceiveApplyUpdateResult(cancellationToken);
+            }
+            catch (OperationCanceledException) when (!(canceled = true))
+            {
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                Reporter.Error($"Change failed to apply (error: '{e.Message}'). Further changes won't be applied to this process.");
+                Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+            }
+            finally
+            {
+                if (!success)
+                {
+                    if (canceled)
+                    {
+                        Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", "🔥");
+                    }
+
+                    _changeApplicationErrorFailed = true;
+
+                    DisposePipe();
+                }
             }
 
-            return (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+            Reporter.Report(MessageDescriptor.UpdatesApplied, applicableUpdates.Count, updates.Length);
+
+            return
+                !success ? ApplyStatus.Failed :
+                (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
         private async Task<bool> ReceiveApplyUpdateResult(CancellationToken cancellationToken)
@@ -78,25 +135,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             try
             {
                 var numBytes = await _pipe.ReadAsync(bytes, cancellationToken);
-                if (numBytes != 1)
+                if (numBytes != 1 || bytes[0] != UpdatePayload.ApplySuccessValue)
                 {
-                    reporter.Verbose($"Apply confirmation: Received {numBytes} bytes.");
-                    return false;
-                }
-
-                if (bytes[0] != UpdatePayload.ApplySuccessValue)
-                {
-                    reporter.Verbose($"Apply confirmation: Received value: '{bytes[0]}'.");
+                    Reporter.Error($"Change failed to apply (error code: '{BitConverter.ToString(bytes, 0, numBytes)}'). Further changes won't be applied to this process.");
                     return false;
                 }
 
                 return true;
-            }
-            catch (Exception ex)
-            {
-                // Log it, but we'll treat this as a failed apply.
-                reporter.Verbose(ex.Message);
-                return false;
             }
             finally
             {
@@ -104,9 +149,16 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
+        private void DisposePipe()
+        {
+            Reporter.Verbose("Disposing pipe");
+            _pipe?.Dispose();
+            _pipe = null;
+        }
+
         public override void Dispose()
         {
-            _pipe?.Dispose();
+            DisposePipe();
         }
     }
 }

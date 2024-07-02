@@ -1,7 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 
 [assembly: MetadataUpdateHandler(typeof(UpdateHandler))]
+
+Console.WriteLine("Started");
 
 // delete the dependency dll to cause load failure of DepSubType
 var depPath = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location!)!, "Dep.dll");
@@ -15,7 +18,7 @@ while (true)
         Printer.Print();
     }
 
-    Thread.Sleep(100);
+    Thread.Sleep(10);
 }
 
 static class UpdateHandler

@@ -4,12 +4,23 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal abstract class DeltaApplier : IDisposable
+    internal abstract class DeltaApplier(IReporter reporter) : IDisposable
     {
-        public abstract void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken);
+        public readonly IReporter Reporter = reporter;
+
+        public static readonly string StartupHookPath = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
+
+        public abstract void CreateConnection(string namedPipeName, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Waits for the application process to start.
+        /// Ensures that the build has been complete and the build outputs are available.
+        /// </summary>
+        public abstract Task WaitForProcessRunningAsync(CancellationToken cancellationToken);
 
         public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 

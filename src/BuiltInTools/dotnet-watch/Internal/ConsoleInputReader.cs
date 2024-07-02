@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Tools.Internal
     {
         private readonly object _writeLock = new();
 
-        public async Task<ConsoleKey> GetKeyAsync(string prompt, Func<ConsoleKey, bool> validateInput, CancellationToken cancellationToken)
+        public async Task<ConsoleKey> GetKeyAsync(string prompt, Func<ConsoleKeyInfo, bool> validateInput, CancellationToken cancellationToken)
         {
             if (quiet)
             {
@@ -43,16 +43,39 @@ namespace Microsoft.Extensions.Tools.Internal
 
                 void KeyPressed(ConsoleKeyInfo key)
                 {
-                    if (validateInput(key.Key))
+                    var keyDisplay = GetDisplayString(key);
+                    if (validateInput(key))
                     {
-                        WriteLine(key.KeyChar.ToString());
+                        WriteLine(keyDisplay);
                         tcs.TrySetResult(key.Key);
                     }
                     else
                     {
-                        WriteLine(key.KeyChar.ToString(), ConsoleColor.DarkRed);
-                        tcs.TrySetException(new ArgumentException($"Invalid key {key.KeyChar} entered."));
+                        WriteLine(keyDisplay, ConsoleColor.DarkRed);
+                        tcs.TrySetException(new ArgumentException($"Invalid key '{keyDisplay}' entered."));
                     }
+                }
+
+                static string GetDisplayString(ConsoleKeyInfo key)
+                {
+                    var keyDisplay = (key.Modifiers == ConsoleModifiers.None) ? key.KeyChar.ToString() : key.Key.ToString();
+
+                    if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
+                    {
+                        keyDisplay = "Alt+" + keyDisplay;
+                    }
+
+                    if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+                    {
+                        keyDisplay = "Shift+" + keyDisplay;
+                    }
+
+                    if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
+                    {
+                        keyDisplay = "Ctrl+" + keyDisplay;
+                    }
+
+                    return keyDisplay;
                 }
             }
 
