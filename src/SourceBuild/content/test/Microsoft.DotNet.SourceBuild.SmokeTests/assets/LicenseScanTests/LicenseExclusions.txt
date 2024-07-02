@@ -168,7 +168,6 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/core-components.txt|un
 src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-components.txt
 
 # Sample data
-src/runtime/src/mono/sample/wasm/browser-webpack/package-lock.json
 
 #
 # sdk
