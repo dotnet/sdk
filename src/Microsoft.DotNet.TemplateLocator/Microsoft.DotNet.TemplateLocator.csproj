@@ -59,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json"  VersionOverride="8.0.0" />
+    <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -23,6 +23,7 @@
     <Using Remove="Microsoft.NET.TestFramework.Utilities" />
     <Using Remove="Xunit" />
     <Using Remove="Xunit.Abstractions" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>

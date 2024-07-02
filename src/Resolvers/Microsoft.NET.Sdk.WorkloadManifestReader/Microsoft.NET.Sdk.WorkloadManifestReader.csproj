@@ -25,7 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Condition="'$(UseSystemTextJson)'=='True'" />
+    <PackageReference Include="System.Text.Json"
+        Condition="'$(UseSystemTextJson)' == 'True' And '$(TargetFramework)' == 'net472'"
+        VersionOverride="$(SystemTextJsonPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
