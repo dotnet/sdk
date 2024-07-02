@@ -17,25 +17,16 @@ pr:
 variables:
   - name: teamName
     value: Roslyn-Project-System
-  - name: _DotNetPublishToBlobFeed
-    value: false
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCore
   - name: PostBuildSign
     value: true
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: _InternalRuntimeDownloadArgs
       value: ''
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - name: _DotNetPublishToBlobFeed
-      value: true
     - name: Codeql.Enabled
       value: true
-    - group: DotNetBuilds storage account read tokens
     - name: _InternalRuntimeDownloadArgs
       value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal 
         /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
@@ -85,6 +76,7 @@ stages:
               _Test: ''
   - template: /eng/common/templates/job/source-build.yml
     parameters:
+      enableInternalSources: true
       platform:
         name: 'Managed'
         container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-3e800f1-20190501005343'

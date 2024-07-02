@@ -22,11 +22,8 @@ variables:
     - name: _InternalRuntimeDownloadArgs
       value: ''
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - name: _DotNetPublishToBlobFeed
-      value: true
     - name: Codeql.Enabled
       value: true
-    - group: DotNetBuilds storage account read tokens
     - name: _InternalRuntimeDownloadArgs
       value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal 
         /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
@@ -104,6 +101,7 @@ extends:
               value: ''
       - template: /eng/common/templates-official/job/source-build.yml@self
         parameters:
+          enableInternalSources: true
           platform:
             name: 'Managed'
             container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-3e800f1-20190501005343'
