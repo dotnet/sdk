@@ -10,12 +10,6 @@ pr: none
 variables:
   - name: teamName
     value: Roslyn-Project-System
-  - name: _DotNetPublishToBlobFeed
-    value: false
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCore
   - name: _PublishToAzure
     value: false
   - name: PostBuildSign
@@ -52,6 +46,7 @@ stages:
           - _SignArgs: ''
           - _InternalRuntimeDownloadArgs: ''
         steps:
+        - template: /eng/common/templates/steps/enable-internal-runtimes.yml
         - powershell: eng\common\build.ps1
                     -restore
                     -ci
@@ -67,7 +62,6 @@ stages:
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
-            BlobFeedUrl: $(PB_PublishBlobFeedUrl)
             PublishType: $(_PublishType)
             TestFullMSBuild: 'true'
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
