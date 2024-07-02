@@ -1,3 +1,4 @@
+<!-- Prevent test asset projects from picking up the repo's root Directory.Build.targets. -->
 <Project>
-  <!-- Empty Directory.Build.targets file to prevent test asset projects from picking up the repo's Directory.Build.props' -->
+
 </Project>

@@ -88,10 +88,10 @@ namespace Microsoft.NET.TestFramework
             TestContext testContext = new();
 
             bool runAsTool = false;
-            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
+            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "TestAssets")))
             {
                 runAsTool = true;
-                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
+                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "TestAssets");
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
             {
@@ -100,7 +100,7 @@ namespace Microsoft.NET.TestFramework
                 //  variable instead of packing the test, and installing it as a global tool.
                 runAsTool = true;
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
             {
@@ -145,7 +145,7 @@ namespace Microsoft.NET.TestFramework
             {
                 testContext.TestExecutionDirectory = (Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory), "tmp", repoConfiguration));
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
             }
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);

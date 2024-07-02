@@ -389,7 +389,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.ApiCompat.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.ApiCompat.Tests", "test\Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj", "{A9103B98-D888-4260-8A05-FA36F640698A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "src\Assets\TestPackages\dotnet-new\Microsoft.TemplateEngine.TestTemplates.csproj", "{C37EC61D-6A88-4C15-B371-A61F23EF9072}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "test\TestAssets\TestPackages\dotnet-new\Microsoft.TemplateEngine.TestTemplates.csproj", "{C37EC61D-6A88-4C15-B371-A61F23EF9072}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{06260DC7-BA64-42BE-B99C-6069A1C3E70E}"
 EndProject
