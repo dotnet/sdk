@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             bool selfContained = !publishSelfContained;
             bool resultShouldBeSelfContained = publishSelfContained && !selfContainedIsGlobal;
 
-            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+            string targetFramework = "net8.0"; // ToolsetInfo.CurrentTargetFramework;
             var testProject = new TestProject("MainProject")
             {
                 TargetFrameworks = targetFramework,

@@ -202,7 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="CompressionInSingleFileRequires60" />
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
                             '$(EnableCompressionInSingleFile)' == 'true' And
-                            '$(SelfContained)' != 'true'"
+                            '$(PublishSelfContained)' != 'true'"
                  ResourceName="CompressionInSingleFileRequiresSelfContained" />
 
     <NETSdkWarning Condition="'$(PublishProfileImported)' != 'true' and '$(PublishProfile)' != ''"
@@ -606,7 +606,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             RuntimeStorePackages="@(RuntimeStorePackages)"
                             PreserveStoreLayout="$(PreserveStoreLayout)"
                             ResolveRuntimeTargets="$(CopyLocalRuntimeTargetAssets)"
-                            IsSelfContained="$(SelfContained)"
+                            IsSelfContained="$(PublishSelfContained)"
                             Condition="'$(PreserveStoreLayout)' == 'true' Or '@(RuntimeStorePackages)' != ''">
       <Output TaskParameter="ResolvedAssets" ItemName="_ResolvedCopyLocalPublishAssets" />
     </ResolveCopyLocalAssets>
@@ -614,7 +614,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_ResolvedCopyLocalPublishAssets Include="@(RuntimePackAsset)"
-                                       Condition="('$(SelfContained)' == 'true' Or '%(RuntimePackAsset.RuntimePackAlwaysCopyLocal)' == 'true') and '%(RuntimePackAsset.AssetType)' != 'pgodata'" />
+                                       Condition="('$(PublishSelfContained)' == 'true' Or '%(RuntimePackAsset.RuntimePackAlwaysCopyLocal)' == 'true') and '%(RuntimePackAsset.AssetType)' != 'pgodata'" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(_UseBuildDependencyFile)' != 'true'">
@@ -912,7 +912,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <PropertyGroup Condition="'$(SelfContained)' == 'true'">
+  <PropertyGroup Condition="'$(PublishSelfContained)' == 'true'">
     <_ComputeManagedRuntimePackAssembliesIfSelfContained>_ComputeManagedRuntimePackAssemblies</_ComputeManagedRuntimePackAssembliesIfSelfContained>
   </PropertyGroup>
 
@@ -940,7 +940,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Assemblies from runtime packs for self-contained apps -->
-    <ItemGroup Condition="'$(SelfContained)' == 'true'">
+    <ItemGroup Condition="'$(PublishSelfContained)' == 'true'">
       <_ManagedRuntimeAssembly Include="@(_ManagedRuntimePackAssembly)" />
     </ItemGroup>
 
@@ -982,7 +982,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Check to see whether we can re-use the .deps.json file from the build for publish, or whether we have to
          generate a different one. -->
     <PropertyGroup>
-      <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true'">true</_TrimRuntimeAssets>
+      <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(PublishSelfContained)' == 'true'">true</_TrimRuntimeAssets>
       <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
                                           '@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
@@ -1117,7 +1117,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeMainProjectInDepsFile)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MicrosoftNETPlatformLibrary)" />
-      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(SelfContained)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishSelfContained)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeFileVersionsInDependencyFile)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifierGraphPath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeProjectsNotInAssetsFileInDepsFile)" />
@@ -1202,7 +1202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ResolvedNuGetFiles="@(_ResolvedNuGetFilesForPublish)"
                       ResolvedRuntimeTargetsFiles="@(RuntimeTargetsCopyLocalItems)"
                       UserRuntimeAssemblies="@(UserRuntimeAssembly)"
-                      IsSelfContained="$(SelfContained)"
+                      IsSelfContained="$(PublishSelfContained)"
                       IsSingleFile="$(_IsSingleFilePublish)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
                       RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
