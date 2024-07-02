@@ -69,6 +69,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FrameworkReference Condition=" '$(UseUwp)' != 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- Mark 'UseUwp' and 'UseWinUI' as visible, as the analyzer bundled in the Windows SDK framework package uses
+       these two properties and the list of referenced assemblies to emit diagnostics in unsupported scenarios. -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="UseUwp" />
+    <CompilerVisibleProperty Include="UseWinUI" />
+  </ItemGroup>
+
   <Target Name="_ErrorOnUnresolvedWindowsSDKAssemblyConflict"
           AfterTargets="ResolveAssemblyReferences"
           Condition=" '@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)' != '' ">
