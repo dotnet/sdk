@@ -64,9 +64,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- Add the right Windows SDK projections depending on whether 'UseUwp' is also set in the project -->
-  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                         and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))">
     <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Full" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
     <FrameworkReference Condition=" '$(UseUwp)' != 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
+   <!-- Fallback for previous framework packages -->
+   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                         and !$([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
