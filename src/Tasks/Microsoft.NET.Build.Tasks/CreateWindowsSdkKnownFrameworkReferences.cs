@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (!string.IsNullOrEmpty(WindowsSdkPackageVersion))
             {
-                knownFrameworkReferences.Add(CreateKnownFrameworkReference(WindowsSdkPackageVersion, TargetFrameworkVersion, TargetPlatformVersion));
+                knownFrameworkReferences.AddRange(CreateKnownFrameworkReferences(WindowsSdkPackageVersion, TargetFrameworkVersion, TargetPlatformVersion));
             }
             else if (UseWindowsSDKPreview)
             {
@@ -44,13 +44,13 @@ namespace Microsoft.NET.Build.Tasks
 
                 var windowsSdkPackageVersion = $"{tpv.Major}.{tpv.Minor}.{tpv.Build}-preview";
 
-                knownFrameworkReferences.Add(CreateKnownFrameworkReference(windowsSdkPackageVersion, TargetFrameworkVersion, TargetPlatformVersion));
+                knownFrameworkReferences.AddRange(CreateKnownFrameworkReferences(windowsSdkPackageVersion, TargetFrameworkVersion, TargetPlatformVersion));
             }
             else
             {
                 var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(TargetFrameworkVersion));
 
-                var knownFrameworkReferencesByWindowsSdkVersion = new Dictionary<Version, List<(Version minimumNetVersion, TaskItem knownFrameworkReference)>>();
+                var knownFrameworkReferencesByWindowsSdkVersion = new Dictionary<Version, List<(Version minimumNetVersion, TaskItem[] knownFrameworkReferences)>>();
 
                 foreach (var supportedWindowsVersion in WindowsSdkSupportedTargetPlatformVersions)
                 {
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks
                             knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed] = new();
                         }
 
-                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, CreateKnownFrameworkReference(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec)));
+                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, CreateKnownFrameworkReferences(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec)));
                     }
                 }
 
@@ -88,16 +88,38 @@ namespace Microsoft.NET.Build.Tasks
                     //  If there are multiple WindowsSdkSupportedTargetPlatformVersion items for the same Windows SDK version, choose the one with the highest minimum version.
                     //  That way it is possible to use older packages when targeting older versions of .NET, and newer packages for newer versions of .NET
                     var highestMinimumVersion = knownFrameworkReferencesForSdkVersion.Max(t => t.minimumNetVersion);
-                    knownFrameworkReferences.AddRange(knownFrameworkReferencesForSdkVersion.Where(t => t.minimumNetVersion == highestMinimumVersion).Select(t => t.knownFrameworkReference));
+                    knownFrameworkReferences.AddRange(knownFrameworkReferencesForSdkVersion.Where(t => t.minimumNetVersion == highestMinimumVersion).Select(t => t.knownFrameworkReferences).SelectMany(l => l));
                 }
             }
 
             KnownFrameworkReferences = knownFrameworkReferences.ToArray();
         }
 
-        private static TaskItem CreateKnownFrameworkReference(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
+        private static TaskItem[] CreateKnownFrameworkReferences(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
         {
-            var knownFrameworkReference = new TaskItem("Microsoft.Windows.SDK.NET.Ref");
+            // The two profiles are only available starting from .NET 9
+            if (Version.Parse(targetPlatformVersion) < new Version(9, 0))
+            {
+                return [CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "")];
+            }
+
+            // Return two profiles when on .NET 9:
+            //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.*
+            //   - "Full": with the entire Windows SDK (including Windows.UI.Xaml.* types)
+            return
+            [
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, "Windows"),
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, "Full"),
+            ];
+        }
+
+        private static TaskItem CreateKnownFrameworkReference(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion, string profile)
+        {
+            string itemSpec = string.IsNullOrEmpty(profile)
+                ? "Microsoft.Windows.SDK.NET.Ref"
+                : $"Microsoft.Windows.SDK.NET.Ref.{profile}";
+
+            var knownFrameworkReference = new TaskItem(itemSpec);
             knownFrameworkReference.SetMetadata("TargetFramework", $"net{targetFrameworkVersion}-windows{targetPlatformVersion}");
             knownFrameworkReference.SetMetadata("RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("DefaultRuntimeFrameworkVersion", windowsSdkPackageVersion);
@@ -108,6 +130,11 @@ namespace Microsoft.NET.Build.Tasks
             knownFrameworkReference.SetMetadata("RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("RuntimePackRuntimeIdentifiers", "any");
             knownFrameworkReference.SetMetadata("IsWindowsOnly", "true");
+
+            if (!string.IsNullOrEmpty(profile))
+            {
+                knownFrameworkReference.SetMetadata("Profile", profile);
+            }
 
             return knownFrameworkReference;
         }
