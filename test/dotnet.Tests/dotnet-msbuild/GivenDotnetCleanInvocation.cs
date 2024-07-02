@@ -30,10 +30,18 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--framework", "<framework>" }, "-property:TargetFramework=<framework>")]
         [InlineData(new string[] { "-c", "<configuration>" }, "-property:Configuration=<configuration>")]
         [InlineData(new string[] { "--configuration", "<configuration>" }, "-property:Configuration=<configuration>")]
+        [InlineData(new string[] { "-r", "<rid>" }, "-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "-r", "linux-amd64" }, "-property:RuntimeIdentifier=linux-x64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "-r", "linux-arm64" }, "-property:RuntimeIdentifier=linux-arm64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "--runtime", "<rid>" }, "-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "--runtime", "linux-amd64" }, "-property:RuntimeIdentifier=linux-x64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "--runtime", "linux-arm64" }, "-property:RuntimeIdentifier=linux-arm64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "--os", "linux" }, "-property:RuntimeIdentifier=linux-x64")]
+        [InlineData(new string[] { "--os", "linux", "--arch", "amd64" }, "-property:RuntimeIdentifier=linux-x64")]
+        [InlineData(new string[] { "--os", "linux", "--arch", "arm64" }, "-property:RuntimeIdentifier=linux-arm64")]
         [InlineData(new string[] { "-v", "diag" }, "-verbosity:diag")]
         [InlineData(new string[] { "--verbosity", "diag" }, "-verbosity:diag")]
         [InlineData(new string[] { "--disable-build-servers" }, "-p:UseRazorBuildServer=false -p:UseSharedCompilation=false /nodeReuse:false")]
-
         public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
