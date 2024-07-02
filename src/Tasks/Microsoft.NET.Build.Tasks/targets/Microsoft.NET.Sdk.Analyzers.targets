@@ -49,11 +49,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EffectiveAnalysisLevel Condition="'$(AnalysisLevel)' == 'latest' or '$(AnalysisLevelPrefix)' == 'latest'">$(_LatestAnalysisLevel)</EffectiveAnalysisLevel>
     <EffectiveAnalysisLevel Condition="'$(AnalysisLevel)' == 'preview' or '$(AnalysisLevelPrefix)' == 'preview'">$(_PreviewAnalysisLevel)</EffectiveAnalysisLevel>
 
-    <!-- Set EffectiveAnalysisLevel to the value of AnalysisLevel if it is a version number -->
+    <!-- Set EffectiveAnalysisLevel to the value of AnalysisLevelPrefix/AnalysisLevel if it is a numeric value -->
     <EffectiveAnalysisLevel Condition="'$(EffectiveAnalysisLevel)' == '' And
-                                       '$(AnalysisLevelPrefix)' != ''">$(AnalysisLevelPrefix)</EffectiveAnalysisLevel>
+                                       '$(AnalysisLevelPrefix)' != '' And
+                                        $([System.Text.RegularExpressions.Regex]::IsMatch($(AnalysisLevelPrefix), '^\d+$'))">$(AnalysisLevelPrefix)</EffectiveAnalysisLevel>
     <EffectiveAnalysisLevel Condition="'$(EffectiveAnalysisLevel)' == '' And
-                                       '$(AnalysisLevel)' != ''">$(AnalysisLevel)</EffectiveAnalysisLevel>
+                                       '$(AnalysisLevel)' != '' And
+                                       $([System.Text.RegularExpressions.Regex]::IsMatch($(AnalysisLevel), '^\d+$'))">$(AnalysisLevel)</EffectiveAnalysisLevel>
 
     <!-- Set WarningLevel based on all we know about the project -->
     <!-- NOTE: at this time only the C# compiler supports warning waves like this. -->
@@ -61,8 +63,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(AnalysisLevel)' == 'preview'">9999</WarningLevel>
     <!-- The CSharp.props used to hard-code WarningLevel to 4, so to maintain parity with .NET Framework projects we do that here. -->
     <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETFramework' ">4</WarningLevel>
-    <!-- .NET projects, however, can float up to their TFM's major version -->
-    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$(_TargetFrameworkVersionWithoutV.Substring(0, 1))</WarningLevel>
+    <!-- .NET projects, however, infer their WarningLevel from AnalysisLevel (which itself infers from TFM) -->
+    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(EffectiveAnalysisLevel)' != ''  And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$(EffectiveAnalysisLevel)</WarningLevel>
   </PropertyGroup>
 
   <!-- Enable Analyzers based on EffectiveAnalysisLevel -->
