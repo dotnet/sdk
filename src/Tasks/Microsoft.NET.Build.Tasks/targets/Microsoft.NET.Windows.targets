@@ -143,4 +143,20 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
   </Target>
+
+  <!-- Target to emit an error when 'UseUwp' is not set, but 'Microsoft.Windows.SDK.NET.Ref.Full' is transitively referenced -->
+  <Target Name="_CheckForTransitiveWindowsSDKFullDependencies"
+          AfterTargets="ResolvePackageAssets"
+          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+                      and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))
+                      and '$(TargetPlatformIdentifier)' == 'Windows'
+                      and '@(TransitiveFrameworkReference)' != ''
+                      and '$(UseUwp)' != 'true' ">
+    <ItemGroup>
+      <_WindowsSDKFullTransitiveFrameworkReference Include="@(TransitiveFrameworkReference)"
+                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref.Full'" />
+    </ItemGroup>
+    <NetSdkError Condition="'@(_WindowsSDKFullTransitiveFrameworkReference)' != ''"
+                 ResourceName="WindowsSDKFullMissingUseUwpProperty" />
+  </Target>
 </Project>
