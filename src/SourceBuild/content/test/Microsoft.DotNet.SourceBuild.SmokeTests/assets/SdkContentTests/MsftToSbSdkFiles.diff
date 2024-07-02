@@ -3,8 +3,10 @@ index ------------
 --- a/msftSdkFiles.txt
 +++ b/sbSdkFiles.txt
 @@ ------------ @@
+ ./host/fxr/
  ./host/fxr/x.y.z/
  ./host/fxr/x.y.z/libhostfxr.so
++./library-packs/
  ./LICENSE.txt
 +./metadata/
 +./metadata/workloads/
@@ -44,6 +46,14 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
+@@ ------------ @@
+ ./sdk-manifests/
+ ./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/
+-./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
