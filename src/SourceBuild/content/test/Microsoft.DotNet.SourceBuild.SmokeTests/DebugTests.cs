@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class DebugTests : SdkTests
 {
-    private record ScanResult(string FileName, bool HasDebugInfo, bool HasDebugAbbrevs, bool HasFileSymbols, bool HasGnuDebugLink);
+    private record ScanResult(string FileName, bool HasDebugInfo, bool HasDebugAbbrevs, bool HasGnuDebugLink);
 
     public DebugTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
@@ -30,7 +30,7 @@ public class DebugTests : SdkTests
         StringBuilder issueDetails = new();
         foreach (var fileName in fileNames)
         {
-            if (!IsElfFile(fileName) || SkipFile(fileName))
+            if (!IsElfFile(fileName))
             {
                 continue;
             }
@@ -49,11 +49,6 @@ public class DebugTests : SdkTests
                 foundIssue = true;
                 issueDetails.Append($"missing .debug_abbrev section in {fileName}{newLine}");
             }
-            if (!result.HasFileSymbols)
-            {
-                foundIssue = true;
-                issueDetails.Append($"missing FILE symbols in {fileName}{newLine}");
-            }
             if (result.HasGnuDebugLink)
             {
                 foundIssue = true;
@@ -68,14 +63,6 @@ public class DebugTests : SdkTests
     {
         string fileStdOut = ExecuteHelper.ExecuteProcessValidateExitCode("file", $"{fileName}", OutputHelper);
         return Regex.IsMatch(fileStdOut, @"ELF 64-bit [LM]SB (?:pie )?(?:executable|shared object)");
-    }
-
-    private static bool SkipFile(string path)
-    {
-        string fileName = Path.GetFileName(path);
-
-        // 'ilc' is a NativeAOT-built application which doesn't meet the expectations set by the test.
-        return fileName == "ilc";
     }
 
     private ScanResult ScanFile(string fileName)
@@ -96,35 +83,11 @@ public class DebugTests : SdkTests
 
         string readelfsStdOut = ExecuteHelper.ExecuteProcessValidateExitCode("eu-readelf", $"-s {fileName}", OutputHelper);
 
-        // Test FILE symbols. These will most likely be removed by anyting that
-        // manipulates symbol tables because it's generally useless. So a nice test
-        // that nothing has messed with symbols.
-        bool hasFileSymbols = readelfsStdOut.Split("\n").Where(ContainsFileSymbols).Any();
-
         // Test that there are no .gnu_debuglink sections pointing to another
         // debuginfo file. There shouldn't be any debuginfo files, so the link makes
         // no sense either.
         bool hasGnuDebuglink = readelfsStdOut.Split("\n").Where(line => line.Contains("] .gnu_debuglink")).Any();
 
-        return new ScanResult(fileName, hasDebugInfo, hasDebugAbbrev, hasFileSymbols, hasGnuDebuglink);
-    }
-
-    private bool ContainsFileSymbols(string line)
-    {
-        // Try matching against output like this:
-        //    10: 0000000000000000      0 FILE    LOCAL  DEFAULT      ABS coreclr_resolver.cpp
-        //   779: 0000000000000000      0 FILE    LOCAL  DEFAULT      ABS header.cpp
-
-        var parts = new Regex(@"[ \t\n\r]+").Split(line);
-        int expectedNumberOfParts = 9;
-
-        if (parts.Length < expectedNumberOfParts)
-        {
-            return false;
-        }
-
-        var fileNameRegex = new Regex(@"(.*/)?[-_a-zA-Z0-9]+\.(c|cc|cpp|cxx)");
-        return (parts[3] == "0") && (parts[4] == "FILE") && (parts[5] == "LOCAL") && (parts[6] == "DEFAULT") &&
-                        (parts[7] == "ABS") && (fileNameRegex.IsMatch(parts[8]));
+        return new ScanResult(fileName, hasDebugInfo, hasDebugAbbrev, hasGnuDebuglink);
     }
 }

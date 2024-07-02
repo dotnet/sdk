@@ -79,7 +79,7 @@ public class DockerRegistryTests
             Registry mcr = new(DockerRegistryManager.BaseImageSource, logger);
 
             var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
-            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage,new[] { DockerRegistryManager.Net6ImageTag });
+            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, new[] { DockerRegistryManager.Net6ImageTag });
             ImageBuilder? downloadedImage = await mcr.GetImageManifestAsync(
                 DockerRegistryManager.RuntimeBaseImage,
                 DockerRegistryManager.Net6ImageTag,
