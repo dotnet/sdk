@@ -67,7 +67,7 @@ jobs:
             value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           - name: _PerfIterations
             value: 25
-  
+
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - task: PowerShell@2
@@ -77,6 +77,7 @@ jobs:
             arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
       - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
@@ -109,7 +110,7 @@ jobs:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'false'
-  
+
       - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
@@ -141,7 +142,7 @@ jobs:
               TestFullMSBuild: 'true'
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
-  
+
       - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
@@ -153,7 +154,7 @@ jobs:
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
-  
+
       - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
         - script: eng/common/build.sh
                     $(_CIBuild)
@@ -184,34 +185,34 @@ jobs:
               RunAoTTests: 'false'
 
       - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
+        displayName: Publish Test Results
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
+          buildPlatform: '$(BuildPlatform)'
+          buildConfiguration: '$(_BuildConfig)'
         condition: always()
 
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+           log/$(_BuildConfig)/**/*
+           TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
-  
-      - task: 1ES.PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+
+      - task: 1ES.PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
 
 # AoT Jobs
@@ -270,6 +271,7 @@ jobs:
             arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
       - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
@@ -337,25 +339,25 @@ jobs:
               RunAoTTests: 'true'
 
       - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
-        - task: CopyFiles@2	
-          displayName: Gather Logs	
-          inputs:	
-            SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-            Contents: |	
-              log/$(_BuildConfig)/**/*	
-              TestResults/$(_BuildConfig)/**/*	
+        - task: CopyFiles@2
+          displayName: Gather Logs
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+            Contents: |
+              log/$(_BuildConfig)/**/*
+              TestResults/$(_BuildConfig)/**/*
               SymStore/$(_BuildConfig)/**/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-          continueOnError: true	
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+          continueOnError: true
           condition: always()
 
-        - task: 1ES.PublishBuildArtifacts@1	
-          displayName: Publish Logs to VSTS	
-          inputs:	
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-            publishLocation: Container	
-          continueOnError: true	
+        - task: 1ES.PublishBuildArtifacts@1
+          displayName: Publish Logs to VSTS
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+            publishLocation: Container
+          continueOnError: true
           condition: always()
 
 # TemplateEngine Jobs
@@ -414,6 +416,7 @@ jobs:
             arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
       - ${{ if contains(parameters.agentOs, 'Windows_NT') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
@@ -481,34 +484,34 @@ jobs:
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
-  
+
       - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
+        displayName: Publish Test Results
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
+          buildPlatform: '$(BuildPlatform)'
+          buildConfiguration: '$(_BuildConfig)'
         condition: always()
-  
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
+
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+           log/$(_BuildConfig)/**/*
+           TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
-  
-      - task: 1ES.PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+
+      - task: 1ES.PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
