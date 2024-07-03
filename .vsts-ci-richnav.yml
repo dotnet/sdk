@@ -61,7 +61,6 @@ stages:
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
-            BlobFeedUrl: $(PB_PublishBlobFeedUrl)
             PublishType: $(_PublishType)
             TestFullMSBuild: 'true'
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
