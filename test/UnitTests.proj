@@ -25,23 +25,23 @@
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="..\src\Tasks\Microsoft.NET.Build.Extensions.Tasks.UnitTests\Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj">
       <ExcludeAdditionalParameters>true</ExcludeAdditionalParameters>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj" >
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj">
       <ExcludeAdditionalParameters>true</ExcludeAdditionalParameters>
     </SDKCustomXUnitProject>
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' == 'true'" Include="**\*.AoT.Tests.csproj" />
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'"  Include="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj">
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj">
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'"  Include="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj">
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj">
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'"  Include="Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj">
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj">
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'"  Include="Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj">
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj">
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
