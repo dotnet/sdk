@@ -167,8 +167,6 @@ src/runtime/src/libraries/System.ServiceModel.Syndication/tests/TestFeeds/AtomFe
 src/runtime/src/libraries/System.Text.Json/roadmap/images/core-components.txt|unknown-license-reference
 src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-components.txt
 
-# Sample data
-
 #
 # sdk
 #
