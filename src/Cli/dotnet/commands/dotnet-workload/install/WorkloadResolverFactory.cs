@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         CreationResult Create(string globalJsonStartDir = null);
 
-        IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion);
+        IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion, bool useInstallStateOnly = false);
     }
 
     internal class WorkloadResolverFactory : IWorkloadResolverFactory
@@ -46,10 +46,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return result;
         }
 
-        public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
+        public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion, bool useInstallStateOnly = false)
         {
             var manifestProvider = SdkDirectoryWorkloadManifestProvider.ForWorkloadSet(dotnetPath, sdkVersion, userProfileDir, workloadSetVersion);
-            return WorkloadResolver.Create(manifestProvider, dotnetPath, sdkVersion, userProfileDir);
+            return WorkloadResolver.Create(manifestProvider, dotnetPath, sdkVersion, userProfileDir, useInstallStateOnly: useInstallStateOnly);
         }
     }
 }

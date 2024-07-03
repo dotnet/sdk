@@ -3,11 +3,13 @@
 
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -36,6 +38,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly string _dependent;
 
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
+        public SdkFeatureBand SdkFeatureBand => _sdkFeatureBand;
 
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
             ISetupLogger logger,
@@ -257,6 +260,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw;
             }
         }
+
+        public string GetFailingWorkloadFromTest() => null;
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
         {
@@ -632,6 +637,33 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 LogException(e);
                 throw;
             }
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            List<WorkloadHistoryRecord> historyRecords = new();
+            var workloadHistoryDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand.ToString());
+
+            if (!Directory.Exists(workloadHistoryDirectory))
+            {
+                return Enumerable.Empty<WorkloadHistoryRecord>();
+            }
+
+            foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
+            {
+                try
+                {
+                    var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                    historyRecords.Add(historyRecord);
+                }
+                catch (JsonException)
+                {
+                    // We picked up a file that wasn't in the correct format, but this isn't necessarily a problem, since we take all json files from
+                    // the workload history directory. Just ignore it.
+                }
+            }
+
+            return historyRecords;
         }
 
         public void Shutdown()

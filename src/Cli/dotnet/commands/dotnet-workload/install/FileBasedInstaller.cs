@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly RestoreActionConfig _restoreActionConfig;
 
         public int ExitCode => 0;
+        public SdkFeatureBand SdkFeatureBand => _sdkFeatureBand;
 
         public FileBasedInstaller(IReporter reporter,
             SdkFeatureBand sdkFeatureBand,
@@ -85,6 +87,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             return packs;
         }
+
+        public string GetFailingWorkloadFromTest() => null;
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
@@ -535,6 +539,47 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     workloadRecordRepository.DeleteWorkloadInstallationRecord(workloadInstallationRecordId, potentialBandToClean);
                 }
             }
+        }
+
+        string GetWorkloadHistoryDirectory()
+        {
+            return Path.Combine(_workloadMetadataDir, _sdkFeatureBand.ToString(), "history");
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            var historyDirectory = GetWorkloadHistoryDirectory();
+            Directory.CreateDirectory(historyDirectory);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            List<WorkloadHistoryRecord> historyRecords = new();
+
+            var workloadHistoryDirectory = GetWorkloadHistoryDirectory();
+
+            if (!Directory.Exists(workloadHistoryDirectory))
+            {
+                return Enumerable.Empty<WorkloadHistoryRecord>();
+            }
+
+            foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
+            {
+                try
+                {
+                    var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                    historyRecords.Add(historyRecord);
+                }
+                catch (JsonException)
+                {
+                    // We picked up a file that wasn't in the correct format, but this isn't necessarily a problem, since we take all json files from
+                    // the workload history directory. Just ignore it.
+                }
+            }
+
+            return historyRecords;
         }
 
         public void Shutdown()

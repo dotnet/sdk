@@ -6,11 +6,9 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -23,6 +21,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _adManifestOnlyOption;
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
+        private WorkloadHistoryRecorder _recorder;
         public WorkloadUpdateCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -49,6 +48,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
+            _recorder = new(_workloadResolver, _workloadInstaller);
+            _recorder.HistoryRecord.CommandName = "update";
+            _recorder.HistoryRecord.WorkloadArguments = parseResult.GetArguments().ToList();
         }
 
         public override int Execute()
@@ -100,24 +102,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 Reporter.WriteLine();
                 try
                 {
-                    var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
-
-                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-
-                    RunInNewTransaction(context =>
+                    _recorder.Run(() =>
                     {
-                        UpdateWorkloadManifests(context, offlineCache);
-                        _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
+                        var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
+
+                        DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+
+                        RunInNewTransaction(context =>
+                        {
+                            UpdateWorkloadManifests(_recorder, context, offlineCache);
+                            _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
+                        });
+
+                        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+                        //  TODO: potentially only do this in some cases (ie not if global.json specifies workload set)
+                        _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
+
+                        Reporter.WriteLine();
+                        Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine();
                     });
-
-                    WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
-
-                    //  TODO: potentially only do this in some cases (ie not if global.json specifies workload set)
-                    _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
-
-                    Reporter.WriteLine();
-                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
-                    Reporter.WriteLine();
                 }
                 catch (Exception e)
                 {
@@ -153,7 +158,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private IEnumerable<WorkloadId> GetUpdatableWorkloads(IReporter reporter = null)
         {
             reporter ??= Reporter;
-            var workloads = GetInstalledWorkloads(_fromPreviousSdk);
+            var workloads = FromHistory ? _WorkloadHistoryRecord.StateAfterCommand.InstalledWorkloads.Select(s => new WorkloadId(s)) : GetInstalledWorkloads(_fromPreviousSdk);
 
             if (workloads == null || !workloads.Any())
             {

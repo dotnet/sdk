@@ -31,7 +31,7 @@ namespace ManifestReaderTests
 
         public void RefreshWorkloadManifests() { }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly)
         {
             foreach ((var id, var path, var manifestVersion, var featureBand) in _manifests)
             {
@@ -49,5 +49,6 @@ namespace ManifestReaderTests
 
         public string GetSdkFeatureBand() => SdkFeatureBand.ToString();
         public string GetWorkloadVersion() => SdkFeatureBand.ToString() + ".2";
+        public WorkloadSet GetCurrentWorkloadVersion() => new() { Version = "8.0.100" };
     }
 }

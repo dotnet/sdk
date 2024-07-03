@@ -22,11 +22,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private string[] _currentRuntimeIdentifiers;
         private readonly (string path, bool installable)[] _dotnetRootPaths;
         private bool _initializedManifests = false;
+        private bool _useInstallStateOnly;
 
         private Func<string, bool>? _fileExistOverride;
         private Func<string, bool>? _directoryExistOverride;
 
-        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir)
+        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir, bool useInstallStateOnly = false)
         {
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
@@ -49,7 +50,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = packRootEnvironmentVariable.Split(Path.PathSeparator).Select(path => (path, false)).Concat(workloadRootPaths).ToArray();
             }
 
-            return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);
+            return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers, useInstallStateOnly: useInstallStateOnly);
         }
 
         public static WorkloadResolver CreateForTests(IWorkloadManifestProvider manifestProvider, string dotNetRoot, bool userLocal = false, string? userProfileDir = null, string[]? currentRuntimeIdentifiers = null)
@@ -76,17 +77,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Creates a resolver by composing all the manifests from the provider.
         /// </summary>
-        private WorkloadResolver(IWorkloadManifestProvider manifestProvider, (string path, bool installable)[] dotnetRootPaths, string[] currentRuntimeIdentifiers)
+        private WorkloadResolver(IWorkloadManifestProvider manifestProvider, (string path, bool installable)[] dotnetRootPaths, string[] currentRuntimeIdentifiers, bool useInstallStateOnly = false)
             : this(dotnetRootPaths, currentRuntimeIdentifiers, manifestProvider.GetSdkFeatureBand())
         {
             _manifestProvider = manifestProvider;
+            _useInstallStateOnly = useInstallStateOnly;
         }
 
         private void InitializeManifests()
         {
             if (!_initializedManifests)
             {
-                LoadManifestsFromProvider(_manifestProvider);
+                LoadManifestsFromProvider(_manifestProvider, useInstallStateOnly: _useInstallStateOnly);
                 ComposeWorkloadManifests();
                 _initializedManifests = true;
             }
@@ -116,10 +118,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public WorkloadSet? GetGlobalWorkloadSetVersion() => _manifestProvider.GetCurrentWorkloadVersion();
 
-        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
+        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider, bool useInstallStateOnly = false)
         {
-            foreach (var readableManifest in manifestProvider.GetManifests())
+            foreach (var readableManifest in manifestProvider.GetManifests(useInstallStateOnly: useInstallStateOnly))
             {
                 using (Stream manifestStream = readableManifest.OpenManifestStream())
                 using (Stream? localizationStream = readableManifest.OpenLocalizationStream())
@@ -776,9 +779,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             public void RefreshWorkloadManifests() { }
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
-            public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
+            public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly) => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
             public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public WorkloadSet? GetCurrentWorkloadVersion() => new() { Version = "8.0.100" };
         }
     }
 
