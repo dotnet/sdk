@@ -228,6 +228,12 @@ function Build {
 
     InitializeToolset
 
+    "$DOTNET_INSTALL_DIR/dotnet" build-server shutdown
+
+    tdnf install -y unzip || true
+
+    unzip -o -j "$scriptroot/eng/nuget-files.zip" -d "$DOTNET_INSTALL_DIR/sdk/9.0.100-preview.6.24311.23/"
+
     # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
     # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
     unset NUGET_PACKAGES

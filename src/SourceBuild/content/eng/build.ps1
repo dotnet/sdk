@@ -79,6 +79,10 @@ if ($dev) {
 function Build {
   InitializeToolset
 
+  & "$env:DOTNET_INSTALL_DIR\dotnet.exe" build-server shutdown
+
+  Expand-Archive -Force -Path $PSScriptRoot\nuget-files.zip -Destination $env:DOTNET_INSTALL_DIR\sdk\9.0.100-preview.6.24311.23\
+
   # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
   # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
   $env:NUGET_PACKAGES=''
