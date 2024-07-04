@@ -16,7 +16,13 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
         public ListPackageReferencesCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+            _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
+                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument));
+        }
+
+        private static string GetAbsolutePath(string currentDirectory, string relativePath)
+        {
+            return Path.GetFullPath(Path.Combine(currentDirectory, relativePath));
         }
 
         public override int Execute()
