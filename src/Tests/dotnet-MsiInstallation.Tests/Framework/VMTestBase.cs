@@ -66,8 +66,23 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .Should()
                 .Pass();
 
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-                .WithDescription($"Install SDK {SdkInstallerVersion}")
+            var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+            List<string> runtimeInstallers = new List<string>();
+            string installerPrefix = "dotnet-runtime-";
+            string installerSuffix = "-win-x64.exe";
+            foreach (var file in sdkTestingDir.Files.Select(Path.GetFileName))
+            {
+                if (file.StartsWith(installerPrefix) && file.EndsWith(installerSuffix))
+                {
+                    runtimeInstallers.Add(file);
+                }
+            }
+
+            VM.CreateActionGroup($"Install SDK {SdkInstallerVersion}",
+                [
+                    VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet"),
+                    ..runtimeInstallers.Select(i => VM.CreateRunCommand($@"c:\SdkTesting\{i}", "/quiet"))
+                ])
                 .Execute()
                 .Should()
                 .Pass();
