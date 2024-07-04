@@ -106,6 +106,7 @@ extends:
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/8.0.4xx
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -174,6 +175,7 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
@@ -275,6 +277,7 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             macOSJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -295,6 +298,8 @@ extends:
           platform:
             name: Managed
             container: centosStream9
+            jobProperties:
+              timeoutInMinutes: 30
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
