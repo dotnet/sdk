@@ -187,4 +187,7 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdUseLockFileOptionDescription" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
   </data>
+  <data name="CmdNoHttpCacheOptionDescription" xml:space="preserve">
+    <value>Disable Http Caching for packages.</value>
+  </data>
 </root>

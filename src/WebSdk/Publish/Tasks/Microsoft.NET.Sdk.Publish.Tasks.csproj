@@ -4,14 +4,16 @@
     <PublishRoot Condition="'$(PublishRoot)' == ''">$(RepoRoot)\src\WebSdk\Publish\</PublishRoot>
     <PackageId>Microsoft.NET.Sdk.Publish</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(RepoRoot)\src\WebSdk\Package.props" />
-  
+
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
@@ -38,7 +40,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <PackageReference Include="Microsoft.Web.Deployment" />
-    <PackageReference Include="System.Text.Json" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />

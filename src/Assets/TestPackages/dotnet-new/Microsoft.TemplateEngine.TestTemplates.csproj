@@ -12,6 +12,7 @@
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <NoDefaultExcludes>true</NoDefaultExcludes>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="**\*" />

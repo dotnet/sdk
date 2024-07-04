@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Tue, 30 Apr 2024 10:21:32 -0500
+Subject: [PATCH] Disable WPF scenario test
+
+Backport: https://github.com/dotnet/source-build/issues/4361
+---
+ .../SdkTemplateTests.cs                                         | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
+index c43fdd6..35279a9 100644
+--- a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
++++ b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTests.cs
+@@ -84,7 +84,7 @@ public class SdkTemplateTests : IClassFixture<ScenarioTestFixture>
+         newTest.Execute(_sdkHelper, _scenarioTestInput.TestRoot);
+     }
+     
+-    [Theory]
++    //[Theory]
+     [InlineData(DotNetLanguage.CSharp)]
+     [InlineData(DotNetLanguage.VB)]
+     [Trait("Category", "Offline")]

@@ -36,11 +36,3 @@ dotnet nuget remove source dotnet-tools-transport --configfile $TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-eng --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
-
-cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
-export TestPackagesRoot=$(pwd)/Assets/TestPackages
-dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-mkdir $TestExecutionDirectory/Testpackages
-cp -v $TestPackagesRoot/TestPackages/* $TestExecutionDirectory/Testpackages/.
-dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
-

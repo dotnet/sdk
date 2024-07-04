@@ -23,7 +23,8 @@ FOR /F "tokens=*" %%g IN ('PowerShell -ExecutionPolicy ByPass [System.IO.Path]::
 set TestExecutionDirectory=%TEMP%\dotnetSdkTests\%RandomDirectoryName%
 set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
-robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s
+REM https://stackoverflow.com/a/7487697/294804
+robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
 
 set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%
 set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\r
@@ -48,8 +49,3 @@ dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-
-robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles\ .\ testAsset.props
-set TestPackagesRoot=%CD%\assets\testpackages\
-dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-robocopy .\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
