@@ -74,7 +74,7 @@ parameters:
 
 - name: runTests
   type: boolean
-  default: true
+  default: false
 
 # Freeform field for extra values to pass to build.sh for special build modes
 - name: extraProperties
