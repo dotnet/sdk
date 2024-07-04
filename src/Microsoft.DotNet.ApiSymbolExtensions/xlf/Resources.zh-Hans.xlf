@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Resources.resx">
+    <body>
+      <trans-unit id="CouldNotResolveReference">
+        <source>Could not resolve reference '{0}' in any of the provided search directories.</source>
+        <target state="translated">无法在任何提供的搜索目录中解析引用“{0}”。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MatchingAssemblyNotFound">
+        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
+        <target state="translated">在任何搜索目录中都找不到匹配的程序集“{0}”。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedPathToLoadBinariesFromNotFound">
+        <source>Could not find the provided path '{0}' to load binaries from.</source>
+        <target state="translated">找不到所提供的要从中加载二进制文件的路径“{0}”。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedStreamDoesNotHaveMetadata">
+        <source>Provided stream for assembly '{0}' doesn't have any metadata to read. from.</source>
+        <target state="translated">为程序集“{0}”提供的流没有任何可供读取的元数据。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">
+        <source>Should not be null and contain at least one element.</source>
+        <target state="translated">不应为 null，并且应至少包含一个元素。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldProvideValidAssemblyName">
+        <source>Should provide a valid assembly name.</source>
+        <target state="translated">应提供有效的程序集名称。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StreamPositionGreaterThanLength">
+        <source>Stream position is greater than it's length, so there are no contents available to read.</source>
+        <target state="translated">流位置大于其长度，因此没有可供读取的内容。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
