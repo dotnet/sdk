@@ -41,8 +41,8 @@ Microsoft.AspNetCore.SignalR.Common.x.y.z.nupkg: 31619
 Microsoft.AspNetCore.SignalR.Protocols.Json.x.y.z.nupkg: 25486
 Microsoft.AspNetCore.WebUtilities.x.y.z.nupkg: 60948
 Microsoft.Bcl.AsyncInterfaces.x.y.z.nupkg: 36212
-Microsoft.Bcl.Cryptography.x.y.z.nupkg: 74963
-Microsoft.Bcl.Memory.x.y.z.nupkg: 41529
+Microsoft.Bcl.Cryptography.x.y.z.nupkg: 74959
+Microsoft.Bcl.Memory.x.y.z.nupkg: 64150
 Microsoft.Bcl.Numerics.x.y.z.nupkg: 30912
 Microsoft.Bcl.TimeProvider.x.y.z.nupkg: 38239
 Microsoft.Build.Framework.x.y.z.nupkg: 520138
@@ -87,7 +87,7 @@ Microsoft.CodeAnalysis.x.y.z.nupkg: 5771
 Microsoft.Css.Parser.x.y.z.nupkg: 52964
 Microsoft.Deployment.DotNet.Releases.x.y.z.nupkg: 79562
 Microsoft.Diagnostics.NETCore.Client.x.y.z.nupkg: 63738
-Microsoft.DiaSymReader.x.y.z.nupkg: 301707
+Microsoft.DiaSymReader.x.y.z.nupkg: 301693
 Microsoft.DotNet.ApiCompat.Task.x.y.z.nupkg: 1280207
 Microsoft.DotNet.Arcade.Sdk.x.y.z.nupkg: 876107
 Microsoft.DotNet.Build.Tasks.Archives.x.y.z.nupkg: 11400
@@ -162,7 +162,7 @@ Microsoft.Extensions.Identity.Core.x.y.z.nupkg: 96457
 Microsoft.Extensions.Identity.Stores.x.y.z.nupkg: 32887
 Microsoft.Extensions.Localization.Abstractions.x.y.z.nupkg: 17273
 Microsoft.Extensions.Localization.x.y.z.nupkg: 24839
-Microsoft.Extensions.Logging.Abstractions.x.y.z.nupkg: 159147
+Microsoft.Extensions.Logging.Abstractions.x.y.z.nupkg: 159130
 Microsoft.Extensions.Logging.Configuration.x.y.z.nupkg: 39074
 Microsoft.Extensions.Logging.Console.x.y.z.nupkg: 83462
 Microsoft.Extensions.Logging.Debug.x.y.z.nupkg: 31284
@@ -185,7 +185,7 @@ Microsoft.Internal.Runtime.AspNetCore.Transport.x.y.z.nupkg: 1193422
 Microsoft.Internal.Runtime.DotNetApiDocs.Transport.x.y.z.nupkg: 1771155
 Microsoft.Internal.Runtime.WindowsDesktop.Transport.x.y.z.nupkg: 1353080
 Microsoft.JSInterop.x.y.z.nupkg: 41472
-Microsoft.NET.Build.Containers.x.y.z.nupkg: 1044465
+Microsoft.NET.Build.Containers.x.y.z.nupkg: 1044344
 Microsoft.NET.Build.Extensions.x.y.z.nupkg: 853027
 Microsoft.Net.Compilers.Toolset.x.y.z.nupkg: 8076123
 Microsoft.NET.HostModel.x.y.z.nupkg: 54688
@@ -1912,7 +1912,7 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/sdk/System.Private.St
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/sdk/System.Private.TypeLoader.dll: 208384
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/sdk/System.Private.TypeLoader.pdb: 113324
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/sdk/System.Private.TypeLoader.xml: 124990
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/tools/ilc: 44610880
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/tools/ilc: 44610744
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/tools/libclrjit_universal_arm_x64.so: 38524184
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/tools/libclrjit_universal_arm64_x64.so: 46961296
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/tools/libclrjit_unix_x64_x64.so: 46484080
@@ -2017,7 +2017,7 @@ sdk/x.y.z/Containers/tasks/netx.y/fr/Microsoft.NET.Build.Containers.resources.dl
 sdk/x.y.z/Containers/tasks/netx.y/it/Microsoft.NET.Build.Containers.resources.dll: 17408
 sdk/x.y.z/Containers/tasks/netx.y/ja/Microsoft.NET.Build.Containers.resources.dll: 18944
 sdk/x.y.z/Containers/tasks/netx.y/ko/Microsoft.NET.Build.Containers.resources.dll: 17408
-sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json: 26500
+sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json: 26640
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll: 535040
 sdk/x.y.z/Containers/tasks/netx.y/pl/Microsoft.NET.Build.Containers.resources.dll: 17408
 sdk/x.y.z/Containers/tasks/netx.y/pt-BR/Microsoft.NET.Build.Containers.resources.dll: 16384
