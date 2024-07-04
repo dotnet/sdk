@@ -524,6 +524,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(MetricsSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Diagnostics.StackTrace.IsSupported"
+                                    Condition="'$(StackTraceSupport)' != ''"
+                                    Value="$(StackTraceSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Tracing.EventSource.IsSupported"
                                     Condition="'$(EventSourceSupport)' != ''"
                                     Value="$(EventSourceSupport)"
