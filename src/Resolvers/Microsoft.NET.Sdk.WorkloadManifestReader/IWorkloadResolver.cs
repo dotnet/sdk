@@ -17,6 +17,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads();
         bool IsPlatformIncompatibleWorkload(WorkloadId workloadId);
         string GetManifestVersion(string manifestId);
+        string GetManifestFeatureBand(string manifestId);
         IEnumerable<WorkloadManifestInfo> GetInstalledManifests();
         string GetSdkFeatureBand();
         string? GetWorkloadVersion();
