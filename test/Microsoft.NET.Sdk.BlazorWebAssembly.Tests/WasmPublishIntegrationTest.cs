@@ -706,7 +706,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // Publish
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
-            ExecuteCommand(publishCommand, "/p:BuildDependencies=false /bl").Should().Pass();
+            ExecuteCommand(publishCommand, "/p:BuildDependencies=false", "/bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -847,7 +847,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // Publish
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
-            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -927,11 +927,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
-            ExecuteCommand(buildCommand, "/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            ExecuteCommand(buildCommand, "/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
             // Publish
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
-            ExecuteCommand(publishCommand, "/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            ExecuteCommand(publishCommand, "/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
