@@ -56,3 +56,6 @@
 *.jpg  	binary
 *.png 	binary
 *.gif 	binary
+
+# VerifyTests
+*.verified.txt text eol=lf working-tree-encoding=UTF-8
