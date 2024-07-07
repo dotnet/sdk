@@ -418,9 +418,7 @@ public class RegistryTests : IDisposable
             X509Certificate2 serverCertificate = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
 
             // https://stackoverflow.com/questions/72096812/loading-x509certificate2-from-pem-file-results-in-no-credentials-are-available/72101855#72101855
-#pragma warning disable SYSLIB0057 // using X509CertificateLoader.LoadCertificate causes an exception
-            serverCertificate = new X509Certificate2(serverCertificate.Export(X509ContentType.Pfx));
-#pragma warning restore
+            serverCertificate = X509CertificateLoader.LoadPkcs12(serverCertificate.Export(X509ContentType.Pfx), password: "");
 
             sslOptions = new SslServerAuthenticationOptions()
             {
