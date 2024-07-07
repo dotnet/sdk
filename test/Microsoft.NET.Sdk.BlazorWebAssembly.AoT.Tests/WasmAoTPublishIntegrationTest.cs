@@ -85,7 +85,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
             ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
 
             // Make sure the main project exists
