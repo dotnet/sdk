@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Installer.Windows.Security
         internal static unsafe int HasMicrosoftTrustedRoot(string path)
         {
             // Create an X509Certificate2 instance so we can access the certificate context and create a chain context.
-            using X509Certificate2 certificate = new(path);
+            using X509Certificate2 certificate = X509CertificateLoader.LoadCertificateFromFile(path);
 
             // We don't use X509Chain because it doesn't support verifying the specific policy and because we defer
             // that to the WinTrust provider as it performs timestamp and revocation checks.
