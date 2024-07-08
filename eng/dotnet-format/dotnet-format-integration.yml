@@ -14,14 +14,13 @@ parameters:
     _branchName: "main"
     _sha: "a3bb37003aeccad012a6e7dd220977599e8b8e65"
     _useParentSdk: 0
-  # Formatting sdk fails: https://github.com/dotnet/sdk/issues/41060
-  # - Name: sdk
-  #   _repo: "https://github.com/dotnet/sdk"
-  #   _repoName: "dotnet/sdk"
-  #   _targetSolution: "sdk.sln"
-  #   _branchName: "main"
-  #   _sha: "be25db95c376bffd508a023399ddd34392fe6458"
-  #   _useParentSdk: 0
+  - Name: sdk
+    _repo: "https://github.com/dotnet/sdk"
+    _repoName: "dotnet/sdk"
+    _targetSolution: "sdk.sln"
+    _branchName: "main"
+    _sha: "be25db95c376bffd508a023399ddd34392fe6458"
+    _useParentSdk: 0
   - Name: project_system
     _repo: "https://github.com/dotnet/project-system"
     _repoName: "dotnet/project-system"
@@ -58,6 +57,10 @@ parameters:
     _sha: "ecb4b595e3322a18c240f50a763868540f51eaaa"
     _useParentSdk: 0
 
+- name: timeoutInMinutes
+  type: number
+  default: 90
+
 jobs:
 - job: Formatting_Check
   displayName: Run Formatting Check
@@ -69,7 +72,7 @@ jobs:
       name: $(DncEngInternalBuildPool)
       image: 1es-windows-2022
       os: windows
-  timeoutInMinutes: 60
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   steps:
   - script: .\restore.cmd
     displayName: Restore dependencies
@@ -96,7 +99,7 @@ jobs:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-    timeoutInMinutes: 60
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     steps:
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
       displayName: Prepare ${{ testArgs._repoName }} for formatting
