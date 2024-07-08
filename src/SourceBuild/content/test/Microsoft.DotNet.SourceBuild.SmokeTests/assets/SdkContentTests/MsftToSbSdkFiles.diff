@@ -3,10 +3,8 @@ index ------------
 --- a/msftSdkFiles.txt
 +++ b/sbSdkFiles.txt
 @@ ------------ @@
- ./host/fxr/
  ./host/fxr/x.y.z/
  ./host/fxr/x.y.z/libhostfxr.so
-+./library-packs/
  ./LICENSE.txt
 +./metadata/
 +./metadata/workloads/
