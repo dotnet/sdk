@@ -149,7 +149,7 @@ This is how Visual Studio Code fits into our matrix after this work is complete:
 | --- | --- | --- |
 | msbuild | From .NET SDK | From .NET SDK |
 | dotnet msbuild | From .NET SDK | From .NET SDK |
-| Visual Studio Design Time | From Visual Studio | From Visuaal Studio |
+| Visual Studio Design Time | From Visual Studio | From Visual Studio |
 | DevKit | From DevKit | From .NET SDK |
 
 On the surface it seems like VS Code has the same issues as Visual Studio does today. However this is not the case. Visual Studio is problematic because at any given time there can be ~5 different versions in active support each with a different version of the compiler. Every Visual Studio but the latest is an older compiler that run into issues with analyzers.
