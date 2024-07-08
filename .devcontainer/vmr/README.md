@@ -11,7 +11,7 @@
 This Codespace allows you to debug or make changes to the .NET SDK product. In case you ran this
 from a `dotnet/sdk` PR branch, the directory tree contains the VMR (`dotnet/dotnet`) checked out into
 `/workspaces/dotnet` with the PR changes pulled into it. Building the VMR from the codespace mimics
-what the VMR pipelines in an sdk's PR are doing. The build takes about 45 up to 75 minutes
+what the VMR pipelines in an sdk PR are doing. The build takes about 45-75 minutes
 (depending on the machine and OS) and, after completion, produces an archived .NET SDK located in
 `/workspaces/dotnet/artifacts/assets/Release`.
 
