@@ -23,6 +23,7 @@
     <BuildArgs Condition="'$(DotNetBuildMonoAOTEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoAOTEnableLLVM=$(DotNetBuildMonoAOTEnableLLVM)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoBundleLLVMOptimizer)' != ''">$(BuildArgs) /p:DotNetBuildMonoBundleLLVMOptimizer=$(DotNetBuildMonoBundleLLVMOptimizer)</BuildArgs>
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
+    <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
