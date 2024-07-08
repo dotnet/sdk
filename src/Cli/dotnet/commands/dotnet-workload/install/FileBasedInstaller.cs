@@ -13,7 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-
+using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -83,6 +83,31 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 .Where(pack => pack != null);
 
             return packs;
+        }
+
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
+        {
+            var workloadVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadVersion);
+            context.Run(
+                action: () =>
+                {
+                    Directory.CreateDirectory(workloadSetPath);
+
+                    foreach (var file in Directory.EnumerateFiles(advertisingPackagePath))
+                    {
+                        File.Copy(file, Path.Combine(workloadSetPath, Path.GetFileName(file)), overwrite: true);
+                    }
+                },
+                rollback: () =>
+                {
+                    foreach (var file in Directory.EnumerateFiles(workloadSetPath))
+                    {
+                        PathUtility.DeleteFileAndEmptyParents(file);
+                    }
+                });
+
+            return workloadSetPath;
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
@@ -452,6 +477,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var installStateContents = InstallStateContents.FromPath(path);
+            installStateContents.WorkloadVersion = workloadVersion;
+            File.WriteAllText(path, installStateContents.ToString());
+        }
+
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
@@ -480,6 +514,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.UseWorkloadSets = newMode;
             File.WriteAllText(path, installStateContents.ToString());
+            _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests));
         }
 
         /// <summary>
@@ -509,7 +544,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            return new PackageId($"{manifestId}.Manifest-{featureBand}");
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
+            {
+                return new PackageId($"{manifestId}.{featureBand}");
+            }
+            else
+            {
+                return new PackageId($"{manifestId}.Manifest-{featureBand}");
+            }
         }
 
         public async Task ExtractManifestAsync(string nupkgPath, string targetPath)

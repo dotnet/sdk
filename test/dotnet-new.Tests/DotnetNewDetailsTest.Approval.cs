@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [UsesVerify]
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
         private const string _nuGetPackageId = "Uno.ProjectTemplates.Dotnet";
@@ -59,9 +58,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Test targeting specific versions")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public Task CanDisplayDetails_RemotePackage_OtherFeedNoVersion()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates")
@@ -128,9 +125,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Test targeting specific versions")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public Task CanDisplayDetails_InstalledPackage_OtherFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");

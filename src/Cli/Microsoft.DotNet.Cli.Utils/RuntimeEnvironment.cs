@@ -64,34 +64,17 @@ namespace Microsoft.DotNet.Cli.Utils
                     return GetDistroVersionId() ?? string.Empty;
                 case Platform.Darwin:
                     return Environment.OSVersion.Version.ToString(2);
-                case Platform.FreeBSD:
-                    return GetFreeBSDVersion() ?? string.Empty;
                 case Platform.Solaris:
                     // RuntimeInformation.OSDescription example on Solaris 11.3:      SunOS 5.11 11.3
                     // we only need the major version; 11
                     return RuntimeInformation.OSDescription.Split(' ')[2].Split('.')[0];
+                case Platform.FreeBSD:
                 case Platform.Haiku:
+                    // only the major version
                     return Environment.OSVersion.Version.ToString(1);
                 default:
                     return string.Empty;
             }
-        }
-
-        private static string GetFreeBSDVersion()
-        {
-            // This is same as sysctl kern.version
-            // FreeBSD 11.0-RELEASE-p1 FreeBSD 11.0-RELEASE-p1 #0 r306420: Thu Sep 29 01:43:23 UTC 2016     root@releng2.nyi.freebsd.org:/usr/obj/usr/src/sys/GENERIC
-            // What we want is major release as minor releases should be compatible.
-            string version = RuntimeInformation.OSDescription;
-            try
-            {
-                // second token up to first dot
-                return RuntimeInformation.OSDescription.Split()[1].Split('.')[0];
-            }
-            catch
-            {
-            }
-            return string.Empty;
         }
 
         private static Platform GetOSPlatform()
@@ -243,7 +226,7 @@ namespace Microsoft.DotNet.Cli.Utils
             {
                 return Platform.Darwin;
             }
-#if NETCOREAPP
+#if NET
             if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
             {
                 return Platform.FreeBSD;

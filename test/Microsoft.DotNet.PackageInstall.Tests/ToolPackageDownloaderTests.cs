@@ -181,6 +181,53 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
+        {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                writeLocalFeedToNugetConfig: nugetConfigPath);
+
+            var package = downloader.GetNuGetVersion(
+                new PackageLocation(nugetConfig: nugetConfigPath),
+                packageId: TestPackageId,
+                verbosity: TestVerbosity,
+                isGlobalTool: true);
+
+            package.OriginalVersion.Should().Be(TestPackageVersion);
+        }
+
+        [Theory]
+        [InlineData(false, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(true, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(false, "1.*", TestPackageVersion)]
+        [InlineData(true, "1.*", TestPackageVersion)]
+        [InlineData(false, TestPackageVersion, TestPackageVersion)]
+        [InlineData(true, TestPackageVersion, TestPackageVersion)]
+        public void GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
+        {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(emptySource);
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                writeLocalFeedToNugetConfig: nugetConfigPath);
+
+            var package = downloader.GetNuGetVersion(new PackageLocation(nugetConfig: nugetConfigPath,
+                    additionalFeeds: new[] { emptySource }),
+                packageId: TestPackageId,
+                verbosity: TestVerbosity,
+                versionRange: VersionRange.Parse(requestedVersion),
+                isGlobalTool: true);
+
+            package.OriginalVersion.Should().Be(expectedVersion);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GivenAllButNoPackageVersionItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
             var nugetConfigPath = GenerateRandomNugetConfigFilePath();
@@ -688,6 +735,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             new ToolPackageUninstaller(store).Uninstall(package.PackageDirectory);
         }
+
 
         [Theory]
         [InlineData(false)]

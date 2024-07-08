@@ -5,13 +5,7 @@
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
-
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-#endif
-
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -73,16 +67,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadSet FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-#if USE_SYSTEM_TEXT_JSON
             var jsonSerializerOptions = new JsonSerializerOptions()
             {
                 AllowTrailingCommas = true,
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
             return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
-#else
-            return FromDictionaryForJson(JsonConvert.DeserializeObject<IDictionary<string, string>>(json)!, defaultFeatureBand);
-#endif
         }
 
         public Dictionary<string, string> ToDictionaryForJson()
@@ -93,11 +83,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ToJson()
         {
-#if USE_SYSTEM_TEXT_JSON
             var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
-#else
-            var json = JsonConvert.SerializeObject(ToDictionaryForJson(), Formatting.Indented);
-#endif
             return json;
         }
 

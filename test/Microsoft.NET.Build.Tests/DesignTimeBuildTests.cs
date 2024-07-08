@@ -108,6 +108,8 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), privateAssets: "All"));
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.8.26"));
+            // disable implicit use of the Roslyn Toolset compiler package
+            testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 

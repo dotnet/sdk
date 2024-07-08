@@ -225,6 +225,16 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <target state="translated">Následující argumenty se ignorovaly: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="new">No serializer registered with ID '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="new">No serializer registered with type '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">
         <source>
 

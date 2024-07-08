@@ -62,6 +62,11 @@
         <target state="translated">No se puede agregar el atributo '{0}' a '{1}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddGenericConstraint">
+        <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
         <source>Cannot add interface member '{0}' to {1} because it does not exist on {2}</source>
         <target state="translated">No se puede agregar el miembro de interfaz '{0}' a {1} porque no existe en {2}</target>
@@ -110,6 +115,11 @@
       <trans-unit id="CannotRemoveBaseType">
         <source>Type '{0}' does not inherit from base type '{1}' on {2} but it does on {3}</source>
         <target state="translated">El tipo '{0}' no se hereda del tipo base '{1}' en {2} pero lo hace en {3}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveGenericConstraint">
+        <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">

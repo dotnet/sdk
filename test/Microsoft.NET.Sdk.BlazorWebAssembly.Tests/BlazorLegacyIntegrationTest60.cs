@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60 : BlazorWasmBaselineTests
+    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
     {
-        public BlazorLegacyIntegrationTest60(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [CoreMSBuildOnlyFact]
         public void Build60Hosted_Works()
         {
@@ -19,8 +17,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net6.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(testInstance, "Server");
-            build.Execute()
+            var build = CreateBuildCommand(testInstance, "Server");
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 
@@ -39,7 +37,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Publish60Hosted_Works()
         {
             // Arrange
@@ -47,8 +45,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net6.0";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(ProjectDirectory, "Server");
-            publish.Execute()
+            var publish = CreatePublishCommand(ProjectDirectory, "Server");
+            ExecuteCommand(publish)
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

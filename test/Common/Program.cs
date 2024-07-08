@@ -1,5 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
 
 #pragma warning disable SA1205 // Partial elements should declare access
 partial class Program
@@ -26,7 +28,7 @@ partial class Program
             BeforeTestRun(newArgs);
         }
 
-        int returnCode;
+        int returnCode = 0;
 
         if (testCommandLine.ShowSdkInfo)
         {
@@ -34,7 +36,17 @@ partial class Program
         }
         else
         {
-            returnCode = Xunit.ConsoleClient.Program.Main(newArgs.ToArray());
+            var xunitReturnCode = Xunit.ConsoleClient.Program.Main(newArgs.ToArray());
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_PAYLOAD") != null)
+            {
+                // If we are running in Helix, we want the test work item to return 0 unless there's a crash
+                Console.WriteLine($"Xunit return code: {xunitReturnCode}");
+            }
+            else
+            {
+                // If we are running locally, we to return the xunit return code
+                returnCode = xunitReturnCode;
+            }
         }
 
         if (testCommandLine.ShouldShowHelp)

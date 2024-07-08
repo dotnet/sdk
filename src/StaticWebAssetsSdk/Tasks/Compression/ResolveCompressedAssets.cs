@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Cryptography;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -73,12 +73,13 @@ public class ResolveCompressedAssets : Task
             {
                 Log.LogMessage(
                     MessageImportance.Low,
-                    "Ignoring asset '{0}' for compression because it is already compressed.",
-                    asset.Identity);
+                    "Ignoring asset '{0}' for compression because it is already compressed asset for '{1}'.",
+                    asset.Identity,
+                    asset.RelatedAsset);
                 continue;
             }
 
-            var relativePath = asset.RelativePath;
+            var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
             var match = matcher.Match(relativePath);
 
             if (!match.HasMatches)
@@ -137,7 +138,7 @@ public class ResolveCompressedAssets : Task
                     existingFormats.Add(format);
 
                     Log.LogMessage(
-                        "Created compressed asset '{0}' for '{1}'.",
+                        "Accepted compressed asset '{0}' for '{1}'.",
                         compressedAsset.ItemSpec,
                         itemSpec);
                 }
@@ -150,7 +151,12 @@ public class ResolveCompressedAssets : Task
             }
         }
 
-        AssetsToCompress = [.. assetsToCompress];
+        Log.LogMessage(
+            "Resolved {0} compressed assets for {1} candidate assets.",
+            assetsToCompress.Count,
+            matchingCandidateAssets.Count);
+
+        AssetsToCompress = assetsToCompress.ToArray();
 
         return !Log.HasLoggedErrors;
     }
@@ -252,9 +258,14 @@ public class ResolveCompressedAssets : Task
         }
 
         var originalItemSpec = asset.OriginalItemSpec;
-        var relativePath = asset.RelativePath;
+        var relativePath = asset.EmbedTokens(asset.RelativePath);
 
-        var fileName = FileHasher.GetFileHash(originalItemSpec) + fileExtension;
+        // Make the hash name more unique by including source id, base path, asset kind and relative path.
+        // This combination must be unique across all assets, so this will avoid collisions when two files on
+        // the same project have the same contents, when it happens across different projects or between Build/Publish
+        // assets.
+        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + asset.RelativePath);
+        var fileName = $"{pathHash}-{asset.Fingerprint}{fileExtension}";
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
         var res = new StaticWebAsset(asset)

@@ -35,6 +35,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             _baselineFactory = CreateBaselineFactory();
         }
 
+        protected void EnsureLocalPackagesExists()
+        {
+            var packTransitiveDependency = CreatePackCommand(ProjectDirectory, "RazorPackageLibraryTransitiveDependency");
+            ExecuteCommand(packTransitiveDependency).Should().Pass();
+
+            var packDirectDependency = CreatePackCommand(ProjectDirectory, "RazorPackageLibraryDirectDependency");
+            ExecuteCommand(packDirectDependency).Should().Pass();
+        }
+
         public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log)
         {
             _generateBaselines = generateBaselines;
@@ -52,21 +61,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         protected Assembly TestAssembly { get; }
 
-        protected virtual StaticWebAssetsBaselineComparer CreateBaselineComparer()
-        {
-            return StaticWebAssetsBaselineComparer.Instance;
-        }
+        protected virtual StaticWebAssetsBaselineComparer CreateBaselineComparer() => StaticWebAssetsBaselineComparer.Instance;
 
-        private StaticWebAssetsBaselineFactory CreateBaselineFactory()
-        {
-            return StaticWebAssetsBaselineFactory.Instance;
-        }
+        private StaticWebAssetsBaselineFactory CreateBaselineFactory() => StaticWebAssetsBaselineFactory.Instance;
 
         protected virtual string ComputeBaselineFolder() =>
             Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
-
 
         public StaticWebAssetsManifest LoadBuildManifest(string suffix = "", [CallerMemberName] string name = "")
         {
@@ -139,7 +141,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToArray(),
-                TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 outputFolder).ToArray();
@@ -235,7 +237,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .Concat(copyToPublishDirectoryFiles)
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)],
-                TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 publishFolder);
@@ -270,7 +272,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         internal void AssertManifest(
-            StaticWebAssetsManifest manifest,
+            StaticWebAssetsManifest actual,
             StaticWebAssetsManifest expected,
             string suffix = "",
             string runtimeIdentifier = null,
@@ -281,22 +283,22 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 // We are going to compare the generated manifest with the current manifest.
                 // For that, we "templatize" the current manifest to avoid issues with hashes, versions, etc.
                 _baselineFactory.ToTemplate(
-                    manifest,
+                    actual,
                     ProjectDirectory.Path,
-                    TestContext.Current.NuGetCachePath,
+                    GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
                     runtimeIdentifier);
 
-                _comparer.AssertManifest(expected, manifest);
+                _comparer.AssertManifest(expected, actual);
             }
             else
             {
-                var template = Templatize(manifest, ProjectDirectory.Path, TestContext.Current.NuGetCachePath, runtimeIdentifier);
+                var template = Templatize(actual, ProjectDirectory.Path, GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath, runtimeIdentifier);
                 if (!Directory.Exists(Path.Combine(BaselinesFolder)))
                 {
                     Directory.CreateDirectory(Path.Combine(BaselinesFolder));
                 }
 
-                File.WriteAllText(GetManifestPath(suffix, name, manifest.ManifestType), template);
+                File.WriteAllText(GetManifestPath(suffix, name, actual.ManifestType), template);
             }
         }
 

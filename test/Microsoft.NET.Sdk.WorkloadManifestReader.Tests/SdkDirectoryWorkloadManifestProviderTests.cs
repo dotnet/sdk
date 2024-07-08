@@ -48,7 +48,7 @@ namespace ManifestReaderTests
                     {
                     ""ios"": ""11.0.2/8.0.100"",
                     ""android"": ""33.0.2-rc.1/8.0.200"",
-                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2"",
+                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2""
                     }
                 ");
             }
@@ -135,23 +135,29 @@ namespace ManifestReaderTests
                 .BeEmpty();
         }
 
-        [Fact]
-        public void ItReturnsLatestManifestVersion()
+        [Theory]
+        [InlineData("11.0.1", "11.0.2", "11.0.2-rc.1", "11.0.2")]
+        [InlineData("8.0.200", "8.0.201", "8.0.105", "8.0.201")]
+        [InlineData("8.0.203.1", "8.0.203", "8.0.200-rc.1", "8.0.203.1")]
+        [InlineData("9.0.100-preview.2", "9.0.100-preview.2.3.4", "9.0.100-preview.2.4.3", "9.0.100-preview.2.4.3")]
+        [InlineData("8.0.201.1-preview", "8.0.201.1-rc.1", "8.0.201.1-rc.2", "8.0.201.1-rc.2")]
+        [InlineData("8.0.200-servicing.23015", "8.0.200-preview.7.30301", "8.0.200-servicing.23201", "8.0.200-servicing.23201")]
+        public void ItReturnsLatestManifestVersion(string first, string second, string third, string answer)
         {
-            Initialize();
+            Initialize(identifier: answer);
 
             CreateMockManifest(_manifestRoot, "5.0.100-preview.5", "ios", "11.0.3", true);
 
-            CreateMockManifest(_manifestRoot, "5.0.100", "ios", "11.0.1", true);
-            CreateMockManifest(_manifestRoot, "5.0.100", "ios", "11.0.2", true);
-            CreateMockManifest(_manifestRoot, "5.0.100", "ios", "11.0.2-rc.1", true);
+            CreateMockManifest(_manifestRoot, "5.0.100", "ios", first, true);
+            CreateMockManifest(_manifestRoot, "5.0.100", "ios", second, true);
+            CreateMockManifest(_manifestRoot, "5.0.100", "ios", third, true);
 
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "5.0.100", userProfileDir: null, globalJsonPath: null);
 
             GetManifestContents(sdkDirectoryWorkloadManifestProvider)
                 .Should()
-                .BeEquivalentTo("ios: 11.0.2/5.0.100");
+                .BeEquivalentTo($"ios: {answer}/5.0.100");
         }
 
         [Fact]
@@ -380,24 +386,6 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItThrowsIfWorkloadSetHasInvalidVersion()
-        {
-            Initialize("8.0.200");
-
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
-            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.200.1", """
-                {
-                    "ios": "11.0.2/8.0.100"
-                }
-                """);
-
-            Assert.Throws<FormatException>(() => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null));
-        }
-
-        [Fact]
         public void ItThrowsIfManifestFromWorkloadSetIsNotFound()
         {
             Initialize("8.0.200");
@@ -494,7 +482,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -536,7 +524,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -552,7 +540,8 @@ namespace ManifestReaderTests
 }
 """);
 
-            var ex = Assert.Throws<FileNotFoundException>(() => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath));
+            var manifestProvider = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
+            var ex = Assert.Throws<FileNotFoundException>(() => manifestProvider.GetManifests());
             ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, "8.0.201", globalJsonPath));
         }
 
@@ -565,7 +554,7 @@ namespace ManifestReaderTests
             File.WriteAllText(globalJsonPath, """
             {
                 "sdk": {
-                    "workloadversion": [ "8.0.202" ]
+                    "workloadVersion": [ "8.0.202" ]
                 }
             }
             """);
@@ -862,7 +851,7 @@ namespace ManifestReaderTests
                 """
                 {
                     "manifests": {
-                        "ios": "12.0.1/8.0.200",
+                        "ios": "12.0.1/8.0.200"
                     }
                 }
                 """);
@@ -885,7 +874,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -1275,7 +1264,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private string CreateMockInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", featureBand, "InstallState");
+            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");

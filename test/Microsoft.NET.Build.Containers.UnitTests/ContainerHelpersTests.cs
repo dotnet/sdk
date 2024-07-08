@@ -59,9 +59,32 @@ public class ContainerHelpersTests
     [InlineData("foo/bar-", false)]
     [InlineData("foo/bar.", false)]
     [InlineData("foo/bar_", false)]
+    [InlineData("--------", false)]
     public void IsValidImageName(string imageName, bool expectedReturn)
     {
         Assert.Equal(expectedReturn, ContainerHelpers.IsValidImageName(imageName));
+    }
+
+    [Theory]
+    [InlineData("0aa", "0aa", null, null)]
+    [InlineData("9zz", "9zz", null, null)]
+    [InlineData("aa0", "aa0", null, null)]
+    [InlineData("zz9", "zz9", null, null)]
+    [InlineData("runtime", "runtime", null, null)]
+    [InlineData("dotnet_runtime", "dotnet_runtime", null, null)]
+    [InlineData("dotnet-runtime", "dotnet-runtime", null, null)]
+    [InlineData("dotnet/runtime", "dotnet/runtime", null, null)]
+    [InlineData("dotnet runtime", "dotnet-runtime", "NormalizedContainerName", null)]
+    [InlineData("Api", "api", "NormalizedContainerName", null)]
+    [InlineData("API", "api", "NormalizedContainerName", null)]
+    [InlineData("$runtime", null, null, "InvalidImageName_NonAlphanumericStartCharacter")]
+    [InlineData("-%", null, null, "InvalidImageName_NonAlphanumericStartCharacter")]
+    public void IsValidRepositoryName(string containerRepository, string? expectedNormalized, string? expectedWarning, string? expectedError)
+    {
+        var actual = ContainerHelpers.NormalizeRepository(containerRepository);
+        Assert.Equal(expectedNormalized, actual.normalizedImageName);
+        Assert.Equal(expectedWarning, actual.normalizationWarning?.Item1);
+        Assert.Equal(expectedError, actual.normalizationError?.Item1);
     }
 
     [Theory]

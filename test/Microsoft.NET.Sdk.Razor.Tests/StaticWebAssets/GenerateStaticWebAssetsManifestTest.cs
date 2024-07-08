@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -32,6 +33,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -49,6 +51,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var manifest = StaticWebAssetsManifest.FromJsonString(File.ReadAllText(TempFilePath));
             manifest.Should().NotBeNull();
             manifest.Assets.Should().BeNullOrEmpty();
+            manifest.Endpoints.Should().BeNullOrEmpty();
             manifest.DiscoveryPatterns.Should().BeNullOrEmpty();
             manifest.ReferencedProjectsConfiguration.Should().BeNullOrEmpty();
             manifest.Version.Should().Be(1);
@@ -70,6 +73,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // GetTempFilePath automatically creates the file, which interferes with the test.
             File.Delete(TempFilePath);
             var asset = CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All");
+            var endpoint = CreateEndpoint(asset);
             var task = new GenerateStaticWebAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
@@ -77,6 +81,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 {
                     asset.ToTaskItem()
                 },
+                Endpoints = [endpoint.ToTaskItem()],
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -96,6 +101,48 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             manifest.Assets.Should().HaveCount(1);
             var newAsset = manifest.Assets[0];
             newAsset.Should().Be(asset);
+            manifest.Endpoints.Should().HaveCount(1);
+            var newEndpoint = manifest.Endpoints[0];
+            newEndpoint.Should().Be(endpoint);
+        }
+
+        private StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset)
+        {
+            return new StaticWebAssetEndpoint
+            {
+                Route = asset.ComputeTargetPath("", '/'),
+                AssetFile = asset.Identity,
+                Selectors = [],
+                EndpointProperties = [],
+                ResponseHeaders =
+                [
+                    new()
+                    {
+                        Name = "Content-Type",
+                        Value = "__content-type__"
+                    },
+                    new()
+                    {
+                        Name = "Content-Length",
+                        Value = "__content-length__",
+                    },
+                    new()
+                    {
+                        Name = "ETag",
+                        Value = "__etag__",
+                    },
+                    new()
+                    {
+                        Name = "Last-Modified",
+                        Value = "__last-modified__"
+                    },
+                    new()
+                    {
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
+                    }
+                ]
+            };
         }
 
         public static TheoryData<Action<StaticWebAsset>> GeneratesManifestFailsWhenInvalidAssetsAreProvidedData
@@ -146,6 +193,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 {
                     asset.ToTaskItem()
                 },
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -215,6 +263,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     first.ToTaskItem(),
                     second.ToTaskItem()
                 },
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -247,6 +296,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = new[] { projectReference.ToTaskItem() },
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -284,6 +334,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = new[] { candidatePattern.ToTaskItem() },
                 BasePath = "/",

@@ -3,12 +3,8 @@
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests : BlazorWasmBaselineTests
+    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public VanillaWasmTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [CoreMSBuildOnlyFact]
         public void Build_Works()
         {
@@ -16,9 +12,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net8.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(testInstance);
-            build.WithWorkingDirectory(testInstance.Path);
-            build.Execute("/bl")
+            var build = CreateBuildCommand(testInstance);
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 

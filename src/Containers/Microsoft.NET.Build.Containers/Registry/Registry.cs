@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,8 @@ using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal interface IManifestPicker {
+internal interface IManifestPicker
+{
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
 }
 
@@ -26,7 +28,8 @@ internal sealed class RidGraphManifestPicker : IManifestPicker
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
     {
         var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
-        if (bestManifestRid is null) {
+        if (bestManifestRid is null)
+        {
             return null;
         }
         return ridManifestDict[bestManifestRid];
@@ -68,7 +71,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
-        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
@@ -83,8 +86,8 @@ internal sealed class Registry
         BaseUri = baseUri;
 
         _logger = logger;
-        _settings = settings ?? new RegistrySettings();
-        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
+        _settings = settings ?? new RegistrySettings(RegistryName);
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, _settings.IsInsecure, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -117,7 +120,12 @@ internal sealed class Registry
     /// <summary>
     /// Check to see if the registry is GitHub Packages, which always uses ghcr.io.
     /// </summary>
-    public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
+    public bool IsGithubPackageRegistry => RegistryName.StartsWith(RegistryConstants.GitHubPackageRegistryDomain, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Is this registry the public Microsoft Container Registry.
+    /// </summary>
+    public bool IsMcr => RegistryName.Equals(RegistryConstants.MicrosoftContainerRegistryDomain, StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
@@ -137,6 +145,8 @@ internal sealed class Registry
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
 
+    public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
     /// parallel uploads be more conservative and upload one layer at a time.
@@ -152,7 +162,7 @@ internal sealed class Registry
         {
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                await ReadManifest().ConfigureAwait(false),
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
@@ -168,6 +178,17 @@ internal sealed class Registry
                 BaseUri,
                 unknownMediaType))
         };
+
+        async Task<ManifestV2> ReadManifest()
+        {
+            initialManifestResponse.Headers.TryGetValues("Docker-Content-Digest", out var knownDigest);
+            var manifest = (await initialManifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+            if (knownDigest?.FirstOrDefault() is string knownDigestValue)
+            {
+                manifest.KnownDigest = knownDigestValue;
+            }
+            return manifest;
+        }
     }
 
     internal async Task<ManifestListV2?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
@@ -194,7 +215,7 @@ internal sealed class Registry
         return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
     }
 
-    
+
     private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
@@ -208,7 +229,7 @@ internal sealed class Registry
 
         return ridDict;
     }
-    
+
     private static string? CreateRidForPlatform(PlatformInformation platform)
     {
         // we only support linux and windows containers explicitly, so anything else we should skip past.
@@ -222,7 +243,7 @@ internal sealed class Registry
         // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
         var versionPart = platform.version?.Split('.') switch
         {
-            [var major, ..] => major,
+        [var major, ..] => major,
             _ => null
         };
         var platformPart = platform.architecture switch
@@ -234,6 +255,7 @@ internal sealed class Registry
             "ppc64le" => "ppc64le",
             "s390x" => "s390x",
             "riscv64" => "riscv64",
+            "loongarch64" => "loongarch64",
             _ => null
         };
 
@@ -257,12 +279,15 @@ internal sealed class Registry
             using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-
+            var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+            manifest.KnownDigest = matchingManifest.digest;
             return await ReadSingleImageAsync(
                 repositoryName,
-                await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                manifest,
                 cancellationToken).ConfigureAwait(false);
-        } else 
+        }
+        else
         {
             throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
         }

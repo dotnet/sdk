@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
             Assert.False(options.Verbose);
-            Assert.Equal(["run", "-watchArg", "--verbose", "run", "-runArg"], options.LaunchProcessArguments);
+            Assert.Equal(["run", "-watchArg", "--", "--verbose", "run", "-runArg"], options.LaunchProcessArguments);
         }
 
         [Fact]
@@ -204,7 +204,66 @@ namespace Microsoft.DotNet.Watcher.Tools
             var options = VerifyOptions(["--", "run"]);
 
             Assert.False(options.Verbose);
-            Assert.Equal(["run", "run"], options.LaunchProcessArguments);
+            Assert.Equal(["run", "--", "run"], options.LaunchProcessArguments);
+        }
+
+        [Fact]
+        public void NoOptionsAfterDashDash()
+        {
+            var options = VerifyOptions(["--"]);
+            Assert.Equal(["run"], options.LaunchProcessArguments);
+        }
+
+        /// <summary>
+        /// dotnet watch needs to understand some options that are passed to the subcommands.
+        /// For example, `-f TFM`
+        /// When `dotnet watch run -- -f TFM` is parsed `-f TFM` is ignored.
+        /// Therfore, it has to also be ignored by `dotnet run`,
+        /// otherwise the TFMs would be inconsistent between `dotnet watch` and `dotnet run`.
+        /// </summary>
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Framework()
+        {
+            var options = VerifyOptions(["--", "-f", "TFM"]);
+
+            Assert.Null(options.TargetFramework);
+            Assert.Equal(["run", "--", "-f", "TFM"], options.LaunchProcessArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Project()
+        {
+            var options = VerifyOptions(["--", "--project", "proj"]);
+
+            Assert.Null(options.Project);
+            Assert.Equal(["run", "--", "--project", "proj"], options.LaunchProcessArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_NoLaunchProfile()
+        {
+            var options = VerifyOptions(["--", "--no-launch-profile"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["run", "--", "--no-launch-profile"], options.LaunchProcessArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_LaunchProfile()
+        {
+            var options = VerifyOptions(["--", "--launch-profile", "p"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["run", "--", "--launch-profile", "p"], options.LaunchProcessArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Property()
+        {
+            var options = VerifyOptions(["--", "--property", "x=1"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["run", "--", "--property", "x=1"], options.LaunchProcessArguments);
         }
 
         [Theory]
@@ -287,12 +346,12 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Theory]
         [InlineData(new[] { "--unrecognized-arg" }, new[] { "run", "--unrecognized-arg" })]
         [InlineData(new[] { "run" }, new[] { "run" })]
-        [InlineData(new[] { "run", "--", "runarg" }, new[] { "run", "runarg" })]
+        [InlineData(new[] { "run", "--", "runarg" }, new[] { "run", "--", "runarg" })]
         [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] { "run", "runarg1", "-runarg2" })]
         // run is after -- and therefore not parsed as a command:
-        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { "run", "run", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { "run", "--", "run", "--", "runarg" })]
         // run is before -- and therefore parsed as a command:
-        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { "run", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { "run", "--", "--", "runarg" })]
         public void ParsesRemainingArgs(string[] args, string[] expected)
         {
             var options = VerifyOptions(args);

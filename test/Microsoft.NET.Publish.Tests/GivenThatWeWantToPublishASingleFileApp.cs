@@ -307,7 +307,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/runtime/issues/60308")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
@@ -803,6 +803,43 @@ class C
                 .Pass()
                 .And
                 .HaveStdOutContaining("Hello World");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute(PublishSingleFile)
+                .Should()
+                .Pass();
+
+            DirectoryInfo publishDir = publishCommand.GetOutputDirectory(
+                targetFramework: testProject.TargetFrameworks,
+                runtimeIdentifier: rid);
+            string singleFilePath = Path.Combine(publishDir.FullName, $"{testProject.Name}.exe");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(singleFilePath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]

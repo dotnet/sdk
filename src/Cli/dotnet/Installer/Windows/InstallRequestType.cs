@@ -69,5 +69,10 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Changes the workload mode
         /// </summary>
         AdjustWorkloadMode,
+
+        /// <summary>
+        /// Changes the workload set version
+        /// </summary>
+        AdjustWorkloadSetVersion,
     }
 }

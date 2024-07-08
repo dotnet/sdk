@@ -858,7 +858,9 @@ EndGlobal
             using (var stream = new FileStream(Path.Combine(projectDirectory, "App.sln"), FileMode.Open))
             {
                 var bytes = new byte[preamble.Length];
+#pragma warning disable CA2022 // Avoid inexact read
                 stream.Read(bytes, 0, bytes.Length);
+#pragma warning restore CA2022 // Avoid inexact read
                 bytes.Should().BeEquivalentTo(preamble);
             }
         }
@@ -988,7 +990,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"sln", "App.sln", "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo("Unsupported project type. Check with your sdk provider.");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo("has an unknown project type and cannot be added to the solution file. Contact your SDK provider for support.");
 
             File.ReadAllText(slnFullPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);

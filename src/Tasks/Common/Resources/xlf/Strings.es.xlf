@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: El paquete Microsoft.Net.Compilers.Toolset.Framework no debe establecerse directamente. Establezca la propiedad "BuildWithNetFrameworkHostedCompiler" en "true" en su lugar si la necesita.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: No se puede insertar CLSIDMap en el host COM porque para agregar recursos es necesario que la compilación se realice en Windows (excepto Nano Server).</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: No se encuentra el host de la aplicación {0}. {0} puede ser un identificador de tiempo de ejecución no válido. Para obtener más información al respecto, consulte https://aka.ms/rid-catalog.</target>
@@ -751,6 +746,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1189: Prefer32Bit no se admite y no tiene efecto para el destino netcoreapp.</target>
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
         <target state="translated">NETSDK1011: Los recursos se consumen desde el proyecto "{0}", pero no se ha encontrado la ruta de acceso de proyecto de MSBuild correspondiente en "{1}".</target>
@@ -877,6 +877,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1138: La plataforma de destino "{0}" no tiene soporte técnico y no recibirá actualizaciones de seguridad en el futuro. Para obtener más información sobre la directiva de soporte técnico, consulte {1}.</target>
         <note>{StrBegin="NETSDK1138: "}</note>
+      </trans-unit>
+      <trans-unit id="TargetFrameworkIsNotRecommended">
+        <source>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</source>
+        <target state="new">NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</target>
+        <note>{StrBegin="NETSDK1215: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkWithSemicolon">
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>

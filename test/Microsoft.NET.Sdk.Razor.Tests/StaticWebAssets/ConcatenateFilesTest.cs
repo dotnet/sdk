@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
     public class ConcatenateCssFilesTest
     {
         private static readonly string BundleContent =
-@"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
+    @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
     font-size: 2rem;
 }
@@ -20,22 +20,22 @@ namespace Microsoft.NET.Sdk.Razor.Test
 }
 ";
 
-        private static readonly string BundleWithImportsContent =
-@"@import '_content/Test/TestFiles/Generated/lib.bundle.scp.css';
-@import 'TestFiles/Generated/package.bundle.scp.css';
+        private static readonly string BundleWithImportsContent = """
+            @import '_content/Test/TestFiles/Generated/lib.bundle.scp.css';
+            @import '_content/Test/TestFiles/Generated/package.bundle.scp.css';
 
-/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
-.counter {
-    font-size: 2rem;
-}
-/* _content/Test/TestFiles/Generated/Index.razor.rz.scp.css */
-.index {
-    font-weight: bold;
-}
-";
+            /* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
+            .counter {
+                font-size: 2rem;
+            }
+            /* _content/Test/TestFiles/Generated/Index.razor.rz.scp.css */
+            .index {
+                font-weight: bold;
+            }
+            """;
 
         private static readonly string UpdatedBundleContent =
-@"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
+    @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
     font-size: 2rem;
 }
@@ -79,20 +79,14 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        }),
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
                 },
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
@@ -109,6 +103,32 @@ namespace Microsoft.NET.Sdk.Razor.Test
             actualContents.Should().Contain(BundleContent);
         }
 
+        private static TaskItem CreateEndpoint(string route) =>
+            new TaskItem(route);
+
+        private static TaskItem CreateStaticAsset(string identity, string basePath, string relativePath) =>
+            new TaskItem(
+                identity,
+                new Dictionary<string, string>
+                {
+                    ["BasePath"] = basePath,
+                    ["RelativePath"] = relativePath,
+                    ["SourceType"] = "Discovered",
+                    ["SourceId"] = "MyLibrary",
+                    ["ContentRoot"] = Path.Combine(AppContext.BaseDirectory, "staticwebassets"),
+                    ["AssetKind"] = "All",
+                    ["AssetMode"] = "All",
+                    ["AssetRole"] = "Primary",
+                    ["RelatedAsset"] = "",
+                    ["AssetTraitName"] = "",
+                    ["AssetTraitValue"] = "",
+                    ["OriginalItemSpec"] = identity,
+                    ["Fingerprint"] = $"{Path.GetFileNameWithoutExtension(identity)}-fingerprint",
+                    ["Integrity"] = $"{Path.GetFileNameWithoutExtension(identity)}-integrity",
+                    ["CopyToOutputDirectory"] = "Never",
+                    ["CopyToPublishDirectory"] = "PreserveNewest"
+                });
+
         [Fact]
         public void BundlesScopedCssFiles_IncludesOtherBundles()
         {
@@ -118,37 +138,19 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string, string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string, string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        }),
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
                 },
                 ProjectBundles = new[]
                 {
-                    new TaskItem(
-                        "TestFiles/Generated/lib.bundle.scp.css",
-                        new Dictionary<string, string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/lib.bundle.scp.css",
-                        }),
-                    new TaskItem(
-                        "TestFiles/Generated/package.bundle.scp.css",
-                        new Dictionary<string, string>
-                        {
-                            ["BasePath"] = "",
-                            ["RelativePath"] = "TestFiles/Generated/package.bundle.scp.css",
-                        }),
+                    CreateEndpoint("_content/Test/TestFiles/Generated/lib.bundle.scp.css"),
+                    CreateEndpoint("_content/Test/TestFiles/Generated/package.bundle.scp.css"),
                 },
                 ScopedCssBundleBasePath = "/",
                 OutputFile = expectedFile
@@ -185,7 +187,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             // Arrange
             var expectedContent = BundleWithImportsContent
                 .Replace("_content/Test/TestFiles/Generated/lib.bundle.scp.css", expectedImport)
-                .Replace("@import 'TestFiles/Generated/package.bundle.scp.css';", "")
+                .Replace("@import '_content/Test/TestFiles/Generated/package.bundle.scp.css';", "")
                 .Replace("\r\n", "\n")
                 .Replace("\n\n", "\n");
 
@@ -194,30 +196,18 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        })
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
                 },
                 ProjectBundles = new[]
                 {
-                    new TaskItem(
-                        "TestFiles/Generated/lib.bundle.scp.css",
-                        new Dictionary<string, string>
-                        {
-                            ["BasePath"] = libraryBasePath,
-                            ["RelativePath"] = "TestFiles/Generated/lib.bundle.scp.css",
-                        }),
+                    CreateEndpoint(StaticWebAsset.CombineNormalizedPaths("",libraryBasePath,"TestFiles/Generated/lib.bundle.scp.css", '/'))
                 },
                 ScopedCssBundleBasePath = finalBasePath,
                 OutputFile = expectedFile
@@ -243,20 +233,14 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css")
                 },
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
@@ -282,20 +266,14 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css")
                 },
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
@@ -326,20 +304,14 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 ScopedCssFiles = new[]
                 {
-                    new TaskItem(
+                    CreateStaticAsset(
                         "TestFiles/Generated/Index.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                        }),
-                    new TaskItem(
+                        "_content/Test/",
+                        "TestFiles/Generated/Index.razor.rz.scp.css"),
+                    CreateStaticAsset(
                         "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        new Dictionary<string,string>
-                        {
-                            ["BasePath"] = "_content/Test/",
-                            ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                        }),
+                        "_content/Test/",
+                        "TestFiles/Generated/Counter.razor.rz.scp.css")
                 },
                 ProjectBundles = Array.Empty<ITaskItem>(),
                 OutputFile = expectedFile
@@ -352,27 +324,18 @@ namespace Microsoft.NET.Sdk.Razor.Test
 
             taskInstance.ScopedCssFiles = new[]
             {
-                new TaskItem(
+                CreateStaticAsset(
                     "TestFiles/Generated/Index.razor.rz.scp.css",
-                    new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "_content/Test/",
-                        ["RelativePath"] = "TestFiles/Generated/Index.razor.rz.scp.css",
-                    }),
-                new TaskItem(
+                    "_content/Test/",
+                    "TestFiles/Generated/Index.razor.rz.scp.css"),
+                CreateStaticAsset(
                     "TestFiles/Generated/Counter.razor.rz.scp.css",
-                    new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "_content/Test/",
-                        ["RelativePath"] = "TestFiles/Generated/Counter.razor.rz.scp.css",
-                    }),
-                new TaskItem(
+                    "_content/Test/",
+                    "TestFiles/Generated/Counter.razor.rz.scp.css"),
+                CreateStaticAsset(
                     "TestFiles/Generated/FetchData.razor.rz.scp.css",
-                    new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "_content/Test/",
-                        ["RelativePath"] = "TestFiles/Generated/FetchData.razor.rz.scp.css",
-                    }),
+                    "_content/Test/",
+                    "TestFiles/Generated/FetchData.razor.rz.scp.css"),
             };
 
             await System.Threading.Tasks.Task.Delay(1000);
