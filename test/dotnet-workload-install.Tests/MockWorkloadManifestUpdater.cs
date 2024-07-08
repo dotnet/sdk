@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates;
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryRecord record)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state)
         {
             var currentManifests = _resolver?.GetInstalledManifests() ??
                 _manifestUpdates?.Select(mu => new WorkloadManifestInfo(
@@ -48,31 +48,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                     "manifestDir",
                     mu.ManifestUpdate.NewFeatureBand));
 
-            foreach (var manifest in record.StateAfterCommand.ManifestVersions)
+            foreach (var manifest in state.ManifestVersions)
             {
                 var featureBandAndVersion = manifest.Value.Split('/');
                 yield return new ManifestVersionUpdate(new ManifestId(manifest.Key), new ManifestVersion(featureBandAndVersion[0]), featureBandAndVersion[1]);
             }
-        }
-
-        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
-        {
-            if (_resolver is not null)
-            {
-                var manifest = _resolver.GetInstalledManifests().FirstOrDefault(m => m.Id.Equals(manifestId.ToString()));
-                if (manifest is not null)
-                {
-                    return new ManifestVersionWithBand(new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
-                }
-            }
-
-            var update = _manifestUpdates?.FirstOrDefault(u => u.ManifestUpdate.ManifestId.Equals(manifestId))?.ManifestUpdate;
-            if (update is null)
-            {
-                return null;
-            }
-
-            return new ManifestVersionWithBand(update.NewVersion, new SdkFeatureBand(update.NewFeatureBand));
         }
 
         public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)

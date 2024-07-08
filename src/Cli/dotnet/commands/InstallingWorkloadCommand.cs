@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -37,8 +38,8 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
-        protected readonly string _fromHistorySpecified;
-        protected readonly bool _historyManifestOnlyOption;
+        protected int _fromHistorySpecified;
+        protected bool _historyManifestOnlyOption;
         protected string _workloadSetVersionFromCommandLine;
         protected string _globalJsonPath;
         protected string _workloadSetVersionFromGlobalJson;
@@ -49,13 +50,13 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly IWorkloadManifestUpdater _workloadManifestUpdaterFromConstructor;
         protected IInstaller _workloadInstaller;
         protected IWorkloadManifestUpdater _workloadManifestUpdater;
-        private WorkloadHistoryRecord _workloadHistoryRecord;
+        private WorkloadHistoryState _workloadHistoryRecord;
 
         protected bool UseRollback => !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-        protected bool FromHistory => !string.IsNullOrWhiteSpace(_fromHistorySpecified);
+        protected bool FromHistory => _fromHistorySpecified != 0;
         protected bool SpecifiedWorkloadSetVersionOnCommandLine => !string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine);
         protected bool SpecifiedWorkloadSetVersionInGlobalJson => !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson);
-        protected WorkloadHistoryRecord _WorkloadHistoryRecord
+        protected WorkloadHistoryState _WorkloadHistoryRecord
         {
             get
             {
@@ -67,34 +68,14 @@ namespace Microsoft.DotNet.Workloads.Workload
                         throw new GracefulException(Update.LocalizableStrings.NoWorkloadHistoryRecords, isUserError: true);
                     }
 
-                    var historyRecordsWithUnknownAndInitial = new List<WorkloadHistoryRecord>();
-                    historyRecordsWithUnknownAndInitial.Add(new WorkloadHistoryRecord()
+                    var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(workloadHistoryRecords, out _);
+
+                    if (_fromHistorySpecified < 1 || _fromHistorySpecified > displayRecords.Count)
                     {
-                        StateAfterCommand = workloadHistoryRecords.First().StateBeforeCommand
-                    });
-
-                    var previous = historyRecordsWithUnknownAndInitial.First();
-
-                    foreach (var historyRecord in workloadHistoryRecords)
-                    {
-                        if (!historyRecord.StateBeforeCommand.Equals(previous.StateAfterCommand))
-                        {
-                            historyRecordsWithUnknownAndInitial.Add(new WorkloadHistoryRecord()
-                            {
-                                StateAfterCommand = historyRecord.StateBeforeCommand
-                            });
-                        }
-
-                        historyRecordsWithUnknownAndInitial.Add(historyRecord);
-                        previous = historyRecord;
+                        throw new GracefulException(Update.LocalizableStrings.WorkloadHistoryRecordInvalidIdValue, isUserError: true);
                     }
 
-                    if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > historyRecordsWithUnknownAndInitial.Count)
-                    {
-                        throw new GracefulException(Update.LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
-                    }
-
-                    _workloadHistoryRecord = historyRecordsWithUnknownAndInitial[index - 1];
+                    _workloadHistoryRecord = displayRecords[_fromHistorySpecified - 1].HistoryState;
                 }
 
                 return _workloadHistoryRecord;
@@ -119,8 +100,6 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
             _workloadSetVersionFromCommandLine = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
-            _fromHistorySpecified = parseResult.GetValue(InstallingWorkloadCommandParser.FromHistoryOption);
-            _historyManifestOnlyOption = !string.IsNullOrWhiteSpace(parseResult.GetValue(InstallingWorkloadCommandParser.HistoryManifestOnlyOption));
 
             var configOption = parseResult.GetValue(InstallingWorkloadCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(InstallingWorkloadCommandParser.SourceOption);
@@ -171,7 +150,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 throw new GracefulException(string.Format(Update.LocalizableStrings.CannotCombineOptions,
                     InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name,
-                    InstallingWorkloadCommandParser.FromHistoryOption.Name), isUserError: true);
+                    WorkloadUpdateCommandParser.FromHistoryOption.Name), isUserError: true);
             }
 
             //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
@@ -200,8 +179,14 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
         {
-            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
-            if (UseRollback && updateToLatestWorkloadSet)
+            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath) && !SpecifiedWorkloadSetVersionInGlobalJson;
+            if (FromHistory && !string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.WorkloadSetVersion))
+            {
+                // This is essentially the same as updating to a specific workload set version, and we're now past the error check,
+                // so we can just use the same code path.
+                _workloadSetVersionFromCommandLine = _WorkloadHistoryRecord.WorkloadSetVersion;
+            }
+            else if ((UseRollback || FromHistory) && updateToLatestWorkloadSet)
             {
                 // Rollback files are only for loose manifests. Update the mode to be loose manifests.
                 Reporter.WriteLine(Update.LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
@@ -209,14 +194,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 updateToLatestWorkloadSet = false;
             }
 
-            if (FromHistory && !string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion))
-            {
-                // This is essentially the same as updating to a specific workload set version, and we're now past the error check,
-                // so we can just use the same code path.
-                _workloadSetVersionFromCommandLine = _WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion;
-            }
-
-            if (SpecifiedWorkloadSetVersionOnCommandLine || SpecifiedWorkloadSetVersionInGlobalJson)
+            if (SpecifiedWorkloadSetVersionOnCommandLine)
             {
                 updateToLatestWorkloadSet = false;
 
@@ -235,7 +213,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ??_workloadSetVersionFromCommandLine;
-            if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback)
+            if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback && !FromHistory)
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
                 if (updateToLatestWorkloadSet)
@@ -274,9 +252,10 @@ namespace Microsoft.DotNet.Workloads.Workload
 
                     if (!SpecifiedWorkloadSetVersionInGlobalJson)
                     {
-                        if (UseRollback || (FromHistory && string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion)))
+                        if (UseRollback || (FromHistory && string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.WorkloadSetVersion)))
                         {
                             _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                            _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, null);
                         }
                         else if (SpecifiedWorkloadSetVersionOnCommandLine)
                         {
@@ -289,16 +268,6 @@ namespace Microsoft.DotNet.Workloads.Workload
                             _workloadInstaller.RemoveManifestsFromInstallState(_sdkFeatureBand);
                             _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, null);
                         }
-                    }
-
-                    if (FromHistory)
-                    {
-                        if (!_historyManifestOnlyOption)
-                        {
-                            UpdateInstalledWorkloadsFromHistory(context, offlineCache);
-                        }
-
-                        _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion, useInstallStateOnly: true), offlineCache);
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
@@ -329,43 +298,6 @@ namespace Microsoft.DotNet.Workloads.Workload
                     //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
                     _workloadResolver.RefreshWorkloadManifests();
                 });
-        }
-
-        private void UpdateInstalledWorkloadsFromHistory(ITransactionContext context, DirectoryPath? offlineCache)
-        {
-            if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
-            {
-                // Only have specified workloads installed afterwards.
-                var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                var desiredWorkloads = _WorkloadHistoryRecord.StateAfterCommand.InstalledWorkloads.Select(id => new WorkloadId(id));
-
-                var workloadsToInstall = new List<WorkloadId>();
-                var workloadsToUninstall = new List<WorkloadId>();
-
-                foreach (var id in installedWorkloads)
-                {
-                    if (!desiredWorkloads.Contains(id))
-                    {
-                        workloadsToUninstall.Add(id);
-                    }
-                }
-
-                foreach (var id in desiredWorkloads)
-                {
-                    if (!installedWorkloads.Contains(id))
-                    {
-                        workloadsToInstall.Add(id);
-                    }
-                }
-
-                _workloadInstaller.InstallWorkloads(workloadsToInstall, _sdkFeatureBand, context, offlineCache);
-
-                foreach (var id in workloadsToUninstall)
-                {
-                    _workloadInstaller.GetWorkloadInstallationRecordRepository()
-                       .DeleteWorkloadInstallationRecord(id, _sdkFeatureBand);
-                }
-            }
         }
 
         private IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, string workloadSetVersion)
@@ -489,16 +421,6 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
-        public static readonly CliOption<string> FromHistoryOption = new("--from-history")
-        {
-            Description = Update.LocalizableStrings.FromHistoryOptionDescription
-        };
-
-        public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
-        {
-            Description = Update.LocalizableStrings.HistoryManifestOnlyOptionDescription
-        };
-
         public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
         {
             Description = Strings.WorkloadSetVersionOptionDescription
@@ -565,8 +487,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             command.Options.Add(DownloadToCacheOption);
             command.Options.Add(IncludePreviewOption);
             command.Options.Add(FromRollbackFileOption);
-            command.Options.Add(FromHistoryOption);
-            command.Options.Add(HistoryManifestOnlyOption);
         }
     }
 }

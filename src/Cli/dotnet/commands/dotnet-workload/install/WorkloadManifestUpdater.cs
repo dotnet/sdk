@@ -516,9 +516,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return versions.Select(kvp => (kvp.Key, new ManifestVersionWithBand(kvp.Value.Version, kvp.Value.FeatureBand)));
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryRecord record)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state)
         {
-            return record.StateAfterCommand.ManifestVersions.Select(
+            return state.ManifestVersions.Select(
                 m => new ManifestVersionUpdate(
                     new ManifestId(m.Key),
                     new ManifestVersion(m.Value.Split('/')[0]),

@@ -112,26 +112,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             RefreshWorkloadManifests();
         }
 
-        public WorkloadSet? GetCurrentWorkloadVersion()
-        {
-            WorkloadSet? workloadSet = GetWorkloadSet(considerGlobalJson: false);
-
-            var tempWorkloadSetInformation = _workloadSet;
-            _workloadSet = null;
-            workloadSet ??= new WorkloadSet();
-            workloadSet.ManifestVersions = GetManifests().ToDictionary(manifest => new ManifestId(manifest.ManifestId), manifest => (new ManifestVersion(manifest.ManifestVersion), new SdkFeatureBand(manifest.ManifestFeatureBand)));
-
-            _workloadSet = tempWorkloadSetInformation;
-
-            return workloadSet;
-        }
-
         public void RefreshWorkloadManifests()
-        {
-            _workloadSet = GetWorkloadSet(considerGlobalJson: true);
-        }
-
-        private WorkloadSet? GetWorkloadSet(bool considerGlobalJson)
         {
             //  Reset exception state, we may be refreshing manifests after a missing workload set was installed
             _exceptionToThrow = null;
@@ -182,7 +163,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (workloadSet is null && considerGlobalJson)
+            if (workloadSet is null)
             {
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
@@ -191,7 +172,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     if (!TryGetWorkloadSet(_globalJsonWorkloadSetVersion, out workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
-                        return null;
+                        return;
                     }
                 }
             }
@@ -223,7 +204,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
 
-            return workloadSet;
+            _workloadSet = workloadSet;
         }
 
         private static int VersionCompare(string first, string second)
@@ -293,11 +274,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        // The useInstallStateOnly flag indicates that, when performing garbage collection, we should not follow the normal logic of
-        // starting at manifest roots and following them to complete the closure. This means that the install state file has already
-        // been overwritten with exactly the set of manifests we want, and we want to keep only manifests in that list. Note that we
-        // keep the baseline manifests regardless.
-        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly = false)
+        public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
             ThrowExceptionIfManifestsNotAvailable();
 
@@ -329,40 +306,37 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (!useInstallStateOnly)
+            if (_manifestRoots.Length == 1)
             {
-                if (_manifestRoots.Length == 1)
+                //  Optimization for common case where test hook to add additional directories isn't being used
+                var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], _sdkVersionBand.ToString());
+                if (Directory.Exists(manifestVersionBandDirectory))
                 {
-                    //  Optimization for common case where test hook to add additional directories isn't being used
-                    var manifestVersionBandDirectory = Path.Combine(_manifestRoots[0], _sdkVersionBand.ToString());
+                    foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
+                    {
+                        ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
+                    }
+                }
+            }
+            else
+            {
+                //  If the same folder name is in multiple of the workload manifest directories, take the first one
+                Dictionary<string, string> directoriesWithManifests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var manifestRoot in _manifestRoots.Reverse())
+                {
+                    var manifestVersionBandDirectory = Path.Combine(manifestRoot, _sdkVersionBand.ToString());
                     if (Directory.Exists(manifestVersionBandDirectory))
                     {
                         foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
                         {
-                            ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
+                            directoriesWithManifests[Path.GetFileName(workloadManifestDirectory)] = workloadManifestDirectory;
                         }
                     }
                 }
-                else
-                {
-                    //  If the same folder name is in multiple of the workload manifest directories, take the first one
-                    Dictionary<string, string> directoriesWithManifests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var manifestRoot in _manifestRoots.Reverse())
-                    {
-                        var manifestVersionBandDirectory = Path.Combine(manifestRoot, _sdkVersionBand.ToString());
-                        if (Directory.Exists(manifestVersionBandDirectory))
-                        {
-                            foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
-                            {
-                                directoriesWithManifests[Path.GetFileName(workloadManifestDirectory)] = workloadManifestDirectory;
-                            }
-                        }
-                    }
 
-                    foreach (var workloadManifestDirectory in directoriesWithManifests.Values)
-                    {
-                        ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
-                    }
+                foreach (var workloadManifestDirectory in directoriesWithManifests.Values)
+                {
+                    ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
                 }
             }
 
@@ -399,22 +373,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (!useInstallStateOnly)
+            var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
+            if (missingManifestIds?.Any() == true)
             {
-                var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
-                if (missingManifestIds?.Any() == true)
+                foreach (var missingManifestId in missingManifestIds)
                 {
-                    foreach (var missingManifestId in missingManifestIds)
+                    var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
+                    if (!string.IsNullOrEmpty(manifestDir))
                     {
-                        var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
-                        if (!string.IsNullOrEmpty(manifestDir))
-                        {
-                            AddManifest(missingManifestId, manifestDir, featureBand, Path.GetFileName(manifestDir));
-                        }
+                        AddManifest(missingManifestId, manifestDir, featureBand, Path.GetFileName(manifestDir));
                     }
                 }
             }
-           
 
             //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.

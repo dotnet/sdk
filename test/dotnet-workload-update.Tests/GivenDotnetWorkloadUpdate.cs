@@ -100,10 +100,10 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 new MockNuGetPackageDownloader(),
                 mockUpdater);
 
-            mockInstaller.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
             mockInstaller.GarbageCollectionCalled.Should().BeFalse();
             update.Execute();
-            mockInstaller.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
             mockInstaller.GarbageCollectionCalled.Should().BeTrue();
             mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android", "microsoft.net.sdk.aspire" });
         }
@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 }
 ";
             var nugetPackageDownloader = new MockNuGetPackageDownloader();
-            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) });
+            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) }, getPacks: id => Enumerable.Empty<WorkloadPackId>());
             var workloadInstaller = new MockPackWorkloadInstaller(
                 dotnetDir,
                 installedWorkloads: new List<WorkloadId>() { new WorkloadId("android")},

@@ -123,6 +123,9 @@
   <data name="NoHistoryFound" xml:space="preserve">
     <value>No workload history found</value>
   </data>
+  <data name="UnknownRecordsInformationalMessage" xml:space="preserve">
+    <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
+  </data>
   <data name="Id" xml:space="preserve">
     <value>Id</value>
   </data>
@@ -137,5 +140,8 @@
   </data>
   <data name="GlobalJsonVersion" xml:space="preserve">
     <value>Global.json Version</value>
+  </data>
+  <data name="WorkloadSetVersion" xml:space="preserve">
+    <value>Workload Version</value>
   </data>
 </root>

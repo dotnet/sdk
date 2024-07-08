@@ -82,7 +82,7 @@
         <target state="translated">캐시할 워크로드 업데이트 패키지를 다운로드하지 못했습니다. {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadHistoryRecordNonIntegerId">
+      <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
         <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
         <note />

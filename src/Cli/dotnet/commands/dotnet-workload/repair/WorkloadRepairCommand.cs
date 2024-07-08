@@ -56,9 +56,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
                                      _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, _parseResult.ToRestoreActionConfig());
 
-            _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
             _recorder.HistoryRecord.CommandName = "repair";
-            _recorder.HistoryRecord.WorkloadArguments = parseResult.GetArguments().ToList();
         }
 
         public override int Execute()

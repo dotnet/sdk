@@ -47,6 +47,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         WorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider);
 
         IWorkloadManifestProvider GetWorkloadManifestProvider();
-        WorkloadSet? GetGlobalWorkloadSetVersion();
     }
 }

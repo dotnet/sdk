@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
             public List<string> Workloads { get; set; }
             public string GlobalJsonVersion { get; set; }
 
-            public WorkloadHistoryRecord HistoryRecord { get; set; }
+            public WorkloadHistoryState HistoryState { get; set; }
         }
 
         public static List<DisplayRecord> ProcessWorkloadHistoryRecords(IEnumerable<WorkloadHistoryRecord> historyRecords, out bool unknownRecordsPresent)
@@ -28,8 +28,7 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
 
             foreach (var historyRecord in historyRecords.OrderBy(r => r.TimeStarted))
             {
-                if (displayRecords.Any() && displayRecords.Last().HistoryRecord != null &&
-                    !displayRecords.Last().HistoryRecord.StateAfterCommand.Equals(historyRecord.StateBeforeCommand))
+                if (displayRecords.Any() && !historyRecord.StateBeforeCommand.Equals(displayRecords.Last()?.HistoryState))
                 {
                     //  Workload state changed without history record being written
                     var unknownDisplayRecord = new DisplayRecord()
@@ -37,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
                         Command = "Unlogged Changes",
                         ID = currentId,
                         TimeStarted = null,
-                        Workloads = historyRecord.StateBeforeCommand.InstalledWorkloads,
+                        HistoryState = historyRecord.StateBeforeCommand
                     };
 
                     currentId++;
@@ -50,12 +49,22 @@ namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads
                     ID = currentId,
                     TimeStarted = historyRecord.TimeStarted,
                     Command = historyRecord.CommandName,
-                    Workloads = historyRecord.WorkloadArguments,
                     GlobalJsonVersion = historyRecord.GlobalJsonVersion,
-                    HistoryRecord = historyRecord
+                    HistoryState = historyRecord.StateAfterCommand
                 });
 
                 currentId++;
+            }
+
+            if (displayRecords.Count > 0)
+            {
+                displayRecords.Insert(0, new DisplayRecord()
+                {
+                    TimeStarted = DateTimeOffset.MinValue,
+                    ID = 1,
+                    Command = "InitialState",
+                    HistoryState = historyRecords.First().StateBeforeCommand
+                });
             }
 
             return displayRecords;

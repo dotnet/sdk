@@ -14,11 +14,13 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         IWorkloadResolver _workloadResolver;
         IInstaller _workloadInstaller;
+        Func<IWorkloadResolver> _workloadResolverFunc;
 
-        public WorkloadHistoryRecorder(IWorkloadResolver workloadResolver, IInstaller workloadInstaller)
+        public WorkloadHistoryRecorder(IWorkloadResolver workloadResolver, IInstaller workloadInstaller, Func<IWorkloadResolver> workloadResolverFunc)
         {
             _workloadResolver = workloadResolver;
             _workloadInstaller = workloadInstaller;
+            _workloadResolverFunc = workloadResolverFunc;
 
             HistoryRecord.CommandLineArgs = Environment.GetCommandLineArgs();
         }
@@ -45,21 +47,22 @@ namespace Microsoft.DotNet.Workloads.Workload
                 HistoryRecord.StateAfterCommand = GetWorkloadState();
                 HistoryRecord.TimeCompleted = DateTimeOffset.Now;
 
-                _workloadInstaller.WriteWorkloadHistoryRecord(HistoryRecord, _workloadInstaller.SdkFeatureBand.ToString());
+                _workloadInstaller.WriteWorkloadHistoryRecord(HistoryRecord, _workloadResolver.GetSdkFeatureBand());
             }
         }
 
         private WorkloadHistoryState GetWorkloadState()
         {
-            var currentWorkloadInfo = _workloadResolver.GetGlobalWorkloadSetVersion();
+            var resolver = _workloadResolverFunc();
+            var currentWorkloadInfo = resolver.GetWorkloadVersion();
             return new WorkloadHistoryState()
             {
-                ManifestVersions = currentWorkloadInfo.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version.ToString()),
+                ManifestVersions = resolver.GetInstalledManifests().ToDictionary(manifest => manifest.Id.ToString(), manifest => $"{manifest.Version}/{manifest.ManifestFeatureBand}"),
                 InstalledWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository()
                                                        .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
                                                        .Select(id => id.ToString())
                                                        .ToList(),
-                WorkloadSetVersion = currentWorkloadInfo.Version
+                WorkloadSetVersion = resolver.GetWorkloadVersion()
             };
 
         }

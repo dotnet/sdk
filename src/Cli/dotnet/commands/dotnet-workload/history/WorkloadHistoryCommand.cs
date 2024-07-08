@@ -24,10 +24,8 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             ParseResult parseResult,
             IReporter reporter = null,
             IInstaller workloadInstaller = null,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir = null,
-            string tempDirPath = null
-        ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
+            INuGetPackageDownloader nugetPackageDownloader = null
+        ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, null, nugetPackageDownloader)
         {
             var creationResult = new WorkloadResolverFactory().Create();
 
@@ -38,7 +36,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
 
             _workloadInstaller = workloadInstaller ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, _sdkFeatureBand,
-                                     _workloadResolver, Verbosity, userProfileDir, VerifySignatures, PackageDownloader, dotnetDir, TempDirectoryPath,
+                                     _workloadResolver, Verbosity, userProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath, TempDirectoryPath,
                                      packageSourceLocation: null, _parseResult.ToRestoreActionConfig());
         }
 
@@ -46,25 +44,19 @@ namespace Microsoft.DotNet.Workloads.Workload.History
         {
             var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()), out bool unknownRecordsPresent);
 
-            if (!displayRecords.Any())
+            if (displayRecords.Count == 0)
             {
                 Reporter.WriteLine(LocalizableStrings.NoHistoryFound);
             }
             else
             {
-                displayRecords.Insert(0, new WorkloadHistoryDisplay.DisplayRecord()
-                {
-                    TimeStarted = DateTimeOffset.MinValue,
-                    ID = 1,
-                    Command = "InitialState",
-                    Workloads = displayRecords.First()?.HistoryRecord?.StateBeforeCommand?.InstalledWorkloads,
-                });
                 var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
                 table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
                 table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
                 table.AddColumn(LocalizableStrings.Command, r => r.Command);
-                table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.Command.Equals("InitialState") ? displayRecords[1].HistoryRecord.StateBeforeCommand.InstalledWorkloads : r.HistoryRecord.StateAfterCommand.InstalledWorkloads));
+                table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? new List<string>(0)));
                 table.AddColumn(LocalizableStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
+                table.AddColumn(LocalizableStrings.WorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
 
                 Reporter.WriteLine();
                 table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
@@ -72,7 +64,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
 
                 if (unknownRecordsPresent)
                 {
-                    Reporter.WriteLine("Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio."); // todo: localize
+                    Reporter.WriteLine(LocalizableStrings.UnknownRecordsInformationalMessage);
                     Reporter.WriteLine();
                 }
             }

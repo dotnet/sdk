@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     internal interface IInstaller : IWorkloadManifestInstaller
     {
         int ExitCode { get; }
-        SdkFeatureBand SdkFeatureBand { get; }
 
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
@@ -34,9 +33,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand);
 
         IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand);
-
-        // This is for testing
-        string GetFailingWorkloadFromTest();
 
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>

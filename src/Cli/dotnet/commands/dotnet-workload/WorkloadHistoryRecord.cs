@@ -10,8 +10,6 @@ namespace Microsoft.DotNet.Workloads.Workload.History
 
         public string CommandName { get; set; }
 
-        public List<string> WorkloadArguments { get; set; }
-
         public Dictionary<string, string> RollbackFileContents { get; set; }
 
         public string[] CommandLineArgs { get; set; }

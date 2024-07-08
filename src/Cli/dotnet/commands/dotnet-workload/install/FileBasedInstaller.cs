@@ -25,6 +25,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private const string InstalledPacksDir = "InstalledPacks";
         private const string InstalledManifestsDir = "InstalledManifests";
         private const string InstalledWorkloadSetsDir = "InstalledWorkloadSets";
+        private const string HistoryDir = "history";
         protected readonly string _dotnetDir;
         protected readonly string _userProfileDir;
         protected readonly DirectoryPath _tempPackagesDir;
@@ -36,7 +37,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly RestoreActionConfig _restoreActionConfig;
 
         public int ExitCode => 0;
-        public SdkFeatureBand SdkFeatureBand => _sdkFeatureBand;
 
         public FileBasedInstaller(IReporter reporter,
             SdkFeatureBand sdkFeatureBand,
@@ -87,8 +87,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             return packs;
         }
-
-        public string GetFailingWorkloadFromTest() => null;
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
@@ -543,7 +541,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         string GetWorkloadHistoryDirectory()
         {
-            return Path.Combine(_workloadMetadataDir, _sdkFeatureBand.ToString(), "history");
+            return Path.Combine(_workloadMetadataDir, RuntimeInformation.ProcessArchitecture.ToString(), _sdkFeatureBand.ToString(), HistoryDir);
         }
 
         public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
@@ -556,30 +554,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
         {
-            List<WorkloadHistoryRecord> historyRecords = new();
-
-            var workloadHistoryDirectory = GetWorkloadHistoryDirectory();
-
-            if (!Directory.Exists(workloadHistoryDirectory))
-            {
-                return Enumerable.Empty<WorkloadHistoryRecord>();
-            }
-
-            foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
-            {
-                try
-                {
-                    var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
-                    historyRecords.Add(historyRecord);
-                }
-                catch (JsonException)
-                {
-                    // We picked up a file that wasn't in the correct format, but this isn't necessarily a problem, since we take all json files from
-                    // the workload history directory. Just ignore it.
-                }
-            }
-
-            return historyRecords;
+            return WorkloadFileBasedInstall.GetWorkloadHistoryRecords(GetWorkloadHistoryDirectory());
         }
 
         public void Shutdown()

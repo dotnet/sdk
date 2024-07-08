@@ -32,6 +32,16 @@
         <target state="new">No workload history found</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnknownRecordsInformationalMessage">
+        <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
+        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload Version</source>
+        <target state="new">Workload Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
         <target state="new">Workloads</target>

@@ -46,9 +46,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
 
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
-            _recorder = new(_workloadResolverFactory.Create().WorkloadResolver, _workloadInstaller);
+            _recorder = new(_workloadResolverFactory.Create().WorkloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
             _recorder.HistoryRecord.CommandName = "uninstall";
-            _recorder.HistoryRecord.WorkloadArguments = parseResult.GetArguments().ToList();
         }
 
         public override int Execute()

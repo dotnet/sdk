@@ -126,9 +126,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
-                WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+                WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
                 recorder.HistoryRecord.CommandName = IsRunningRestore ? "restore" : "install";
-                recorder.HistoryRecord.WorkloadArguments = _arguments.ToList();
 
                 try
                 {
