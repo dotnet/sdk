@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 string path = Path.Combine(dotnetRoot, "metadata", "workloads", version.ToString(), "InstalledWorkloads");
                 Directory.CreateDirectory(path);
-                File.Create(Path.Combine(path, "6.0.100"));
+                using var _ = File.Create(Path.Combine(path, "6.0.100"));
             }
 
             IEnumerable<SdkFeatureBand> featureBands = installer.GetWorkloadInstallationRecordRepository().GetFeatureBandsWithInstallationRecords();
