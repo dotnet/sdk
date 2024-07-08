@@ -1,5 +1,22 @@
 <Project>
 
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsPackageVersion)]" />
+  </ItemGroup>
+
+  <Target Name="PublishPortableRuntimeIdentifierGraph"
+          BeforeTargets="Build">
+
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
+          DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true" />
+
+  </Target>
+
   <Target Name="PublishVersionFile"
           BeforeTargets="Build">
 
