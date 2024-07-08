@@ -7,7 +7,7 @@
     "default": {
       "name": "default",
       "createdDate": "2024-03-25 18:56:33Z",
-      "lastUpdatedDate": "2024-06-05 09:22:49Z"
+      "lastUpdatedDate": "2024-07-03 00:28:28Z"
     }
   },
   "results": {
@@ -119,31 +119,101 @@
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "e0aafe4de4d762a800edeca36ed2144ed173a138d126423863b1710425b90b33": {
-      "signature": "e0aafe4de4d762a800edeca36ed2144ed173a138d126423863b1710425b90b33",
+    "0a527cd60eacba9f7c0c83e3a97e25270578b40a637372cdf80b702b9b87b261": {
+      "signature": "0a527cd60eacba9f7c0c83e3a97e25270578b40a637372cdf80b702b9b87b261",
       "alternativeSignatures": [],
-      "target": "src/aspire/tests/Aspire.Npgsql.EntityFrameworkCore.PostgreSQL.Tests/ConformanceTests.cs",
-      "line": 20,
+      "target": "src/aspire/tests/Aspire.Dashboard.Tests/Integration/OtlpServiceTests.cs",
+      "line": 128,
       "memberOf": [
         "default"
       ],
       "tool": "credscan",
-      "ruleId": "CSCAN-GENERAL0030",
-      "createdDate": "2024-06-05 09:22:49Z",
+      "ruleId": "CSCAN-GENERAL0130",
+      "createdDate": "2024-03-25 18:56:33Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "a5142e7bafbf664fdcb2d4d7071ca8427c7da0c8ba66cc7706c9c07b816f1201": {
-      "signature": "a5142e7bafbf664fdcb2d4d7071ca8427c7da0c8ba66cc7706c9c07b816f1201",
+    "6ddef357a244a95890f464728bfe7d498172c7d0a154a1b7505de8cf5d2e6940": {
+      "signature": "6ddef357a244a95890f464728bfe7d498172c7d0a154a1b7505de8cf5d2e6940",
       "alternativeSignatures": [],
-      "target": "src/aspire/tests/Aspire.Npgsql.Tests/ConformanceTests.cs",
-      "line": 17,
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/RabbitMQ/AddRabbitMQTests.cs",
+      "line": 66,
       "memberOf": [
         "default"
       ],
       "tool": "credscan",
-      "ruleId": "CSCAN-GENERAL0030",
-      "createdDate": "2024-06-05 09:22:49Z",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-03-25 18:56:33Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "7b17c8b64bd83dc326d4257677bed760c9cf6ab817acfbc7472f13f64b855e40": {
+      "signature": "7b17c8b64bd83dc326d4257677bed760c9cf6ab817acfbc7472f13f64b855e40",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/RabbitMQ/AddRabbitMQTests.cs",
+      "line": 81,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-03-25 18:56:33Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "5c2b6a4651bcb596fc2e5db714b851d389abfea6e55903a8d0582ce51da047ff": {
+      "signature": "5c2b6a4651bcb596fc2e5db714b851d389abfea6e55903a8d0582ce51da047ff",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 76,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-03-25 18:56:33Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "80a85deb6369e399563ca12ec488875ae9fadc6a4c8d4a4343fe2294ddf2a7a4": {
+      "signature": "80a85deb6369e399563ca12ec488875ae9fadc6a4c8d4a4343fe2294ddf2a7a4",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 84,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-03-25 18:56:33Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "0b30610f2eb9817ff650cd53154bc2ac98d6209750a9d628c5af700608bdb36e": {
+      "signature": "0b30610f2eb9817ff650cd53154bc2ac98d6209750a9d628c5af700608bdb36e",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 100,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-03-25 18:56:33Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "52cfa490ade643a3ec287dec67888d444752a73f7e4355a7f1924b0af54df466": {
+      "signature": "52cfa490ade643a3ec287dec67888d444752a73f7e4355a7f1924b0af54df466",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Shared/TestCertificates/eku.client.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-25 18:56:33Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
@@ -987,25 +1057,11 @@
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "5ac1e0f1847cf476ae1c810ac0a74ee5993d05873feca939c0df1ac691a1527c": {
-      "signature": "5ac1e0f1847cf476ae1c810ac0a74ee5993d05873feca939c0df1ac691a1527c",
+    "021fed5848180fe5621ad74694ec18568bec71289fa7d8451a52b4d758264428": {
+      "signature": "021fed5848180fe5621ad74694ec18568bec71289fa7d8451a52b4d758264428",
       "alternativeSignatures": [],
-      "target": "src/runtime/src/libraries/System.Security.Cryptography/tests/X509Certificates/TestData.cs",
-      "line": 3441,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "credscan",
-      "ruleId": "CSCAN-GENERAL0060",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "2987ea627ea4f2effb417244c4aac8f554bf42136d6ebe0fef1df440410be09c": {
-      "signature": "2987ea627ea4f2effb417244c4aac8f554bf42136d6ebe0fef1df440410be09c",
-      "alternativeSignatures": [],
-      "target": "src/runtime/src/libraries/System.Security.Cryptography/tests/X509Certificates/TestData.cs",
-      "line": 2743,
+      "target": "src/runtime/src/libraries/Common/tests/System/Security/Cryptography/X509Certificates/TestData.cs",
+      "line": 2745,
       "memberOf": [
         "default"
       ],
@@ -1015,11 +1071,11 @@
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "4c2880cbace8da677942b80be039a982e356c18c827ebeddab265175c9640427": {
-      "signature": "4c2880cbace8da677942b80be039a982e356c18c827ebeddab265175c9640427",
+    "3ede7dcbf68154b1d70720520f28286d2f23e67941ea8c61975ecce559bdc7eb": {
+      "signature": "3ede7dcbf68154b1d70720520f28286d2f23e67941ea8c61975ecce559bdc7eb",
       "alternativeSignatures": [],
-      "target": "src/runtime/src/libraries/System.Security.Cryptography/tests/X509Certificates/TestData.cs",
-      "line": 2879,
+      "target": "src/runtime/src/libraries/Common/tests/System/Security/Cryptography/X509Certificates/TestData.cs",
+      "line": 2881,
       "memberOf": [
         "default"
       ],
@@ -1029,11 +1085,11 @@
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "849ea2c1bdff1b36df8848a7f8898f11e981c3ba8f9b033abd9d1e8b1a03c8ca": {
-      "signature": "849ea2c1bdff1b36df8848a7f8898f11e981c3ba8f9b033abd9d1e8b1a03c8ca",
+    "99ae1c49501757abc08f033236305eb273f96f58e4f636d38c4a4fa81fc15980": {
+      "signature": "99ae1c49501757abc08f033236305eb273f96f58e4f636d38c4a4fa81fc15980",
       "alternativeSignatures": [],
-      "target": "src/runtime/src/libraries/System.Security.Cryptography/tests/X509Certificates/TestData.cs",
-      "line": 2962,
+      "target": "src/runtime/src/libraries/Common/tests/System/Security/Cryptography/X509Certificates/TestData.cs",
+      "line": 2964,
       "memberOf": [
         "default"
       ],
