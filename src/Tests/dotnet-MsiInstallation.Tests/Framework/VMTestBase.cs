@@ -66,26 +66,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .Should()
                 .Pass();
 
-            var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
-            List<string> runtimeInstallers = new List<string>();
-            string installerPrefix = "dotnet-runtime-";
-            string installerSuffix = "-win-x64.exe";
-            foreach (var file in sdkTestingDir.Files.Select(Path.GetFileName))
-            {
-                if (file.StartsWith(installerPrefix) && file.EndsWith(installerSuffix))
-                {
-                    runtimeInstallers.Add(file);
-                }
-            }
+            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
+                .WithDescription($"Install SDK {SdkInstallerVersion}")
+                .Execute().Should().Pass();
 
-            VM.CreateActionGroup($"Install SDK {SdkInstallerVersion}",
-                [
-                    VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet"),
-                    ..runtimeInstallers.Select(i => VM.CreateRunCommand($@"c:\SdkTesting\{i}", "/quiet"))
-                ])
-                .Execute()
-                .Should()
-                .Pass();
+            
 
             if (deployStage2)
             {
@@ -107,6 +92,27 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             if (!VM.VMTestSettings.ShouldTestStage2)
             {
                 return;
+            }
+
+
+            //  Install any runtimes that are in the c:\SdkTesting directory, to support using older baseline SDK versions with a newer stage 2
+            var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+            List<string> runtimeInstallers = new List<string>();
+            string installerPrefix = "dotnet-runtime-";
+            string installerSuffix = "-win-x64.exe";
+            foreach (var file in sdkTestingDir.Files.Select(Path.GetFileName))
+            {
+                if (file.StartsWith(installerPrefix) && file.EndsWith(installerSuffix))
+                {
+                    runtimeInstallers.Add(file);
+                }
+            }
+
+            if (runtimeInstallers.Any())
+            {
+                VM.CreateActionGroup($"Install .NET runtime(s)",
+                        runtimeInstallers.Select(i => VM.CreateRunCommand($@"c:\SdkTesting\{i}", "/quiet")).ToArray())
+                    .Execute().Should().Pass();
             }
 
             var result = VM.CreateRunCommand("dotnet", "--version")
