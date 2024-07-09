@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.Localization;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -418,6 +419,13 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2", true);
 
+            // To prepare the resolver to work with workload sets, we need to specify 'workload sets' in the install state file.
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.200"), Path.GetDirectoryName(_manifestRoot)!);
+            var installStateFilePath = Path.Combine(installStateLocation, "default.json");
+            var installState = InstallStateContents.FromPath(installStateFilePath);
+            installState.UseWorkloadSets = true;
+            Directory.CreateDirectory(installStateLocation);
+            File.WriteAllText(installStateFilePath, installState.ToString());
 
             var workloadSetDirectory = Path.Combine(_manifestRoot, "8.0.200", "workloadsets", "8.0.200");
             Directory.CreateDirectory(workloadSetDirectory);
@@ -1254,6 +1262,14 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private void CreateMockWorkloadSet(string manifestRoot, string featureBand, string workloadSetVersion, string workloadSetContents)
         {
+            // To prepare the resolver to work with workload sets, we need to specify 'workload sets' in the install state file.
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(featureBand), Path.GetDirectoryName(manifestRoot)!);
+            var installStateFilePath = Path.Combine(installStateLocation, "default.json");
+            var installState = InstallStateContents.FromPath(installStateFilePath);
+            installState.UseWorkloadSets = true;
+            Directory.CreateDirectory(installStateLocation);
+            File.WriteAllText(installStateFilePath, installState.ToString());
+
             var workloadSetDirectory = Path.Combine(manifestRoot, featureBand, "workloadsets", workloadSetVersion);
             if (!Directory.Exists(workloadSetDirectory))
             {
