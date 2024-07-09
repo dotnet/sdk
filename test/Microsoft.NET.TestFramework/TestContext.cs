@@ -180,6 +180,7 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
 
                 var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
+                File.AppendAllLines(Path.Combine(artifactsDir, "log", repoConfiguration, "TestPackagesPath.txt"), [ $"testPackagesPath: {testPackages}" ]);
                 if (Directory.Exists(testPackages))
                 {
                     testContext.TestPackages = testPackages;
