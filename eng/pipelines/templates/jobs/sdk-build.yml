@@ -149,6 +149,11 @@ jobs:
             RunAoTTests: ${{ parameters.runAoTTests }}
 
     ############### POST ###############
+    # https://stackoverflow.com/a/9570030/294804
+    - pwsh: Get-ChildItem $(Build.SourcesDirectory) -Recurse | Select-Object -Expand FullName > $(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/DirectoryTree.txt
+      displayName: Output Directory Tree
+      continueOnError: true
+      condition: always()
     - ${{ if eq(parameters.publishXunitResults, true) }}:
       # This is only necessary for non-Helix tests.
       - task: PublishTestResults@2
