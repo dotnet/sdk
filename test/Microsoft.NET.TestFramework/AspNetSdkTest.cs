@@ -129,6 +129,8 @@ namespace Microsoft.NET.TestFramework
 
         protected virtual CommandResult ExecuteCommand(TestCommand command, params string[] arguments)
         {
+            ValidateIndividualArgumentsContainNoSpaces(arguments);
+
             if (_generateMSbuildLogs)
             {
                 var i = 0;
@@ -145,6 +147,8 @@ namespace Microsoft.NET.TestFramework
 
         protected virtual CommandResult ExecuteCommandWithoutRestore(MSBuildCommand command, params string[] arguments)
         {
+            ValidateIndividualArgumentsContainNoSpaces(arguments);
+
             if (_generateMSbuildLogs)
             {
                 var i = 0;
@@ -155,6 +159,18 @@ namespace Microsoft.NET.TestFramework
             else
             {
                 return command.ExecuteWithoutRestore(arguments);
+            }
+        }
+
+        private void ValidateIndividualArgumentsContainNoSpaces(string[] arguments)
+        {
+            foreach (var argument in arguments)
+            {
+                // assume our tests don't need to pass msbuild properties with spaces
+                if (argument.Contains(' '))
+                {
+                    throw new ArgumentException($"Individual arguments should not contain spaces to avoid quoting issues when passing to msbuild, pass them as separate array elements instead. Argument: {argument}");
+                }
             }
         }
 

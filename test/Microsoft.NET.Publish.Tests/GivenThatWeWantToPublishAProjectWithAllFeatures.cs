@@ -64,6 +64,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"": false,
             ""System.Diagnostics.Debugger.IsSupported"": true,
             ""System.Diagnostics.Metrics.Meter.IsSupported"": false,
+            ""System.Diagnostics.StackTrace.IsSupported"": false,
             ""System.Diagnostics.Tracing.EventSource.IsSupported"": false,
             ""System.Drawing.Design.UITypeEditor.IsSupported"": true,
             ""System.Globalization.Invariant"": true,

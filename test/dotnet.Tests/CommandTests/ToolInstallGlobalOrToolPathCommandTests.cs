@@ -376,7 +376,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void WhenInstallTheSameVersionTwiceItShouldSucceed()
+        public void WhenInstallTheSpecificSameVersionTwiceItShouldNoop()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
 
@@ -402,13 +402,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
 
-            _reporter
-                .Lines
-                .Should()
-                .Equal(string.Format(
-                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceededStableVersionNoChange,
-                    PackageId,
-                    PackageVersion).Green());
+            _reporter.Lines.Should().Equal(string.Format(LocalizableStrings.ToolAlreadyInstalled, PackageId, PackageVersion).Green());
         }
 
         [Fact]

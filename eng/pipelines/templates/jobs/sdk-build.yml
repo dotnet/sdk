@@ -12,6 +12,7 @@ parameters:
   publishRetryConfig: false
   publishXunitResults: false
   enableSbom: true
+  timeoutInMinutes: 150
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -40,7 +41,7 @@ jobs:
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
-    timeoutInMinutes: 180
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true
