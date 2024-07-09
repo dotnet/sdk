@@ -576,7 +576,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net9.0"
                      ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    
+
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net9.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
@@ -1183,13 +1183,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)" MinimumNETVersion="6.0" />
-    
+
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="10.0.22000.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="10.0.20348.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="10.0.19041.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="10.0.18362.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="10.0.17763.26" MinimumNETVersion="5.0" />
-    
+
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
@@ -1294,14 +1294,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="LayoutRuntimeGraph"
           DependsOnTargets="GenerateBundledVersionsProps">
-
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
-          DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
-          SkipUnchangedFiles="true" />
-
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
-          DestinationFolder="$(SdkOutputDirectory)"
-          SkipUnchangedFiles="true"/>
 
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"
