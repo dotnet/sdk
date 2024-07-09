@@ -141,6 +141,7 @@ stages:
         useMonoRuntime: false              # 🚫
         withPreviousSDK: true              # ✅
 
+    - ${{ if in(parameters.scope, 'lite', 'full') }}:
       ### Additional jobs for full build ###
       - ${{ if in(parameters.scope, 'full') }}:
 
