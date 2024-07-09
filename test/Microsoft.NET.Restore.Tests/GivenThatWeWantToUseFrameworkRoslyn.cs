@@ -63,7 +63,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         [FullMSBuildOnlyFact]
-        public void It_does_not_throw_a_warning_when_adding_the_PackageReference_directly()
+        public void It_throws_a_warning_when_adding_the_PackageReference_directly()
         {
             const string testProjectName = "NetCoreApp";
             var project = new TestProject
@@ -81,7 +81,7 @@ namespace Microsoft.NET.Restore.Tests
                 testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             var result = restoreCommand.Execute();
             result.Should().Pass();
-            result.Should().NotHaveStdOutContaining("NETSDK");
+            result.Should().HaveStdOutContaining("NETSDK1205");
         }
     }
 }

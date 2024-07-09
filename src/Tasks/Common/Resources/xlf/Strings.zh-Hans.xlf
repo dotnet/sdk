@@ -112,6 +112,11 @@
         <target state="translated">NETSDK1001: 必须指定至少一个可能的目标框架。</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
+      <trans-unit id="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework">
+        <source>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</source>
+        <target state="translated">NETSDK1205: 不应直接设置 Microsoft.Net.Compilers.Toolset.Framework 包。如果需要，请将属性 "BuildWithNetFrameworkHostedCompiler" 设置为 "true"。</target>
+        <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
+      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: 无法找到 {0} 的应用主机。{0} 可能是无效的运行时标识符(RID)。有关 RID 的详细信息，请参阅 https://aka.ms/rid-catalog。</target>

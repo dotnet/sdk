@@ -236,6 +236,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
 
   <Target Name="_DownloadMicrosoftNetSdkCompilersToolsetPackage" Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'" BeforeTargets="CollectPackageReferences">
+
+    <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
+         If they do, and BuildWithNetFrameworkHostedCompiler is also set, the former will override the latter.
+         This makes it more explicit that that is not supported. -->
+    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
+        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
+
     <ItemGroup>
       <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
     </ItemGroup>

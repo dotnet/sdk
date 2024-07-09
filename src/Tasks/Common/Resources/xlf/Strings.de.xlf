@@ -112,6 +112,11 @@
         <target state="translated">NETSDK1001: Geben Sie mindestens ein mögliches Zielframework an.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
+      <trans-unit id="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework">
+        <source>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</source>
+        <target state="translated">NETSDK1205: Das Microsoft.Net.Compilers.Toolset.Framework-Paket sollte nicht direkt festgelegt werden. Legen Sie stattdessen bei Bedarf die Eigenschaft "BuildWithNetFrameworkHostedCompiler" auf "true" fest.</target>
+        <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
+      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: Der App-Host für "{0}" wurde nicht gefunden. "{0}" könnte ein ungültiger Runtimebezeichner (RID) sein. Weitere Informationen zum RID finden Sie unter https://aka.ms/rid-catalog.</target>
