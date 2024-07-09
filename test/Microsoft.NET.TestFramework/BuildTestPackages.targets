@@ -48,7 +48,7 @@
 
   <Target Name="SetupTestPackageProjectBaseData">
     <ItemGroup>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/PackageWithFakeNativeDep"
+      <BaseTestPackageProject Include="PackageWithFakeNativeDep"
                               Condition="$([MSBuild]::IsOSPlatform(`Windows`))" >
         <Name>PackageWithFakeNativeDep</Name>
         <ProjectName>PackageWithFakeNativeDep.csproj</ProjectName>
@@ -57,7 +57,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-dependency-context-test">
+      <BaseTestPackageProject Include="dotnet-dependency-context-test">
         <Name>dotnet-dependency-context-test</Name>
         <ProjectName>dotnet-dependency-context-test.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -65,7 +65,7 @@
         <Version>$(Version)</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-hello/v1/dotnet-hello">
+      <BaseTestPackageProject Include="dotnet-hello/v1/dotnet-hello">
         <Name>dotnet-hello</Name>
         <ProjectName>dotnet-hello.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -73,7 +73,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-hello/v2/dotnet-hello">
+      <BaseTestPackageProject Include="dotnet-hello/v2/dotnet-hello">
         <Name>dotnet-hello</Name>
         <ProjectName>dotnet-hello.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -81,7 +81,7 @@
         <Version>2.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-outputsframeworkversion/dotnet-outputsframeworkversion-netcoreapp1.0">
+      <BaseTestPackageProject Include="dotnet-outputsframeworkversion/dotnet-outputsframeworkversion-netcoreapp1.0">
         <Name>dotnet-outputsframeworkversion-netcoreapp1.0</Name>
         <ProjectName>dotnet-outputsframeworkversion-netcoreapp1.0.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -89,7 +89,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-portable">
+      <BaseTestPackageProject Include="dotnet-portable">
         <Name>dotnet-portable</Name>
         <ProjectName>dotnet-portable.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -97,7 +97,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-portable-v1">
+      <BaseTestPackageProject Include="dotnet-portable-v1">
         <Name>dotnet-portable</Name>
         <ProjectName>dotnet-portable-v1.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -105,7 +105,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-portable-v1-prefercli">
+      <BaseTestPackageProject Include="dotnet-portable-v1-prefercli">
         <Name>dotnet-portable</Name>
         <ProjectName>dotnet-portable-v1-prefercli.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -113,7 +113,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-fallbackfoldertool">
+      <BaseTestPackageProject Include="dotnet-fallbackfoldertool">
         <Name>dotnet-fallbackfoldertool</Name>
         <ProjectName>dotnet-fallbackfoldertool.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -121,7 +121,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/dotnet-prefercliruntime">
+      <BaseTestPackageProject Include="dotnet-prefercliruntime">
         <Name>dotnet-prefercliruntime</Name>
         <ProjectName>dotnet-prefercliruntime.csproj</ProjectName>
         <IsTool>True</IsTool>
@@ -129,7 +129,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/ToolWithOutputName">
+      <BaseTestPackageProject Include="ToolWithOutputName">
         <Name>dotnet-tool-with-output-name</Name>
         <ProjectName>ToolWithOutputName.csproj</ProjectName>
         <NuPkgName>ToolWithOutputName</NuPkgName>
@@ -138,7 +138,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/Library.ContainsAnalyzer">
+      <BaseTestPackageProject Include="Library.ContainsAnalyzer">
         <Name>Library.ContainsAnalyzer</Name>
         <ProjectName>Library.ContainsAnalyzer.csproj</ProjectName>
         <NuPkgName>Library.ContainsAnalyzer</NuPkgName>
@@ -146,7 +146,7 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
-      <BaseTestPackageProject Include="test/TestAssets/TestPackages/Library.ContainsAnalyzer2">
+      <BaseTestPackageProject Include="Library.ContainsAnalyzer2">
         <Name>Library.ContainsAnalyzer2</Name>
         <ProjectName>Library.ContainsAnalyzer2.csproj</ProjectName>
         <NuPkgName>Library.ContainsAnalyzer2</NuPkgName>
@@ -160,7 +160,7 @@
       </BaseTestPackageProject>
 
       <BaseTestPackageProject>
-        <ProjectDir>$(RepoRoot)%(Identity)/</ProjectDir>
+        <ProjectDir>$(RepoRoot)test/TestAssets/TestPackages/%(Identity)/</ProjectDir>
         <PackageOutput>$(TestPackagesDir)/%(NuPkgName).%(Version).nupkg</PackageOutput>
       </BaseTestPackageProject>
 
