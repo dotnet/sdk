@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ella Hathaway <ellahath@umich.edu>
+Date: Tue, 9 Jul 2024 22:23:23 +0000
+Subject: [PATCH] Fix X509Certificate2 Obsolete Error
+Backport: https://github.com/NuGet/Home/issues/13612
+
+---
+ .../NuGet.Configuration/Settings/Items/FileClientCertItem.cs    | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/NuGet.Core/NuGet.Configuration/Settings/Items/FileClientCertItem.cs b/src/NuGet.Core/NuGet.Configuration/Settings/Items/FileClientCertItem.cs
+index 774281b77..27cda77ee 100644
+--- a/src/NuGet.Core/NuGet.Configuration/Settings/Items/FileClientCertItem.cs
++++ b/src/NuGet.Core/NuGet.Configuration/Settings/Items/FileClientCertItem.cs
+@@ -167,7 +167,9 @@ public override IEnumerable<X509Certificate> Search()
+                                                                     Resources.FileCertItemPathFileNotExist));
+             }
+ 
++            #pragma warning disable SYSLIB0057 // Suppress obsoletion warning for X509Certificate2 ctor
+             return new[] { string.IsNullOrWhiteSpace(Password) ? new X509Certificate2(filePath) : new X509Certificate2(filePath, Password) };
++            #pragma warning restore SYSLIB0057
+         }
+ 
+         public void Update(string filePath, string? password, bool storePasswordInClearText)
