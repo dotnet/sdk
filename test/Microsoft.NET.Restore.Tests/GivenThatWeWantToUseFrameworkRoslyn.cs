@@ -10,7 +10,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         [FullMSBuildOnlyFact]
-        public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
+        public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
             var project = new TestProject
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         [FullMSBuildOnlyFact]
-        public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
+        public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
             var project = new TestProject
