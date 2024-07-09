@@ -391,9 +391,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg"))
                 .Execute().Should().Pass();
 
-            //VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.bak", $"Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.nupkg")
-            //    .Execute().Should().Pass();
-
             InstallWorkload("aspire", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
