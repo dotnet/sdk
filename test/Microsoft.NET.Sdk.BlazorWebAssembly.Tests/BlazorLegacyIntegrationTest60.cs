@@ -6,8 +6,7 @@ using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
+    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
         [CoreMSBuildOnlyFact]
         public void Build60Hosted_Works()
@@ -37,7 +36,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
+        [CoreMSBuildOnlyFact]
         public void Publish60Hosted_Works()
         {
             // Arrange
