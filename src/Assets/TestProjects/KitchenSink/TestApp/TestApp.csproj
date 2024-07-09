@@ -44,7 +44,16 @@
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <_ActiveXImplSupport>true</_ActiveXImplSupport>
     <_UseManagedNtlm>true</_UseManagedNtlm>
+    <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
+    <_DesignerHostSupport>true</_DesignerHostSupport>
+    <_MdiWindowDialogSupport>true</_MdiWindowDialogSupport>
+    <_UseComponentModelRegisteredTypes>false</_UseComponentModelRegisteredTypes>
+    <_WinFormsBindingSupport>true</_WinFormsBindingSupport>
+    <_WinFormsDesignTimeFeaturesSupport>true</_WinFormsDesignTimeFeaturesSupport>
+    <_WinFormsImageIndexConverterSupport>true</_WinFormsImageIndexConverterSupport>
+    <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
   </PropertyGroup>
 
   <ItemGroup>
