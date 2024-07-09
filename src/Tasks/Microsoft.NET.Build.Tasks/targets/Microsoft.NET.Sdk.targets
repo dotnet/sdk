@@ -227,7 +227,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
-    <RoslynTargetsPath>$(NuGetPackageRoot)\Microsoft.Net.Sdk.Compilers.Toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
   </PropertyGroup>
 
