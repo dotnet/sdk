@@ -12,6 +12,7 @@
     <VerifyDependencyInjectionOpenGenericServiceTrimmability>true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
     <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+    <_ComObjectDescriptorSupport>false</_ComObjectDescriptorSupport>
     <DebuggerSupport>true</DebuggerSupport>
     <EventSourceSupport>false</EventSourceSupport>
     <MetricsSupport>false</MetricsSupport>
@@ -38,11 +39,13 @@
     <TieredCompilationQuickJitForLoops>true</TieredCompilationQuickJitForLoops>
     <TieredPGO>true</TieredPGO>
     <StartupHookSupport>false</StartupHookSupport>
+    <StackTraceSupport>false</StackTraceSupport>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <_UseManagedNtlm>true</_UseManagedNtlm>
   </PropertyGroup>
 
   <ItemGroup>

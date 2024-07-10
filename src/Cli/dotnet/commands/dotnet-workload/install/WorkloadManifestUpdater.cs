@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             try
             {
-                var manifestUpdater = WorkloadManifestUpdater.GetInstance(userProfileDir);
+                var manifestUpdater = GetInstance(userProfileDir);
                 await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             }
             catch (Exception)
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             try
             {
                 var backgroundUpdatesDisabled = bool.TryParse(Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;
-                SdkFeatureBand featureBand = new SdkFeatureBand(Product.Version);
+                SdkFeatureBand featureBand = new(Product.Version);
                 var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
                 if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
                 {
@@ -494,7 +494,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             if (Uri.TryCreate(rollbackDefinitionFilePath, UriKind.Absolute, out var rollbackUri) && !rollbackUri.IsFile)
             {
-                fileContent = (new HttpClient()).GetStringAsync(rollbackDefinitionFilePath).Result;
+                using HttpClient httpClient = new();
+                fileContent = httpClient.GetStringAsync(rollbackDefinitionFilePath).Result;
             }
             else
             {

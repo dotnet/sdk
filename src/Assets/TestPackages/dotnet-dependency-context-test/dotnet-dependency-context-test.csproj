@@ -5,6 +5,7 @@
     <!-- netcoreapp2.2 is the maximum TFM project tools support -->
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <OutputType>Exe</OutputType>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <ItemGroup>

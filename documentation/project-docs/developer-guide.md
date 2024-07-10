@@ -37,11 +37,14 @@ The simple way to launch Visual Studio after building via `build.cmd` is to doub
 
 Alternatively, to open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using PowerShell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.sln`.
 
-In addition, Visual Studio must have the following option set:
+In addition, Visual Studio must have the following option set (this option is automatically set in preview Visual Studio builds):
 
 ![image](https://user-images.githubusercontent.com/23152278/211684116-923ed37e-6d56-42bf-befe-a5ef66758000.png)
 
 Go to `Tools` -> `Options` to make sure "Use previews of the .NET SDK (requires restart)" is checked and restart VS.
+
+> [!NOTE]
+> If you're building main, we may be using a preview version of the SDK to build as specified in [global.json](../../global.json#L3). We only test preview SDKs with the latest Visual Studio previews so would recommend installing the latest preview build. You can see the preview versions we test with [here](https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#preview-versioning)
 
 ### Linux and macOS
 
@@ -110,6 +113,8 @@ Run the following commands from the root of the repository to setup the test env
 source ./eng/dogfood.sh
 ```
 
+NOTE: If you are running on MacOS you will need to use a `bash` shell rather than the default `zsh`. You can either change your default shell or type `bash` before executing the above command.
+
 Ensure the `dotnet` being used is from the artifacts directory:
 
 ```
@@ -129,7 +134,7 @@ Run "dotnet --debug <command>" which will launch dotnet and pause waiting for us
 ```shell
 build.cmd # to have a full build first
 .\artifacts\sdk-build-env.bat
-cd src\Tests\YOURTEST.Tests # cd to the test folder that contains the test csproj file
+cd test\YOURTEST.Tests # cd to the test folder that contains the test csproj file
 dotnet test --filter "FullyQualifiedName~TESTNAME" # run individual test
 ```
 
