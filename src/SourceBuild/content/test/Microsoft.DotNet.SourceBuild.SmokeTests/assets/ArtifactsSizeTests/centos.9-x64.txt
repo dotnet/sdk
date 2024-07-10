@@ -266,7 +266,6 @@ NuGet.DependencyResolver.Core.x.y.z.nupkg: 86891
 NuGet.Frameworks.x.y.z.nupkg: 114025
 NuGet.LibraryModel.x.y.z.nupkg: 51201
 NuGet.PackageManagement.x.y.z.nupkg: 379858
-NuGet.Packaging.Core.x.y.z.nupkg: 11869
 NuGet.Packaging.x.y.z.nupkg: 531179
 NuGet.ProjectModel.x.y.z.nupkg: 190097
 NuGet.Protocol.x.y.z.nupkg: 628135

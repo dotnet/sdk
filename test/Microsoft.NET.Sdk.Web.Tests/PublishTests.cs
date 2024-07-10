@@ -39,6 +39,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
             JsonNode runtimeConfig = JsonNode.Parse(runtimeConfigContents);
             JsonNode configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
 
+            configProperties["Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported"].GetValue<bool>()
+                    .Should().BeFalse();
             configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].GetValue<bool>()
                     .Should().BeFalse();
         }
@@ -94,6 +96,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             string responseFile = Path.Combine(outputDirectory, "native", $"{projectName}.ilc.rsp");
             var responseFileContents = File.ReadLines(responseFile);
 
+            responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=false");
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
             responseFileContents.Should().Contain("--runtimeknob:System.GC.DynamicAdaptationMode=1");
