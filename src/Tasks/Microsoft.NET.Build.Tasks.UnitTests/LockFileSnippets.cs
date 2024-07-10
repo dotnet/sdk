@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public static string CreateLog(NuGetLogCode code, LogLevel level, string message,
             string filePath = null,
             string libraryId = null,
-            string warningLevel = "0",
+            int warningLevel = 0,
             string[] targetGraphs = null)
         {
             List<string> parts = new List<string>();
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             parts.Add($"\"code\": \"{code}\"");
             parts.Add($"\"level\": \"{level}\"");
             parts.Add($"\"message\": \"{message}\"");
-            parts.Add($"\"warningLevel\": \"{warningLevel}\"");
+            parts.Add($"\"warningLevel\": {warningLevel}");
 
             if (filePath != null) parts.Add($"\"filePath\": \"{filePath}\"");
             if (libraryId != null) parts.Add($"\"libraryId\": \"{libraryId}\"");

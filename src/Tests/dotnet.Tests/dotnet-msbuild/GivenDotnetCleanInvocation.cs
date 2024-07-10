@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -verbosity:normal -target:Clean";
+        const string ExpectedPrefix = "-maxcpucount -verbosity:m -nologo -verbosity:normal -target:Clean";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetCleanInvocation));
 
         [Fact]
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             CleanCommand.FromArgs(new string[] { "<project>" }, msbuildPath)
-                .GetArgumentsToMSBuild().Should().Be("-maxcpucount -verbosity:m -verbosity:normal <project> -target:Clean");
+                .GetArgumentsToMSBuild().Should().Be("-maxcpucount -verbosity:m -nologo -verbosity:normal <project> -target:Clean");
         }
 
         [Theory]
