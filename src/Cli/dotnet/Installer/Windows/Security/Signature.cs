@@ -29,8 +29,14 @@ namespace Microsoft.DotNet.Installer.Windows.Security
         /// <remarks>This method does not perform any other chain validation like revocation checks, timestamping, etc.</remarks>
         internal static unsafe int HasMicrosoftTrustedRoot(string path)
         {
+            var certContentType = X509Certificate2.GetCertContentType(path);
+            if (certContentType != X509ContentType.Authenticode)
+            {
+                throw new CryptographicException($"Unexpected certificate content type, got '{certContentType}' instead of Authenticode.");
+            }
+
             // Create an X509Certificate2 instance so we can access the certificate context and create a chain context.
-#pragma warning disable SYSLIB0057 // can't use X509CertificateLoader here since it tries to parse the file as a certificate
+#pragma warning disable SYSLIB0057 // we need Authenticode support which isn't available from X509CertificateLoader
             using X509Certificate2 certificate = new(path);
 #pragma warning restore SYSLIB0057
 
