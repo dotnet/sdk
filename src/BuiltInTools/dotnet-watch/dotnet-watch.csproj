@@ -29,7 +29,8 @@
       Avoids picking up an old version via transitive dependency from Microsoft.Build or Microsoft.CodeAnalysis.Workspaces.MSBuild.
     -->
     <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
-
+    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
 
