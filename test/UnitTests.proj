@@ -116,7 +116,6 @@
     <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
       <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\RunTestsOnHelix.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
@@ -179,4 +178,5 @@
         HelixCorrelationPayload="@(HelixCorrelationPayload)"
         TestOutputDirectory="$(RepoRoot)artifacts\bin\localHelixTestLayout" />
   </Target>
+
 </Project>
