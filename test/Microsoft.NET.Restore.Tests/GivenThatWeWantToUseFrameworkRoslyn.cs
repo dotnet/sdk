@@ -26,13 +26,22 @@ namespace Microsoft.NET.Restore.Tests
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
 
-            var customPackageDir = Path.Combine(testAsset.Path, "nuget-packages");
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
-                .WithEnvironmentVariable("NUGET_PACKAGES", customPackageDir)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
                 .Execute().Should().Pass();
 
-            Assert.True(Directory.Exists(Path.Combine(customPackageDir, "microsoft.net.sdk.compilers.toolset")));
+            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
+
+            Assert.True(Directory.Exists(toolsetPackageDir));
+
+            var toolsetPackageVersion = Directory.EnumerateDirectories(toolsetPackageDir).Should().ContainSingle().Subject;
+
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass().And
+                .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
         [FullMSBuildOnlyFact]
@@ -53,13 +62,22 @@ namespace Microsoft.NET.Restore.Tests
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
 
-            var customPackageDir = Path.Combine(testAsset.Path, "nuget-packages");
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
-                .WithEnvironmentVariable("NUGET_PACKAGES", customPackageDir)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
                 .Execute().Should().Pass();
 
-            Assert.True(Directory.Exists(Path.Combine(customPackageDir, "microsoft.net.sdk.compilers.toolset")));
+            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
+
+            Assert.True(Directory.Exists(toolsetPackageDir));
+
+            var toolsetPackageVersion = Directory.EnumerateDirectories(toolsetPackageDir).Should().ContainSingle().Subject;
+
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass().And
+                .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
         [FullMSBuildOnlyFact]
