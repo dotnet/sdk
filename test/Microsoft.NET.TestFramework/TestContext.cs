@@ -92,6 +92,7 @@ namespace Microsoft.NET.TestFramework
             {
                 runAsTool = true;
                 testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "TestAssets");
+                throw new GracefulException($"testAssetsDirectory1: {testContext.TestAssetsDirectory}");
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
             {
@@ -101,10 +102,12 @@ namespace Microsoft.NET.TestFramework
                 runAsTool = true;
 
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
+                throw new GracefulException($"testAssetsDirectory2: {testContext.TestAssetsDirectory}");
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
             {
                 testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
+                throw new GracefulException($"testAssetsDirectory3: {testContext.TestAssetsDirectory}");
             }
 
             string repoRoot = null;
