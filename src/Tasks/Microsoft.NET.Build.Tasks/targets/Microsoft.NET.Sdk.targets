@@ -240,7 +240,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
   </ItemGroup>
 
-  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageReference" Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'" BeforeTargets="CollectPackageReferences">
+  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageReference" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
     <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
          If they do, and BuildWithNetFrameworkHostedCompiler is also set, the former will override the latter.
          This makes it more explicit that that is not supported. -->
