@@ -171,7 +171,9 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetExePath = Path.Combine(artifactsDir, ".nuget", $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
 
-                testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
+                //testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
+                var testPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
+                throw new GracefulException($"testPackagesPath1: {testPackages}");
             }
             else if (runAsTool)
             {
@@ -182,7 +184,7 @@ namespace Microsoft.NET.TestFramework
                 var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
                 //Console.WriteLine($"testPackagesPath: {testPackages}");
                 //File.AppendAllLines(Path.Combine(artifactsDir, "log", repoConfiguration, "TestPackagesPath.txt"), [ $"testPackagesPath: {testPackages}" ]);
-                throw new GracefulException($"testPackagesPath: {testPackages}");
+                throw new GracefulException($"testPackagesPath2: {testPackages}");
                 //if (Directory.Exists(testPackages))
                 //{
                 //    testContext.TestPackages = testPackages;
@@ -197,32 +199,34 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
                 testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
+
+                throw new GracefulException($"testExecutionDirectory: {testContext.TestExecutionDirectory}");
             }
 
-            if (commandLine.SdkVersion != null)
-            {
-                testContext.SdkVersion = commandLine.SdkVersion;
-            }
+//            if (commandLine.SdkVersion != null)
+//            {
+//                testContext.SdkVersion = commandLine.SdkVersion;
+//            }
 
-            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
+//            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
 
-            //  Important to set this before below code which ends up calling through TestContext.Current, which would
-            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
-            Current = testContext;
+//            //  Important to set this before below code which ends up calling through TestContext.Current, which would
+//            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
+//            Current = testContext;
 
-            //  Set up test hooks for in-process tests
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
+//            //  Set up test hooks for in-process tests
+//            Environment.SetEnvironmentVariable(
+//                Constants.MSBUILD_EXE_PATH,
+//                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
-            Environment.SetEnvironmentVariable(
-                "MSBuildSDKsPath",
-                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
+//            Environment.SetEnvironmentVariable(
+//                "MSBuildSDKsPath",
+//                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
-#if NETCOREAPP
-            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
-                testContext.ToolsetUnderTest.SdkFolderUnderTest;
-#endif
+//#if NETCOREAPP
+//            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+//                testContext.ToolsetUnderTest.SdkFolderUnderTest;
+//#endif
         }
 
         public static string GetRepoRoot()
