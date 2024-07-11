@@ -87,145 +87,154 @@ namespace Microsoft.NET.TestFramework
 
             TestContext testContext = new();
 
-            bool runAsTool = false;
-            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
-            {
-                runAsTool = true;
-                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
-                throw new GracefulException($"testAssetsDirectory1: {testContext.TestAssetsDirectory}");
-            }
-            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
-            {
-                //  Pretend to run as a tool, but use the test assets found in the repo
-                //  This allows testing most of the "tests as global tool" behavior by setting an environment
-                //  variable instead of packing the test, and installing it as a global tool.
-                runAsTool = true;
+            var exceptionString = $"AppContext.BaseDirectory: {AppContext.BaseDirectory}";
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
-                throw new GracefulException($"testAssetsDirectory2: {testContext.TestAssetsDirectory}");
-            }
-            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
+            foreach (var file in Directory.GetFiles(AppContext.BaseDirectory))
             {
-                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
-                throw new GracefulException($"testAssetsDirectory3: {testContext.TestAssetsDirectory}");
+                exceptionString += $"{Environment.NewLine}{file}";
             }
 
-            string repoRoot = null;
-#if DEBUG
-            string repoConfiguration = "Debug";
-#else
-            string repoConfiguration = "Release";
-#endif
+            throw new GracefulException(exceptionString);
 
-            if (commandLine.SDKRepoPath != null)
-            {
-                repoRoot = commandLine.SDKRepoPath;
-            }
-            else if (!commandLine.NoRepoInference && !runAsTool)
-            {
-                repoRoot = GetRepoRoot();
+//            bool runAsTool = false;
+//            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
+//            {
+//                runAsTool = true;
+//                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
+//                throw new GracefulException($"testAssetsDirectory1: {testContext.TestAssetsDirectory}");
+//            }
+//            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
+//            {
+//                //  Pretend to run as a tool, but use the test assets found in the repo
+//                //  This allows testing most of the "tests as global tool" behavior by setting an environment
+//                //  variable instead of packing the test, and installing it as a global tool.
+//                runAsTool = true;
 
-                //if (repoRoot != null)
-                //{
-                //    // assumes tests are always executed from the "artifacts/bin/Tests/$MSBuildProjectFile/$Configuration" directory
-                //    repoConfiguration = new DirectoryInfo(AppContext.BaseDirectory).Name;
-                //}
-            }
+//                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+//                throw new GracefulException($"testAssetsDirectory2: {testContext.TestAssetsDirectory}");
+//            }
+//            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
+//            {
+//                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
+//                throw new GracefulException($"testAssetsDirectory3: {testContext.TestAssetsDirectory}");
+//            }
 
-            if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory))
-            {
-                testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
-            }
-            else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
-            {
-                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
-            }
-            else if (runAsTool)
-            {
-                testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());
-            }
-            else
-            {
-                testContext.TestExecutionDirectory = (Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory), "tmp", repoConfiguration));
+//            string repoRoot = null;
+//#if DEBUG
+//            string repoConfiguration = "Debug";
+//#else
+//            string repoConfiguration = "Release";
+//#endif
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
-            }
+//            if (commandLine.SDKRepoPath != null)
+//            {
+//                repoRoot = commandLine.SDKRepoPath;
+//            }
+//            else if (!commandLine.NoRepoInference && !runAsTool)
+//            {
+//                repoRoot = GetRepoRoot();
 
-            Directory.CreateDirectory(testContext.TestExecutionDirectory);
+//                //if (repoRoot != null)
+//                //{
+//                //    // assumes tests are always executed from the "artifacts/bin/Tests/$MSBuildProjectFile/$Configuration" directory
+//                //    repoConfiguration = new DirectoryInfo(AppContext.BaseDirectory).Name;
+//                //}
+//            }
 
-            string artifactsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_ARTIFACTS_DIR");
-            if (string.IsNullOrEmpty(artifactsDir) && !string.IsNullOrEmpty(repoRoot))
-            {
-                artifactsDir = Path.Combine(repoRoot, "artifacts");
-            }
+//            if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory))
+//            {
+//                testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
+//            }
+//            else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
+//            {
+//                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
+//            }
+//            else if (runAsTool)
+//            {
+//                testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());
+//            }
+//            else
+//            {
+//                testContext.TestExecutionDirectory = (Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory), "tmp", repoConfiguration));
 
-            if (!string.IsNullOrEmpty(artifactsDir))
-            {
-                testContext.TestGlobalPackagesFolder = Path.Combine(artifactsDir, ".nuget", "packages");
-            }
-            else
-            {
-                testContext.TestGlobalPackagesFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
-            }
+//                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+//            }
 
-            if (repoRoot != null)
-            {
-                testContext.NuGetFallbackFolder = Path.Combine(artifactsDir, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(artifactsDir, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
+//            Directory.CreateDirectory(testContext.TestExecutionDirectory);
 
-                testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
-            }
-            else if (runAsTool)
-            {
-                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
+//            string artifactsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_ARTIFACTS_DIR");
+//            if (string.IsNullOrEmpty(artifactsDir) && !string.IsNullOrEmpty(repoRoot))
+//            {
+//                artifactsDir = Path.Combine(repoRoot, "artifacts");
+//            }
 
-                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
-                //Console.WriteLine($"testPackagesPath: {testPackages}");
-                //File.AppendAllLines(Path.Combine(artifactsDir, "log", repoConfiguration, "TestPackagesPath.txt"), [ $"testPackagesPath: {testPackages}" ]);
-                throw new GracefulException($"testPackagesPath: {testPackages}");
-                //if (Directory.Exists(testPackages))
-                //{
-                //    testContext.TestPackages = testPackages;
-                //}
-            }
-            else
-            {
-                var nugetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false)
-                    ?? Path.Combine(testContext.TestExecutionDirectory, ".nuget");
+//            if (!string.IsNullOrEmpty(artifactsDir))
+//            {
+//                testContext.TestGlobalPackagesFolder = Path.Combine(artifactsDir, ".nuget", "packages");
+//            }
+//            else
+//            {
+//                testContext.TestGlobalPackagesFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
+//            }
+
+//            if (repoRoot != null)
+//            {
+//                testContext.NuGetFallbackFolder = Path.Combine(artifactsDir, ".nuget", "NuGetFallbackFolder");
+//                testContext.NuGetExePath = Path.Combine(artifactsDir, ".nuget", $"nuget{Constants.ExeSuffix}");
+//                testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
+
+//                testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
+//            }
+//            else if (runAsTool)
+//            {
+//                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
+//                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
+//                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
+
+//                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
+//                //Console.WriteLine($"testPackagesPath: {testPackages}");
+//                //File.AppendAllLines(Path.Combine(artifactsDir, "log", repoConfiguration, "TestPackagesPath.txt"), [ $"testPackagesPath: {testPackages}" ]);
+//                throw new GracefulException($"testPackagesPath: {testPackages}");
+//                //if (Directory.Exists(testPackages))
+//                //{
+//                //    testContext.TestPackages = testPackages;
+//                //}
+//            }
+//            else
+//            {
+//                var nugetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false)
+//                    ?? Path.Combine(testContext.TestExecutionDirectory, ".nuget");
 
 
-                testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
-            }
+//                testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
+//                testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
+//                testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
+//            }
 
-            if (commandLine.SdkVersion != null)
-            {
-                testContext.SdkVersion = commandLine.SdkVersion;
-            }
+//            if (commandLine.SdkVersion != null)
+//            {
+//                testContext.SdkVersion = commandLine.SdkVersion;
+//            }
 
-            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
+//            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
 
-            //  Important to set this before below code which ends up calling through TestContext.Current, which would
-            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
-            Current = testContext;
+//            //  Important to set this before below code which ends up calling through TestContext.Current, which would
+//            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
+//            Current = testContext;
 
-            //  Set up test hooks for in-process tests
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
+//            //  Set up test hooks for in-process tests
+//            Environment.SetEnvironmentVariable(
+//                Constants.MSBUILD_EXE_PATH,
+//                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
-            Environment.SetEnvironmentVariable(
-                "MSBuildSDKsPath",
-                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
+//            Environment.SetEnvironmentVariable(
+//                "MSBuildSDKsPath",
+//                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
-#if NETCOREAPP
-            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
-                testContext.ToolsetUnderTest.SdkFolderUnderTest;
-#endif
+//#if NETCOREAPP
+//            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+//                testContext.ToolsetUnderTest.SdkFolderUnderTest;
+//#endif
         }
 
         public static string GetRepoRoot()
