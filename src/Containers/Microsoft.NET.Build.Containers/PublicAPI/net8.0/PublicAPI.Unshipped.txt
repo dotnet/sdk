@@ -3,6 +3,7 @@ const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputedContainerBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
@@ -13,6 +14,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContaine
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
@@ -125,7 +128,6 @@ Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Container
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputeDotnetBaseImageAndTag() -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void
@@ -198,6 +200,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
