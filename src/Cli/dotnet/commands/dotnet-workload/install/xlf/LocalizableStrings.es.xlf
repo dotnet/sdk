@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">Comprobando si hay manifiestos de carga de trabajo actualizados.</target>
+        <target state="new">Checking for updated workload version.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
