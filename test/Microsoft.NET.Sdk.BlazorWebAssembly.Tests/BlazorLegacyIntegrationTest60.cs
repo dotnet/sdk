@@ -6,8 +6,16 @@ using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
     {
+
+        protected override string EmbeddedResourcePrefix => 
+            string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+
+        protected override string ComputeBaselineFolder() =>
+            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+            
         [CoreMSBuildOnlyFact]
         public void Build60Hosted_Works()
         {
