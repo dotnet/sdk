@@ -54,7 +54,7 @@
       <_CurrentRuntimeTargetFramework Condition="'$(_CurrentRuntimeTargetFramework)' == ''">$(SDKCustomXUnitRuntimeTargetFramework)</_CurrentRuntimeTargetFramework>
       <_CurrentAdditionalProperties>%(SDKCustomXUnitProject.AdditionalProperties)</_CurrentAdditionalProperties>
     </PropertyGroup>
-    <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+    <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_PublishOutputDir" />
     </MSBuild>
     <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
