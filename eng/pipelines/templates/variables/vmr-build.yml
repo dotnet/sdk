@@ -13,7 +13,7 @@ variables:
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
 - name: alpineContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-WithNode
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
@@ -44,7 +44,7 @@ variables:
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
 
 - name: alpineName
-  value: Alpine319
+  value: Alpine320
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -53,7 +53,7 @@ variables:
   value: Ubuntu2404
 
 - name: alpineX64Rid
-  value: alpine.3.19-x64
+  value: alpine.3.20-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
