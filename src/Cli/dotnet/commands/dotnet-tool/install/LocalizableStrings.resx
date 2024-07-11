@@ -235,4 +235,10 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
   <data name="CreateManifestIfNeededOptionDescription" xml:space="preserve">
     <value>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</value>
   </data>
+  <data name="RollForwardOptionDescription" xml:space="preserve">
+    <value>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</value>
+  </data>
+  <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
+    <value>Allow package downgrade when installing a .NET tool package.</value>
+  </data>
 </root>

@@ -12,7 +12,7 @@ public sealed class DockerTestsFixture : IDisposable
         _diagnosticOutput = new SharedTestOutputHelper(messageSink);
         try
         {
-            DockerRegistryManager.StartAndPopulateDockerRegistry(_diagnosticOutput);
+            DockerRegistryManager.StartAndPopulateDockerRegistry(_diagnosticOutput).GetAwaiter().GetResult();
         }
         catch
         {
