@@ -53,6 +53,13 @@ internal sealed class RidGraphManifestPicker : IManifestPicker
 
 }
 
+internal enum RegistryMode
+{
+    Push,
+    Pull,
+    PullFromOutput
+}
+
 internal sealed class Registry
 {
     private const string DockerHubRegistry1 = "registry-1.docker.io";
@@ -70,11 +77,23 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
-        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) : this(
+        ContainerHelpers.TryExpandRegistryToUri(registryName), logger, new RegistryApiFactory(mode), settings)
     { }
 
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
+    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) : this(
+        ContainerHelpers.TryExpandRegistryToUri(registryName), logger, new RegistryApiFactory(registryAPI), settings)
+    { }
+
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) :
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
+    { }
+
+    internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
+        this(baseUri, logger, new RegistryApiFactory(mode), settings)
+    { }
+
+    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null)
     {
         RegistryName = DeriveRegistryName(baseUri);
 
@@ -87,7 +106,7 @@ internal sealed class Registry
 
         _logger = logger;
         _settings = settings ?? new RegistrySettings();
-        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
+        _registryAPI = factory.Create(RegistryName, BaseUri, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -498,6 +517,27 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
             await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
+        }
+    }
+
+    private readonly ref struct RegistryApiFactory
+    {
+        private readonly IRegistryAPI? _registryApi;
+        private readonly RegistryMode? _mode;
+
+        public RegistryApiFactory(IRegistryAPI registryApi)
+        {
+            _registryApi = registryApi;
+        }
+
+        public RegistryApiFactory(RegistryMode mode)
+        {
+            _mode = mode;
+        }
+
+        public IRegistryAPI Create(string registryName, Uri baseUri, ILogger logger)
+        {
+            return _registryApi ?? new DefaultRegistryAPI(registryName, baseUri, logger, _mode!.Value);
         }
     }
 }
