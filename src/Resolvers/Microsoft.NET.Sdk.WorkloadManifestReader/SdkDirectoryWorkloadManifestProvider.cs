@@ -190,6 +190,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+                _useManifestsFromInstallState = false;
             }
         }
 
