@@ -61,7 +61,7 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.400", userProfileDir: null, globalJsonPath: null);
 
-            sdkDirectoryWorkloadManifestProvider.GetManifests().Single().Should().NotBeNull();
+            sdkDirectoryWorkloadManifestProvider.GetManifests().Single().ManifestVersion.Should().Be(preferWorkloadSet ? "11.0.2" : "11.0.6");
 
             Directory.Delete(Path.Combine(_manifestRoot, "8.0.400"), recursive: true);
         }
