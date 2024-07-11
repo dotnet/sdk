@@ -89,7 +89,7 @@ namespace Microsoft.NET.TestFramework
 
             var exceptionString = $"AppContext.BaseDirectory: {AppContext.BaseDirectory}";
 
-            foreach(var file in Directory.GetFiles(AppContext.BaseDirectory))
+            foreach(var file in Directory.GetDirectories(AppContext.BaseDirectory))
             {
                 exceptionString += $"{Environment.NewLine}{file}";
             }
