@@ -35,6 +35,40 @@ namespace ManifestReaderTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public void ItShouldPrioritizeInstallStateOverWorkloadSetUnlessSpecified(bool preferWorkloadSet)
+        {
+            Initialize();
+
+            CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.2", true);
+            CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.6", true);
+            CreateMockWorkloadSet(_manifestRoot, "8.0.400", "8.0.400", @"
+                {
+                    ""ios"": ""11.0.2/8.0.400""
+                }
+            ");
+
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.400"), Path.GetDirectoryName(_manifestRoot)!);
+            var installStateFilePath = Path.Combine(installStateLocation, "default.json");
+            var installState = InstallStateContents.FromPath(installStateFilePath);
+            installState.UseWorkloadSets = preferWorkloadSet;
+            installState.Manifests = new Dictionary<string, string>()
+            {
+                { "ios", "11.0.6/8.0.400" }
+            };
+            Directory.CreateDirectory(installStateLocation);
+            File.WriteAllText(installStateFilePath, installState.ToString());
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.400", userProfileDir: null, globalJsonPath: null);
+
+            sdkDirectoryWorkloadManifestProvider.GetManifests().Single().Should().NotBeNull();
+
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.400"), recursive: true);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
         {
             Initialize();
