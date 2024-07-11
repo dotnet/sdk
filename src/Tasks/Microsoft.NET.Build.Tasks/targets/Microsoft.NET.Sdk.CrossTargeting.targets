@@ -12,6 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Import Project="Microsoft.NET.Sdk.Common.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
 
   <!--
   ============================================================
@@ -24,7 +25,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   ============================================================
    -->
   <Target Name="Publish" Condition=" '$(IsPublishable)' != 'false' ">
-    <NETSdkError ResourceName="PublishUnsupportedWithoutTargetFramework"/>
+    <ItemGroup>
+      <_PublishTargetFrameworks Include="$(TargetFrameworks)" />
+    </ItemGroup>
+    <NETSdkError ResourceName="PublishUnsupportedWithoutTargetFramework"
+      FormatArguments="@(_PublishTargetFrameworks, ', ')" />
   </Target>
 
   <!--
@@ -106,6 +111,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultProjectTypeGuid Condition="'$(MSBuildProjectExtension)' == '.csproj'">{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</DefaultProjectTypeGuid>
     <DefaultProjectTypeGuid Condition="'$(MSBuildProjectExtension)' == '.vbproj'">{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</DefaultProjectTypeGuid>
     <!-- Note: F# sets DefaultProjectTypeGuid in the F# SDK -->
+  </PropertyGroup>
+
+  <!-- Default to the portable RID graph in the outer build as APICompat relies on it. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
+    <!-- The portable RID graph should be in the same directory as the full RID graph -->
+    <RuntimeIdentifierGraphPath>$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
   </PropertyGroup>
 
 </Project>

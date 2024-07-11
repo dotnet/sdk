@@ -1,15 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using FluentAssertions;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.IO;
-using System;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -48,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
                 }
                 else
                 {
-                    getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { expected }, $"Asserting \"{valueName}\"'s value");
+                    getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { expected }, $"Asserting \"{valueName}\"'s value");
                 }
             };
 
@@ -80,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass();
-            getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { "Windows" });
+            getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "Windows" });
         }
 
         [Fact]

@@ -3,13 +3,13 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <TargetFrameworkMoniker>.NETCoreApp,Version=v6.0</TargetFrameworkMoniker>
+    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworkMoniker>.NETCoreApp,Version=v7.0</TargetFrameworkMoniker>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="$(DependencyPackageName)" Version="$(DependencyPackageVersion)" />
+    <PackageReference Include="$(DependencyPackageName)" VersionOverride="$(DependencyPackageVersion)" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

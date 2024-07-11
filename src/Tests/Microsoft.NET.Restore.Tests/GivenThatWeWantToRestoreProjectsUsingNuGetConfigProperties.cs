@@ -1,21 +1,10 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Restore.Tests
 {
@@ -31,10 +20,10 @@ namespace Microsoft.NET.Restore.Tests
         [InlineData("netcoreapp1.1", "1.1", true)]
         [InlineData("netstandard2.0", "2.0", false)]
         [InlineData("netcoreapp2.0", "2.0app", false)]
-        [InlineData("net461", "461app", false)]
-        [InlineData("netcoreapp2.0;net461", "multiTFM20app", false)]
+        [InlineData("net462", "461app", false)]
+        [InlineData("netcoreapp2.0;net462", "multiTFM20app", false)]
         [InlineData("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
-        [InlineData("netcoreapp1.0;net461", "multiTFM1046app", true)]
+        [InlineData("netcoreapp1.0;net462", "multiTFM1046app", true)]
         public void I_can_restore_a_project_with_implicit_msbuild_nuget_config(
             string frameworks,
             string projectPrefix,
