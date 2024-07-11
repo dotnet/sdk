@@ -575,10 +575,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4e278fe17f69ea31fbdcbab74ac47ec6fa84914b</Sha>
     </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="9.0.0-preview.7.24357.2">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4e278fe17f69ea31fbdcbab74ac47ec6fa84914b</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24360.2">

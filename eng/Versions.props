@@ -76,16 +76,7 @@
     <NewtonsoftJsonPackageVersion>13.0.3</NewtonsoftJsonPackageVersion>
     <SystemDataSqlClientPackageVersion>4.8.6</SystemDataSqlClientPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.2.0-beta.435</StyleCopAnalyzersPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
-    <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
-    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.7.24357.2</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
-    <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
-    <SystemTextJsonVersion>7.0.3</SystemTextJsonVersion>
-    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.7.24357.2</SystemReflectionMetadataLoadContextVersion>
-    <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24324.3</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24324.3</SystemCommandLineRenderingVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24305.1</MicrosoftDeploymentDotNetReleasesVersion>
@@ -149,17 +140,20 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-preview.7.24357.2</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>9.0.0-preview.7.24357.2</MicrosoftWin32SystemEventsPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionAttributedModelPackageVersion>9.0.0-preview.7.24357.2</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>9.0.0-preview.7.24357.2</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>9.0.0-preview.7.24357.2</SystemCompositionHostingPackageVersion>
     <SystemCompositionRuntimePackageVersion>9.0.0-preview.7.24357.2</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>9.0.0-preview.7.24357.2</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-preview.7.24357.2</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.7.24357.2</SystemReflectionMetadataLoadContextVersion>
+    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-preview.7.24357.2</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.7.24357.2</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>9.0.0-preview.7.24357.2</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>9.0.0-preview.7.24357.2</SystemSecurityPermissionsPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-preview.7.24357.2</SystemTextJsonPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>9.0.0-preview.7.24357.2</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
