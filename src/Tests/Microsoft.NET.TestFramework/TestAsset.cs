@@ -1,18 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using System.Collections.Generic;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.TestFramework
 {
+    /// <summary>
+    /// A directory wrapper around the <see cref="TestProject"/> class, or any other TestAsset type.
+    /// It manages the on-disk files of the test asset and provides additional functionality to edit projects.
+    /// </summary>
     public class TestAsset : TestDirectory
     {
         private readonly string _testAssetRoot;
@@ -21,6 +15,11 @@ namespace Microsoft.NET.TestFramework
 
         public string TestRoot => Path;
 
+        /// <summary>
+        /// The hashed test name (so file paths do not become too long) of the TestAsset owning test.
+        /// Contains the leaf folder name of any particular test's root folder.
+        /// The hashing occurs in <see cref="TestAssetsManager"/>.
+        /// </summary>
         public readonly string Name;
 
         public ITestOutputHelper Log { get; }
@@ -83,58 +82,94 @@ namespace Microsoft.NET.TestFramework
             {
                 string destFile = srcFile.Replace(_testAssetRoot, Path);
                 
-                if (System.IO.Path.GetFileName(srcFile).EndsWith("proj"))
+                if (System.IO.Path.GetFileName(srcFile).EndsWith("proj") || System.IO.Path.GetFileName(srcFile).EndsWith("xml"))
                 {
                     _projectFiles.Add(destFile);
                 }
                 File.Copy(srcFile, destFile, true);
             }
 
-            string[][] Properties = { new string[] { "TargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework }, new string[] { "RuntimeIdentifier", "$(LatestWinRuntimeIdentifier)", ToolsetInfo.LatestWinRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestLinuxRuntimeIdentifier)", ToolsetInfo.LatestLinuxRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestMacRuntimeIdentifier)", ToolsetInfo.LatestMacRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestRuntimeIdentifiers)", ToolsetInfo.LatestRuntimeIdentifiers } };
+            string[][] Properties = {
+                new string[] { "TargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
+                new string[] { "CurrentTargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
+                new string[] { "RuntimeIdentifier", "$(LatestWinRuntimeIdentifier)", ToolsetInfo.LatestWinRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestLinuxRuntimeIdentifier)", ToolsetInfo.LatestLinuxRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestMacRuntimeIdentifier)", ToolsetInfo.LatestMacRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestRuntimeIdentifiers)", ToolsetInfo.LatestRuntimeIdentifiers } };
 
             foreach (string[] property in Properties)
             {
                 this.UpdateProjProperty(property[0], property[1], property[2]);
             }
 
+            this.ReplaceTheNewtonsoftJsonPackageVersionVariable();
+
             return this;
         }
 
         public TestAsset UpdateProjProperty(string propertyName, string variableName, string targetValue)
         {
-            return WithTargetFramework(
+            return WithProjectChanges(
             p =>
             {
                 var ns = p.Root.Name.Namespace;
                 var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
                 getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
                 getNode?.SetValue(getNode?.Value.Replace(variableName, targetValue));
-            }, targetValue);
+            });
+        }
+
+        public TestAsset ReplaceTheNewtonsoftJsonPackageVersionVariable()
+        {
+            string[] PropertyNames = new[] { "PackageReference", "Package" };
+            string targetName = "NewtonsoftJsonPackageVersion";
+
+            return WithProjectChanges(project =>
+            {
+                var ns = project.Root.Name.Namespace;
+                foreach (var PropertyName in PropertyNames)
+                {
+                    var packageReferencesToUpdate =
+                        project.Root.Descendants(ns + PropertyName)
+                            .Where(p => p.Attribute("Version") != null && p.Attribute("Version").Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                    foreach (var packageReference in packageReferencesToUpdate)
+                    {
+                        packageReference.Attribute("Version").Value = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+                    }
+                }
+            });
         }
 
         public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
         {
-            return WithTargetFramework(
+            if (targetFramework == null)
+            {
+                return this;
+            }
+            return WithProjectChanges(
             p =>
             {
                 var ns = p.Root.Name.Namespace;
                 p.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").Single().SetValue(targetFramework);
             },
-            targetFramework,
             projectName);
         }
 
         public TestAsset WithTargetFrameworks(string targetFrameworks, string projectName = null)
         {
-            return WithTargetFramework(
+            if (targetFrameworks == null)
+            {
+                return this;
+            }
+            return WithProjectChanges(
             p =>
             {
                 var ns = p.Root.Name.Namespace;
                 var propertyGroup = p.Root.Elements(ns + "PropertyGroup").First();
                 propertyGroup.Elements(ns + "TargetFramework").SingleOrDefault()?.Remove();
-                propertyGroup.Add(new XElement(ns + "TargetFramework", targetFrameworks));
+                propertyGroup.Elements(ns + "TargetFrameworks").SingleOrDefault()?.Remove();
+                propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFrameworks));
             },
-            targetFrameworks,
             projectName);
         }
 
@@ -150,13 +185,8 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private TestAsset WithTargetFramework(Action<XDocument> actionOnProject, string targetFramework, string projectName = null)
+        private TestAsset WithProjectChanges(Action<XDocument> actionOnProject, string projectName = null)
         {
-            if (string.IsNullOrEmpty(targetFramework))
-            {
-                return this;
-            }
-
             return WithProjectChanges((path, project) =>
             {
                 if (!string.IsNullOrEmpty(projectName))
@@ -196,7 +226,7 @@ namespace Microsoft.NET.TestFramework
             }
             return this;
 
-            }
+        }
 
         public RestoreCommand GetRestoreCommand(ITestOutputHelper log, string relativePath = "")
         {

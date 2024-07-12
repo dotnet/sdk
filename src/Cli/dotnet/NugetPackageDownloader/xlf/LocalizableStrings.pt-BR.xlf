@@ -7,6 +7,11 @@
         <target state="translated">Falhou ao baixar {0} versão {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">O Mapeamento de Origem do Pacote está habilitado, mas nenhuma origem foi encontrada na ID de pacote especificada: {0}. Consulte a documentação do Mapeamento de Origem do Pacote em https://aka.ms/nuget-package-source-mapping para obter mais detalhes.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">Falha no carregamento da fonte NuGet {0}</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">Falha no carregamento da fonte NuGet {0}: a fonte não é válida. Ela será ignorada num processamento posterior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">O Mapeamento de Origem do Pacote está habilitado, mas nenhuma origem foi mapeada na ID de pacote especificada: {0}. Consulte a documentação do Mapeamento de Origem do Pacote em https://aka.ms/nuget-package-source-mapping para obter mais detalhes.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

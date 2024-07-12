@@ -1,21 +1,13 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using FluentAssertions;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Frameworks;
 using NuGet.Versioning;
-using Xunit;
 using LocalizableStrings = Microsoft.DotNet.ToolManifest.LocalizableStrings;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -120,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 manifestFile,
                 nuGetVersion.ToNormalizedString());
 
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(expectedString);
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
@@ -141,7 +133,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 nuGetVersion,
                 new[] {new ToolCommandName("dotnetsay")});
 
-            a.ShouldNotThrow();
+            a.Should().NotThrow();
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
@@ -161,7 +153,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 nuGetVersion,
                 new[] {new ToolCommandName("dotnetsay")});
 
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
                     string.Format(LocalizableStrings.InvalidManifestFilePrefix,
                         manifestFile,
@@ -181,7 +173,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () =>
                 toolManifestFileEditor.Read(new FilePath(manifestFile), new DirectoryPath(_testDirectoryRoot));
 
-            a.ShouldNotThrow<ToolManifestException>();
+            a.Should().NotThrow<ToolManifestException>();
         }
 
         [Fact]
@@ -222,7 +214,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FilePath(manifestFile),
                 new PackageId("non-exist"));
 
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(string.Format(
                     LocalizableStrings.CannotFindPackageIdInManifest, "non-exist"));
 
@@ -241,7 +233,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FilePath(manifestFile),
                 new PackageId("dotnetsay"));
 
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
                     string.Format(LocalizableStrings.InvalidManifestFilePrefix,
                         manifestFile,
@@ -263,7 +255,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 NuGetVersion.Parse("3.0.0"),
                 new[] {new ToolCommandName("t-rex3")});
 
-            a.ShouldThrow<ArgumentException>().And.Message.Should()
+            a.Should().Throw<ArgumentException>().And.Message.Should()
                 .Contain($"Manifest {manifestFile} does not contain package id 'non-exist'.");
         }
 
