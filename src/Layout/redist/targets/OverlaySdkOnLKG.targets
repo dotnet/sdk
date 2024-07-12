@@ -122,8 +122,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <WorkloadManifestContent Include="$(RepoRoot)\src\Assets\TestWorkloads\manifests\**\*.*" />
-      <WorkloadPackContent Include="$(RepoRoot)\src\Assets\TestWorkloads\packs\**\*.*" />
+      <WorkloadManifestContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\manifests\**\*.*" />
+      <WorkloadPackContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\packs\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(WorkloadManifestContent)"
