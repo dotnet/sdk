@@ -61,6 +61,8 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 shouldLog: false);
 
             WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
+
+            DotnetPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
         }
 
         public IInstaller Installer { get; private init; }

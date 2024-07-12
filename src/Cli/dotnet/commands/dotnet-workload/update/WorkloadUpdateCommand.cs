@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                     _includePreviews,
-                    ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath),
+                    ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                     string.IsNullOrWhiteSpace(_fromCacheOption) ?
                         null :
                         new DirectoryPath(_fromCacheOption))
