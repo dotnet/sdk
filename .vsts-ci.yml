@@ -309,14 +309,14 @@ extends:
             oneESCompat:
               publishTaskPrefix: 1ES.
 
-    ############### SOURCE INDEX ###############
-    - ${{ if eq(variables.enableSourceIndex, 'true') }}:
-      - template: /eng/common/templates-official/job/source-index-stage1.yml@self
-        parameters:
-          binlogPath: msbuild.binlog
-          pool:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals 1es-windows-2022
+      ############### SOURCE INDEX ###############
+      - ${{ if eq(variables.enableSourceIndex, 'true') }}:
+        - template: /eng/common/templates-official/job/source-index-stage1.yml@self
+          parameters:
+            binlogPath: msbuild.binlog
+            pool:
+              name: $(DncEngInternalBuildPool)
+              demands: ImageOverride -equals 1es-windows-2022
 
     ############### PUBLISH STAGE ###############
     - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
