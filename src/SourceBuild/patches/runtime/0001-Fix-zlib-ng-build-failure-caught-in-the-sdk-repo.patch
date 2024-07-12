@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
+ <1175054+carlossanlop@users.noreply.github.com>
+Date: Thu, 11 Jul 2024 11:28:54 -0700
+Subject: [PATCH] Fix zlib-ng build failure caught in the sdk repo. Fixed by
+ converting its NativeLibrary entry in Microsoft.NETCore.Native.Unix.targets
+ to a NetCoreAppNativeLibrary, and place it after
+ System.IO.Compression.Native, to ensure the linker detects the symbols, since
+ it is unable to look back.
+
+Co-authored-by: Adeel Mujahid <3840695+am11@users.noreply.github.com>
+---
+ .../BuildIntegration/Microsoft.NETCore.Native.Unix.targets | 4 ++--
+ .../libs/System.IO.Compression.Native/CMakeLists.txt       | 7 ++++++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets b/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
+index 3ff044e94d9..0783ab21a46 100644
+--- a/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
++++ b/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
+@@ -24,7 +24,7 @@ The .NET Foundation licenses this file to you under the MIT license.
+     <LinkerFlavor Condition="'$(LinkerFlavor)' == '' and '$(_linuxLibcFlavor)' == 'bionic'">lld</LinkerFlavor>
+     <LinkerFlavor Condition="'$(LinkerFlavor)' == '' and '$(_targetOS)' == 'linux'">bfd</LinkerFlavor>
+     <IlcDefaultStackSize Condition="'$(IlcDefaultStackSize)' == '' and '$(_linuxLibcFlavor)' == 'musl'">1572864</IlcDefaultStackSize>
+-    <UseSystemZlib Condition="!Exists('$(IlcSdkPath)libz.a')">true</UseSystemZlib>
++    <UseSystemZlib Condition="'$(UseSystemZlib)' == '' and !Exists('$(IlcFrameworkNativePath)libz.a')">true</UseSystemZlib>
+   </PropertyGroup>
+ 
+   <Target Name="SetupOSSpecificProps" DependsOnTargets="$(IlcDynamicBuildPropertyDependencies)">
+@@ -130,13 +130,13 @@ The .NET Foundation licenses this file to you under the MIT license.
+       <NativeLibrary Condition="'$(_targetArchitecture)' == 'x64'" Include="$(IlcSdkPath)$(VxSortSupportName)$(LibFileExt)" />
+       <NativeLibrary Include="$(IlcSdkPath)$(StandaloneGCSupportName)$(LibFileExt)" />
+       <NativeLibrary Condition="'$(LinkStandardCPlusPlusLibrary)' != 'true' and '$(StaticICULinking)' != 'true'" Include="$(IlcSdkPath)libstdc++compat.a" />
+-      <NativeLibrary Condition="'$(UseSystemZlib)' != 'true'" Include="$(IlcSdkPath)libz.a" />
+     </ItemGroup>
+ 
+     <ItemGroup>
+       <NetCoreAppNativeLibrary Include="System.Native" />
+       <NetCoreAppNativeLibrary Include="System.Globalization.Native" Condition="'$(StaticICULinking)' != 'true' and '$(InvariantGlobalization)' != 'true'" />
+       <NetCoreAppNativeLibrary Include="System.IO.Compression.Native" />
++      <NetCoreAppNativeLibrary Include="z" Condition="'$(UseSystemZlib)' != 'true'" /> <!-- zlib must be added after System.IO.Compression.Native, order matters. -->
+       <NetCoreAppNativeLibrary Include="System.Net.Security.Native" Condition="!$(_targetOS.StartsWith('tvos')) and '$(_linuxLibcFlavor)' != 'bionic'" />
+       <NetCoreAppNativeLibrary Include="System.Security.Cryptography.Native.Apple" Condition="'$(_IsApplePlatform)' == 'true'" />
+       <!-- Not compliant for iOS-like platforms -->
+diff --git a/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt b/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
+index 69d333ae53f..7fa92062d8e 100644
+--- a/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
++++ b/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
+@@ -184,7 +184,12 @@ else ()
+ endif ()
+ 
+ if((NOT CLR_CMAKE_USE_SYSTEM_ZLIB) AND STATIC_LIBS_ONLY)
+-    install_static_library(zlib aotsdk nativeaot)
++    if (CLR_CMAKE_TARGET_UNIX)
++        # zlib on Unix needs to be installed in the same location as System.IO.Compression.Native so that we can then treat is as a 'z' native library.
++        install_static_library(zlib ${STATIC_LIB_DESTINATION} nativeaot)
++    else()
++        install_static_library(zlib aotsdk nativeaot)
++    endif()
+ endif()
+ 
+ install (TARGETS System.IO.Compression.Native-Static DESTINATION ${STATIC_LIB_DESTINATION} COMPONENT libs)
