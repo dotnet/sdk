@@ -44,6 +44,9 @@ variables:
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+#- ${{ if and(notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+- name: enableSourceIndex
+  value: true
 
 resources:
   repositories:
@@ -305,6 +308,16 @@ extends:
           parameters:
             oneESCompat:
               publishTaskPrefix: 1ES.
+
+    ############### SOURCE INDEX ###############
+    - ${{ if eq(variables.enableSourceIndex, 'true') }}:
+      - template: /eng/common/templates-official/job/source-index-stage1.yml@self
+        parameters:
+          sourceIndexBuildCommand: ./build.cmd -ci -configuration Release /p:TargetArchitecture=x64 /bl
+          binlogPath: msbuild.binlog
+          pool:
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals 1es-windows-2022
 
     ############### PUBLISH STAGE ###############
     - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
