@@ -313,7 +313,7 @@ extends:
       - ${{ if eq(variables.enableSourceIndex, 'true') }}:
         - template: /eng/common/templates-official/job/source-index-stage1.yml@self
           parameters:
-            sourceIndexBuildCommand: .\eng\common\build.ps1 -restore -build -pack -ci -nativeToolsOnMachine -configuration $(buildConfiguration)
+            sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -pack -ci -nativeToolsOnMachine -configuration $(buildConfiguration)"
             binlogPath: artifacts/log/$(buildConfiguration)/Build.binlog
             pool:
               name: $(DncEngInternalBuildPool)
