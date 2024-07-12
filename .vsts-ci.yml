@@ -313,7 +313,6 @@ extends:
     - ${{ if eq(variables.enableSourceIndex, 'true') }}:
       - template: /eng/common/templates-official/job/source-index-stage1.yml@self
         parameters:
-          sourceIndexBuildCommand: ./build.cmd -ci -configuration Release /p:TargetArchitecture=x64 /bl
           binlogPath: msbuild.binlog
           pool:
             name: $(DncEngInternalBuildPool)
