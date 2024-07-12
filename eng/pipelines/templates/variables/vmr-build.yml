@@ -13,7 +13,7 @@ variables:
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
 - name: alpineContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-WithNode
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
