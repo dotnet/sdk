@@ -15,7 +15,7 @@ variables:
 - name: alpineLatestContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
 - name: alpineLatestMinusOneContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-withnode
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
