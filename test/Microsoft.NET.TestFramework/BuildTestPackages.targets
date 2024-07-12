@@ -154,6 +154,11 @@
         <Version>1.0.0</Version>
         <Clean>True</Clean>
       </BaseTestPackageProject>
+      <BaseTestPackageProject Include="src/Microsoft.Net.Sdk.Compilers.Toolset">
+        <Name>Microsoft.Net.Sdk.Compilers.Toolset</Name>
+        <ProjectName>Microsoft.Net.Sdk.Compilers.Toolset.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
 
       <BaseTestPackageProject>
         <NuPkgName Condition=" '%(NuPkgName)' == '' ">%(Name)</NuPkgName>
