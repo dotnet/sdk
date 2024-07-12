@@ -9,6 +9,8 @@ Subject: [PATCH] Fix zlib-ng build failure caught in the sdk repo. Fixed by
  it is unable to look back.
 
 Co-authored-by: Adeel Mujahid <3840695+am11@users.noreply.github.com>
+
+Backport: https://github.com/dotnet/runtime/pull/104750
 ---
  .../BuildIntegration/Microsoft.NETCore.Native.Unix.targets | 4 ++--
  .../libs/System.IO.Compression.Native/CMakeLists.txt       | 7 ++++++-
