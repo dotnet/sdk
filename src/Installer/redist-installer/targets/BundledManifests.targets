@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" IncludedInSource="true" />
     <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacCatalystWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
@@ -35,6 +35,7 @@
       <RestoredNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredNupkgContentPath>
       <MsiNupkgId>%(Identity).Manifest-%(FeatureBand).Msi.$(MsiArchitectureForWorkloadManifests)</MsiNupkgId>
       <RestoredMsiNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(MsiNupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredMsiNupkgContentPath>
+      <IncludedInSource Condition="'%(IncludedInSource)' == ''">false</IncludedInSource>
     </BundledManifests>
   </ItemGroup>
 
@@ -90,15 +91,37 @@
 
   <Target Name="LayoutManifests"
           DependsOnTargets="SetupBundledComponents">
+
+    <!-- Manifest sources that exist in-tree -->
     <ItemGroup>
+      <SourceManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
+                             Condition="'%(BundledManifests.IncludedInSource)' == 'true' and Exists('%(BundledManifests.RestoredNupkgContentPath)\data')"
+                             DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)"
+                             RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
+                             WorkloadManifestId="%(Identity)" />
+
+      <SourceManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
+                             Condition="'%(BundledManifests.IncludedInSource)' == 'true' and Exists('%(RestoredNupkgContentPath)\data\localize')"
+                             DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
+    </ItemGroup>
+
+    <!-- Do not copy for source build, should already be in-tree -->
+    <Copy Condition="'$(DotNetBuildSourceOnly)' != 'true'"
+          SourceFiles="@(SourceManifestContent)"
+          DestinationFolder="sdk-manifests/%(DestinationPath)"
+          SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <ManifestContent Include="@(SourceManifestContent->'sdk-manifests/%(DestinationPath)/%(FileName)%(Extension)')" />
+
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
-                       Condition="Exists('%(RestoredNupkgContentPath)\data')"
-                       DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(Version)"
+                       Condition="'%(BundledManifests.IncludedInSource)' != 'true' and Exists('%(BundledManifests.RestoredNupkgContentPath)\data')"
+                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)"
                        RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
                        WorkloadManifestId="%(Identity)" />
 
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
-                       Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
+                       Condition="'%(BundledManifests.IncludedInSource)' != 'true' and Exists('%(RestoredNupkgContentPath)\data\localize')"
                        DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
     </ItemGroup>
 
