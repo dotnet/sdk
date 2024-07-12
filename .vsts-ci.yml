@@ -44,9 +44,9 @@ variables:
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-#- ${{ if and(notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
-- name: enableSourceIndex
-  value: true
+- ${{ if and(notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+  - name: enableSourceIndex
+    value: true
 
 resources:
   repositories:
