@@ -38,11 +38,12 @@ namespace Microsoft.DotNet.Tools.MSBuild
             return argsToForward;
         }
 
-        public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null)
+        public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
         {
             _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
                 ConcatTelemetryLogger(argsToForward),
-                msbuildPath);
+                msbuildPath: msbuildPath,
+                includeLogo: includeLogo);
 
             // Add the performance log location to the environment of the target process.
             if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))

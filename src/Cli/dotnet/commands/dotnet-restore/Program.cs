@@ -17,27 +17,20 @@ namespace Microsoft.DotNet.Tools.Restore
             NuGetSignatureVerificationEnabler.ConditionallyEnable(this);
         }
 
-        public static RestoreCommand FromArgs(string[] args, string msbuildPath = null, bool noLogo = true)
+        public static RestoreCommand FromArgs(string[] args, string msbuildPath = null)
         {
             var parser = Parser.Instance;
             var result = parser.ParseFrom("dotnet restore", args);
-            return FromParseResult(result, msbuildPath, noLogo);
+            return FromParseResult(result, msbuildPath);
         }
 
-        public static RestoreCommand FromParseResult(ParseResult result, string msbuildPath = null, bool noLogo = true)
+        public static RestoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
         {
             result.HandleDebugSwitch();
 
             result.ShowHelpOrErrorIfAppropriate();
 
-            var msbuildArgs = new List<string>();
-
-            if (noLogo)
-            {
-                msbuildArgs.Add("-nologo");
-            }
-
-            msbuildArgs.Add("-target:Restore");
+            List<string> msbuildArgs = ["-target:Restore"];
 
             msbuildArgs.AddRange(result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()));
 
