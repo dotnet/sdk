@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli
                 "-bl",
                         $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                         "-verbosity:q"]);
-            int getTestsProjectResult = msBuildForwardingApp.Execute();
+            _ = msBuildForwardingApp.Execute();
 
             actionQueue.EnqueueCompleted();
 
