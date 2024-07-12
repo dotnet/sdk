@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -41,8 +42,8 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
 
         public override int Execute()
         {
-            var global = _parseResult.ValueForOption<bool>(ToolAppliedOption.GlobalOptionAliases.First());
-            var toolPath = _parseResult.ValueForOption<string>(ToolAppliedOption.ToolPathOptionAlias);
+            var global = _parseResult.GetValueForOption(ToolAppliedOption.GlobalOption);
+            var toolPath = _parseResult.GetValueForOption(ToolAppliedOption.ToolPathOption);
 
             DirectoryPath? toolDirectoryPath = null;
             if (!string.IsNullOrWhiteSpace(toolPath))
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
             var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
             IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
-            var packageId = new PackageId(_parseResult.ValueForArgument<string>(ToolInstallCommandParser.PackageIdArgument));
+            var packageId = new PackageId(_parseResult.GetValueForArgument(ToolInstallCommandParser.PackageIdArgument));
             IToolPackage package = null;
             try
             {
