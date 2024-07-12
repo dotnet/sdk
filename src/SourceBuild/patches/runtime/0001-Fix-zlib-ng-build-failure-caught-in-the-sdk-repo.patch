@@ -14,10 +14,10 @@ Co-authored-by: Adeel Mujahid <3840695+am11@users.noreply.github.com>
  .../libs/System.IO.Compression.Native/CMakeLists.txt       | 7 ++++++-
  2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets b/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
+diff --git a/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets b/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
 index 3ff044e94d9..0783ab21a46 100644
---- a/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
-+++ b/src/runtime/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
+--- a/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
++++ b/src/coreclr/nativeaot/BuildIntegration/Microsoft.NETCore.Native.Unix.targets
 @@ -24,7 +24,7 @@ The .NET Foundation licenses this file to you under the MIT license.
      <LinkerFlavor Condition="'$(LinkerFlavor)' == '' and '$(_linuxLibcFlavor)' == 'bionic'">lld</LinkerFlavor>
      <LinkerFlavor Condition="'$(LinkerFlavor)' == '' and '$(_targetOS)' == 'linux'">bfd</LinkerFlavor>
@@ -42,10 +42,10 @@ index 3ff044e94d9..0783ab21a46 100644
        <NetCoreAppNativeLibrary Include="System.Net.Security.Native" Condition="!$(_targetOS.StartsWith('tvos')) and '$(_linuxLibcFlavor)' != 'bionic'" />
        <NetCoreAppNativeLibrary Include="System.Security.Cryptography.Native.Apple" Condition="'$(_IsApplePlatform)' == 'true'" />
        <!-- Not compliant for iOS-like platforms -->
-diff --git a/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt b/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
+diff --git a/src/native/libs/System.IO.Compression.Native/CMakeLists.txt b/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
 index 69d333ae53f..7fa92062d8e 100644
---- a/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
-+++ b/src/runtime/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
+--- a/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
++++ b/src/native/libs/System.IO.Compression.Native/CMakeLists.txt
 @@ -184,7 +184,12 @@ else ()
  endif ()
  
