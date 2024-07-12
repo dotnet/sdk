@@ -105,14 +105,14 @@ stages:
     - template: ../jobs/vmr-build.yml
       parameters:
         # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineName) }}
+        buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineLatestMinusOneContainer) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
-        artifactsRid: ${{ variables.alpineX64Rid }}
+        artifactsRid: ${{ variables.alpineLatestMinusX64Rid }}
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.alpineContainer }}
-        extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
+        container: ${{ variables.alpineLatestMinusContainer }}
+        extraProperties: /p:TargetRID=${{ variables.alpineLatestMinusX64Rid }}
         buildFromArchive: false            # 🚫
         buildSourceOnly: true              # ✅
         enablePoison: true                 # ✅
@@ -125,13 +125,13 @@ stages:
     - template: ../jobs/vmr-build.yml
       parameters:
         # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineName) }}
+        buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.alpineContainer }}
-        extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
+        container: ${{ variables.alpineLatestContainer }}
+        extraProperties: /p:TargetRID=${{ variables.alpineLatestX64Rid }}
         buildFromArchive: false            # 🚫
         buildSourceOnly: true              # ✅
         enablePoison: false                # 🚫
@@ -164,14 +164,14 @@ stages:
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineName) }}
+          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpineLatestMinusName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
-          artifactsRid: ${{ variables.alpineX64Rid }}
+          artifactsRid: ${{ variables.alpineLatestMinusX64Rid }}
           pool: ${{ parameters.pool_Linux }}
-          container: ${{ variables.alpineContainer }}
-          extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
+          container: ${{ variables.alpineLatestMinusContainer }}
+          extraProperties: /p:TargetRID=${{ variables.alpineLatestMinusX64Rid }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: true                 # ✅
@@ -186,13 +186,13 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineName) }}
+            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.alpineContainer }}
-            extraProperties: /p:TargetRID=${{ variables.alpineX64Rid }}
+            container: ${{ variables.alpineLatestContainer }}
+            extraProperties: /p:TargetRID=${{ variables.alpineLatestX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫

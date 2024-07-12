@@ -12,8 +12,10 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
-- name: alpineContainer
+- name: alpineLatestContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
+- name: alpineLatestMinusOneContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-withnode
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
@@ -43,8 +45,10 @@ variables:
 - name: wasiCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
 
-- name: alpineName
+- name: alpineLatestName
   value: Alpine320
+- name: alpineLatestMinusOneName
+  value: Alpine319
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -52,8 +56,10 @@ variables:
 - name: ubuntuName
   value: Ubuntu2404
 
-- name: alpineX64Rid
+- name: alpineLatestX64Rid
   value: alpine.3.20-x64
+- name: alpineLatestMinusOneX64Rid
+  value: alpine.3.19-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
