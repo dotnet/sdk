@@ -313,7 +313,7 @@ extends:
       - ${{ if eq(variables.enableSourceIndex, 'true') }}:
         - template: /eng/common/templates-official/job/source-index-stage1.yml@self
           parameters:
-            binlogPath: msbuild.binlog
+            binlogPath: artifacts/log/$(buildConfiguration)/Build.binlog
             pool:
               name: $(DncEngInternalBuildPool)
               demands: ImageOverride -equals 1es-windows-2022
