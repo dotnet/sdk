@@ -14,17 +14,17 @@
 # Area-AspNetCore
 /src/BlazorWasmSdk/ @dotnet/aspnet-blazor-eng
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
 /src/RazorSdk/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
 /test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
-/src/Assets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/src/src/Assets/TestProjects/Razor*/ @dotnet/razor-compiler
+/test/TestAssets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
@@ -72,7 +72,7 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/src/Assets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
 /test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
