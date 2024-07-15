@@ -400,7 +400,7 @@ namespace Microsoft.NET.Build.Tests
             };
             if (useWindowsSDKPreview != null)
             {
-                testProject.AdditionalProperties["UsewindowsSdkPreview"] = useWindowsSDKPreview.Value.ToString();
+                testProject.AdditionalProperties["UseWindowsSdkPreview"] = useWindowsSDKPreview.Value.ToString();
             }
             if (!string.IsNullOrEmpty(windowsSdkPackageVersion))
             {
@@ -451,6 +451,56 @@ namespace Microsoft.NET.Build.Tests
             string referencedWindowsSdkVersion = GetReferencedWindowsSdkVersion(testAsset);
             referencedWindowsSdkVersion.Should().Be(expectedWindowsSdkPackageVersion);
 
+        }
+
+        [WindowsOnlyFact]
+        public void ItWarnsWhenBuildingAProjectWithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1217");
+        }
+
+        [WindowsOnlyFact]
+        public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
+        {
+            TestProject testProjectA = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProjectA.AdditionalProperties["UseUwp"] = "true";
+
+            TestProject testProjectB = new()
+            {
+                Name = "B",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProjectB.ReferencedProjects.Add(testProjectA);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectB);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1216");
         }
 
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)
