@@ -11,6 +11,7 @@
       <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS')) ">win</HostOSName>
       <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</HostOSName>
       <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS')) ">illumos</HostOSName>
       <HostOSName Condition=" '$(HostOSName)' == '' AND '$(IsLinux)' == 'True' ">linux</HostOSName>
 
       <OSName Condition=" '$(OSName)' == '' AND $(Rid) != '' ">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>

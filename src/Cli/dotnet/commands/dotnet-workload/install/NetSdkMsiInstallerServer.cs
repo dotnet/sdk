@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                         case InstallRequestType.AdjustWorkloadMode:
                             UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
-                            string newMode = request.UseWorkloadSets ? "workload sets" : "loose manifests";
+                            string newMode = request.UseWorkloadSets == null ? "<null>" : request.UseWorkloadSets.Value ? "workload sets" : "loose manifests";
                             Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
                             break;
 
