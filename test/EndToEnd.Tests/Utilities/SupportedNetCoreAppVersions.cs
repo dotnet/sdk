@@ -7,6 +7,8 @@ namespace EndToEnd.Tests.Utilities
 {
     public static class TargetFrameworkHelper
     {
+        public const string CurrentTfm = "net9.0";
+
         private static Version _firstNetAppVersion = new Version(5, 0);
 
         public static IEnumerable<string> GetNetAppTargetFrameworks(IEnumerable<string> versions) =>

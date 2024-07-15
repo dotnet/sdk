@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace EndToEnd.Tests.Utilities
 {
-    class TestProjectCreator
+    internal class TestProjectCreator
     {
         public const string NETCorePackageName = "Microsoft.NETCore.App";
         public const string AspNetCoreAppPackageName = "Microsoft.AspNetCore.App";

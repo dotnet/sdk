@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using EndToEnd.Tests.Utilities;
+
 namespace EndToEnd.Tests
 {
     public class GivenWindowsApp(ITestOutputHelper log) : SdkTest(log)
@@ -26,7 +28,7 @@ namespace EndToEnd.Tests
             project.Root.Element(ns + "PropertyGroup")
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
             project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = "net9.0";
+                .Element(ns + "TargetFramework").Value = TargetFrameworkHelper.CurrentTfm;
             project.Save(projectPath);
 
             new BuildCommand(testInstance)
