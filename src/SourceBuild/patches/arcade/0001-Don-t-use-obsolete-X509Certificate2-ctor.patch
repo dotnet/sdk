@@ -17,7 +17,7 @@ index e1dccfad73..05c145c613 100644
                  AkaMSClientId = this.AkaMSClientId,
                  AkaMSClientCertificate = !string.IsNullOrEmpty(AkaMSClientCertificate) ?
 +#if NET9_0_OR_GREATER
-+                    X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(AkaMSClientCertificate))) : null,
++                    X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(AkaMSClientCertificate)), password: null) : null,
 +#else
                      new X509Certificate2(Convert.FromBase64String(File.ReadAllText(AkaMSClientCertificate))) : null,
 +#endif
@@ -33,7 +33,7 @@ index 013ea538c9..ce232e7c1a 100644
              if (!string.IsNullOrEmpty(ClientCertificate))
              {
 +#if NET9_0_OR_GREATER
-+                manager = new AkaMSLinkManager(ClientId, X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(ClientCertificate))), Tenant, Log);
++                manager = new AkaMSLinkManager(ClientId, X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(ClientCertificate)), password: null), Tenant, Log);
 +#else
                  manager = new AkaMSLinkManager(ClientId, new X509Certificate2(Convert.FromBase64String(File.ReadAllText(ClientCertificate))), Tenant, Log);
 +#endif
