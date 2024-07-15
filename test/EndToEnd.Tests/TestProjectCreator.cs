@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using Microsoft.DotNet.TestFramework;
-using Microsoft.DotNet.Tools.Test.Utilities;
 
-namespace EndToEnd
+namespace EndToEnd.Tests
 {
     class TestProjectCreator
     {
@@ -26,13 +24,13 @@ namespace EndToEnd
             Identifier = identifier;
         }
 
-        public TestAssetInstance Create()
+        public TestAsset Create(TestAssetsManager testAssetsManager)
         {
-            var testInstance = TestBase.TestAssets.Get("TestAppSimple")
-                .CreateInstance(callingMethod: TestName, identifier: Identifier + PackageName + "_" + MinorVersion)
-                .WithSourceFiles();
+            var testInstance = testAssetsManager
+                .CopyTestAsset("TestAppSimple", callingMethod: TestName, identifier: Identifier + PackageName + "_" + MinorVersion)
+                .WithSource();
 
-            string projectDirectory = testInstance.Root.FullName;
+            string projectDirectory = testInstance.TestRoot;
 
             string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
 

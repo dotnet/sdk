@@ -29,7 +29,7 @@ namespace EndToEnd.Tests
                 .Element(ns + "TargetFramework").Value = "net9.0";
             project.Save(projectPath);
 
-            new BuildCommand(Log, testInstance.TestRoot)
+            new BuildCommand(testInstance)
                 .Execute().Should().Pass();
 
             new DotnetCommand(Log, "run")

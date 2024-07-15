@@ -1,18 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using EndToEnd;
-using PlatformSpecificFact = Microsoft.DotNet.Tools.Test.Utilities.PlatformSpecificFact;
-using TestPlatforms = Microsoft.DotNet.Tools.Test.Utilities.TestPlatforms;
-using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
-using PublishCommand = Microsoft.DotNet.Tools.Test.Utilities.PublishCommand;
-using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
-
-namespace Microsoft.DotNet.Tests.EndToEnd
+namespace EndToEnd.Tests
 {
-    public class GivenWeWantToRequireWindowsForDesktopApps
+    public class GivenWeWantToRequireWindowsForDesktopApps(ITestOutputHelper log) : SdkTest(log)
     {
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void It_does_not_download_desktop_targeting_packs_on_unix()
         {
             var testProjectCreator = new TestProjectCreator()
@@ -23,13 +16,12 @@ namespace Microsoft.DotNet.Tests.EndToEnd
             testProjectCreator.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
             testProjectCreator.AdditionalProperties["OutputType"] = "exe";
 
-            var testInstance = testProjectCreator.Create();
+            var testInstance = testProjectCreator.Create(_testAssetsManager);
 
-            new BuildCommand()
-                    .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute().Should().Pass();
+            new BuildCommand(testInstance)
+                .Execute().Should().Pass();
 
-            string packagesPath = Path.Combine(testInstance.Root.FullName, "packages");
+            string packagesPath = Path.Combine(testInstance.TestRoot, "packages");
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");
         }
 
@@ -63,14 +55,13 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            TestFramework.TestAssetInstance testInstance = testProjectCreator.Create()
+            var testInstance = testProjectCreator.Create(_testAssetsManager)
                 .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
-            new PublishCommand()
-                    .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute().Should().Pass();
+            new PublishCommand(testInstance)
+                .Execute().Should().Pass();
 
-            string packagesPath = Path.Combine(testInstance.Root.FullName, "packages", $"runtime.{Rid}.microsoft.windowsdesktop.app"); 
+            string packagesPath = Path.Combine(testInstance.TestRoot, "packages", $"runtime.{Rid}.microsoft.windowsdesktop.app");
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");
         }
     }
