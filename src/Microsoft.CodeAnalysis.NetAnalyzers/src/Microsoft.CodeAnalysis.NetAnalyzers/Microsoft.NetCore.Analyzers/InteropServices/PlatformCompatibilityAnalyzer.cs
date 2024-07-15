@@ -223,7 +223,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (m.IsStatic &&
                         m.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                        (IsOSPlatform == m.Name) || NameAndParametersValid(m))
+                        (IsOSPlatform == m.Name || NameAndParametersValid(m)))
                     {
                         CheckDependentPlatforms(m, relatedPlatforms);
                         return true;
