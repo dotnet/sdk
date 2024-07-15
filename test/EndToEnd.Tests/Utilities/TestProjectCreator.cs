@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace EndToEnd.Tests
+namespace EndToEnd.Tests.Utilities
 {
     class TestProjectCreator
     {

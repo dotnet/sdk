@@ -3,7 +3,7 @@
 
 using System.Collections;
 
-namespace EndToEnd.Tests
+namespace EndToEnd.Tests.Utilities
 {
     public static class TargetFrameworkHelper
     {

@@ -1,18 +1,44 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.TestFramework;
+//using Microsoft.DotNet.TestFramework;
+using EndToEnd.Tests.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
-using NewCommandShim = Microsoft.DotNet.Tools.Test.Utilities.NewCommandShim;
-using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
-using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
+//using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
+//using NewCommandShim = Microsoft.DotNet.Tools.Test.Utilities.NewCommandShim;
+//using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+//using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
-namespace EndToEnd
+namespace EndToEnd.Tests
 {
-    public partial class GivenSelfContainedAppsRollForward : TestBase
+    public partial class GivenSelfContainedAppsRollForward(ITestOutputHelper log) : SdkTest(log)
     {
+        public const string NETCorePackageName = "Microsoft.NETCore.App";
+        public const string AspNetCoreAppPackageName = "Microsoft.AspNetCore.App";
+        public const string AspNetCoreAllPackageName = "Microsoft.AspNetCore.All";
+
+        [Theory]
+        [ClassData(typeof(SupportedNetCoreAppVersions))]
+        public void ItRollsForwardToTheLatestNetCoreVersion(string minorVersion)
+        {
+            ItRollsForwardToTheLatestVersion(NETCorePackageName, minorVersion);
+        }
+
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreVersions))]
+        public void ItRollsForwardToTheLatestAspNetCoreAppVersion(string minorVersion)
+        {
+            ItRollsForwardToTheLatestVersion(AspNetCoreAppPackageName, minorVersion);
+        }
+
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreVersions))]
+        public void ItRollsForwardToTheLatestAspNetCoreAllVersion(string minorVersion)
+        {
+            ItRollsForwardToTheLatestVersion(AspNetCoreAllPackageName, minorVersion);
+        }
+
         internal void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var testProjectCreator = new TestProjectCreator()
@@ -23,16 +49,13 @@ namespace EndToEnd
                 RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier
             };
 
-            var testInstance = testProjectCreator.Create();
-
-            string projectDirectory = testInstance.Root.FullName;
+            var testInstance = testProjectCreator.Create(_testAssetsManager);
 
             //  Get the version rolled forward to
-            new RestoreCommand()
-                    .WithWorkingDirectory(projectDirectory)
-                    .Execute().Should().Pass();
+            new RestoreCommand(testInstance)
+                .Execute().Should().Pass();
 
-            string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
+            string assetsFilePath = Path.Combine(testInstance.TestRoot, "obj", "project.assets.json");
             var assetsFile = new LockFileFormat().Read(assetsFilePath);
 
             var rolledForwardVersion = GetPackageVersion(assetsFile, packageName);
@@ -49,13 +72,12 @@ namespace EndToEnd
 
             testProjectCreator.Identifier = "floating";
 
-            var floatingProjectInstance = testProjectCreator.Create();
+            var floatingProjectInstance = testProjectCreator.Create(_testAssetsManager);
 
-            var floatingProjectPath = Path.Combine(floatingProjectInstance.Root.FullName, "TestAppSimple.csproj");
+            var floatingProjectPath = Path.Combine(floatingProjectInstance.TestRoot, "TestAppSimple.csproj");
 
             var floatingProject = XDocument.Load(floatingProjectPath);
             var ns = floatingProject.Root.Name.Namespace;
-
 
             if (packageName == TestProjectCreator.NETCorePackageName)
             {
@@ -73,11 +95,10 @@ namespace EndToEnd
 
             floatingProject.Save(floatingProjectPath);
 
-            new RestoreCommand()
-                    .WithWorkingDirectory(floatingProjectInstance.Root.FullName)
-                    .Execute().Should().Pass();
+            new RestoreCommand(floatingProjectInstance)
+                .Execute().Should().Pass();
 
-            string floatingAssetsFilePath = Path.Combine(floatingProjectInstance.Root.FullName, "obj", "project.assets.json");
+            string floatingAssetsFilePath = Path.Combine(floatingProjectInstance.TestRoot, "obj", "project.assets.json");
 
             var floatedAssetsFile = new LockFileFormat().Read(floatingAssetsFilePath);
 
@@ -98,12 +119,13 @@ namespace EndToEnd
         public void WeCoverLatestNetCoreAppRollForward()
         {
             //  Run "dotnet new console", get TargetFramework property, and make sure it's covered in SupportedNetCoreAppVersions
-            var directory = TestAssets.CreateTestDirectory();
-            string projectDirectory = directory.FullName;
+            var directory = _testAssetsManager.CreateTestDirectory();
+            string projectDirectory = directory.Path;
 
-            new NewCommandShim()
+            new DotnetNewCommand(Log, "web", "--no-restore")
+                .WithVirtualHive()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("console --no-restore").Should().Pass();
+                .Execute().Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 
@@ -122,14 +144,15 @@ namespace EndToEnd
         [Fact]
         public void WeCoverLatestAspNetCoreAppRollForward()
         {
-            var directory = TestAssets.CreateTestDirectory();
-            string projectDirectory = directory.FullName;
+            var directory = _testAssetsManager.CreateTestDirectory();
+            string projectDirectory = directory.Path;
 
             //  Run "dotnet new web", get TargetFramework property, and make sure it's covered in SupportedAspNetCoreAppVersions
 
-            new NewCommandShim()
+            new DotnetNewCommand(Log, "web", "--no-restore")
+                .WithVirtualHive()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("web --no-restore").Should().Pass();
+                .Execute().Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 
@@ -142,7 +165,7 @@ namespace EndToEnd
 
             TargetFrameworkHelper.GetNetAppTargetFrameworks(SupportedAspNetCoreVersions.Versions)
                 .Should().Contain(targetFramework, $"the {nameof(SupportedAspNetCoreVersions)} should include the default version " +
-                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");           
+                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");
         }
     }
 }
