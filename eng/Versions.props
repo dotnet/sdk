@@ -139,7 +139,9 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-preview.7.24363.5</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-preview.7.24363.5</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>9.0.0-preview.7.24363.5</MicrosoftWin32SystemEventsPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <SystemCodeDomPackageVersion>9.0.0-preview.7.24363.5</SystemCodeDomPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionAttributedModelPackageVersion>9.0.0-preview.7.24363.5</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>9.0.0-preview.7.24363.5</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>9.0.0-preview.7.24363.5</SystemCompositionHostingPackageVersion>
@@ -147,6 +149,7 @@
     <SystemCompositionTypedPartsPackageVersion>9.0.0-preview.7.24363.5</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-preview.7.24363.5</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.7.24363.5</SystemReflectionMetadataLoadContextVersion>
+    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsPackageVersion>9.0.0-preview.7.24363.5</SystemResourcesExtensionsPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-preview.7.24363.5</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.7.24363.2</SystemSecurityCryptographyProtectedDataPackageVersion>
@@ -301,10 +304,6 @@
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
     <MicrosoftBuildLocatorPackageVersion>1.6.10</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>4.0.1</MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>
-    <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
-    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
