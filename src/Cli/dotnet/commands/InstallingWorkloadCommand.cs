@@ -93,9 +93,9 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;
+            _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
             _workloadRootDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetPath;
             _sdkVersion = creationResult.SdkVersion;
-            _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;
             _targetSdkVersion ??= _sdkVersion;
 
