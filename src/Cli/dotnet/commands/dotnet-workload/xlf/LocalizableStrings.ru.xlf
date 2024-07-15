@@ -57,7 +57,7 @@
         <target state="translated">При проверке рабочих нагрузок возникла проблема. Для получения дополнительных сведений выполните команду "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Версия манифеста</target>
         <note />
@@ -80,6 +80,11 @@
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Запись сведений об установках для рабочих нагрузок Visual Studio: "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Настроено на использование {0} при установке новых манифестов.</target>
         <note />
       </trans-unit>
     </body>

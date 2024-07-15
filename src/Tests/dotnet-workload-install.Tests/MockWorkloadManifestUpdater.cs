@@ -14,11 +14,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int GetManifestPackageDownloadsCallCount = 0;
         private readonly IEnumerable<ManifestUpdateWithWorkloads> _manifestUpdates;
         private bool _fromWorkloadSet;
+        private string _workloadSetVersion;
 
-        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, bool fromWorkloadSet = false)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, bool fromWorkloadSet = false, string workloadSetVersion = null)
         {
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
             _fromWorkloadSet = fromWorkloadSet;
+            _workloadSetVersion = workloadSetVersion;
         }
 
         public Task UpdateAdvertisingManifestsAsync(bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
@@ -56,7 +58,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
 
-        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
-        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files) => _manifestUpdates.Select(t => t.ManifestUpdate);
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet) => _manifestUpdates.Select(t => t.ManifestUpdate);
+
+        public string GetAdvertisedWorkloadSetVersion() => _workloadSetVersion;
+        
     }
 }
