@@ -28,7 +28,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Build_GeneratesManifestWhenItFindsALibrary()
         {
             var testAsset = "RazorComponentApp";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(p => {
+                     var fingerprintContent = p.Descendants()
+                         .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
+                     fingerprintContent.Value = "true";
+                 });
 
             Directory.CreateDirectory(Path.Combine(projectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
@@ -40,7 +45,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var file = new FileInfo(Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json"));
             file.Should().Exist();
-            file.Should().Contain("ComponentApp.lib.module.js");
+            file.Should().Match("""ComponentApp\.[a-zA-Z-0-9]{10}\.lib\.module\.js""");
         }
 
         [Fact]
@@ -81,7 +86,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Publish_PublishesJsModuleBundleBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(p => {
+                    var fingerprintContent = p.Descendants()
+                        .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
+                    fingerprintContent.Value = "true";
+                });
             Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
 

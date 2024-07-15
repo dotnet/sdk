@@ -14,6 +14,7 @@ usage()
   echo "  --configuration <value>         Build configuration: 'Debug' or 'Release' (short: -c)"
   echo "  --rid, --target-rid <value>     Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
   echo "  --verbosity <value>             Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
+  echo "  --with-system-libs <libs>       Use system versions of these libraries. Combine with a plus. eg brotli+libunwind+rapidjson+zlib"
   echo ""
 
   echo "Actions:"
@@ -89,6 +90,7 @@ exclude_ci_binary_log=false
 prepare_machine=false
 use_dev_versioning=false
 target_rid=
+system_libs=
 
 properties=()
 while [[ $# > 0 ]]; do
@@ -104,6 +106,10 @@ while [[ $# > 0 ]]; do
       ;;
     -rid|-target-rid)
       target_rid=$2
+      shift
+      ;;
+    -with-system-libs)
+      system_libs=$2
       shift
       ;;
     -verbosity|-v)
@@ -219,6 +225,8 @@ targets="/t:Build"
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
   targets="$targets;VSTest"
+  # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
+  export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
 fi
 
 function Build {
@@ -288,6 +296,9 @@ source $scriptroot/eng/common/native/init-distro-rid.sh
 initDistroRidGlobal "$os" "$arch" ""
 if [[ -n "$target_rid" ]]; then
   properties+=( "/p:TargetRid=$target_rid" )
+fi
+if [[ -n "$system_libs" ]]; then
+  properties+=( "/p:UseSystemLibs=$system_libs" )
 fi
 
 # Source-only settings

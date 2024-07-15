@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
                 var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
                 var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
+                var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
                 Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
                 for (var i = 0; i < CandidateAssets.Length; i++)
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     }
 
                     relativePathCandidate = FingerprintCandidates ?
-                        StaticWebAsset.Normalize(AppendFingerprintPattern(relativePathCandidate, identity, fingerprintPatterns)) :
+                        StaticWebAsset.Normalize(AppendFingerprintPattern(relativePathCandidate, identity, fingerprintPatterns, tokensByPattern)) :
                         relativePathCandidate;
 
                     var asset = StaticWebAsset.FromProperties(
@@ -262,7 +263,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private string AppendFingerprintPattern(
             string relativePathCandidate,
             string identity,
-            FingerprintPattern[] fingerprintPatterns)
+            FingerprintPattern[] fingerprintPatterns,
+            IDictionary<string, string> tokensByPattern)
         {
             if (relativePathCandidate.Contains("#["))
             {
@@ -307,7 +309,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             // app->README#[.{fingerprint}]?
             if (extensionCount < 2)
             {
-                var simpleExtensionResult = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
+                if (!tokensByPattern.TryGetValue(extension, out var expression))
+                {
+                    expression = DefaultFingerprintExpression;
+                }
+
+                var simpleExtensionResult = Path.Combine(directoryName, $"{stem}{expression}{extension}");
                 Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}'", relativePathCandidate, simpleExtensionResult);
                 return simpleExtensionResult;
             }
@@ -323,7 +330,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 {
                     stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
                     extension = relativePathCandidate.Substring(stem.Length);
-                    var patternResult = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
+                    if (!tokensByPattern.TryGetValue(extension, out var expression))
+                    {
+                        expression = DefaultFingerprintExpression;
+                    }
+                    var patternResult = Path.Combine(directoryName, $"{stem}{expression}{extension}");
                     Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}' because it matched pattern '{2}'", relativePathCandidate, patternResult, pattern.Pattern);
                     return patternResult;
                 }
@@ -585,6 +596,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             public string Name { get; set; } = pattern.ItemSpec;
 
             public string Pattern { get; set; } = pattern.GetMetadata(nameof(Pattern));
+
+            public string Expression { get; set; } = pattern.GetMetadata(nameof(Expression));
 
             public Matcher Matcher => _matcher ??= new Matcher().AddInclude(Pattern);
         }

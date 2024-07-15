@@ -16,9 +16,11 @@ using Microsoft.NET.Build.Containers.Resources;
 namespace Microsoft.NET.Build.Containers;
 public static class ContainerHelpers
 {
-    internal const string HostObjectUser = "SDK_CONTAINER_REGISTRY_UNAME";
+    internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
+    internal const string HostObjectUserLegacy = "SDK_CONTAINER_REGISTRY_UNAME";
 
-    internal const string HostObjectPass = "SDK_CONTAINER_REGISTRY_PWORD";
+    internal const string HostObjectPass = "DOTNET_CONTAINER_REGISTRY_PWORD";
+    internal const string HostObjectPassLegacy = "SDK_CONTAINER_REGISTRY_PWORD";
 
     internal const string DockerRegistryAlias = "docker.io";
 
@@ -142,30 +144,6 @@ public static class ContainerHelpers
     internal static bool IsValidImageTag(string imageTag)
     {
         return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
-    }
-
-
-    /// <summary>
-    /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
-    /// If the domain is localhost, we default to HTTP. Otherwise, we check the Docker config to see if the registry is marked as insecure.
-    /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
-    /// </summary>
-    internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
-    {
-        string prefix = "https";
-        if (alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal))
-        {
-            prefix = "http";
-        }
-
-        //check the docker config to see if the registry is marked as insecure
-        else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
-        {
-            prefix = "http";
-        }
-
-
-        return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
 
     /// <summary>

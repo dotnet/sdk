@@ -8,7 +8,8 @@
     <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
-    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(SourceBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+    <!-- DotNetBuildOrchestrator is (currently) needed in order to obtain NuGet packages from the runtime build. -->
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(SourceBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
   </PropertyGroup>
 
   <ItemGroup>

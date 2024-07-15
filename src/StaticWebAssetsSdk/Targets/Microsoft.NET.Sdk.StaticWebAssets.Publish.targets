@@ -48,10 +48,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!-- <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
-
-  <Target Name="ResolveRelatedPublishStaticWebAssets" DependsOnTargets="$(ResolveRelatedPublishStaticWebAssetsDependsOn)" /> -->
-
   <Target Name="ResolveCorePublishStaticWebAssets" DependsOnTargets="$(ResolveCorePublishStaticWebAssetsDependsOn)" />
 
   <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
@@ -132,17 +128,39 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectPublishStaticWebAssetsItems" />
     </MSBuild>
 
+    <ItemGroup>
+      <_ReferencedProjectPublishStaticWebAssetsUpdateCandidates
+        Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
+        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'" />        
+
+      <_ReferencedProjectPublishStaticWebAssetEndpointsUpdateCandidates
+        Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
+        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'" />        
+    </ItemGroup>
+
+    <UpdateExternallyDefinedStaticWebAssets Condition="$(_HasProjectsWithStaticWebAssetPublishTargets)"
+      Assets="@(_ReferencedProjectPublishStaticWebAssetsUpdateCandidates)"
+      Endpoints="@(_ReferencedProjectPublishStaticWebAssetEndpointsUpdateCandidates)"
+      FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
+    >
+      <Output TaskParameter="UpdatedAssets" ItemName="_ReferencedProjectPublishStaticWebAssets" />
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_ReferencedProjectPublishStaticWebAssetEndpoints" />
+      <Output TaskParameter="AssetsWithoutEndpoints" ItemName="_ReferencedProjectPublishStaticWebAssetsWithoutEndpoints" />
+    </UpdateExternallyDefinedStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints Condition="'@(_ReferencedProjectPublishStaticWebAssetsWithoutEndpoints)' != ''"
+      CandidateAssets="@(_ReferencedProjectPublishStaticWebAssetsWithoutEndpoints)"
+      ExistingEndpoints=""
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_ReferencedProjectPublishStaticWebAssetEndpoints" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup Condition="$(_HasProjectsWithStaticWebAssetPublishTargets)">
-      <StaticWebAsset Remove="@(_ReferencedProjectPublishStaticWebAssetsItems)" />
-      <StaticWebAsset
-        Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
-        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'"
-        RemoveMetadata="ResultType" />
-      <StaticWebAssetEndpoint Remove="@(_ReferencedProjectPublishStaticWebAssetsItems)" />
-      <StaticWebAssetEndpoint
-        Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
-        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'"
-        RemoveMetadata="ResultType" />
+      <StaticWebAsset Remove="@(_ReferencedProjectPublishStaticWebAssets)" />
+      <StaticWebAsset Include="@(_ReferencedProjectPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_ReferencedProjectPublishStaticWebAssetEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_ReferencedProjectPublishStaticWebAssetEndpoints)" />
     </ItemGroup>
 
   </Target>

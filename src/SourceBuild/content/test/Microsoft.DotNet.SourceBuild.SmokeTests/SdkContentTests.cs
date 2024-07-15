@@ -185,7 +185,8 @@ public class SdkContentTests : SdkTests
             {
                 AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
                 string relativePath = Path.GetRelativePath(sbSdkPath, file);
-                string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
+                string normalizedPath = BaselineHelper.RemoveRids(relativePath, isPortable: false);
+                normalizedPath = BaselineHelper.RemoveVersions(normalizedPath);
 
                 if(!exclusionsHelper.IsFileExcluded(normalizedPath, SourceBuildSdkType))
                 {

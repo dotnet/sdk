@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
+        [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
