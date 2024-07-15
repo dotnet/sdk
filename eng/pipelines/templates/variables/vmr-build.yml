@@ -12,6 +12,8 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
+- name: almaLinuxContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
 - name: alpineContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
 - name: centOSStreamContainer
@@ -43,6 +45,8 @@ variables:
 - name: wasiCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
 
+- name: almaLinuxName
+  value: AlmaLinux8
 - name: alpineName
   value: Alpine319
 - name: centOSStreamName
@@ -52,6 +56,8 @@ variables:
 - name: ubuntuName
   value: Ubuntu2404
 
+- name: almaLinuxX64Rid
+  value: almalinux.8-x64
 - name: alpineX64Rid
   value: alpine.3.19-x64
 - name: centOSStreamX64Rid
