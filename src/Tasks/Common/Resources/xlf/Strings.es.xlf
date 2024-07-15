@@ -1058,6 +1058,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1136: La plataforma de destino debe establecerse en Windows (normalmente, se incluye "-windows" en la propiedad TargetFramework) cuando se use Windows Forms o WPF, o bien cuando se haga referencia a proyectos o paquetes que lo usen.</target>
         <note>{StrBegin="NETSDK1136: "}</note>
       </trans-unit>
+      <trans-unit id="WindowsSDKFullInvalidTfm">
+        <source>NETSDK1218: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</source>
+        <target state="new">NETSDK1218: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</target>
+        <note>{StrBegin="NETSDK1218: "}</note>
+      </trans-unit>
       <trans-unit id="WindowsSDKFullMissingUseUwpProperty">
         <source>NETSDK1216: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
         <target state="new">NETSDK1216: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</target>

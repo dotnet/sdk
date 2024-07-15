@@ -147,6 +147,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="WindowsSDKFullMissingUseUwpProperty" />
   </Target>
 
+  <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net6.0-windows' or greater -->
+  <Target Name="_CheckForInvalidTfmForWindowsSDKFullDependencies"
+          AfterTargets="ResolvePackageAssets"
+          Condition=" !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))
+                      and '$(UseUwp)' == 'true' ">
+    <NetSdkError ResourceName="WindowsSDKFullInvalidTfm" />
+  </Target>
+
   <!--
     Emit a warning if 'UseUwp' is set.
 
