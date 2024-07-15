@@ -5,7 +5,6 @@ namespace EndToEnd.Tests
 {
     public class GivenUnixPlatform(ITestOutputHelper log) : SdkTest(log)
     {
-        //[UnixOnlyTheory(Skip="https://github.com/dotnet/templating/issues/1979")]
         [UnixOnlyTheory]
         [InlineData("wpf")]
         [InlineData("winforms")]
