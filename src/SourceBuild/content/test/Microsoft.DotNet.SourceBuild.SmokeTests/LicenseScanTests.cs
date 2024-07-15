@@ -92,8 +92,8 @@ public class LicenseScanTests : TestBase
         "ngpl", // https://opensource.org/license/nethack-php/
         "object-form-exception-to-mit", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/object-form-exception-to-mit.LICENSE
         "ofl-1.1", // https://opensource.org/license/ofl-1-1/
-        "osf-1990", // https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#HP_Variant,
-        "pcre2-exception" // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/pcre2-exception.LICENSE
+        "osf-1990", // https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#HP_Variant
+        "pcre2-exception", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/pcre2-exception.LICENSE
         "public-domain", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain.LICENSE
         "public-domain-disclaimer", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain-disclaimer.LICENSE
         "python", // https://opensource.org/license/python-2-0/
