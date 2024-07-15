@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework.Commands;
-using System.Reflection;
 using System.Globalization;
 
 namespace Microsoft.NET.TestFramework
@@ -54,29 +51,27 @@ namespace Microsoft.NET.TestFramework
 
         public const string LatestRuntimePatchForNetCoreApp2_0 = "2.0.9";
 
-        public void AddTestEnvironmentVariables(SdkCommandSpec command)
+        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
         {
-            command.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
+            environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
-            command.Environment["NUGET_PACKAGES"] = NuGetCachePath;
+            environment["NUGET_PACKAGES"] = NuGetCachePath;
 
-            command.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
-
-            command.Environment["GenerateResourceMSBuildArchitecture"] = "CurrentArchitecture";
-            command.Environment["GenerateResourceMSBuildRuntime"] = "CurrentRuntime";
+            environment["GenerateResourceMSBuildArchitecture"] = "CurrentArchitecture";
+            environment["GenerateResourceMSBuildRuntime"] = "CurrentRuntime";
 
             //  Prevent test MSBuild nodes from persisting
-            command.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+            environment["MSBUILDDISABLENODEREUSE"] = "1";
 
-            ToolsetUnderTest.AddTestEnvironmentVariables(command);
+            ToolsetUnderTest.AddTestEnvironmentVariables(environment);
         }
 
 
         public static void Initialize(TestCommandLine commandLine)
         {
             //  Show verbose debugging output for tests
-            CommandContext.SetVerbose(true);
+            CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
 
             Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -101,6 +96,10 @@ namespace Microsoft.NET.TestFramework
                 runAsTool = true;
                 
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+            }
+            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
+            {
+                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
             }
 
             string repoRoot = null;
@@ -128,6 +127,10 @@ namespace Microsoft.NET.TestFramework
             if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory))
             {
                 testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
+            }
+            else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
+            {
+                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
             }
             else if (runAsTool)
             {
@@ -167,9 +170,9 @@ namespace Microsoft.NET.TestFramework
             }
             else if (runAsTool)
             {
-                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestAssetsDirectory, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", "packages");
+                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
+                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
+                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
 
                 var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
                 if (Directory.Exists(testPackages))

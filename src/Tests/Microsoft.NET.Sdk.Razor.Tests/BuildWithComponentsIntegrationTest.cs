@@ -1,15 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -20,7 +12,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/aspnetcore/issues/33796")]
+        [RequiresMSBuildVersionFact("17.8.0.37606", Skip = "https://github.com/dotnet/sdk/issues/39960")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]
@@ -42,10 +34,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "ComponentLibrary.Views.pdb")).Should().NotExist();
         }
 
-        private void Build_ComponentsWorks()
+        private void Build_ComponentsWorks([CallerMemberName] string callerName = "")
         {
             var testAsset = "RazorMvcWithComponents";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, callerName);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
