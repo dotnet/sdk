@@ -97,13 +97,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem[] CreateKnownFrameworkReferences(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
         {
-            // The two profiles are only available starting from .NET 9
-            if (Version.Parse(targetPlatformVersion) < new Version(9, 0))
-            {
-                return [CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "")];
-            }
-
-            // Return two profiles when on .NET 9:
+            // Return two profiles:
             //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.*
             //   - "Full": with the entire Windows SDK (including Windows.UI.Xaml.* types)
             return
@@ -115,11 +109,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem CreateKnownFrameworkReference(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion, string profile)
         {
-            string itemSpec = string.IsNullOrEmpty(profile)
-                ? "Microsoft.Windows.SDK.NET.Ref"
-                : $"Microsoft.Windows.SDK.NET.Ref.{profile}";
-
-            var knownFrameworkReference = new TaskItem(itemSpec);
+            var knownFrameworkReference = new TaskItem($"Microsoft.Windows.SDK.NET.Ref.{profile}");
             knownFrameworkReference.SetMetadata("TargetFramework", $"net{targetFrameworkVersion}-windows{targetPlatformVersion}");
             knownFrameworkReference.SetMetadata("RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("DefaultRuntimeFrameworkVersion", windowsSdkPackageVersion);
@@ -130,11 +120,7 @@ namespace Microsoft.NET.Build.Tasks
             knownFrameworkReference.SetMetadata("RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("RuntimePackRuntimeIdentifiers", "any");
             knownFrameworkReference.SetMetadata("IsWindowsOnly", "true");
-
-            if (!string.IsNullOrEmpty(profile))
-            {
-                knownFrameworkReference.SetMetadata("Profile", profile);
-            }
+            knownFrameworkReference.SetMetadata("Profile", profile);
 
             return knownFrameworkReference;
         }
