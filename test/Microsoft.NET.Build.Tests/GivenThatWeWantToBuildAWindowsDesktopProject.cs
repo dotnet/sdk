@@ -503,6 +503,67 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1216");
         }
 
+        [WindowsOnlyFact]
+        public void ItFailsToBuildWhenReferencingWindowsUIXamlTypesWithoutUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0",
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                        using System;
+
+                        Console.WriteLine(typeof(global::WinRT.IInspectable)); // WinRT.Runtime
+                        Console.WriteLine(typeof(global::Windows.UI.Core.CoreWindow)); // Microsoft.Windows.SDK.NET
+                        Console.WriteLine(typeof(global::Windows.UI.Xaml.Window)); // Microsoft.Windows.UI.Xaml
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("CS0234");
+        }
+
+        [WindowsOnlyFact]
+        public void ItBuildsWhenReferencingWindowsUIXamlTypesWithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0",
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                        using System;
+
+                        Console.WriteLine(typeof(global::WinRT.IInspectable)); // WinRT.Runtime
+                        Console.WriteLine(typeof(global::Windows.UI.Core.CoreWindow)); // Microsoft.Windows.SDK.NET
+                        Console.WriteLine(typeof(global::Windows.UI.Xaml.Window)); // Microsoft.Windows.UI.Xaml
+                    """
+                }
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)
         {
             var getValueCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item)
