@@ -77,6 +77,11 @@
         <target state="translated">显示当前安装的工作负载版本。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="translated">写入 Visual Studio 工作负载的安装记录:“{0}”</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
