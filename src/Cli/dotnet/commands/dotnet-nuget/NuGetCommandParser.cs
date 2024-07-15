@@ -125,13 +125,13 @@ namespace Microsoft.DotNet.Cli
             CliOption<bool> allowUntrustedRoot = new("--allow-untrusted-root");
             CliOption<string> owners = new("--owners");
 
-            trustCommand.Subcommands.Add (new CliCommand("list"));
-            trustCommand.Subcommands.Add (AuthorCommand());
-            trustCommand.Subcommands.Add (RepositoryCommand());
-            trustCommand.Subcommands.Add (SourceCommand());
-            trustCommand.Subcommands.Add (CertificateCommand());
-            trustCommand.Subcommands.Add (RemoveCommand());
-            trustCommand.Subcommands.Add (SyncCommand());
+            trustCommand.Subcommands.Add(new CliCommand("list"));
+            trustCommand.Subcommands.Add(AuthorCommand());
+            trustCommand.Subcommands.Add(RepositoryCommand());
+            trustCommand.Subcommands.Add(SourceCommand());
+            trustCommand.Subcommands.Add(CertificateCommand());
+            trustCommand.Subcommands.Add(RemoveCommand());
+            trustCommand.Subcommands.Add(SyncCommand());
 
             CliOption<string> configFile = new("--configfile");
 
@@ -168,7 +168,8 @@ namespace Microsoft.DotNet.Cli
                 new CliOption<string>("--source-url"),
             };
 
-            CliCommand CertificateCommand() {
+            CliCommand CertificateCommand()
+            {
                 CliOption<string> algorithm = new("--algorithm")
                 {
                     DefaultValueFactory = (_argResult) => "SHA256"
@@ -218,20 +219,23 @@ namespace Microsoft.DotNet.Cli
             return signCommand;
         }
 
-        private static CliCommand GetWhyCommand()
+        private static CliCommand GetWhyCommand() => new WhyCommand();
+
+        private class WhyCommand : DocumentedCommand
         {
-            CliCommand whyCommand = new("why");
+            static string _name = "why";
+            static string _docsLink = "https://learn.microsoft.com/dotnet/core/tools/dotnet-nuget-why";
+            public WhyCommand() : base(_name, _docsLink)
+            {
+                Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
+                Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
 
-            whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
-            whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
+                Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
+                    .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
+                    .AllowSingleArgPerToken());
 
-            whyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
-                .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
-                .AllowSingleArgPerToken());
-
-            whyCommand.SetAction(NuGetCommand.Run);
-
-            return whyCommand;
+                SetAction(NuGetCommand.Run);
+            }
         }
     }
 }
