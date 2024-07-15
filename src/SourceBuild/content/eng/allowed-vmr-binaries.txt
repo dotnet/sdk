@@ -112,10 +112,10 @@ src/runtime/src/**/tests/**/*.res
 src/runtime/src/**/tests/**/*.resources
 
 # sdk
-src/sdk/src/Assets/TestProjects/**/*.dat
-src/sdk/src/Assets/TestProjects/**/*.cache
-src/sdk/src/Assets/TestProjects/**/*.tlb
-src/sdk/src/Assets/TestPackages/dotnet-new/nupkg_templates/*
+src/sdk/test/TestAssets/TestProjects/**/*.dat
+src/sdk/test/TestAssets/TestProjects/**/*.cache
+src/sdk/test/TestAssets/TestProjects/**/*.tlb
+src/sdk/test/TestAssets/TestPackages/dotnet-new/nupkg_templates/*
 src/sdk/test/Microsoft.DotNet.ShellShim.Tests/WpfBinaryTestAsssets/*.dll
 src/sdk/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Resources/*.zip
 

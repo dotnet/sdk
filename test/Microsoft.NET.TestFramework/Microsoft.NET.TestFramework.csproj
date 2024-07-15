@@ -65,8 +65,8 @@
     <None Include="BuildTestPackages.targets" />
   </ItemGroup>
 
-  <Import Project="SetupTestRoot.targets" />
-  <Import Project="BuildTestPackages.targets" />
+  <Import Project="SetupTestRoot.targets" Condition="'$(BuildTestPackages)' != 'false'" />
+  <Import Project="BuildTestPackages.targets" Condition="'$(BuildTestPackages)' != 'false'" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
