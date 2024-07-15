@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 15 Jul 2024 16:08:32 +0000
+Subject: [PATCH] Don't use obsolete X509Certificate2 ctor
+
+---
+ .../src/PublishArtifactsInManifest.cs                         | 4 ++++
+ .../src/AkaMSLinksBase.cs                                     | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifest.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifest.cs
+index e1dccfad73..05c145c613 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifest.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifest.cs
+@@ -352,7 +352,11 @@ internal PublishArtifactsInManifestBase ConstructPublishingV3Task(BuildModel bui
+                 SkipSafetyChecks = this.SkipSafetyChecks,
+                 AkaMSClientId = this.AkaMSClientId,
+                 AkaMSClientCertificate = !string.IsNullOrEmpty(AkaMSClientCertificate) ?
++#if NET9_0_OR_GREATER
++                    X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(AkaMSClientCertificate))) : null,
++#else
+                     new X509Certificate2(Convert.FromBase64String(File.ReadAllText(AkaMSClientCertificate))) : null,
++#endif
+                 AkaMSCreatedBy = this.AkaMSCreatedBy,
+                 AkaMSGroupOwner = this.AkaMSGroupOwner,
+                 AkaMsOwners = this.AkaMsOwners,
+diff --git a/src/Microsoft.DotNet.Deployment.Tasks.Links/src/AkaMSLinksBase.cs b/src/Microsoft.DotNet.Deployment.Tasks.Links/src/AkaMSLinksBase.cs
+index 013ea538c9..ce232e7c1a 100644
+--- a/src/Microsoft.DotNet.Deployment.Tasks.Links/src/AkaMSLinksBase.cs
++++ b/src/Microsoft.DotNet.Deployment.Tasks.Links/src/AkaMSLinksBase.cs
+@@ -24,7 +24,11 @@ protected AkaMSLinkManager CreateAkaMSLinksManager()
+             AkaMSLinkManager manager;
+             if (!string.IsNullOrEmpty(ClientCertificate))
+             {
++#if NET9_0_OR_GREATER
++                manager = new AkaMSLinkManager(ClientId, X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(File.ReadAllText(ClientCertificate))), Tenant, Log);
++#else
+                 manager = new AkaMSLinkManager(ClientId, new X509Certificate2(Convert.FromBase64String(File.ReadAllText(ClientCertificate))), Tenant, Log);
++#endif
+             }
+             else if (!string.IsNullOrEmpty(ClientSecret))
+             {
