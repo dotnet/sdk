@@ -47,6 +47,9 @@
 
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
     <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
+
+    <!-- Sources for this package are included in-repo -->
+    <UsagePattern IdentityGlob="Microsoft.NET.Sdk.Android.Manifest-*/*" />
   </IgnorePatterns>
 
 </UsageData>
