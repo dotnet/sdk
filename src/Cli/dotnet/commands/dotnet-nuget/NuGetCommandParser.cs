@@ -219,23 +219,18 @@ namespace Microsoft.DotNet.Cli
             return signCommand;
         }
 
-        private static CliCommand GetWhyCommand() => new WhyCommand();
-
-        private class WhyCommand : DocumentedCommand
+        private static CliCommand GetWhyCommand()
         {
-            static string _name = "why";
-            static string _docsLink = "https://learn.microsoft.com/dotnet/core/tools/dotnet-nuget-why";
-            public WhyCommand() : base(_name, _docsLink)
-            {
-                Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
-                Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
+            DocumentedCommand whyCommand = new("why", "https://learn.microsoft.com/dotnet/core/tools/dotnet-nuget-why");
+            whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
+            whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
 
-                Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
-                    .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
-                    .AllowSingleArgPerToken());
+            whyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
+                .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
+                .AllowSingleArgPerToken());
 
-                SetAction(NuGetCommand.Run);
-            }
+            whyCommand.SetAction(NuGetCommand.Run);
+            return whyCommand;
         }
     }
 }
