@@ -459,10 +459,8 @@ namespace EndToEnd.Tests
 
         private TestDirectory InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true)
         {
-            var directory = _testAssetsManager.CreateTestDirectory(
-                identifier: string.IsNullOrWhiteSpace(language)
-                ? templateName
-                : $"{templateName}[{language}]");
+            var identifier = string.IsNullOrWhiteSpace(language) ? templateName : $"{templateName}[{language}]";
+            var directory = _testAssetsManager.CreateTestDirectory(identifier: identifier);
             string projectDirectory = directory.Path;
 
             string[] newArgs = [

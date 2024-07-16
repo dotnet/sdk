@@ -20,7 +20,7 @@ namespace EndToEnd.Tests
 
             var testInstance = testProjectCreator.Create(_testAssetsManager);
 
-            new BuildCommand(testInstance)
+            new DotnetBuildCommand(testInstance)
                 .Execute().Should().Pass();
 
             string packagesPath = Path.Combine(testInstance.TestRoot, "packages");
