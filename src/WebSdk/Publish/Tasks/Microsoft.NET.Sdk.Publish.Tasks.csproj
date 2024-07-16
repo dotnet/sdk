@@ -25,11 +25,6 @@
     <PackageReference Include="Microsoft.Web.Xdt" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
-    <PackageReference Include="System.Collections.Specialized" ExcludeAssets="Runtime"/>
-    <PackageReference Include="System.Xml.XmlDocument" ExcludeAssets="Runtime" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System" />
     <Reference Include="System.IO.Compression.FileSystem" />

@@ -76,16 +76,7 @@
     <NewtonsoftJsonPackageVersion>13.0.3</NewtonsoftJsonPackageVersion>
     <SystemDataSqlClientPackageVersion>4.8.6</SystemDataSqlClientPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.2.0-beta.435</StyleCopAnalyzersPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
-    <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
-    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
-    <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
-    <SystemTextJsonVersion>7.0.3</SystemTextJsonVersion>
-    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.7.24365.1</SystemReflectionMetadataLoadContextVersion>
-    <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24324.3</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24324.3</SystemCommandLineRenderingVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24305.1</MicrosoftDeploymentDotNetReleasesVersion>
@@ -119,7 +110,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-preview.7.24364.1</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-preview.7.24365.2</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/test-templates -->
@@ -145,55 +136,56 @@
     <MicrosoftNETCorePlatformsPackageVersion>9.0.0-preview.7.24365.1</MicrosoftNETCorePlatformsPackageVersion>
     <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-preview.7.24365.1</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
     <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-preview.7.24365.1</MicrosoftNETCoreAppHostwinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-preview.7.24365.1</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-preview.7.24365.1</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>9.0.0-preview.7.24365.1</MicrosoftWin32SystemEventsPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <SystemCodeDomPackageVersion>9.0.0-preview.7.24365.1</SystemCodeDomPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionAttributedModelPackageVersion>9.0.0-preview.7.24365.1</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>9.0.0-preview.7.24365.1</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>9.0.0-preview.7.24365.1</SystemCompositionHostingPackageVersion>
     <SystemCompositionRuntimePackageVersion>9.0.0-preview.7.24365.1</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>9.0.0-preview.7.24365.1</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-preview.7.24365.1</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.7.24365.1</SystemReflectionMetadataLoadContextVersion>
+    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsPackageVersion>9.0.0-preview.7.24365.1</SystemResourcesExtensionsPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityPermissionsPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.7.24365.1</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-preview.7.24365.1</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-preview.7.24365.1</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-preview.7.24365.3</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-preview.7.24365.3</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0-preview.7.24365.3</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0-preview.7.24365.3</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-preview.7.24366.2</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-preview.7.24366.2</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0-preview.7.24366.2</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0-preview.7.24366.2</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.12.0-preview.1.26</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.12.0-preview.1.26</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.12.0-preview.1.26</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.12.0-preview.1.26</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.12.0-preview.1.26</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.12.0-preview.1.26</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-preview.1.26</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.12.0-preview.1.26</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.12.0-preview.1.26</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.12.0-preview.1.26</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.12.0-preview.1.26</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.12.0-preview.1.26</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.12.0-preview.1.27</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.12.0-preview.1.27</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.12.0-preview.1.27</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.12.0-preview.1.27</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.12.0-preview.1.27</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.12.0-preview.1.27</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-preview.1.27</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.12.0-preview.1.27</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.12.0-preview.1.27</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.12.0-preview.1.27</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.12.0-preview.1.27</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.12.0-preview.1.27</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
     <MicrosoftNETTestSdkPackageVersion>17.12.0-preview-24353-03</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftTestPlatformCLIPackageVersion>17.12.0-preview-24353-03</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftTestPlatformBuildPackageVersion>17.12.0-preview-24353-03</MicrosoftTestPlatformBuildPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <SystemCodeDomPackageVersion>9.0.0-preview.7.24365.1</SystemCodeDomPackageVersion>
-    <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.7.24365.1</SystemTextEncodingCodePagesPackageVersion>
-    <SystemResourcesExtensionsPackageVersion>9.0.0-preview.7.24365.1</SystemResourcesExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
@@ -271,8 +263,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-preview.7.24365.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-preview.7.24365.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-preview.7.24365.4</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-preview.7.24365.4</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Runtime and Apphost aliases">
     <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
