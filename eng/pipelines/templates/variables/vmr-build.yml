@@ -14,7 +14,9 @@ variables:
 
 - name: almaLinuxContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
-- name: alpineContainer
+- name: alpineLatestContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
+- name: alpinePreviousContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
@@ -47,7 +49,9 @@ variables:
 
 - name: almaLinuxName
   value: AlmaLinux8
-- name: alpineName
+- name: alpineLatestName
+  value: Alpine320
+- name: alpinePreviousName
   value: Alpine319
 - name: centOSStreamName
   value: CentOSStream9
@@ -58,7 +62,9 @@ variables:
 
 - name: almaLinuxX64Rid
   value: almalinux.8-x64
-- name: alpineX64Rid
+- name: alpineLatestX64Rid
+  value: alpine.3.20-x64
+- name: alpinePreviousX64Rid
   value: alpine.3.19-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
