@@ -29,7 +29,7 @@ namespace EndToEnd.Tests
             project.Root.Element(ns + "PropertyGroup")
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
             project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = TargetFrameworkHelper.CurrentTfm;
+                .Element(ns + "TargetFramework").Value = ToolsetInfo.CurrentTargetFramework;
             project.Save(projectPath);
 
             new BuildCommand(testInstance)

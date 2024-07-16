@@ -24,7 +24,7 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = TargetFrameworkHelper.CurrentTfm;
+                .Element(ns + "TargetFramework").Value = ToolsetInfo.CurrentTargetFramework;
             project.Save(projectPath);
 
             new RestoreCommand(Log, projectPath)
@@ -67,7 +67,7 @@ namespace EndToEnd.Tests
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
             project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = TargetFrameworkHelper.CurrentTfm;
+                .Element(ns + "TargetFramework").Value = ToolsetInfo.CurrentTargetFramework;
             project.Save(projectPath);
 
             new BuildCommand(Log, projectPath)
