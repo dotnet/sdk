@@ -157,6 +157,7 @@
     <SystemSecurityPermissionsPackageVersion>9.0.0-preview.7.24365.1</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.7.24365.1</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-preview.7.24365.1</SystemTextJsonPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>9.0.0-preview.7.24365.1</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
