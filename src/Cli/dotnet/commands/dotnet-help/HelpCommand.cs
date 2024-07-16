@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Help
         private bool TryGetDocsLink(string[] command, out string docsLink)
         {
             var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
-            if (parsedCommand != null && parsedCommand.CommandResult is not null && parsedCommand.CommandResult.Command is DocumentedCommand dc)
+            if (parsedCommand?.CommandResult?.Command is DocumentedCommand dc)
             {
                 docsLink = dc.DocsLink;
                 return true;
