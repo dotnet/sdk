@@ -470,7 +470,7 @@ packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Core.xml: 256750
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.dll: 7680
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.dll: 25600
-packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.xml: 11298
+packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.xml: 14722
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.dll: 36864
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.xml: 16101
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll: 31744
@@ -3402,7 +3402,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Sdk/Sdk.targets: 1104
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Browser.props: 693
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Browser.targets: 697
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.props: 3729
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.targets: 1563
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.targets: 2180
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/Microsoft.NET.Sdk.Web.Tasks.dll: 7168
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 2733
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 1297

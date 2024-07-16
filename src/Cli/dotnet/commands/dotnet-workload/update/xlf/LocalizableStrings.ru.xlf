@@ -7,6 +7,11 @@
         <target state="translated">Обновляются только манифесты рекламы.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="new">Cannot use the {0} and {1} options together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Обновление всех установленных рабочих нагрузок.</target>

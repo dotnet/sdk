@@ -11,11 +11,15 @@
   <PropertyGroup>
     <VerifyDependencyInjectionOpenGenericServiceTrimmability>true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
     <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
+    <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
+    <_DesignerHostSupport>true</_DesignerHostSupport>
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
     <_ComObjectDescriptorSupport>false</_ComObjectDescriptorSupport>
     <DebuggerSupport>true</DebuggerSupport>
-    <EventSourceSupport>false</EventSourceSupport>
     <MetricsSupport>false</MetricsSupport>
+    <StackTraceSupport>false</StackTraceSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
@@ -23,13 +27,12 @@
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <_UseManagedNtlm>true</_UseManagedNtlm>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <DynamicCodeSupport>true</DynamicCodeSupport>
-    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
-    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
     <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
@@ -39,13 +42,19 @@
     <TieredCompilationQuickJitForLoops>true</TieredCompilationQuickJitForLoops>
     <TieredPGO>true</TieredPGO>
     <StartupHookSupport>false</StartupHookSupport>
-    <StackTraceSupport>false</StackTraceSupport>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
-    <_UseManagedNtlm>true</_UseManagedNtlm>
+    <_ActiveXImplSupport>true</_ActiveXImplSupport>
+    <_WinFormsBindingSupport>true</_WinFormsBindingSupport>
+    <_WinFormsDesignTimeFeaturesSupport>true</_WinFormsDesignTimeFeaturesSupport>
+    <_UseComponentModelRegisteredTypes>false</_UseComponentModelRegisteredTypes>
+    <_WinFormsImageIndexConverterSupport>true</_WinFormsImageIndexConverterSupport>
+    <_MdiWindowDialogSupport>true</_MdiWindowDialogSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1177,6 +1177,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <!-- Supported Windows versions -->
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_20348PackageVersion)" MinimumNETVersion="6.0" />
@@ -1276,7 +1277,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MinimumMSBuildVersion>$(MinimumMSBuildVersion)</MinimumMSBuildVersion>
     <BundledMSBuildVersion>$(BundledMSBuildVersion)</BundledMSBuildVersion>
     <_MSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(MSBuildVersion)').ToString(2))</_MSBuildVersionMajorMinor>
-    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionGreaterThan('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
+    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionNotEquals('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
   </PropertyGroup>
 </Project>
 ]]>

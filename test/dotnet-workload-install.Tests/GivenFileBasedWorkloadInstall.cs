@@ -324,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestId = new ManifestId("test-manifest-1");
             var manifestVersion = new ManifestVersion("5.0.0");
 
-            var manifestUpdate = new ManifestVersionUpdate(manifestId, null, null, manifestVersion, featureBand.ToString());
+            var manifestUpdate = new ManifestVersionUpdate(manifestId, manifestVersion, featureBand.ToString());
 
             CliTransaction.RunNew(context => installer.InstallWorkloadManifest(manifestUpdate, context));
 
