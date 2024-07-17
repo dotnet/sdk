@@ -111,9 +111,7 @@ public class WriteSbrpUsageReport : Task
 
     private void ReadSbrpPackages(string packageType, bool trackTfms)
     {
-        EnumerationOptions options = new() { RecurseSubdirectories = true };
-
-        foreach (string projectPath in Directory.GetFiles(GetSbrpPackagesPath(packageType), "*.csproj", options))
+        foreach (string projectPath in Directory.GetFiles(GetSbrpPackagesPath(packageType), "*.csproj", SearchOption.AllDirectories))
         {
             DirectoryInfo? directory = Directory.GetParent(projectPath);
             string version = directory!.Name;
@@ -151,9 +149,7 @@ public class WriteSbrpUsageReport : Task
 
     private void ScanProjectReferences()
     {
-        EnumerationOptions options = new() { RecurseSubdirectories = true };
-
-        foreach (string projectJsonFile in Directory.GetFiles(SrcPath, "project.assets.json", options))
+        foreach (string projectJsonFile in Directory.GetFiles(SrcPath, "project.assets.json", SearchOption.AllDirectories))
         {
             LockFile lockFile = new LockFileFormat().Read(projectJsonFile);
             foreach (LockFileTargetLibrary lib in lockFile.Targets.SelectMany(t => t.Libraries))
