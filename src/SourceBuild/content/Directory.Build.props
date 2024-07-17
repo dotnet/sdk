@@ -172,6 +172,7 @@
     <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
     <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
 
+    <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>

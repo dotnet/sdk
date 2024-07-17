@@ -14,17 +14,17 @@
 # Area-AspNetCore
 /src/BlazorWasmSdk/ @dotnet/aspnet-blazor-eng
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
 /src/RazorSdk/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
 /test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
-/src/Assets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/src/src/Assets/TestProjects/Razor*/ @dotnet/razor-compiler
+/test/TestAssets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
@@ -52,12 +52,12 @@
 /test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
 
 # Area-Templates
-/src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers 
-/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers 
-/src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers 
+/src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
+/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers
+/src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
 /test/dotnet-new.Tests @dotnet/templating-engine-maintainers
-/test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers 
-/template_feed @dotnet/templating-engine-maintainers 
+/test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
+/template_feed @dotnet/templating-engine-maintainers
 
 # ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
@@ -72,12 +72,12 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/src/Assets/TestProjects/Watch*/     @tmat @arkalyanms @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/       @tmat @arkalyanms @dotnet/roslyn-ide
-/test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/*   @tmat @arkalyanms @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh   @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService    @BillHiebert @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
+/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService @BillHiebert @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
@@ -86,10 +86,10 @@
 /test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
 
 # Area-GenAPI
-/src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries @andriipatsula
-/src/Compatibility/Microsoft.DotNet.ApiSymbolExtensions/ @dotnet/area-infrastructure-libraries @andriipatsula
-/test/Microsoft.DotNet.GenAPI/ @dotnet/area-infrastructure-libraries @andriipatsula
-/test/Microsoft.DotNet.ApiSymbolExtensions.Tests/
+/src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries
+/src/Compatibility/Microsoft.DotNet.ApiSymbolExtensions/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.GenAPI/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.ApiSymbolExtensions.Tests/ @dotnet/area-infrastructure-libraries
 
 # Area: dotnet containers
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
