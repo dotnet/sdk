@@ -96,6 +96,89 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
+        public void ComputeDevelopmentManifest_UsesIdentitySubpath_WhenFileExists_AndContentRoot_IsPrefix()
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    ("_framework",
+                        CreateIntermediateNode(
+                            ("dotnet.native.fingerprint.js.gz", CreateMatchNode(0, "blob-hash.gz"))))),
+                Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var fileName = Path.Combine(Environment.CurrentDirectory, "blob-hash.gz");
+            try
+            {
+                File.WriteAllText(fileName, "content");
+                var assets = new[] { CreateAsset(
+                        fileName,
+                        $$"""_framework/dotnet.native#[.{fingerprint}]!.js.gz""",
+                        contentRoot: Environment.CurrentDirectory,
+                        assetKind: StaticWebAsset.AssetKinds.All) };
+                var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+                // Act
+                var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+                // Assert
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
+        }
+
+        [Fact]
+        public void ComputeDevelopmentManifest_UsesRelativePath_ReplacesAssetTokens_WhenFileDoesNotExist_AtIdentity()
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    ("_framework",
+                        CreateIntermediateNode(
+                            ("dotnet.native.fingerprint.js", CreateMatchNode(0, "_framework/dotnet.native.fingerprint.js"))))),
+                Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var fileName = Path.Combine(Environment.CurrentDirectory, "dotnet.native.js");
+            var assets = new[] { CreateAsset(
+                    fileName,
+                    $$"""_framework/dotnet.native#[.{fingerprint}]!.js""",
+                    contentRoot: Environment.CurrentDirectory,
+                    assetKind: StaticWebAsset.AssetKinds.All) };
+            var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+            // Act
+            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+            // Assert
+            manifest.Should().BeEquivalentTo(expectedManifest);
+        }
+
+        [Fact]
         public void ComputeDevelopmentManifest_IncludesAllAssets()
         {
             // Arrange
