@@ -190,7 +190,6 @@
     <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
-    <DISABLE_CROSSGEN>true</DISABLE_CROSSGEN>
   </PropertyGroup>
 
   <PropertyGroup>
