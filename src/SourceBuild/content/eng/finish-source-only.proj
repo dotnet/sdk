@@ -25,7 +25,8 @@
   <Target Name="ReportSbrpUsage"
           AfterTargets="Build"
           Condition="'$(ReportSbrpUsage)' == 'true'">
-    <WriteSbrpUsageReport SrcPath="$(SrcDir)" 
+    <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
+                          SrcPath="$(SrcDir)"
                           OutputPath="$(ArtifactsLogDir)" />
   </Target>
 

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,8 +17,8 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks;
 
 /// <summary>
 /// Reports the usage of the source-build-reference-packages:
-/// 1. Unreferenced packages
-/// 2. Unreferenced TFMs
+/// 1. SBRP references
+/// 2. Unreferenced packages
 /// </summary>
 public class WriteSbrpUsageReport : Task
 {
@@ -25,16 +27,22 @@ public class WriteSbrpUsageReport : Task
     private readonly Dictionary<string, PackageInfo> _sbrpPackages = [];
 
     /// <summary>
+    /// Path to the SBRP src directory.
+    /// </summary>
+    [Required]
+    public required string SbrpRepoSrcPath { get; set; }
+
+    /// <summary>
     /// Path to the VMR src directory.
     /// </summary>
     [Required]
-    public string SrcPath { get; set; }
+    public required string SrcPath { get; set; }
 
     /// <summary>
     /// Path to the usage report to.
     /// </summary>
     [Required]
-    public string OutputPath { get; set; }
+    public required string OutputPath { get; set; }
 
     public override bool Execute()
     {
@@ -52,10 +60,10 @@ public class WriteSbrpUsageReport : Task
 
     private void GenerateUsageReport()
     {
-        Report report = new();
-        report.Sbrps = [.. _sbrpPackages.Values.OrderBy(pkg => pkg.Id)];
+        PackageInfo[] existingSbrps = [.. _sbrpPackages.Values.OrderBy(pkg => pkg.Id)];
         PurgeNonReferencedReferences();
-        report.UnreferencedSbrps = [.. GetUnreferencedSbrps().Select(pkg => pkg.Id).OrderBy(id => id)];
+        IEnumerable<string> unreferencedSbrps = GetUnreferencedSbrps().Select(pkg => pkg.Id).OrderBy(id => id);
+        Report report = new(existingSbrps, unreferencedSbrps);
 
         string reportFilePath = Path.Combine(OutputPath, "sbrpPackageUsage.json");
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
@@ -99,7 +107,7 @@ public class WriteSbrpUsageReport : Task
         _sbrpPackages.Values.Where(pkg => pkg.References.Count == 0);
 
     private string GetSbrpPackagesPath(string packageType) =>
-        Path.Combine(SrcPath, SbrpRepoName, "src", packageType, "src");
+        Path.Combine(SbrpRepoSrcPath, packageType, "src");
 
     private void ReadSbrpPackages(string packageType, bool trackTfms)
     {
@@ -107,37 +115,34 @@ public class WriteSbrpUsageReport : Task
 
         foreach (string projectPath in Directory.GetFiles(GetSbrpPackagesPath(packageType), "*.csproj", options))
         {
-            DirectoryInfo directory = Directory.GetParent(projectPath);
-            string version = directory.Name;
+            DirectoryInfo? directory = Directory.GetParent(projectPath);
+            string version = directory!.Name;
             string projectName = Path.GetFileNameWithoutExtension(projectPath);
-            PackageInfo info = new()
-            {
-                Version = version,
-                Name = projectName[..(projectName.Length - 1 - version.Length)],
-                Path = directory.FullName,
-            };
+            HashSet<string>? tfms = null;
 
             if (trackTfms)
             {
                 XDocument xmlDoc = XDocument.Load(projectPath);
                 // Reference packages are generated using the TargetFrameworks property
                 // so there is no need to handle the TargetFramework property.
-                string[] tfms = xmlDoc.Element("Project")?
+                tfms = xmlDoc.Element("Project")?
                     .Elements("PropertyGroup")
                     .Elements("TargetFrameworks")
-                    .FirstOrDefault()?.Value?.Split(';');
+                    .FirstOrDefault()?.Value?
+                    .Split(';')
+                    .ToHashSet();
 
-                if (tfms == null || tfms.Length == 0)
+                if (tfms == null || tfms.Count == 0)
                 {
-                    Log.LogError($"No TargetFrameworks were delected in {projectPath}.");
+                    Log.LogError($"No TargetFrameworks were detected in {projectPath}.");
+                    continue;
                 }
+            }
 
-                info.Tfms = new HashSet<string>(tfms);
-            }
-            else
-            {
-                info.Tfms = [];
-            }
+            PackageInfo info = new(projectName[..(projectName.Length - 1 - version.Length)],
+                version,
+                directory.FullName,
+                tfms);
 
             _sbrpPackages.Add(info.Id, info);
             Log.LogMessage($"Detected package: {info.Id}");
@@ -153,12 +158,12 @@ public class WriteSbrpUsageReport : Task
             LockFile lockFile = new LockFileFormat().Read(projectJsonFile);
             foreach (LockFileTargetLibrary lib in lockFile.Targets.SelectMany(t => t.Libraries))
             {
-                if (!_sbrpPackages.TryGetValue($"{lib.Name}/{lib.Version}", out PackageInfo info))
+                if (!_sbrpPackages.TryGetValue($"{lib.Name}/{lib.Version}", out PackageInfo? info))
                 {
                     continue;
                 }
 
-                if (!info.References.TryGetValue(lockFile.Path, out HashSet<string> referencedTfms))
+                if (!info.References.TryGetValue(lockFile.Path, out HashSet<string>? referencedTfms))
                 {
                     referencedTfms = [];
                     info.References.Add(lockFile.Path, referencedTfms);
@@ -175,21 +180,13 @@ public class WriteSbrpUsageReport : Task
         }
     }
 
-    private class PackageInfo
+    private record PackageInfo(string Name, string Version, string Path, HashSet<string>? Tfms = default)
     {
         public string Id => $"{Name}/{Version}";
-        public string Name { get; set; }
-        public string Version { get; set; }
-        public string Path { get; set; }
-        public HashSet<string> Tfms { get; set; }
 
         // Dictionary of projects referencing the SBRP and the TFMs referenced by each project
         public Dictionary<string, HashSet<string>> References { get; } = [];
     }
 
-    private class Report
-    {
-        public PackageInfo[] Sbrps { get; set; }
-        public string[] UnreferencedSbrps { get; set; }
-    }
+    private record Report(IEnumerable<PackageInfo> Sbrps, IEnumerable<string> UnreferencedSbrps);
 }
