@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+#if NET
 using System.Formats.Tar;
+#endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
@@ -12,7 +14,10 @@ using Microsoft.NET.Build.Containers.Resources;
 namespace Microsoft.NET.Build.Containers;
 
 // Wraps the 'docker'/'podman' cli.
-internal sealed class DockerCli : ILocalRegistry
+internal sealed class DockerCli
+#if NET
+: ILocalRegistry
+#endif
 {
     public const string DockerCommand = "docker";
     public const string PodmanCommand = "podman";
@@ -21,7 +26,10 @@ internal sealed class DockerCli : ILocalRegistry
 
     private readonly ILogger _logger;
     private string? _command;
+
+#if NET
     private string? _fullCommandPath;
+#endif
 
     public DockerCli(string? command, ILoggerFactory loggerFactory)
     {
@@ -53,6 +61,7 @@ internal sealed class DockerCli : ILocalRegistry
         return command;
     }
 
+#if NET
     private async ValueTask<string> FindFullCommandPath(CancellationToken cancellationToken)
     {
         if (_fullCommandPath != null)
@@ -162,6 +171,7 @@ internal sealed class DockerCli : ILocalRegistry
 
     public string? GetCommand()
         => GetCommandAsync(default).GetAwaiter().GetResult();
+#endif
 
     /// <summary>
     /// Gets docker configuration.
@@ -183,7 +193,6 @@ internal sealed class DockerCli : ILocalRegistry
             dockerCommand.CaptureStdErr();
             CommandResult dockerCommandResult = dockerCommand.Execute();
 
-
             if (dockerCommandResult.ExitCode != 0)
             {
                 throw new DockerLoadException(Resource.FormatString(
@@ -194,17 +203,68 @@ internal sealed class DockerCli : ILocalRegistry
             }
 
             return JsonDocument.Parse(dockerCommandResult.StdOut);
-
-
         }
         catch (Exception e) when (e is not DockerLoadException)
         {
             throw new DockerLoadException(Resource.FormatString(nameof(Strings.DockerInfoFailed_Ex), e.Message));
         }
     }
+    /// <summary>
+    /// Checks if the registry is marked as insecure in the docker/podman config.
+    /// </summary>
+    /// <param name="registryDomain"></param>
+    /// <returns></returns>
+    public static bool IsInsecureRegistry(string registryDomain)
+    {
+        try
+        {
+            //check the docker config to see if the registry is marked as insecure
+            var rootElement = GetDockerConfig().RootElement;
+
+            //for docker
+            if (rootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == JsonValueKind.Object)
+            {
+                if (registryConfig.TryGetProperty("IndexConfigs", out var indexConfigs) && indexConfigs.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in indexConfigs.EnumerateObject())
+                    {
+                        if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure", out var secure) && !secure.GetBoolean())
+                        {
+                            if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //for podman
+            if (rootElement.TryGetProperty("registries", out var registries) && registries.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in registries.EnumerateObject())
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure", out var insecure) && insecure.GetBoolean())
+                    {
+                        if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        catch (DockerLoadException)
+        {
+            //if docker load fails, we can't check the config so we assume the registry is secure
+            return false;
+        }
+    }
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
 
+#if NET
     public static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -310,6 +370,7 @@ internal sealed class DockerCli : ILocalRegistry
 
         return _command;
     }
+#endif
 
     private static bool IsPodmanAlias()
     {
@@ -331,6 +392,7 @@ internal sealed class DockerCli : ILocalRegistry
         }
     }
 
+#if NET
     private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
     {
         try
@@ -353,6 +415,7 @@ internal sealed class DockerCli : ILocalRegistry
             return false;
         }
     }
+#endif
 
     public override string ToString()
     {
