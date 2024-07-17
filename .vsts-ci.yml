@@ -293,7 +293,6 @@ extends:
       ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
         parameters:
-          enableInternalSources: true
           platform:
             name: Managed
             container: centosStream9
