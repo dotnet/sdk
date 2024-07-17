@@ -2,7 +2,23 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <Description>Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only.</Description>
+    <Description><![CDATA[
+      Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only.
+
+      This package is automatically downloaded when your MSBuild version does not match your SDK version.
+      Then your project uses the compiler version matching your SDK version instead of the one bundled with MSBuild.
+
+      If you want to disable this behavior, set property `BuildWithNetFrameworkHostedCompiler` to `false`
+      in your `.csproj` or `Directory.Build.props` file, for example:
+
+      ```csproj
+      <Project>
+        <PropertyGroup>
+          <BuildWithNetFrameworkHostedCompiler>false</BuildWithNetFrameworkHostedCompiler>
+        </ProperyGroup>
+      </Project>
+      ```
+    ]]></Description>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
     <IncludeBuildOutput>false</IncludeBuildOutput>
