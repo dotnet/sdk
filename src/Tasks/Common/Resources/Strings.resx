@@ -952,5 +952,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</value>
     <comment>{StrBegin="NETSDK1215: "}</comment>
   </data>
-  <!-- The latest message added is TargetFrameworkIsNotRecommended. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="MicrosoftNetSdkCompilersToolsetNotFound" xml:space="preserve">
+    <value>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded. Either run NuGet package restore or set property 'BuildWithNetFrameworkHostedCompiler' to 'false' to force use of the compiler bundled with MSBuild.</value>
+    <comment>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="BuildWithNetFrameworkHostedCompiler"}</comment>
+  </data>
+  <!-- The latest message added is MicrosoftNetSdkCompilersToolsetNotFound. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

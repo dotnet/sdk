@@ -583,6 +583,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1157: biblioteca JIT '{0}' não encontrada.</target>
         <note>{StrBegin="NETSDK1157: "}</note>
       </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetNotFound">
+        <source>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded. Either run NuGet package restore or set property 'BuildWithNetFrameworkHostedCompiler' to 'false' to force use of the compiler bundled with MSBuild.</source>
+        <target state="new">NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded. Either run NuGet package restore or set property 'BuildWithNetFrameworkHostedCompiler' to 'false' to force use of the compiler bundled with MSBuild.</target>
+        <note>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
+      </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
         <source>NETSDK1061: The project was restored using {0} version {1}, but with current settings, version {2} would be used instead. To resolve this issue, make sure the same settings are used for restore and for subsequent operations such as build or publish. Typically this issue can occur if the RuntimeIdentifier property is set during build or publish but not during restore. For more information, see https://aka.ms/dotnet-runtime-patch-selection.</source>
         <target state="translated">NETSDK1061: o projeto foi restaurado usando o {0} versão {1}, mas, com as configurações atuais, a versão {2} seria usada. Para resolver esse problema, verifique se as mesmas configurações são usadas para restauração e para operações subsequentes, como compilação ou publicação. Normalmente, esse problema poderá ocorrer se a propriedade RuntimeIdentifier for definida durante a compilação ou a publicação, mas não durante a restauração. Para obter mais informações, consulte https://aka.ms/dotnet-runtime-patch-selection.</target>
