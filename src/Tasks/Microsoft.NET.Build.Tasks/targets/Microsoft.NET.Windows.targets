@@ -65,7 +65,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Add the right Windows SDK projections depending on whether 'UseUwp' is also set in the project -->
   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Full" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+    <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
     <FrameworkReference Condition=" '$(UseUwp)' != 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
@@ -134,7 +134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <!-- Target to emit an error when 'UseUwp' is not set, but 'Microsoft.Windows.SDK.NET.Ref.Full' is transitively referenced -->
+  <!-- Target to emit an error when 'UseUwp' is not set, but the full 'Microsoft.Windows.SDK.NET.Ref' item is transitively referenced -->
   <Target Name="_CheckForTransitiveWindowsSDKFullDependencies"
           AfterTargets="ResolvePackageAssets"
           Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
@@ -143,7 +143,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and '$(UseUwp)' != 'true' ">
     <ItemGroup>
       <_WindowsSDKFullTransitiveFrameworkReference Include="@(TransitiveFrameworkReference)"
-                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref.Full'" />
+                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref'" />
     </ItemGroup>
     <NetSdkError Condition="'@(_WindowsSDKFullTransitiveFrameworkReference)' != ''"
                  ResourceName="WindowsSDKFullMissingUseUwpProperty" />
