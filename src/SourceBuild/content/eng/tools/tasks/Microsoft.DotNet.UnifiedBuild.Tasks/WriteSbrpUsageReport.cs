@@ -82,9 +82,7 @@ public class WriteSbrpUsageReport : Task
         do
         {
             hasPurged = false;
-            PackageInfo[] unrefPkgs = GetUnreferencedSbrps()
-                .Select(pkg => pkg)
-                .ToArray();
+            PackageInfo[] unrefPkgs = GetUnreferencedSbrps().ToArray();
 
             foreach (PackageInfo sbrpPkg in _sbrpPackages.Values)
             {
@@ -106,8 +104,7 @@ public class WriteSbrpUsageReport : Task
     private IEnumerable<PackageInfo> GetUnreferencedSbrps() =>
         _sbrpPackages.Values.Where(pkg => pkg.References.Count == 0);
 
-    private string GetSbrpPackagesPath(string packageType) =>
-        Path.Combine(SbrpRepoSrcPath, packageType, "src");
+    private string GetSbrpPackagesPath(string packageType) => Path.Combine(SbrpRepoSrcPath, packageType, "src");
 
     private void ReadSbrpPackages(string packageType, bool trackTfms)
     {
