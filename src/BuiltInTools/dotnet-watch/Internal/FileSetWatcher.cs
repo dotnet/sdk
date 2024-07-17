@@ -1,28 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class FileSetWatcher : IDisposable
+    internal sealed class FileSetWatcher(FileSet fileSet, IReporter reporter) : IDisposable
     {
-        private readonly FileWatcher _fileWatcher;
-        private readonly FileSet _fileSet;
+        private readonly FileWatcher _fileWatcher = new(reporter);
 
-        public FileSetWatcher(FileSet fileSet, IReporter reporter)
+        public async Task<FileItem?> GetChangedFileAsync(Action startedWatching, CancellationToken cancellationToken)
         {
-            Ensure.NotNull(fileSet, nameof(fileSet));
-
-            _fileSet = fileSet;
-            _fileWatcher = new FileWatcher(reporter);
-        }
-
-        public async Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken, Action startedWatching)
-        {
-            foreach (var file in _fileSet)
+            foreach (var file in fileSet)
             {
                 _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
             }
@@ -32,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
-                if (_fileSet.TryGetValue(path, out var fileItem))
+                if (fileSet.TryGetValue(path, out var fileItem))
                 {
                     tcs.TrySetResult(fileItem);
                 }
@@ -47,13 +36,9 @@ namespace Microsoft.DotNet.Watcher.Internal
         }
 
         public Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken)
-        {
-            return GetChangedFileAsync(cancellationToken, () => { });
-        }
+            => GetChangedFileAsync(() => { }, cancellationToken);
 
         public void Dispose()
-        {
-            _fileWatcher.Dispose();
-        }
+            => _fileWatcher.Dispose();
     }
 }

@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         e.Message,
                         LocalizableStrings.NoManifestGuide
                     },
-                    verboseMessages: new[] {e.VerboseMessage},
+                    verboseMessages: new[] { e.VerboseMessage },
                     isUserError: false);
             }
         }
