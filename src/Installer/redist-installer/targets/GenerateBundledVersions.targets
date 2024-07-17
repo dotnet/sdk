@@ -1257,7 +1257,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ReadLinesFromFile>
 
     <PropertyGroup>
-      <_BundledMSBuildVersionMajorMinor>$([System.Version]::Parse('$(BundledMSBuildVersion)').ToString(2))</_BundledMSBuildVersionMajorMinor>
+      <_BundledMSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(BundledMSBuildVersion)').Major).%24([System.Version]::Parse('%24(BundledMSBuildVersion)').Minor)</_BundledMSBuildVersionMajorMinor>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -1276,7 +1276,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <MinimumMSBuildVersion>$(MinimumMSBuildVersion)</MinimumMSBuildVersion>
     <BundledMSBuildVersion>$(BundledMSBuildVersion)</BundledMSBuildVersion>
-    <_MSBuildVersionMajorMinor>$([System.Version]::Parse('$(MSBuildVersion)').Major).$([System.Version]::Parse('$(MSBuildVersion)').Minor)</_MSBuildVersionMajorMinor>
+    <_MSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(MSBuildVersion)').Major).%24([System.Version]::Parse('%24(MSBuildVersion)').Minor)</_MSBuildVersionMajorMinor>
     <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionNotEquals('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
   </PropertyGroup>
 </Project>
