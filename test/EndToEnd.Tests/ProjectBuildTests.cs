@@ -263,7 +263,7 @@ namespace EndToEnd.Tests
                 { "VB", ".vb" }
             };
 
-            var directory = InstantiateProjectTemplate("classlib", language, withNoRestore: false);
+            var directory = InstantiateProjectTemplate(templateName, language, withNoRestore: false);
             string projectDirectory = directory.Path;
             string expectedItemName = $"TestItem_{templateName}";
 

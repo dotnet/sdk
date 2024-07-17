@@ -7,7 +7,7 @@ namespace EndToEnd.Tests
 {
     public class GivenWeWantToRequireWindowsForDesktopApps(ITestOutputHelper log) : SdkTest(log)
     {
-        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD, Skip = "https://github.com/dotnet/sdk/issues/42230")]
         public void It_does_not_download_desktop_targeting_packs_on_unix()
         {
             var testProjectCreator = new TestProjectCreator()

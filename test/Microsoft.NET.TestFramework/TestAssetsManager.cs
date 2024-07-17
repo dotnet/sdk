@@ -187,7 +187,8 @@ namespace Microsoft.NET.TestFramework
             // We need to ensure the directory name isn't over 24 characters in length
             if (directoryName.Length > 24)
             {
-                var hash = GetTruncatedHash(directoryName.ToString(), HashAlgorithmName.SHA256);
+                using var sha256 = SHA256.Create();
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(directoryName.ToString()));
 
                 directoryName = directoryName.Remove(13, directoryName.Length - 13)
                                              .Append("---");
@@ -212,25 +213,6 @@ namespace Microsoft.NET.TestFramework
 #endif
 
             return directoryPath;
-
-            // From: https://github.com/dotnet/arcade/blob/3b7e3a1a6d626eb51c5528987c1af484a98e4b5c/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Utils.cs#L22
-            static string GetTruncatedHash(string value, HashAlgorithmName hashName)
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(value);
-#pragma warning disable SYSLIB0045 // Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.
-                HashAlgorithm algorithm = HashAlgorithm.Create(hashName.Name);
-#pragma warning restore SYSLIB0045
-                StringBuilder sb = new();
-
-                foreach (byte b in algorithm.ComputeHash(bytes))
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-
-                string result = sb.ToString();
-
-                return result.Substring(0, 32);
-            }
         }
     }
 }

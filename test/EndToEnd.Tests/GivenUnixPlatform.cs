@@ -10,7 +10,7 @@ namespace EndToEnd.Tests
         [InlineData("winforms")]
         public void ItDoesNotIncludeWindowsOnlyProjectTemplates(string template)
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = _testAssetsManager.CreateTestDirectory(identifier: template);
 
             new DotnetNewCommand(Log)
                 .WithWorkingDirectory(directory.Path)
