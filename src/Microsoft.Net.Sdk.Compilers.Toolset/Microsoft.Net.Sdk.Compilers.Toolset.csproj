@@ -4,6 +4,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <Description>Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only.</Description>
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>true</IsShippingPackage>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
