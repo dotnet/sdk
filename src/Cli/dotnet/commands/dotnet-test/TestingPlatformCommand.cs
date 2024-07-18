@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
-        private TestApplicationActionQueue actionQueue;
+        private TestApplicationActionQueue _actionQueue;
 
         private Task _namedPipeConnectionLoop;
         private string[] _args;
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
 
             if (ContainsHelpOption(_args))
             {
-                actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
                     testApp.HelpRequested += OnHelpRequested;
                     testApp.ErrorReceived += OnErrorReceived;
@@ -52,9 +52,8 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
-                    //testApp.TestResultReceived += OnTestResultReceived;
                     testApp.ErrorReceived += OnErrorReceived;
 
                     await testApp.RunAsync();
@@ -72,11 +71,17 @@ namespace Microsoft.DotNet.Cli
                 "-bl",
                         $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                         "-verbosity:q"]);
-            _ = msBuildForwardingApp.Execute();
+            int testsProjectResult = msBuildForwardingApp.Execute();
 
-            actionQueue.EnqueueCompleted();
+            if (testsProjectResult != 0)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                return testsProjectResult;
+            }
 
-            actionQueue.WaitAllActions();
+            _actionQueue.EnqueueCompleted();
+
+            _actionQueue.WaitAllActions();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             _cancellationToken.Cancel();
@@ -114,9 +119,9 @@ namespace Microsoft.DotNet.Cli
         {
             if (TryGetModulePath(request, out string modulePath))
             {
-                _testApplications[modulePath] = GenerateTestApplication(modulePath);
+                _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
                 // Write the test application to the channel
-                actionQueue.Enqueue(_testApplications[modulePath]);
+                _actionQueue.Enqueue(_testApplications[modulePath]);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
@@ -155,16 +160,6 @@ namespace Microsoft.DotNet.Cli
 
             commandLineOptionMessages = null;
             return false;
-        }
-
-        private TestApplication GenerateTestApplication(string modulePath)
-        {
-            var testApplication = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-            return testApplication;
-        }
-
-        private void OnTestResultReceived(object sender, EventArgs args)
-        {
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
