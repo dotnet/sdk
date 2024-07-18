@@ -161,7 +161,17 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
+            var installStatePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(sdkFeatureVersion), installRoot), "default.json");
+            var oldInstallState = InstallStateContents.FromPath(installStatePath);
+            oldInstallState.Manifests = new Dictionary<string, string>()
+            {
+                {installingWorkload, $"6.0.102/{sdkFeatureVersion}" }
+            };
+            Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
+            File.WriteAllText(installStatePath, oldInstallState.ToString());
             updateCommand.Execute();
+            var newInstallState = InstallStateContents.FromPath(installStatePath);
+            newInstallState.Manifests.Should().BeNull();
 
             foreach (var pack in workloadPacks)
             {
