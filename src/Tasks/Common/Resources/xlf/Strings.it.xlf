@@ -583,6 +583,11 @@ The following are names of parameters or literal values and should not be transl
 &lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</target>
         <note>{StrBegin="NETSDK1212: "}</note>
       </trans-unit>
+      <trans-unit id="ItemMissingValue">
+        <source>NETSDK1214: Method {0} failed with a null reference exception. This typically indicates that the corresponding input to the ResolvePackageAssets task is missing a value.</source>
+        <target state="new">NETSDK1214: Method {0} failed with a null reference exception. This typically indicates that the corresponding input to the ResolvePackageAssets task is missing a value.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="JitLibraryNotFound">
         <source>NETSDK1157: JIT library '{0}' not found.</source>
         <target state="translated">NETSDK1157: la libreria '{0}' di JIT non è stata trovata.</target>
