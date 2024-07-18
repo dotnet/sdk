@@ -19,13 +19,35 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ProjectOption = new("--project")
         {
-            Description = LocalizableStrings.CommandOptionProjectDescription
+            Description = LocalizableStrings.CommandOptionProjectDescription,
+            DefaultValueFactory = (System.CommandLine.Parsing.ArgumentResult inputArg) =>
+            {
+                return inputArg.Tokens switch
+                {
+                [] => FindSingleProjectInDirectory(Environment.CurrentDirectory),
+                [var dirOrFile] => Directory.Exists(dirOrFile.Value) ? FindSingleProjectInDirectory(dirOrFile.Value) : dirOrFile.Value,
+                    _ => throw new System.InvalidOperationException("Impossible, System.CommandLine parser prevents this due to arity constraints.") //
+                };
+            },
         };
 
-        public static readonly CliOption<IEnumerable<string>> PropertyOption = new ForwardedOption<IEnumerable<string>>("--property", "-p")
+        private static string FindSingleProjectInDirectory(string directory)
         {
-            Description = LocalizableStrings.PropertyOptionDescription
-        }.SetForwardingFunction((values, parseResult) => parseResult.GetRunCommandPropertyValues().Select(value => $"-p:{value}"));
+            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
+
+            if (projectFiles.Length == 0)
+            {
+                throw new Utils.GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, directory, "--project");
+            }
+            else if (projectFiles.Length > 1)
+            {
+                throw new Utils.GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+            }
+
+            return projectFiles[0];
+        }
+
+        public static readonly CliOption<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
         public static readonly CliOption<string> LaunchProfileOption = new("--launch-profile", "-lp")
         {
@@ -50,7 +72,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-        public static readonly CliArgument<IEnumerable<string>> ApplicationArguments = new("applicationArguments")
+        public static readonly CliArgument<string[]> ApplicationArguments = new("applicationArguments")
         {
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = "Arguments passed to the application that is being run."

@@ -14,15 +14,14 @@ namespace Microsoft.DotNet.Tools.Run
 {
     public partial class RunCommand
     {
-        public string Configuration { get; private set; }
-        public string Framework { get; private set; }
-        public string Runtime { get; private set; }
+        private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
+
         public bool NoBuild { get; private set; }
         public string Project { get; private set; }
-        public IEnumerable<string> Args { get; set; }
+        public string[] Args { get; set; }
         public bool NoRestore { get; private set; }
         public bool Interactive { get; private set; }
-        public IEnumerable<string> RestoreArgs { get; private set; }
+        public string[] RestoreArgs { get; private set; }
 
         private bool ShouldBuild => !NoBuild;
         private bool HasQuietVerbosity =>
@@ -34,10 +33,28 @@ namespace Microsoft.DotNet.Tools.Run
         public bool NoLaunchProfile { get; private set; }
         private bool UseLaunchProfile => !NoLaunchProfile;
 
+        public RunCommand(
+            bool noBuild,
+            string project,
+            string launchProfile,
+            bool noLaunchProfile,
+            bool noRestore,
+            bool interactive,
+            string[] restoreArgs,
+            string[] args)
+        {
+            NoBuild = noBuild;
+            Project = project;
+            LaunchProfile = launchProfile;
+            NoLaunchProfile = noLaunchProfile;
+            Args = args;
+            RestoreArgs = GetRestoreArguments(restoreArgs);
+            NoRestore = noRestore;
+            Interactive = interactive;
+        }
+
         public int Execute()
         {
-            Initialize();
-
             if (!TryGetLaunchProfileSettingsIfNeeded(out var launchSettings))
             {
                 return 1;
@@ -92,31 +109,6 @@ namespace Microsoft.DotNet.Tools.Run
                 }
             }
             return targetCommand;
-        }
-
-        public RunCommand(string configuration,
-            string framework,
-            string runtime,
-            bool noBuild,
-            string project,
-            string launchProfile,
-            bool noLaunchProfile,
-            bool noRestore,
-            bool interactive,
-            IEnumerable<string> restoreArgs,
-            IEnumerable<string> args)
-        {
-            Configuration = configuration;
-            Framework = framework;
-            Runtime = runtime;
-            NoBuild = noBuild;
-            Project = project;
-            LaunchProfile = launchProfile;
-            NoLaunchProfile = noLaunchProfile;
-            Args = args;
-            RestoreArgs = restoreArgs;
-            NoRestore = noRestore;
-            Interactive = interactive;
         }
 
         private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
@@ -195,11 +187,9 @@ namespace Microsoft.DotNet.Tools.Run
 
         private void EnsureProjectIsBuilt()
         {
-            var restoreArgs = GetRestoreArguments();
-
             var buildResult =
                 new RestoringCommand(
-                    restoreArgs.Prepend(Project),
+                    RestoreArgs.Prepend(Project),
                     NoRestore,
                     advertiseWorkloadUpdates: false
                 ).Execute();
@@ -211,7 +201,7 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private List<string> GetRestoreArguments()
+        private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
         {
             List<string> args = new()
             {
@@ -220,59 +210,78 @@ namespace Microsoft.DotNet.Tools.Run
 
             // --interactive need to output guide for auth. It cannot be
             // completely "quiet"
-            if (!RestoreArgs.Any(a => a.StartsWith("-verbosity:")))
+            if (!cliRestoreArgs.Any(a => a.StartsWith("-verbosity:")))
             {
                 var defaultVerbosity = Interactive ? "minimal" : "quiet";
                 args.Add($"-verbosity:{defaultVerbosity}");
             }
 
-            args.AddRange(RestoreArgs);
+            args.AddRange(cliRestoreArgs);
 
-            return args;
+            return args.ToArray();
         }
-
-        private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
         private ICommand GetTargetCommand()
         {
-            // TODO for MSBuild usage here: need to sync properties passed to MSBuild during the build with this evaluation
-            // TODO for MSBuild usage here: need to sync loggers (primarily binlogger) used with this evaluation
-            var project = EvaluateProject();
+            // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
+            var project = EvaluateProject(Project, RestoreArgs);
             InvokeRunArgumentsTarget(project);
-            var runProperties = ReadRunPropertiesFromProject(project);
+            var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
 
-            ProjectInstance EvaluateProject()
+            static ProjectInstance EvaluateProject(string projectFilePath, string[] restoreArgs)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     // This property disables default item globbing to improve performance
                     // This should be safe because we are not evaluating items, only properties
-                    { Constants.EnableDefaultItems,    "false" },
+                    { Constants.EnableDefaultItems,  "false" },
                     { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
                 };
 
-                if (!string.IsNullOrWhiteSpace(Configuration))
+                var userPassedProperties = DeriveUserPassedProperties(restoreArgs);
+                if (userPassedProperties is not null)
                 {
-                    globalProperties.Add("Configuration", Configuration);
+                    foreach (var (key, values) in userPassedProperties)
+                    {
+                        globalProperties[key] = string.Join(";", values);
+                    }
                 }
-
-                if (!string.IsNullOrWhiteSpace(Framework))
-                {
-                    globalProperties.Add("TargetFramework", Framework);
-                }
-
-                if (!string.IsNullOrWhiteSpace(Runtime))
-                {
-                    globalProperties.Add("RuntimeIdentifier", Runtime);
-                }
-
-                var project = new ProjectInstance(Project, globalProperties, null);
+                var project = new ProjectInstance(projectFilePath, globalProperties, null);
                 return project;
             }
 
-            RunProperties ReadRunPropertiesFromProject(ProjectInstance project)
+            static Dictionary<string, List<string>>? DeriveUserPassedProperties(string[] args)
+            {
+                var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
+                var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
+                var propertyParseResult = propertyParsingConfiguration.Parse(args);
+                var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
+
+                if (propertyValues != null)
+                {
+                    var userPassedProperties = new Dictionary<string, List<string>>(propertyValues.Length, StringComparer.OrdinalIgnoreCase);
+                    foreach (var property in propertyValues)
+                    {
+                        foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
+                        {
+                            if (userPassedProperties.TryGetValue(key, out var existingValues))
+                            {
+                                existingValues.Add(value);
+                            }
+                            else
+                            {
+                                userPassedProperties[key] = [value];
+                            }
+                        }
+                    }
+                    return userPassedProperties;
+                }
+                return null;
+            }
+
+            static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
             {
                 string runProgram = project.GetPropertyValue("RunCommand");
                 if (string.IsNullOrEmpty(runProgram))
@@ -283,14 +292,14 @@ namespace Microsoft.DotNet.Tools.Run
                 string runArguments = project.GetPropertyValue("RunArguments");
                 string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
 
-                if (Args.Any())
+                if (applicationArgs.Any())
                 {
-                    runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(Args);
+                    runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
                 }
                 return new(runProgram, runArguments, runWorkingDirectory);
             }
 
-            ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
+            static ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
             {
                 CommandSpec commandSpec = new(runProperties.RunCommand, runProperties.RunArguments);
 
@@ -309,9 +318,9 @@ namespace Microsoft.DotNet.Tools.Run
                 return command;
             }
 
-            void InvokeRunArgumentsTarget(ProjectInstance project)
+            static void InvokeRunArgumentsTarget(ProjectInstance project)
             {
-                if (project.Build(["ComputeRunArguments"], loggers: null, remoteLoggers: null, out var targetOutputs))
+                if (project.Build(["ComputeRunArguments"], loggers: null, remoteLoggers: null, out var _targetOutputs))
                 {
 
                 }
@@ -322,7 +331,7 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private void ThrowUnableToRunError(ProjectInstance project)
+        private static void ThrowUnableToRunError(ProjectInstance project)
         {
             string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
             if (!string.IsNullOrEmpty(targetFrameworks))
@@ -340,35 +349,6 @@ namespace Microsoft.DotNet.Tools.Run
                         "dotnet run",
                         "OutputType",
                         project.GetPropertyValue("OutputType")));
-        }
-
-        private void Initialize()
-        {
-            if (string.IsNullOrWhiteSpace(Project))
-            {
-                Project = Directory.GetCurrentDirectory();
-            }
-
-            if (Directory.Exists(Project))
-            {
-                Project = FindSingleProjectInDirectory(Project);
-            }
-        }
-
-        private static string FindSingleProjectInDirectory(string directory)
-        {
-            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
-
-            if (projectFiles.Length == 0)
-            {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, directory, "--project");
-            }
-            else if (projectFiles.Length > 1)
-            {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
-            }
-
-            return projectFiles[0];
         }
     }
 }
