@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <Description><![CDATA[
-      Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only: do not reference this package directly.
+      Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only: do not reference this package directly as it is explicitly not supported in that fashion.
 
       This package is automatically downloaded when your MSBuild version does not match your SDK version.
       Then your project uses the compiler version matching your SDK version instead of the one bundled with MSBuild.
