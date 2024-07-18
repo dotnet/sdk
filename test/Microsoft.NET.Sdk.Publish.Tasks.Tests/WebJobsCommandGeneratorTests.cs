@@ -9,6 +9,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
     public class WebJobsCommandGeneratorTests
     {
         [Theory]
+        // Windows
         [InlineData("c:/test/WebApplication1.dll", false, ".exe", "dotnet WebApplication1.dll %*")]
 
         [InlineData("c:/test/WebApplication1.dll", true, ".exe", "WebApplication1.exe %*")]
@@ -19,12 +20,19 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
 
         [InlineData("/usr/test/WebApplication1.dll", true, ".sh", "WebApplication1.sh %*")]
         [InlineData("/usr/test/WebApplication1.dll", false, ".sh", "dotnet WebApplication1.dll %*")]
-        public void WebJobsCommandGenerator_Generates_Correct_RunCmd(string targetPath, bool useAppHost, string executableExtension, string expected)
+
+        //Linux
+        [InlineData("c:/test/WebApplication1.dll", false, "", "#!/bin/bash\ndotnet WebApplication1.dll \"$@\"", true)]
+        [InlineData("c:/test/WebApplication1.dll", true, "", "#!/bin/bash\n. WebApplication1 \"$@\"", true)]
+
+        [InlineData("/usr/test/WebApplication1.dll", false, ".sh", "#!/bin/bash\ndotnet WebApplication1.dll \"$@\"", true)]
+        [InlineData("/usr/test/WebApplication1.dll", true, ".sh", "#!/bin/bash\n. WebApplication1.sh \"$@\"", true)]
+        public void WebJobsCommandGenerator_Generates_Correct_RunCmd(string targetPath, bool useAppHost, string executableExtension, string expected, bool isLinux = false)
         {
             // Arrange
 
             // Test
-            string generatedRunCommand = WebJobsCommandGenerator.RunCommand(targetPath, useAppHost, executableExtension);
+            string generatedRunCommand = WebJobsCommandGenerator.RunCommand(targetPath, useAppHost, executableExtension, isLinux);
 
             // Assert
             Assert.Equal(expected, generatedRunCommand);
