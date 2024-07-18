@@ -106,8 +106,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     _recorder.Run(() =>
                     {
-                        var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
-
                         DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                         var workloadIds = Enumerable.Empty<WorkloadId>();
                         RunInNewTransaction(context =>
