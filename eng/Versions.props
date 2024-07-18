@@ -157,6 +157,7 @@
     <SystemSecurityPermissionsPackageVersion>9.0.0-preview.7.24366.18</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.7.24366.18</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-preview.7.24366.18</SystemTextJsonPackageVersion>
+    <SystemTextJsonBasePackageVersion>8.0.0</SystemTextJsonBasePackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-preview.7.24366.18</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>

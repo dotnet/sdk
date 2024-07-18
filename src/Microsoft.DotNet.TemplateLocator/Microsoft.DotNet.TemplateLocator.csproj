@@ -25,7 +25,7 @@
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
     </ItemGroup>
   </Target>
-
+  m
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">
     <ItemGroup>
       <ReferencePath Condition="'%(ReferencePath.FileName)' == 'Microsoft.VisualStudio.Setup.Configuration.Interop'">
@@ -58,6 +58,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json"  VersionOverride="8.0.0" />
+    <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonBasePackageVersion)" />
   </ItemGroup>
 </Project>
