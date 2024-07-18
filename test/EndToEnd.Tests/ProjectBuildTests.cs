@@ -263,7 +263,7 @@ namespace EndToEnd.Tests
                 { "VB", ".vb" }
             };
 
-            var directory = InstantiateProjectTemplate(templateName, language, withNoRestore: false);
+            var directory = InstantiateProjectTemplate("classlib", language, withNoRestore: false, itemName: templateName);
             string projectDirectory = directory.Path;
             string expectedItemName = $"TestItem_{templateName}";
 
@@ -457,9 +457,17 @@ namespace EndToEnd.Tests
             }
         }
 
-        private TestDirectory InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true)
+        private TestDirectory InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true, string itemName = "")
         {
-            var identifier = string.IsNullOrWhiteSpace(language) ? templateName : $"{templateName}[{language}]";
+            var identifier = templateName;
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                identifier += $"[{language}]";
+            }
+            if (!string.IsNullOrWhiteSpace(itemName))
+            {
+                identifier += $"({itemName})";
+            }
             var directory = _testAssetsManager.CreateTestDirectory(identifier: identifier);
             string projectDirectory = directory.Path;
 

@@ -13,6 +13,7 @@ namespace EndToEnd.Tests
             var directory = _testAssetsManager.CreateTestDirectory(identifier: template);
 
             new DotnetNewCommand(Log)
+                .WithVirtualHive()
                 .WithWorkingDirectory(directory.Path)
                 .Execute(template).Should().Fail()
                     .And.HaveStdErrContaining($": {template}.");
