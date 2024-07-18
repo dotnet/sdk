@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <Description>Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only.</Description>
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <Content Include="$(PkgMicrosoft_Net_Compilers_Toolset_Framework)\tasks\net472\**\*" PackagePath="%(RecursiveDir)" />
+  </ItemGroup>
+
+</Project>
