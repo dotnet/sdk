@@ -235,7 +235,10 @@ namespace Microsoft.DotNet.Tools.Run
 
         private ICommand GetTargetCommand()
         {
+            // TODO for MSBuild usage here: need to sync properties passed to MSBuild during the build with this evaluation
+            // TODO for MSBuild usage here: need to sync loggers (primarily binlogger) used with this evaluation
             var project = EvaluateProject();
+            InvokeRunArgumentsTarget(project);
             var runProperties = ReadRunPropertiesFromProject(project);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
@@ -304,6 +307,18 @@ namespace Microsoft.DotNet.Tools.Run
                     command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
                 }
                 return command;
+            }
+
+            void InvokeRunArgumentsTarget(ProjectInstance project)
+            {
+                if (project.Build(["ComputeRunArguments"], loggers: null, remoteLoggers: null, out var targetOutputs))
+                {
+
+                }
+                else
+                {
+                    throw new GracefulException("boom");
+                }
             }
         }
 
