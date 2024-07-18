@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.Cli
         private readonly string[] _args;
 
         public event EventHandler<HelpEventArgs> HelpRequested;
-        //public event EventHandler<EventArgs> TestResultReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
         public string ModulePath => _modulePath;
