@@ -79,6 +79,7 @@ public class LicenseScanTests : TestBase
         "lgpl-2.0-plus", // https://opensource.org/license/lgpl-2-0/
         "lgpl-2.1", // https://opensource.org/license/lgpl-2-1/
         "lgpl-2.1-plus", // https://opensource.org/license/lgpl-2-1/
+        "lgpl-3.0", // https://opensource.org/license/lgpl-3-0/
         "lzma-sdk-9.22", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/lzma-sdk-9.22.LICENSE
         "mit", // https://opensource.org/license/mit/
         "mit-addition", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-addition.LICENSE
@@ -92,6 +93,7 @@ public class LicenseScanTests : TestBase
         "object-form-exception-to-mit", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/object-form-exception-to-mit.LICENSE
         "ofl-1.1", // https://opensource.org/license/ofl-1-1/
         "osf-1990", // https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#HP_Variant
+        "pcre2-exception", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/pcre2-exception.LICENSE
         "public-domain", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain.LICENSE
         "public-domain-disclaimer", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain-disclaimer.LICENSE
         "python", // https://opensource.org/license/python-2-0/

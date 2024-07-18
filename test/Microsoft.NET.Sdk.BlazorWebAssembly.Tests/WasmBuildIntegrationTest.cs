@@ -128,7 +128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
-            ExecuteCommand(buildCommand,"/p:Configuration=Release")
+            ExecuteCommand(buildCommand, "/p:Configuration=Release")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();

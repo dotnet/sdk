@@ -88,19 +88,6 @@
     </ItemGroup>
   </Target>
 
-  <!-- Similarly to FSharp above, Roslyn needs to publish its Framework.Toolset package alongside SDK
-       so it can be picked up in BuildWithNetFrameworkHostedCompiler scenarios. -->
-  <PropertyGroup>
-    <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
-  </PropertyGroup>
-
-  <Target Name="_ResolvePublishRoslynNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
-    <ItemGroup>
-      <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
-      <ItemsToPushToBlobFeed Include="@(RoslynPackagesToPush)" IsShipping="true" />
-    </ItemGroup>
-  </Target>
-
   <!-- We use a separate target to publish this to blob storage so that we can push this to a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish" Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <ItemGroup>

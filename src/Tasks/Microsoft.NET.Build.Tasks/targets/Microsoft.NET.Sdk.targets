@@ -220,24 +220,32 @@ Copyright (c) .NET Foundation. All rights reserved.
     </RebuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
+          This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
+    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+    <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+  </PropertyGroup>
+
+  <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.CopyRefAssembly" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Csc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+
+  <ItemGroup Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'">
+    <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
+  </ItemGroup>
+
+  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageReference" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
     <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
-         If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
-         a duplicate PackageReference. This makes it more explicit that that is not supported. -->
+         If they do, and BuildWithNetFrameworkHostedCompiler is also set, the former will override the latter.
+         This makes it more explicit that that is not supported. -->
     <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
-
-    <PropertyGroup>
-      <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
-           This is to reduce 'tearing'/depdendency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
-      <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' ">
-      <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
-    </ItemGroup>
-
   </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.
@@ -504,6 +512,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_AggressiveAttributeTrimming)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.DefaultValueAttribute.IsSupported"
+                                    Condition="'$(_DefaultValueAttributeSupport)' != ''"
+                                    Value="$(_DefaultValueAttributeSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.Design.IDesignerHost.IsSupported"
+                                    Condition="'$(_DesignerHostSupport)' != ''"
+                                    Value="$(_DesignerHostSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"
                                     Condition="'$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)' != ''"
                                     Value="$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)"
@@ -524,9 +542,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(MetricsSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Diagnostics.StackTrace.IsSupported"
+                                    Condition="'$(StackTraceSupport)' != ''"
+                                    Value="$(StackTraceSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Tracing.EventSource.IsSupported"
                                     Condition="'$(EventSourceSupport)' != ''"
                                     Value="$(EventSourceSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Drawing.Design.UITypeEditor.IsSupported"
+                                    Condition="'$(_WinFormsUITypeEditorSupport)' != ''"
+                                    Value="$(_WinFormsUITypeEditorSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.GC.Concurrent"
@@ -676,6 +704,41 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
                                     Condition="'$(UseWindowsThreadPool)' != ''"
                                     Value="$(UseWindowsThreadPool)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.ActiveXImpl.IsSupported"
+                                    Condition="'$(_ActiveXImplSupport)' != ''"
+                                    Value="$(_ActiveXImplSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Binding.IsSupported"
+                                    Condition="'$(_WinFormsBindingSupport)' != ''"
+                                    Value="$(_WinFormsBindingSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Control.AreDesignTimeFeaturesSupported"
+                                    Condition="'$(_WinFormsDesignTimeFeaturesSupport)' != ''"
+                                    Value="$(_WinFormsDesignTimeFeaturesSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Control.UseComponentModelRegisteredTypes"
+                                    Condition="'$(_UseComponentModelRegisteredTypes)' != ''"
+                                    Value="$(_UseComponentModelRegisteredTypes)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.ImageIndexConverter.IsSupported"
+                                    Condition="'$(_WinFormsImageIndexConverterSupport)' != ''"
+                                    Value="$(_WinFormsImageIndexConverterSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.MdiWindowDialog.IsSupported"
+                                    Condition="'$(_MdiWindowDialogSupport)' != ''"
+                                    Value="$(_MdiWindowDialogSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Windows.Forms.Primitives.TypeConverterHelper.UseComponentModelRegisteredTypes"
+                                    Condition="'$(_UseComponentModelRegisteredTypes)' != ''"
+                                    Value="$(_UseComponentModelRegisteredTypes)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
