@@ -314,6 +314,7 @@ jobs:
 
         if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --source-only"
+          extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
         fi
 
         if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
@@ -433,8 +434,7 @@ jobs:
 
         cd "$(sourcesPath)"
 
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*.binlog"
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*.log"
+        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
@@ -468,8 +468,7 @@ jobs:
         mkdir -p ${targetFolder}
 
         cd "$(sourcesPath)"
-        find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
         if [ -d "artifacts/scenario-tests/" ]; then
           find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
