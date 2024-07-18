@@ -114,6 +114,61 @@ public class ResolveCompressedAssetsTest
     }
 
     [Fact]
+    public void ResolvesAssets_WithFingerprint_MatchingIncludePattern()
+    {
+        // Arrange
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var asset = new StaticWebAsset()
+        {
+            Identity = ItemSpec,
+            OriginalItemSpec = OriginalItemSpec,
+            RelativePath = Path.GetFileNameWithoutExtension(ItemSpec)+"#[.{fingerprint}]" + Path.GetExtension(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
+        }.ToTaskItem();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            IncludePatterns = "**\\*.tmp",
+            Formats = "gzip;brotli",
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        task.AssetsToCompress.Should().HaveCount(2);
+        task.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
+        var relativePath = task.AssetsToCompress[0].GetMetadata("RelativePath");
+        relativePath.Should().EndWith(".gz");
+        relativePath = Path.GetFileNameWithoutExtension(relativePath);
+        relativePath.Should().EndWith(".tmp");
+        relativePath = Path.GetFileNameWithoutExtension(relativePath);
+        relativePath.Should().EndWith("#[.{fingerprint=v1}]");
+        task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
+        relativePath = task.AssetsToCompress[1].GetMetadata("RelativePath");
+        relativePath.Should().EndWith(".br");
+        relativePath = Path.GetFileNameWithoutExtension(relativePath);
+        relativePath.Should().EndWith(".tmp");
+        relativePath = Path.GetFileNameWithoutExtension(relativePath);
+        relativePath.Should().EndWith("#[.{fingerprint=v1}]");
+    }
+
+    [Fact]
     public void ExcludesAssetsMatchingExcludePattern()
     {
         // Arrange

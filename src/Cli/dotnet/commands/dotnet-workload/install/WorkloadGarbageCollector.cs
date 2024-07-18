@@ -73,7 +73,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var resolver = GetResolver();
 
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-            
+
+            foreach (var set in installedWorkloadSets.Keys)
+            {
+                WorkloadSetsToKeep.Add(set);
+                _verboseReporter.WriteLine($"GC: Keeping workload set version {set} because workload set GC isn't implemented yet.");
+            }
+
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(installStateFilePath))
             {

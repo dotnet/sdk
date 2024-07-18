@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpointProperty>, IEquatable<StaticWebAssetEndpointProperty>
 {
     public string Name { get; set; }
@@ -48,4 +48,6 @@ public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpoint
         return HashCode.Combine(Name, Value);
 #endif
     }
+
+    private string GetDebuggerDisplay() => $"Name: {Name}, Value: {Value}";
 }

@@ -7,6 +7,11 @@
         <target state="translated">広告マニフェストのみを更新します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="new">Cannot use the {0} and {1} options together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">インストールされたすべてのワークロードを更新します。</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">指定されたロールバック定義ファイルに基づいてワークロードを更新します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">ワークロードの更新が見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -57,11 +67,6 @@
         <target state="translated">ワークロード更新パッケージをキャッシュにダウンロードできませんでした: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">.NET ワークロード更新の --mode 引数に対する引数 "{0}" が無効です。サポートされているモードは、"workloadset"、"loosemanifest"、および "auto" のみです。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">広告マニフェストを正常に更新しました。</target>
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">ワークロードの更新に失敗しました: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">ワークロード バージョン {0} が見つかりませんでした。</target>
         <note />
       </trans-unit>
     </body>

@@ -63,6 +63,38 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
+        [Theory]
+        [InlineData("#[.{fingerprint}]?", "index.html", "optional.html")]
+        [InlineData("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
+        [InlineData("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
+        public void ComputeDevelopmentManifest_ReplacesAssetTokens(string fingerprintExpression, string path, string fileName)
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    (path, CreateMatchNode(0, fileName))),
+            Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var assets = new[] { CreateAsset(fileName, $"index{fingerprintExpression}.html", assetKind: StaticWebAsset.AssetKinds.All) };
+            var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+            // Act
+            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+            // Assert
+            manifest.Should().BeEquivalentTo(expectedManifest);
+        }
+
         [Fact]
         public void ComputeDevelopmentManifest_IncludesAllAssets()
         {
@@ -550,6 +582,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 AssetKind = assetKind ?? StaticWebAsset.AssetKinds.All,
                 AssetMode = assetMode ?? StaticWebAsset.AssetModes.All,
                 AssetRole = StaticWebAsset.AssetRoles.Primary,
+                Fingerprint = "fingerprint",
                 ContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot ?? Environment.CurrentDirectory),
                 OriginalItemSpec = identity
             };

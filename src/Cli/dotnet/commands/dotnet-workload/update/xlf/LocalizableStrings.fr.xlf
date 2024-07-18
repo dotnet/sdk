@@ -7,6 +7,11 @@
         <target state="translated">Mettre à jour uniquement les manifestes de publicité</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="new">Cannot use the {0} and {1} options together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Mettez à jour toutes les charges de travail installées.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Mettez à jour les charges de travail en fonction du fichier de définition de restauration spécifié.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">Aucune mise à jour de charge de travail trouvée.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -57,11 +67,6 @@
         <target state="translated">Échec du téléchargement des packages de mise à jour de charge de travail dans le cache : {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Argument «{0}» non valide à l’argument --mode pour la mise à jour de charge de travail dotnet. Seuls les modes pris en charge sont « workloadset », « loosemanifest » et « auto ».</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">Les manifestes de publicité ont été mis à jour.</target>
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Échec de la mise à jour du chargement vers le serveur : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Nous n’avons pas pu trouver la version de la charge de travail {0}.</target>
         <note />
       </trans-unit>
     </body>

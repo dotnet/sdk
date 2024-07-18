@@ -11,7 +11,7 @@
        - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
 
   <ItemGroup>
-    <RepositoryReference Include="installer" />
+    <RepositoryReference Include="sdk" />
     <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 

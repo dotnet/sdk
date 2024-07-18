@@ -8,10 +8,8 @@ using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmPwaManifestTests : AspNetSdkTest
+    public class WasmPwaManifestTests(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public WasmPwaManifestTests(ITestOutputHelper log) : base(log) { }
-
         [Fact]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
@@ -30,9 +28,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     }
                 });
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute()
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -67,8 +65,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = OutputPathCalculator.FromProject(Path.Combine(testInstance.TestRoot, "blazorwasm")).GetOutputDirectory();
@@ -93,8 +91,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -121,8 +119,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -158,8 +156,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     }
                 });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -177,8 +175,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(cssFile, ".updated { }");
 
             // Assert
-            publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
@@ -208,8 +206,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     }
                 });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -223,8 +221,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var capture = match.Groups[1].Value;
 
             // Act && Assert
-            publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
-            publishCommand.Execute().Should().Pass();
+            publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");

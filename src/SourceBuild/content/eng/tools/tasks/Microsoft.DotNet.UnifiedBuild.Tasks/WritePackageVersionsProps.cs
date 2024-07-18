@@ -4,8 +4,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -20,7 +18,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
     public class VersionEntry
     {
         public string Name;
-        public string Version;
+        public NuGetVersion Version;
     }
 
     /// <summary>
@@ -50,10 +48,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         private const string DefaultVersionPropsFlowType = AllPackagesVersionPropsFlowType;
 
         /// <summary>
-        /// Set of input nuget package files to generate version properties for.
+        /// Set of packages built by dependencies of this repo during this build.
+        ///
+        /// %(Identity): Package identity.
+        /// %(Version): Package version.
         /// </summary>
         [Required]
-        public ITaskItem[] NuGetPackages { get; set; }
+        public ITaskItem[] KnownPackages { get; set; }
 
         /// <summary>
         /// File where the version properties should be written.
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
         /// <summary>
         /// Properties to add to the build output props, which may not exist as nupkgs.
-        /// FOr example, this is used to pass the version of the CLI toolset archives.
+        /// For example, this is used to pass the version of the CLI toolset archives.
         /// 
         /// %(Identity): Package identity.
         /// %(Version): Package version.
@@ -165,30 +166,28 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             if (VersionPropsFlowType == DependenciesOnlyVersionPropsFlowType && (string.IsNullOrEmpty(VersionDetails) || !File.Exists(VersionDetails)))
             {
                 Log.LogError($"When version flow type is DependenciesOnly, the VersionDetails task parameter must point to a valid path to the Version.Details.xml file for the repo. " +
-                    "Provided file path '{VersionDetails}' does not exist.");
+                    $"Provided file path '{VersionDetails}' does not exist.");
                 return !Log.HasLoggedErrors;
             }
 
+            KnownPackages ??= Array.Empty<ITaskItem>();
+
             // First, obtain version information from the packages and additional assets that
             // are provided.
-            var latestPackages = NuGetPackages
-                .Select(item =>
-                {
-                    using (var reader = new PackageArchiveReader(item.GetMetadata("FullPath")))
+            var knownPackages = KnownPackages
+                .Select(item => new VersionEntry()
                     {
-                        return reader.GetIdentity();
-                    }
-                })
-                .GroupBy(identity => identity.Id)
-                .Select(g => g.OrderBy(id => id.Version).Last())
-                .OrderBy(id => id.Id)
-                .Select(identity => new VersionEntry()
-                    {
-                        Name = identity.Id,
-                        Version = identity.Version.ToString()
+                        Name = item.GetMetadata("Identity"),
+                        Version = new NuGetVersion(item.GetMetadata("Version"))
                     });
 
-            var packageElementsToWrite = latestPackages;
+            // We may have multiple versions of the same package. We'll keep the latest one.
+            // This can even happen in the KnownPackages list, as a repo (such as source-build-reference-packages)
+            // may have multiple versions of the same package.
+            IEnumerable<VersionEntry> packageElementsToWrite = knownPackages
+                .GroupBy(identity => identity.Name)
+                .Select(g => g.OrderByDescending(id => id.Version).First())
+                .OrderBy(id => id.Name);
 
             // Then, if version flow type is "DependenciesOnly", filter those
             // dependencies that do not appear in the version.details.xml file.

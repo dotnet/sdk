@@ -19,6 +19,11 @@
        Using a priority that can be altered in the build is also a way to allow libraries to bring their own content type mappings
        and to make the maping of some content types more efficient by bypassing the rules for uncommon content types.
   -->
+
+  <PropertyGroup>  
+    <StaticWebAssetEndpointDefaultMediaCacheControlHeader Condition="'$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)' == ''" >max-age=3600, must-revalidate</StaticWebAssetEndpointDefaultMediaCacheControlHeader>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Very common -->
     <StaticWebAssetContentTypeMapping Include="text/javascript" Pattern="*.js" Priority="10" />
@@ -76,32 +81,32 @@
     <StaticWebAssetContentTypeMapping Include="text/markdown" Pattern="*.md.br" Priority="2" />
 
     <!-- Common -->
-    <StaticWebAssetContentTypeMapping Include="image/bmp" Pattern="*.bmp" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/jpeg" Pattern="*.jpeg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/jpeg" Pattern="*.jpg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/gif" Pattern="*.gif" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/svg+xml" Pattern="*.svg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/png" Pattern="*.png" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/webp" Pattern="*.webp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/bmp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.bmp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/jpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.jpeg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/jpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.jpg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/gif" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.gif" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/svg+xml" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.svg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/png" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.png" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/webp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.webp" Priority="1" />
 
-    <StaticWebAssetContentTypeMapping Include="font/otf" Pattern="*.otf" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="font/woff2" Pattern="*.woff2" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="font/otf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.otf" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="font/woff2" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.woff2" Priority="1" />
 
-    <StaticWebAssetContentTypeMapping Include="video/mp4" Pattern="*.m4v" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/quicktime" Pattern="*.mov" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-sgi-movie" Pattern="*.movie" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mp2" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mp4" Pattern="*.mp4" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mp4" Pattern="*.mp4v" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mpa" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mpe" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mpeg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mpg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.mpv2" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Pattern="*.nsc" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/ogg" Pattern="*.ogg" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/ogg" Pattern="*.ogv" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/webm" Pattern="*.webm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mp4" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.m4v" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/quicktime" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mov" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-sgi-movie" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.movie" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mp2" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mp4" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mp4" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mp4" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mp4v" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mpa" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mpe" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mpeg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mpg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.mpv2" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.nsc" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/ogg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ogg" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/ogg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ogv" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/webm" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.webm" Priority="1" />
 
     <!-- Compressed versions -->
     <StaticWebAssetContentTypeMapping Include="image/bmp" Pattern="*.bmp.gz" Priority="2" />
@@ -205,55 +210,55 @@
     <StaticWebAssetContentTypeMapping Include="application/font-woff" Pattern="*.woff" Priority="1" />
 
     <!-- Other Images -->
-    <StaticWebAssetContentTypeMapping Include="image/x-jg" Pattern="*.art" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-cmx" Pattern="*.cmx" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/cis-cod" Pattern="*.cod" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/bmp" Pattern="*.dib" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-icon" Pattern="*.ico" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/ief" Pattern="*.ief" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/pjpeg" Pattern="*.jfif" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/jpeg" Pattern="*.jpe" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-portable-bitmap" Pattern="*.pbm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-portable-graymap" Pattern="*.pgm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-portable-anymap" Pattern="*.pnm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/png" Pattern="*.pnz" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-portable-pixmap" Pattern="*.ppm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-cmu-raster" Pattern="*.ras" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/vnd.rn-realflash" Pattern="*.rf" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-rgb" Pattern="*.rgb" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/svg+xml" Pattern="*.svgz" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/tiff" Pattern="*.tif" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/tiff" Pattern="*.tiff" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/vnd.wap.wbmp" Pattern="*.wbmp" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-xbitmap" Pattern="*.xbm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-xpixmap" Pattern="*.xpm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="image/x-xwindowdump" Pattern="*.xwd" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-jg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.art" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-cmx" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.cmx" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/cis-cod" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.cod" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/bmp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.dib" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-icon" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ico" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/ief" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ief" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/pjpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.jfif" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/jpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.jpe" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-portable-bitmap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.pbm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-portable-graymap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.pgm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-portable-anymap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.pnm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/png" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.pnz" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-portable-pixmap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ppm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-cmu-raster" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ras" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/vnd.rn-realflash" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.rf" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-rgb" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.rgb" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/svg+xml" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.svgz" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/tiff" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.tif" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/tiff" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.tiff" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/vnd.wap.wbmp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wbmp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-xbitmap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.xbm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-xpixmap" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.xpm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="image/x-xwindowdump" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.xwd" Priority="1" />
 
     <!-- Other Video -->
-    <StaticWebAssetContentTypeMapping Include="video/3gpp2" Pattern="*.3g2" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/3gpp2" Pattern="*.3gp2" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/3gpp" Pattern="*.3gp" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/3gpp" Pattern="*.3gpp" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Pattern="*.asf" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Pattern="*.asr" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Pattern="*.asx" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-msvideo" Pattern="*.avi" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-dvr" Pattern="*.dvr" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-flv" Pattern="*.flv" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ivf" Pattern="*.IVF" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-la-asf" Pattern="*.lsf" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-la-asf" Pattern="*.lsx" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/mpeg" Pattern="*.m1v" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Pattern="*.m2ts" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/quicktime" Pattern="*.qt" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Pattern="*.ts" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Pattern="*.tts" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wm" Pattern="*.wm" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmp" Pattern="*.wmp" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmv" Pattern="*.wmv" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmx" Pattern="*.wmx" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wtv" Pattern="*.wtv" Priority="1" />
-    <StaticWebAssetContentTypeMapping Include="video/x-ms-wvx" Pattern="*.wvx" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/3gpp2" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.3g2" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/3gpp2" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.3gp2" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/3gpp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.3gp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/3gpp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.3gpp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.asf" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.asr" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.asx" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-msvideo" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.avi" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-dvr" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.dvr" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-flv" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.flv" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ivf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.IVF" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-la-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.lsf" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-la-asf" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.lsx" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/mpeg" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.m1v" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.m2ts" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/quicktime" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.qt" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.ts" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/vnd.dlna.mpeg-tts" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.tts" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wm" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wm" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmp" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wmp" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmv" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wmv" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wmx" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wmx" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wtv" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wtv" Priority="1" />
+    <StaticWebAssetContentTypeMapping Include="video/x-ms-wvx" Cache="$(StaticWebAssetEndpointDefaultMediaCacheControlHeader)" Pattern="*.wvx" Priority="1" />
 
     <!-- Audio -->
     <StaticWebAssetContentTypeMapping Include="audio/aac" Pattern="*.aac" Priority="1" />

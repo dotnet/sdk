@@ -225,6 +225,16 @@ The specified directory will be created if it does not exist.</source>
         <target state="translated">已忽略下列引數: "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="new">No serializer registered with ID '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="new">No serializer registered with type '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">
         <source>
 

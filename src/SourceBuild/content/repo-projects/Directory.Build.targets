@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <!-- Returns the repository references of this project and all the projects this project references, recursively -->
-  <Target Name="GetTransitiveRepositoryReferences" Outputs="@(TransitiveRepositoryReference)">
+  <Target Name="GetTransitiveRepositoryReferences" Returns="@(TransitiveRepositoryReference)">
     <ItemGroup>
       <_TransitiveRepositoryReference Include="@(RepositoryReference)" />
     </ItemGroup>
@@ -55,11 +55,6 @@
       <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
                                       RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
       <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
-    </ItemGroup>
-
-    <!-- Exclude repositories that currently don't build when not building source-only. -->
-    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-      <TransitiveRepositoryReference Remove="nuget-client" />
     </ItemGroup>
   </Target>
 
@@ -80,8 +75,6 @@
     <ItemGroup Condition="'@(RepositoryReferenceInfo)' != ''">
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(ShippingSourceName)')" />
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(NonShippingSourceName)')" />
-      <DependentRepoPackageFile Include="%(RepositoryReferenceInfo.ShippingPackagesPath)**" />
-      <DependentRepoPackageFile Include="%(RepositoryReferenceInfo.NonShippingPackagesPath)**" />
     </ItemGroup>
   </Target>
 
@@ -110,9 +103,8 @@
     <PropertyGroup>
       <!-- Dev innerloop opt-in feed: /p:ExtraRestoreSourcePath=... -->
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
-      <SbrpRepoSrcPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src', 'source-build-reference-packages', 'src'))</SbrpRepoSrcPath>
     </PropertyGroup>
-  
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
@@ -123,7 +115,7 @@
       <_CommonBuildSources Include="@(DependentRepoSourceName)" />
       <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
-    
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
           that need to utilize a VS-aligned version for development purposes may not have the latest product
@@ -194,7 +186,7 @@
       NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       SourceBuildSources="@(_BuildSources)"
-      SbrpRepoSrcPath="$(SbrpRepoSrcPath)"
+      SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
       SbrpCacheSourceName="$(SbrpCacheNuGetSourceName)"
       ReferencePackagesSourceName="$(ReferencePackagesNuGetSourceName)"
       PreviouslySourceBuiltSourceName="$(PreviouslySourceBuiltNuGetSourceName)"
@@ -257,16 +249,20 @@
   <!-- Before a repository builds, set up the version property files that override the repo's defaults.
        There are 3 files generated -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
-          DependsOnTargets="GetRepositoryReferenceInfo"
+          DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
+
+    <!-- Get the previously-built-source-built package information from the manifest from that build. -->
     <ItemGroup>
-      <!-- Collect all the NuGet packages from dependent repos except for the symbols -->
-      <_CurrentSourceBuiltPackages Include="@(DependentRepoPackageFile)"
-                                   Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
-      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
+      <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
+    </GetKnownArtifactsFromAssetManifests>
 
     <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
       Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
@@ -276,14 +272,14 @@
     </PropertyGroup>
 
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
-    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+    <WritePackageVersionsProps KnownPackages="@(_DependencyProducedPackage->WithMetadataValue('ReferenceOnly', 'false'))"
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
                                OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
     <!-- Create previously source-built inputs info -->
-    <WritePackageVersionsProps NuGetPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
+    <WritePackageVersionsProps KnownPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
                                OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
@@ -297,7 +293,7 @@
          A B and C.
 
          A key element of this algorith is that we must write the full package version props and not the filtered version. -->
-    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+    <WritePackageVersionsProps KnownPackages="@(_DependencyProducedPackage->WithMetadataValue('ReferenceOnly', 'false'))"
                                VersionPropsFlowType="AllPackages"
                                OutputPath="$(SnapshotPackageVersionPropsPath)" />
 
@@ -342,40 +338,44 @@
              RunEachTargetSeparately="$(RunEachTargetSeparately)" />
   </Target>
 
-  <!-- Discover the Arcade SDKs built from the live Arcade source and set them as overrides here. -->
-  <Target Name="DiscoverArcadeSourceBuiltSdkOverrides"
-          DependsOnTargets="BuildRepoReferences;GetRepositoryReferenceInfo"
-          Condition="'$(UseBootstrapArcade)' != 'true'">
-    <PropertyGroup>
-      <_ArcadeSdkName>Microsoft.DotNet.Arcade.Sdk</_ArcadeSdkName>
-    </PropertyGroup>
-
+  <Target Name="DiscoverBuiltSdkOverrides"
+          DependsOnTargets="BuildRepoReferences;GetProducedPackagesFromTransitiveReferences">
     <!--
-      Discover the version of the Arcade SDK NuGet package by matching the name of the nupkg file and extracting the version.
-      In the future, we should use the asset manifests to discover this information.
+      Discover the Arcade SDKs built from the live Arcade source and set them as overrides here.
+      This will automatically no-op for Arcade and SBRP, as these packages will not have been produced yet.
     -->
     <ItemGroup>
-      <_BuiltArcadeSdkPackage Include="@(DependentRepoPackageFile)"
-                              Condition="!$([System.String]::new('%(Identity)').EndsWith('.symbols.nupkg')) and $([System.String]::new('%(Identity)').Contains($(_ArcadeSdkName)))" />
+      <ArcadeBuiltArcadeSdk Include="@(_DependencyProducedPackage->WithMetadataValue('Identity', 'Microsoft.DotNet.Arcade.Sdk'))" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <_BuiltArcadeSdkPackageVersion>$([System.String]::new('%(_BuiltArcadeSdkPackage.FileName)').Substring($([MSBuild]::Add($(_ArcadeSdkName.Length), 1))))</_BuiltArcadeSdkPackageVersion>
-    </PropertyGroup>
+    <Error Text="The source-built Arcade SDK should be available for any repository that does not explicitly set UseBootstrapArcade to true." Condition="'@(ArcadeBuiltArcadeSdk)' == '' and '$(UseBootstrapArcade)' != 'true'" />
+
+    <ItemGroup Condition="'@(ArcadeBuiltArcadeSdk)' == ''">
+      <SourceBuiltSdkOverride Include="@(BootstrapArcadeSdkOverride)" />
+    </ItemGroup>
 
     <ItemGroup>
-      <SourceBuiltSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(_BuiltArcadeSdkPackageVersion)" />
-      <SourceBuiltSdkOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Group="ARCADE_SHARED_FX_SDK" Version="$(_BuiltArcadeSdkPackageVersion)" />
-      <SourceBuiltSdkOverride Include="Microsoft.DotNet.CMake.Sdk" Group="ARCADE_CMAKE_SDK" Version="$(_BuiltArcadeSdkPackageVersion)" />
-  
-      <SourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
-      <SourceBuiltSdkOverride Include="@(ArcadeCMakeSdkOverride)" />
-      <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+      <SourceBuiltSdkOverride Include="@(ArcadeBuiltArcadeSdk)" Group="ARCADE" />
+      <SourceBuiltSdkOverride Include="@(_DependencyProducedPackage->WithMetadataValue('Identity', 'Microsoft.DotNet.SharedFramework.Sdk'))" Group="ARCADE_SHARED_FX_SDK" />
+      <SourceBuiltSdkOverride Include="@(_DependencyProducedPackage->WithMetadataValue('Identity', 'Microsoft.DotNet.CMake.Sdk'))" Group="ARCADE_CMAKE_SDK" />
+    </ItemGroup>
+    <!--
+      Add Microsoft.Build.NoTargets and Microsoft.Build.Traversal SDK overrides, for all repos that have it built (ie. excluding SBRP as it builds the SDKs).
+
+      We need to override all SDK packages that are used by repos, to prevent NuGet SDK Resolver from trying to
+      restore these packages from online feeds. In offline build we only want to use local source-build feeds.
+      Therefore, we create a copy of repo's NuGet.config file, modify it, and pass it into repo build using
+      RestoreConfigFile property. MSBuild uses NuGetSdkResolver to restore missing SDKs, which doesn't honor
+      RestoreConfigFile property and uses NuGet.config file from repo's root which has online feeds.
+    -->
+    <ItemGroup>
+      <SourceBuiltSdkOverride Include="@(_DependencyProducedPackage->WithMetadataValue('Identity', 'Microsoft.Build.Traversal'))" Group="TRAVERSAL" />
+      <SourceBuiltSdkOverride Include="@(_DependencyProducedPackage->WithMetadataValue('Identity', 'Microsoft.Build.NoTargets'))" Group="NOTARGETS" />
     </ItemGroup>
   </Target>
 
   <Target Name="SetSourceBuiltSdkOverrides"
-          DependsOnTargets="DiscoverArcadeSourceBuiltSdkOverrides"
+          DependsOnTargets="DiscoverBuiltSdkOverrides"
           Condition="'@(SourceBuiltSdkOverride)' != ''">
     <ItemGroup>
       <!-- Set the environment variables for MSBuild to look for our additional SDK Resolvers and or our resolver to find our source-built SDKs. -->
@@ -396,7 +396,7 @@
                             UpdateGlobalJsonVersions;
                             UpdateEngCommonFiles;
                             CreateBuildInputProps;
-                            DiscoverArcadeSourceBuiltSdkOverrides;
+                            DiscoverBuiltSdkOverrides;
                             SetSourceBuiltSdkOverrides">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
@@ -451,21 +451,46 @@
 
   <!-- Log the new repo artifacts -->
   <Target Name="LogRepoArtifacts"
-          DependsOnTargets="RepoBuild"
+          DependsOnTargets="GetProducedPackages"
+          Inputs="@(RepoAssetManifest)"
+          Outputs="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete"
           Condition="'$(IsUtilityProject)' != 'true'">
+    <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
+    <Message Importance="High" Text="  -> %(ProducedPackage.Identity)/%(ProducedPackage.Version)" Condition="'@(ProducedPackage)' != ''" />
+    <Message Importance="High" Text="  -> %(ProducedAsset.Identity)" Condition="'@(ProducedAsset)' != ''" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)LogRepoArtifacts.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GetProducedPackages"
+          Condition="'$(IsUtilityProject)' != 'true'"
+          Returns="@(ProducedPackage)">
     <ItemGroup>
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
-    <Error Text="Repo manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
+    <Error Text="Repository asset manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
 
-    <XmlPeek XmlInputPath="%(RepoAssetManifest.Identity)"
-             Query="/Build/*[self::Package | self::Blob]/@Id">
-        <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
-    </XmlPeek>
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
+    </GetKnownArtifactsFromAssetManifests>
 
-    <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
-    <Message Importance="High" Text="  -> %(RepoManifestArtifact.Identity)" />
+    <ItemGroup>
+      <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetProducedPackagesFromTransitiveReferences" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
+    <MSBuild Projects="@(TransitiveRepositoryReference->'%(Identity).proj')"
+             Targets="GetProducedPackages"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
+    </MSBuild>
   </Target>
 
   <!-- Copy restored packages from inner build to ensure they're included in the
@@ -478,7 +503,7 @@
 
     <!-- Retries can be necessary due to file locking when parallel builds are enabled and multiple repos
          are trying to write their restored packages to this location.
-         See https://github.com/dotnet/installer/pull/18824#issuecomment-1986371287 -->
+         See https://github.com/dotnet/source-build/issues/4234 -->
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
@@ -487,6 +512,8 @@
   </Target>
 
   <Target Name="CleanupRepo"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(ProjectDirectory)artifacts')">
@@ -515,11 +542,9 @@
     <!-- Make a copy of the build logs & project.assets.json files -->
     <Copy SourceFiles="@(LogFilesToCopy)"
           DestinationFolder="$(BuildLogsDir)%(RecursiveDir)"
-          SkipUnchangedFiles="true"
           Condition="'@(LogFilesToCopy)' != ''" />
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
-          SkipUnchangedFiles="true"
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
@@ -538,10 +563,23 @@
 
     <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
     <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)CleanupRepo.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
   </Target>
 
-  <Target Name="ExtractToolPackage"
-          DependsOnTargets="RepoBuild"
+  <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
+    <JoinItems Left="@(ProducedPackage)"
+               Right="@(BuiltSdkPackage)"
+               LeftMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="BuiltSdkPackageOverride" />
+    </JoinItems>
+  </Target>
+
+  <Target Name="ExtractToolPackageCore"
+          DependsOnTargets="RepoBuild;DiscoverToolPackageVersions"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
@@ -578,6 +616,9 @@
     </Touch>
   </Target>
 
+  <Target Name="ExtractToolPackage"
+          DependsOnTargets="DiscoverToolPackageVersions;ExtractToolPackageCore" />
+
   <Target Name="Build"
           DependsOnTargets="
     BuildRepoReferences;
@@ -586,6 +627,28 @@
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
     CleanupRepo" />
+
+  <Target Name="Test">
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
+    <Message Importance="High" Text="Running command:" />
+    <Message Importance="High" Text="  $(TestCommand)" />
+    <Message Importance="High" Text="  With Environment Variables:"/>
+    <Message Importance="High" Text="    %(TestEnvironmentVariable.Identity)" />
+
+    <PropertyGroup>
+      <FullTestCommand>$(TestCommand)</FullTestCommand>
+      <FullTestCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullTestCommand) /v:$(LogVerbosity)</FullTestCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(FullTestCommand)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(TestEnvironmentVariable)">
+      <Output TaskParameter="ExitCode" PropertyName="RepoTestExitCode" />
+    </Exec>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)...done" />
+  </Target>
+  <Target Name="VSTest" DependsOnTargets="Test" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="WritePrebuiltUsageData"
@@ -598,7 +661,18 @@
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
     <ItemGroup>
-      <RestoredPackageFile Include="$(NuGetPackageRoot)**/*.nupkg"
+      <!--
+        Note the usage of */*/*.nupkg and not **/*.nupkg. The latter would include nupkgs
+        carried as content, i.e. in Microsoft.FSharp.Compiler nupkg, and cause false positives.
+        Content nupkgs were not restored and should not be used in prebuit detection.
+
+        Example of a restored package:
+        $(NuGetPackageRoot)microsoft.fsharp.compiler/12.8.300-beta.24203.1/microsoft.fsharp.compiler.12.8.300-beta.24203.1.nupkg
+
+        Example of a content package:
+        $(NuGetPackageRoot)microsoft.fsharp.compiler/12.8.300-beta.24203.1/contentFiles/Release/FSharp.Core.8.0.300.nupkg
+      -->
+      <RestoredPackageFile Include="$(NuGetPackageRoot)*/*/*.nupkg"
                            Exclude="$(NuGetPackageRoot)tests/**/*.nupkg" />
 
       <!-- Only contains packages when building. -->
@@ -716,7 +790,7 @@
   <!-- Recursively walks the repo dependency graph gathering each repo's dependencies which are returned as a YAML string representation -->
   <Target Name="GetDependencyGraphString"
           DependsOnTargets="GetTransitiveRepositoryReferences"
-          Outputs="$(DependencyGraphString)">
+          Returns="$(DependencyGraphString)">
     <PropertyGroup>
       <!-- Each step deeper in the graph builds up the indentation used for the YAML representation.
            Use '_' as a placeholder for the space ' ' character since trailing spaces aren't handled well as property values. -->

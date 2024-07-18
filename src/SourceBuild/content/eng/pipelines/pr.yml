@@ -2,23 +2,17 @@
 # NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
 #
 # - dotnet-source-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=240
 #   - PR: ultralite build
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
 # - dotnet-unified-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=278
 #   - PR: lite build
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
-# - dotnet-source-build (internal)
-#   - PR: ultralite build
-#
-# - dotnet-source-build-lite (internal)
-#   - PR: release/* and main, lite build, on-demand trigger
-#
-# - dotnet-unified-build (internal)
-#   - PR: lite build
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
@@ -34,10 +28,13 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
+- name: Codeql.Enabled  # we run CodeQL on internal builds only
+  value: false
+
 - template: /eng/common/templates/variables/pool-providers.yml@self
 
 stages:
-- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+- template: /src/sdk/eng/pipelines/templates/stages/vmr-build.yml
   parameters:
     isBuiltFromVmr: true
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}

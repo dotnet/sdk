@@ -3,6 +3,13 @@
 # This file is used by the Binary Tool to remove binaries from the VMR
 # If importing a file, include the relative path to the file
 
+# Well known non-checked in infrastructure
+artifacts/*/BinaryToolKit/
+.dotnet/
+.git/
+.packages/
+prereqs/packages/
+
 **/*.bmp
 **/*.doc
 **/*.docx

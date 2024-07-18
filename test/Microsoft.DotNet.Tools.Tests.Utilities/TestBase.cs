@@ -1,16 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {
+
     /// <summary>
     /// Base class for all unit test classes.
     /// </summary>
@@ -40,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             {
                 if (s_testAssets == null)
                 {
-                    var assetsRoot = Path.Combine(RepoRoot, "TestAssets");
+                    var assetsRoot = Path.Combine(RepoRoot, "test", "TestAssets");
 
                     s_testAssets = new TestAssets(
                         new DirectoryInfo(assetsRoot),

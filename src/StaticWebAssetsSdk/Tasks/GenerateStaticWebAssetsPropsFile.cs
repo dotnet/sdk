@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private const string RelatedAsset = "RelatedAsset";
         private const string AssetTraitName = "AssetTraitName";
         private const string AssetTraitValue = "AssetTraitValue";
+        private const string Fingerprint = "Fingerprint";
+        private const string Integrity = "Integrity";
         private const string CopyToOutputDirectory = "CopyToOutputDirectory";
         private const string CopyToPublishDirectory = "CopyToPublishDirectory";
         private const string OriginalItemSpec = "OriginalItemSpec";
@@ -52,25 +54,32 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return !Log.HasLoggedErrors;
             }
 
+            var tokenResolver = StaticWebAssetTokenResolver.Instance;
+
             var itemGroup = new XElement("ItemGroup");
             var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
                 .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
             foreach (var element in orderedAssets)
             {
-                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\{Normalize(element.GetMetadata(RelativePath))}))";
+                var asset = StaticWebAsset.FromTaskItem(element);
+                var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
+                var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
                 itemGroup.Add(new XElement("StaticWebAsset",
                     new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),
                     new XElement(SourceId, element.GetMetadata(SourceId)),
                     new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                     new XElement(BasePath, element.GetMetadata(BasePath)),
-                    new XElement(RelativePath, element.GetMetadata(RelativePath)),
+                    new XElement(RelativePath, relativePath),
                     new XElement(AssetKind, element.GetMetadata(AssetKind)),
                     new XElement(AssetMode, element.GetMetadata(AssetMode)),
                     new XElement(AssetRole, element.GetMetadata(AssetRole)),
                     new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
                     new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
                     new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
+                    new XElement(Fingerprint, element.GetMetadata(Fingerprint)),
+                    new XElement(Integrity, element.GetMetadata(Integrity)),
                     new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
                     new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
                     new XElement(OriginalItemSpec, fullPathExpression)));

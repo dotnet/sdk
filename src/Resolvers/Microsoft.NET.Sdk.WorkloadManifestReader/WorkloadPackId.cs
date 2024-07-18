@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
 using System.Text.Json.Serialization;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -47,7 +45,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public static bool operator !=(WorkloadPackId a, WorkloadPackId b) => !a.Equals(b);
     }
 
-#if USE_SYSTEM_TEXT_JSON
     internal class PackIdJsonConverter : JsonConverter<WorkloadPackId>
     {
         public override WorkloadPackId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
@@ -55,5 +52,4 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override void Write(Utf8JsonWriter writer, WorkloadPackId value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
     }
-#endif
 }

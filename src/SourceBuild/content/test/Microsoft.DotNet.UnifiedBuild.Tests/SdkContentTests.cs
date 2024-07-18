@@ -7,22 +7,33 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.IO.Enumeration;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.SourceBuild.SmokeTests;
+namespace Microsoft.DotNet.UnifiedBuild.Tests;
 
 [Trait("Category", "SdkContent")]
 public class SdkContentTests : TestBase
 {
     Exclusions Exclusions;
-    public SdkContentTests(ITestOutputHelper outputHelper, Config config) : base(outputHelper, config)
+
+    static string UbSdkArchivePath { get; } = Config.GetRuntimeConfig(UbSdkArchivePathSwitch);
+    const string UbSdkArchivePathSwitch = Config.RuntimeConfigSwitchPrefix + nameof(UbSdkArchivePath);
+
+    static string UbSdkVersion { get; } = Config.GetRuntimeConfig(UbSdkVersionSwitch);
+    const string UbSdkVersionSwitch = Config.RuntimeConfigSwitchPrefix + nameof(UbSdkVersion);
+
+    static string MsftSdkArchivePath { get; } = Config.TryGetRuntimeConfig(MsftSdkArchivePathSwitch, out string? value) ? value : DownloadMsftSdkArchive().Result;
+    const string MsftSdkArchivePathSwitch = Config.RuntimeConfigSwitchPrefix + nameof(MsftSdkArchivePath);
+
+
+    public SdkContentTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         Exclusions = new(Config.TargetRid);
     }
@@ -39,28 +50,28 @@ public class SdkContentTests : TestBase
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string ubFileListingFileName = "ubSdkFiles.txt";
-        WriteTarballFileList(Config.MsftSdkArchivePath, msftFileListingFileName, isPortable: true, Exclusions.MsftPrefix);
-        WriteTarballFileList(Config.UbSdkArchivePath, ubFileListingFileName, isPortable: true, Exclusions.UbPrefix);
+        WriteTarballFileList(MsftSdkArchivePath, msftFileListingFileName, isPortable: true, Exclusions.MsftPrefix);
+        WriteTarballFileList(UbSdkArchivePath, ubFileListingFileName, isPortable: true, Exclusions.UbPrefix);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, ubFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
-        BaselineHelper.CompareBaselineContents(Exclusions.GetBaselineFileDiffFileName(), diff, Config.LogsDirectory, OutputHelper, Config.WarnOnSdkContentDiffs);
+        BaselineHelper.CompareBaselineContents(Exclusions.GetBaselineFileDiffFileName(), diff, Config.LogsDirectory, OutputHelper, Config.WarnOnContentDiffs);
     }
 
     [Fact]
     public async Task CompareMsftToUbAssemblyVersions()
     {
-        Assert.NotNull(Config.MsftSdkArchivePath);
-        Assert.NotNull(Config.UbSdkArchivePath);
+        Assert.NotNull(MsftSdkArchivePath);
+        Assert.NotNull(UbSdkArchivePath);
 
         DirectoryInfo tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
         try
         {
             DirectoryInfo ubSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, Exclusions.UbPrefix));
-            Utilities.ExtractTarball(Config.UbSdkArchivePath, ubSdkDir.FullName, OutputHelper);
+            Utilities.ExtractTarball(UbSdkArchivePath, ubSdkDir.FullName, OutputHelper);
 
             DirectoryInfo msftSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, Exclusions.MsftPrefix));
-            Utilities.ExtractTarball(Config.MsftSdkArchivePath, msftSdkDir.FullName, OutputHelper);
+            Utilities.ExtractTarball(MsftSdkArchivePath, msftSdkDir.FullName, OutputHelper);
 
             var t1 = Task.Run(() => GetSdkAssemblyVersions(ubSdkDir.FullName));
             var t2 = Task.Run(() => GetSdkAssemblyVersions(msftSdkDir.FullName));
@@ -71,14 +82,14 @@ public class SdkContentTests : TestBase
             RemoveExcludedAssemblyVersionPaths(ubSdkAssemblyVersions, msftSdkAssemblyVersions);
 
             const string UbVersionsFileName = "ub_assemblyversions.txt";
-            WriteAssemblyVersionsToFile(ubSdkAssemblyVersions, UbVersionsFileName);
+            AssemblyVersionHelpers.WriteAssemblyVersionsToFile(ubSdkAssemblyVersions, UbVersionsFileName);
 
             const string MsftVersionsFileName = "msft_assemblyversions.txt";
-            WriteAssemblyVersionsToFile(msftSdkAssemblyVersions, MsftVersionsFileName);
+            AssemblyVersionHelpers.WriteAssemblyVersionsToFile(msftSdkAssemblyVersions, MsftVersionsFileName);
 
             string diff = BaselineHelper.DiffFiles(MsftVersionsFileName, UbVersionsFileName, OutputHelper);
             diff = RemoveDiffMarkers(diff);
-            BaselineHelper.CompareBaselineContents($"MsftToUbSdkAssemblyVersions-{Config.TargetRid}.diff", diff, Config.LogsDirectory, OutputHelper, Config.WarnOnSdkContentDiffs);
+            BaselineHelper.CompareBaselineContents($"MsftToUbSdkAssemblyVersions-{Config.TargetRid}.diff", diff, Config.LogsDirectory, OutputHelper, Config.WarnOnContentDiffs);
         }
         finally
         {
@@ -125,27 +136,6 @@ public class SdkContentTests : TestBase
         }
     }
 
-    private static void WriteAssemblyVersionsToFile(Dictionary<string, Version?> assemblyVersions, string outputPath)
-    {
-        string[] lines = assemblyVersions
-            .Select(kvp => $"{kvp.Key} - {kvp.Value}")
-            .Order()
-            .ToArray();
-        File.WriteAllLines(outputPath, lines);
-    }
-
-    // It's known that assembly versions can be different between builds in their revision field. Disregard that difference
-    // by excluding that field in the output.
-    private static Version? GetVersion(AssemblyName assemblyName)
-    {
-        if (assemblyName.Version is not null)
-        {
-            return new Version(assemblyName.Version.ToString(3));
-        }
-
-        return null;
-    }
-
     private Dictionary<string, Version?> GetSdkAssemblyVersions(string ubSdkPath, string? prefix = null)
     {
         Exclusions ex = Exclusions;
@@ -172,7 +162,7 @@ public class SdkContentTests : TestBase
                             try
                             {
                                 AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-                                Assert.True(ubSdkAssemblyVersions.TryAdd(normalizedPath, GetVersion(assemblyName)));
+                                Assert.True(ubSdkAssemblyVersions.TryAdd(normalizedPath, AssemblyVersionHelpers.GetVersion(assemblyName)));
                             }
                             catch (BadImageFormatException)
                             {
@@ -204,12 +194,55 @@ public class SdkContentTests : TestBase
         File.WriteAllLines(outputFileName, files);
     }
 
-    private static string RemoveDiffMarkers(string source)
+    public static string RemoveDiffMarkers(string source)
     {
         Regex indexRegex = new("^index .*", RegexOptions.Multiline);
         string result = indexRegex.Replace(source, "index ------------");
 
         Regex diffSegmentRegex = new("^@@ .* @@", RegexOptions.Multiline);
         return diffSegmentRegex.Replace(result, "@@ ------------ @@").ReplaceLineEndings();
+    }
+
+    static string GetArchiveExtension(string path)
+    {
+        if (path.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
+            return ".zip";
+        if (path.EndsWith(".tar.gz", StringComparison.InvariantCultureIgnoreCase))
+            return ".tar.gz";
+        throw new InvalidOperationException($"Path does not have a valid archive extenions: '{path}'");
+    }
+
+    static async Task<string> DownloadMsftSdkArchive()
+    {
+        string downloadCacheDir = Path.Combine(Config.DownloadCacheDirectory, "Sdks");
+        Directory.CreateDirectory(downloadCacheDir);
+        var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
+        var channel = UbSdkVersion[..5] + "xx";
+        var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{Config.TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
+
+        var redirectResponse = await client.GetAsync(akaMsUrl);
+
+        // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
+        if (redirectResponse.StatusCode != HttpStatusCode.Moved)
+        {
+            throw new InvalidOperationException($"Could not find download link for Microsoft built sdk at '{akaMsUrl}'");
+        }
+        var closestUrl = redirectResponse.Headers.Location!.ToString();
+        var msftSdkFileName = Path.GetFileName(redirectResponse.Headers.Location.LocalPath);
+
+        var localMsftSdkPath = Path.Combine(downloadCacheDir, msftSdkFileName);
+
+        if (File.Exists(localMsftSdkPath))
+        {
+            return localMsftSdkPath;
+        }
+
+        var fileStream = await client.GetStreamAsync(closestUrl);
+        using (FileStream file = File.Create(localMsftSdkPath))
+        {
+            await fileStream.CopyToAsync(file);
+        }
+
+        return localMsftSdkPath;
     }
 }

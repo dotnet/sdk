@@ -41,10 +41,6 @@ namespace Microsoft.NET.Build.Tasks
                     ClsidMapPath,
                     typeLibIdMap);
             }
-            catch (ComHostCustomizationUnsupportedOSException)
-            {
-                Log.LogError(Strings.CannotEmbedClsidMapIntoComhost);
-            }
             catch (TypeLibraryDoesNotExistException ex)
             {
                 Log.LogError(Strings.TypeLibraryDoesNotExist, ex.Path);

@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Sdk.Razor.Tests;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorMultitargetIntegrationTest : AspNetSdkTest
+    public class BlazorMultitargetIntegrationTest(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorMultitargetIntegrationTest))
     {
-        public BlazorMultitargetIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
@@ -14,9 +16,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "RazorComponentAppMultitarget";
             var testInstance = CreateMultitargetAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.WithWorkingDirectory(testInstance.Path);
-            buildCommand.Execute("/bl").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand).Should().Pass();
 
             var serverDependencies = buildCommand.GetIntermediateDirectory(DefaultTfm);
             var browserDependencies = buildCommand.GetIntermediateDirectory($"{DefaultTfm}-browser1.0");
@@ -35,9 +36,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "RazorComponentAppMultitarget";
             var testInstance = CreateMultitargetAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance);
-            buildCommand.WithWorkingDirectory(testInstance.Path);
-            buildCommand.Execute("/bl").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance);
+            ExecuteCommand(buildCommand).Should().Pass();
 
             var serverDependencies = buildCommand.GetIntermediateDirectory(DefaultTfm);
             var browserDependencies = buildCommand.GetIntermediateDirectory($"{DefaultTfm}-browser1.0");

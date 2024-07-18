@@ -625,6 +625,32 @@ public static class Program
         }
 
         [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public void Debug_Symbols_Implies_Debug_Type(string debugSymbols)
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = "net8.0",
+                ProjectSdk = "Microsoft.NET.Sdk"
+            };
+
+            testProject.RecordProperties("DebugType");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new DotnetPublishCommand(Log, $"-p:DebugSymbols={debugSymbols}")
+                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
+                .Execute()
+                .Should()
+                .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: "net8.0", configuration: "Release");
+            properties["DebugType"].Should().Be(debugSymbols.Equals("true") ? "portable" : "None");
+        }
+
+        [Theory]
         [InlineData("net7.0")]
         [InlineData("net8.0")]
         public void It_publishes_with_Release_by_default_in_net_8_but_not_net_7(string tfm)

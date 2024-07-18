@@ -825,6 +825,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">是否要运行此操作 [{0}(是)|{1}(否)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
+        <source>Post action argument '{0}' is not a valid boolean value.</source>
+        <target state="new">Post action argument '{0}' is not a valid boolean value.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
         <target state="translated">发布操作参数“{0}”是必需的，但未进行配置。</target>
@@ -848,6 +853,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">已成功修改 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
+        <source>Attempting to find json file '{0}' in '{1}'</source>
+        <target state="new">Attempting to find json file '{0}' in '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">

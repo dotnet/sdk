@@ -185,8 +185,8 @@ function BootstrapArtifacts {
   # Copy bootstrap project to working dir
   cp "$REPO_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj" "$workingDir"
 
-  # Copy NuGet.config from the installer repo to have the right feeds
-  cp "$REPO_ROOT/src/installer/NuGet.config" "$workingDir"
+  # Copy NuGet.config from the sdk repo to have the right feeds
+  cp "$REPO_ROOT/src/sdk/NuGet.config" "$workingDir"
 
   # Get PackageVersions.props from existing prev-sb archive
   echo "  Retrieving PackageVersions.props from existing archive"
@@ -223,28 +223,35 @@ fi
 
 if [ "$removeBinaries" == true ]; then
 
+  originalPackagesDir=$packagesDir
+  # Create working directory for extracking packages
+  workingDir=$(mktemp -d)
+
   # If --with-packages is not passed, unpack PSB artifacts
   if [[ $packagesDir == $defaultPackagesDir ]]; then
+    echo "  Extracting previously source-built to $workingDir"
     sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
 
-    if [ ! -d "$packagesDir" ] && [ -f "$sourceBuiltArchive" ]; then
-      echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $packagesDir"
-      mkdir -p "$packagesDir"
-      tar -xzf "$sourceBuiltArchive" -C "$packagesDir"
-    elif [ ! -f "$packagesDir/PackageVersions.props" ] && [ -f "$sourceBuiltArchive" ]; then
-      echo "  Creating $packagesDir/PackageVersions.props..."
-      tar -xzf "$sourceBuiltArchive" -C "$packagesDir" PackageVersions.props
-    elif [ ! -f "$sourceBuiltArchive" ]; then
+    if [ ! -f "$sourceBuiltArchive" ]; then
       echo "  ERROR: Private.SourceBuilt.Artifacts.*.tar.gz does not exist..."\
             "Cannot remove non-SB allowed binaries. Either pass --with-packages or download the artifacts."
       exit 1
     fi
+
+    echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $workingDir"
+    tar -xzf "$sourceBuiltArchive" -C "$workingDir"
+
+    packagesDir=$workingDir
   fi
 
- "$REPO_ROOT/eng/detect-binaries.sh" \
+  "$REPO_ROOT/eng/detect-binaries.sh" \
   --clean \
   --allowed-binaries-file "$REPO_ROOT/eng/allowed-sb-binaries.txt" \
   --with-packages $packagesDir \
   --with-sdk $dotnetSdk \
 
+  rm -rf "$workingDir"
+
+  packagesDir=$originalPackagesDir
+  unset originalPackagesDir
 fi

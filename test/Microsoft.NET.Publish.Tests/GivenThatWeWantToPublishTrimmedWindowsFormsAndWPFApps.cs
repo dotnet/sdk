@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Publish.Tests
@@ -109,69 +110,146 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
-        public void It_publishes_windows_forms_app_with_no_wpf()
+        public void It_publishes_and_runs_windows_forms_app_with_no_wpf()
         {
-            var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
-            var projectName = "WinformsNoWpfAssemblies";
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
-            var testProject = CreateWinFormsTestProject(targetFramework, projectName, true);
-
-            testProject.AdditionalProperties["UseWindowsForms"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
-            testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute()
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("winforms")
                 .Should()
                 .Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: "Debug", runtimeIdentifier: "win-x64").FullName;
+            var project = XDocument.Load(Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj"));
+            var ns = project.Root.Name.Namespace;
+            string targetFramework = project.Root.Elements(ns + "PropertyGroup")
+                .Elements(ns + "TargetFramework")
+                .Single().Value;
 
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            string mainWindowXamlCsPath = Path.Combine(testDir.Path, "Form1.cs");
+            string csContents = File.ReadAllText(mainWindowXamlCsPath);
+            csContents = csContents.Replace("InitializeComponent();", @"InitializeComponent();
+
+            Shown += delegate { Close(); };");
+
+            File.WriteAllText(mainWindowXamlCsPath, csContents);
+
+            var restoreCommand = new RestoreCommand(Log, testDir.Path);
+            restoreCommand.Execute($"/p:RuntimeIdentifier={rid}")
+                .Should()
+                .Pass();
+
+            var publishCommand = new PublishCommand(Log, testDir.Path);
+
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                .Should()
+                .Pass();
+
+            var publishDirectory = OutputPathCalculator.FromProject(Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj")).GetPublishDirectory(
+                targetFramework: targetFramework,
+                runtimeIdentifier: rid);
+
+            // Wpf assemblies should not be present and winforms assemblies should be present in the output directory
+            // Wpf/WinForms assemblies, like Accessibility.dll should present in the output directory
             var wpfPresentationCoreDll = Path.Combine(publishDirectory, "PresentationCore.dll");
             var wpfPresentationFxDll = Path.Combine(publishDirectory, "PresentationFramework.dll");
             var winFormsDll = Path.Combine(publishDirectory, "System.Windows.Forms.dll");
             var accessibilitysDll = Path.Combine(publishDirectory, "Accessibility.dll");
 
-            // Wpf assemblies should not be present and winforms assemblies should be present in the output directory
-            // Wpf/WinForms assemblies, like Accessibility.dll should present in the output directory
             File.Exists(wpfPresentationCoreDll).Should().BeFalse();
             File.Exists(wpfPresentationFxDll).Should().BeFalse();
             File.Exists(winFormsDll).Should().BeTrue();
             File.Exists(accessibilitysDll).Should().BeTrue();
+
+            // Run the App
+            var runAppCommand = new SdkCommandSpec()
+            {
+                FileName = Path.Combine(publishDirectory, Path.GetFileName(testDir.Path) + ".exe")
+            };
+
+            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+
+            var result = runAppCommand.ToCommand()
+                .CaptureStdErr()
+                .CaptureStdOut()
+                .Execute();
+
+            result.ExitCode.Should().Be(0);
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
-        public void It_publishes_wpf_app_with_no_winforms()
+        public void It_publishes_and_runs_wpf_app_with_no_winforms()
         {
-            var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
-            var projectName = "WpfNoWinformsAssemblies";
+            // It_publishes_and_runs_self_contained_wpf_app also tests a Wpf app run successfully. This test also checks that the right files are present.
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
-            var testProject = CreateWpfTestProject(targetFramework, projectName, true);
-
-            testProject.AdditionalProperties["UseWPF"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
-            testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute()
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("wpf")
                 .Should()
                 .Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: "Debug", runtimeIdentifier: "win-x64").FullName;
+            var project = XDocument.Load(Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj"));
+            var ns = project.Root.Name.Namespace;
+            string targetFramework = project.Root.Elements(ns + "PropertyGroup")
+                .Elements(ns + "TargetFramework")
+                .Single().Value;
 
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            string mainWindowXamlCsPath = Path.Combine(testDir.Path, "MainWindow.xaml.cs");
+            string csContents = File.ReadAllText(mainWindowXamlCsPath);
+            csContents = csContents.Replace("InitializeComponent();", @"InitializeComponent();
+
+    this.Loaded += delegate { Application.Current.Shutdown(42); };");
+
+            File.WriteAllText(mainWindowXamlCsPath, csContents);
+
+            var restoreCommand = new RestoreCommand(Log, testDir.Path);
+            restoreCommand.Execute($"/p:RuntimeIdentifier={rid}")
+                .Should()
+                .Pass();
+
+            var publishCommand = new PublishCommand(Log, testDir.Path);
+
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                .Should()
+                .Pass();
+
+            var publishDirectory = OutputPathCalculator.FromProject(Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj")).GetPublishDirectory(
+                targetFramework: targetFramework,
+                runtimeIdentifier: rid);
+
+            // Wpf assemblies should  be present and winforms assemblies should not be present in the output directory
+            // Wpf/WinForms assemblies, like Accessibility.dll should present in the output directory
             var wpfPresentationCoreDll = Path.Combine(publishDirectory, "PresentationCore.dll");
             var wpfPresentationFxDll = Path.Combine(publishDirectory, "PresentationFramework.dll");
             var winFormsDll = Path.Combine(publishDirectory, "System.Windows.Forms.dll");
             var accessibilitysDll = Path.Combine(publishDirectory, "Accessibility.dll");
 
-            // Wpf assemblies should  be present and winforms assemblies should not be present in the output directory
-            // Wpf/WinForms assemblies, like Accessibility.dll should present in the output directory
             File.Exists(wpfPresentationCoreDll).Should().BeTrue();
             File.Exists(wpfPresentationFxDll).Should().BeTrue();
             File.Exists(accessibilitysDll).Should().BeTrue();
             File.Exists(winFormsDll).Should().BeFalse();
+
+            // Run the application
+            var runAppCommand = new SdkCommandSpec()
+            {
+                FileName = Path.Combine(publishDirectory, Path.GetFileName(testDir.Path) + ".exe")
+            };
+
+            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+
+            var result = runAppCommand.ToCommand()
+                .CaptureStdErr()
+                .CaptureStdOut()
+                .Execute();
+
+            result.ExitCode.Should().Be(42);
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
@@ -303,65 +381,6 @@ namespace Microsoft.NET.Publish.Tests
                 .And
                 //cannot check for absence of NETSDK1168 since that is used with /nowarn: in some configurations
                 .NotHaveStdOutContaining(Strings.@TrimmingWpfIsNotSupported);
-        }
-
-        private TestProject CreateWinFormsTestProject(string targetFramework, string projectName, bool isExecutable)
-        {
-            var testProject = new TestProject()
-            {
-                Name = projectName,
-                TargetFrameworks = targetFramework,
-                IsWinExe = true,
-                SelfContained = "true"
-            };
-
-            testProject.SourceFiles[$"{projectName}.cs"] = @"
-using System;
-using System.Windows.Forms;
-
-namespace winformstest;
-static class Program
-{
-    [STAThread]
-    static void Main()
-    {
-        ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
-}
-
-public class Form1 : Form
-{
-    public Form1()
-    {
-        InitializeComponent();
-    }
-
-    private System.ComponentModel.IContainer? components = null;
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing && (components != null))
-        {
-            components.Dispose();
-        }
-        base.Dispose(disposing);
-    }
-
-    #region Windows Form Designer generated code
-
-    private void InitializeComponent()
-    {
-        this.components = new System.ComponentModel.Container();
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(800, 450);
-        this.Text = ""Form1"";
-    }
-    #endregion
-}
-";
-
-            return testProject;
         }
 
         private TestProject CreateWpfTestProject(string targetFramework, string projectName, bool isExecutable)

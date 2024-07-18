@@ -20,6 +20,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         private const string SemanticVersionPlaceholderMatchingPattern = "*.*.*"; // wildcard pattern used to match on the version represented by the placeholder
         private const string NonSemanticVersionPlaceholder = "x.y";
         private const string NonSemanticVersionPlaceholderMatchingPattern = "*.*"; // wildcard pattern used to match on the version represented by the placeholder
+        private const string TargetRidPlaceholder = "banana-rid";
+        private const string TargetRidPlaceholderMatchingPattern = "*-*"; // wildcard pattern used to match on the rid represented by the placeholder
+        private const string PortableRidPlaceholder = "portable-rid";
+        private const string PortableRidPlaceholderMatchingPattern = "*-*"; // wildcard pattern used to match on the rid represented by the placeholder
 
         public static void CompareEntries(string baselineFileName, IOrderedEnumerable<string> actualEntries)
         {
@@ -88,10 +92,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static string GetAssetsDirectory() => Path.Combine(Directory.GetCurrentDirectory(), "assets");
 
         public static string GetBaselineFilePath(string baselineFileName, string baselineSubDir = "") =>
-            Path.Combine(GetAssetsDirectory(), "baselines", baselineSubDir, baselineFileName);
+            Path.Combine(GetAssetsDirectory(), baselineSubDir, baselineFileName);
 
         public static string RemoveRids(string diff, bool isPortable = false) =>
-            isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
+            isPortable ? diff.Replace(Config.PortableRid, PortableRidPlaceholder) : diff.Replace(Config.TargetRid, TargetRidPlaceholder);
 
         public static string RemoveVersions(string source)
         {
@@ -119,14 +123,16 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         }
 
         /// <summary>
-        /// This returns a <see cref="Matcher"/> that can be used to match on a path whose versions have been removed via
-        /// <see cref="RemoveVersions(string)"/>.
+        /// This returns a <see cref="Matcher"/> that can be used to match on a path whose versions and RID have been removed via
+        /// <see cref="RemoveVersions(string)"/> and <see cref="RemoveRids(string, bool)"/>
         /// </summary>
         public static Matcher GetFileMatcherFromPath(string path)
         {
             path = path
                 .Replace(SemanticVersionPlaceholder, SemanticVersionPlaceholderMatchingPattern)
-                .Replace(NonSemanticVersionPlaceholder, NonSemanticVersionPlaceholderMatchingPattern);
+                .Replace(NonSemanticVersionPlaceholder, NonSemanticVersionPlaceholderMatchingPattern)
+                .Replace(TargetRidPlaceholder, TargetRidPlaceholderMatchingPattern)
+                .Replace(PortableRidPlaceholder, PortableRidPlaceholderMatchingPattern);
             Matcher matcher = new();
             matcher.AddInclude(path);
             return matcher;

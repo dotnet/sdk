@@ -7,6 +7,11 @@
         <target state="translated">Actualizar solo los manifiestos de publicidad.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="new">Cannot use the {0} and {1} options together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Actualice todas las cargas de trabajo instaladas.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Actualice las cargas de trabajo en función del archivo de definición de reversión especificado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">No se encontró ninguna actualización de carga de trabajo.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -57,11 +67,6 @@
         <target state="translated">No se pudieron descargar los paquetes de actualización de la carga de trabajo en caché: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Argumento "{0}" no válido para el argumento --mode para la actualización de la carga de trabajo de dotnet. Solo los modos admitidos son "workloadset", "loosemanifest" y "auto".</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">Los manifiestos de publicidad se han actualizado correctamente.</target>
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">No se pudo actualizar la carga de trabajo: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">No se encontró la versión de carga de trabajo {0}.</target>
         <note />
       </trans-unit>
     </body>

@@ -83,6 +83,15 @@ Integration with static web assets:
 
 </PropertyGroup>
 
+<PropertyGroup>
+
+  <GenerateComputedBuildStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    $(GenerateComputedBuildStaticWebAssetsDependsOn);
+    BundleScopedCssFiles;
+  </GenerateComputedBuildStaticWebAssetsDependsOn>
+
+</PropertyGroup>
+
 <Target Name="GenerateScopedCssFiles" DependsOnTargets="$(GenerateScopedCssFilesDependsOn)" />
 
 <Target Name="ResolveScopedCssAssets" DependsOnTargets="$(ResolveScopedCssAssetsDependsOn)">
@@ -224,11 +233,19 @@ Integration with static web assets:
 
   <ItemGroup>
     <_ScopedCssAppBundleStaticWebAssetCandidate Include="$(_ScopedCssOutputPath)">
-      <RelativePath>$(PackageId).styles.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$(PackageId)#[.{fingerprint}]?.styles.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$(PackageId).styles.css</RelativePath>
     </_ScopedCssAppBundleStaticWebAssetCandidate>
     <_ScopedCssProjectBundleStaticWebAssetCandidate Include="$(_ScopedCssProjectOutputPath)">
-      <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$(PackageId)#[.{fingerprint}]!.bundle.scp.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$(PackageId).bundle.scp.css</RelativePath>
     </_ScopedCssProjectBundleStaticWebAssetCandidate>
+    <!-- Adds a Link: <bundle1>; rel="preload", <bundle2>; rel="preload", <bundle3>; rel="preload" -->
+    <_AddLinkHeaderToAppBundle Include="Append" Condition="'@(_ResolvedScopedCssBundleEndpoints)' != ''">
+      <UpdateTarget>Header</UpdateTarget>
+      <Name>Link</Name>
+      <Value>@(_ResolvedScopedCssBundleEndpoints->'&lt;%(Identity)&gt;; rel="preload"; as="style"', ', ')</Value>
+    </_AddLinkHeaderToAppBundle>
   </ItemGroup>
 
   <DefineStaticWebAssets Condition="@(_AllScopedCss) != ''"
@@ -258,6 +275,20 @@ Integration with static web assets:
   >
     <Output TaskParameter="Endpoints" ItemName="_ScopedCssAppBundleStaticWebAssetEndpoint" />
   </DefineStaticWebAssetEndpoints>
+
+  <UpdateStaticWebAssetEndpoints
+    Condition="'@(_AddLinkHeaderToAppBundle)' != ''"
+    EndpointsToUpdate="@(_ScopedCssAppBundleStaticWebAssetEndpoint)"
+    AllEndpoints="@(_ScopedCssAppBundleStaticWebAssetEndpoint)"
+    Operations="@(_AddLinkHeaderToAppBundle)"
+  >
+    <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedScopedCssAppBundleStaticWebAssetEndpoint" />
+  </UpdateStaticWebAssetEndpoints>
+
+  <ItemGroup Condition="'@(_AddLinkHeaderToAppBundle)' != ''">
+    <_ScopedCssAppBundleStaticWebAssetEndpoint Remove="@(_UpdatedScopedCssAppBundleStaticWebAssetEndpoint)" />
+    <_ScopedCssAppBundleStaticWebAssetEndpoint Include="@(_UpdatedScopedCssAppBundleStaticWebAssetEndpoint)" />
+  </ItemGroup>
 
   <DefineStaticWebAssets Condition="@(_ScopedCss) != ''"
     CandidateAssets="@(_ScopedCssProjectBundleStaticWebAssetCandidate)"
@@ -351,7 +382,46 @@ Integration with static web assets:
   <!-- Incrementalism is built into the task itself. -->
   <ItemGroup>
     <_CurrentProjectDiscoveredScopedCssFiles Include="@(_DiscoveredScopedCssFiles)" />
+    <!-- If we are in standalone hosting, we want to resolve endpoints that match the file name, that's what standalone does -->
+    <_ScopedCssProjectBundleFilters Include="Standalone" Condition="$(StaticWebAssetStandaloneHosting) == 'true'" />
+    <!-- If we are not in standalone hosting, we want to resolve endpoints with a fingerprint where possible -->
+    <_ScopedCssProjectBundleFilters Include="Property" Condition="$(StaticWebAssetStandaloneHosting) != 'true'">
+      <Name>fingerprint</Name>
+    </_ScopedCssProjectBundleFilters>
+    <_ScopedCssProjectBundleFiltersNoFingerprint Include="Property" Condition="$(StaticWebAssetStandaloneHosting) != 'true'">
+      <Name>fingerprint</Name>
+      <Mode>Exclude</Mode>
+    </_ScopedCssProjectBundleFiltersNoFingerprint>
   </ItemGroup>
+
+  <FilterStaticWebAssetEndpoints Condition="'@(_ScopedCssProjectBundles)' != ''"
+    Endpoints="@(StaticWebAssetEndpoint)"
+    Assets="@(_ScopedCssProjectBundles)"
+    Filters="@(_ScopedCssProjectBundleFilters)"
+  >
+    <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredScopedCssBundleEndpoints" />
+    <Output TaskParameter="AssetsWithoutMatchingEndpoints" ItemName="_ScopedCssBundlesWithoutFingerprint" />
+  </FilterStaticWebAssetEndpoints>
+
+  <FilterStaticWebAssetEndpoints Condition="'$(StaticWebAssetStandaloneHosting)' != 'true' and '@(_ScopedCssBundlesWithoutFingerprint)' != ''"
+    Endpoints="@(StaticWebAssetEndpoint)"
+    Assets="@(_ScopedCssBundlesWithoutFingerprint)"
+    Filters="@(_ScopedCssProjectBundleFiltersNoFingerprint)"
+  >
+    <Output TaskParameter="FilteredEndpoints" ItemName="_FilteredScopedCssBundleEndpoints" />
+    <Output TaskParameter="AssetsWithoutMatchingEndpoints" ItemName="_ScopedCssBundlesWithoutEndpoints" />
+  </FilterStaticWebAssetEndpoints>
+
+  <Error Condition="'@(_ScopedCssProjectBundles)' != '' and '@(_ScopedCssBundlesWithoutEndpoints)' != ''"
+    Text="The following scoped css bundles do not have matching endpoints: @(_ScopedCssBundlesWithoutEndpoints->'%(RelativePath)')" />
+
+  <ResolveStaticWebAssetEndpointRoutes
+    Condition="'@(_ScopedCssProjectBundles)' != ''"
+    Endpoints="@(_FilteredScopedCssBundleEndpoints)"
+    Assets="@(_ScopedCssProjectBundles)"
+  >
+    <Output TaskParameter="ResolvedEndpoints" ItemName="_ResolvedScopedCssBundleEndpoints" />
+  </ResolveStaticWebAssetEndpointRoutes>
 
   <!-- This is the bundle for the app, we will always generate it when there are scoped css files for the current project or
        we detected existing bundles available. If some other project/package didn't bundle their assets, we will not be including
@@ -360,7 +430,7 @@ Integration with static web assets:
   <ConcatenateCssFiles
     Condition="'@(_ScopedCssProjectBundles)' != '' or '@(_ScopedCss)' != ''"
     ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
-    ProjectBundles="@(_ScopedCssProjectBundles)"
+    ProjectBundles="@(_ResolvedScopedCssBundleEndpoints)"
     ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
     OutputFile="$(_ScopedCssOutputPath)" />
 

@@ -26,12 +26,16 @@
     <UnixRid Include="osx-arm64" />
   </ItemGroup>
 
-  <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
+  <!-- 
+    These packages will be replaced with ms-built packages downloaded from official package feeds.
+    The runtime packs do not have a RIDless package, so we'll use the version of their corresponding ref pack
+    to determine the version.
+  -->
   <ItemGroup>
-    <RuntimePack Include="Microsoft.Aspnetcore.App.Runtime" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
-    <RuntimePack Include="Microsoft.NETCore.App.Crossgen2" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
-    <RuntimePack Include="Microsoft.NETCore.App.Host" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
-    <RuntimePack Include="Microsoft.NETCore.App.Runtime" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+    <RuntimePack Include="Microsoft.AspNetCore.App.Runtime" Version="[$(MicrosoftAspNetCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Crossgen2" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Host" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Runtime" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
 
     <PortablePackage Include="Microsoft.DotNet.ILCompiler" Version="[$(MicrosoftDotNetILCompilerVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
@@ -63,7 +67,7 @@
     <ItemGroup>
       <!--
             Generate package names for runtime packs by concatenating the base name with the Unix RID
-            (e.g. Microsoft.Aspnetcore.App.Runtime.linux-x64)
+            (e.g. Microsoft.AspNetCore.App.Runtime.linux-x64)
         -->
       <PackageWithName Include="@(RuntimePackWithUnixRid)">
         <PackageName>%(RuntimePackWithUnixRid.Identity).%(RuntimePackWithUnixRid.UnixRid)</PackageName>
@@ -153,7 +157,7 @@
 
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
-    <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
+    <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props *.xml SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
 
   </Target>
 

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -10,9 +11,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 #if WASM_TASKS
-    internal class StaticWebAsset : IEquatable<StaticWebAsset>
+    internal class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #else
-    public class StaticWebAsset : IEquatable<StaticWebAsset>
+    public class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #endif
     {
         public StaticWebAsset()
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
         {
-            var file = File.Exists(identity) ?
+            using var file = File.Exists(identity) ?
                 File.OpenRead(identity) :
                 (File.Exists(originalItemSpec) ?
                     File.OpenRead(originalItemSpec) :
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static string ComputeIntegrity(string identity, string originalItemSpec)
         {
-            var file = File.Exists(identity) ?
+            using var file = File.Exists(identity) ?
     File.OpenRead(identity) :
     (File.Exists(originalItemSpec) ?
         File.OpenRead(originalItemSpec) :
@@ -262,18 +263,15 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return Convert.ToBase64String(hash);
         }
 
-        public string ComputeTargetPath(string pathPrefix, char separator)
-        {
-            return CombineNormalizedPaths(
+        public string ComputeTargetPath(string pathPrefix, char separator) => CombineNormalizedPaths(
                 pathPrefix,
                 IsDiscovered() || IsComputed() ? "" : BasePath,
                 RelativePath, separator);
-        }
 
         public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
         {
             var normalizedPrefix = prefix != null ? Normalize(prefix) : "";
-            var computedBasePath = basePath == null || basePath == "/" ? "" : basePath;
+            var computedBasePath = basePath is null or "/" ? "" : basePath;
             return Path.Combine(normalizedPrefix, computedBasePath, route)
                 .Replace('/', separator)
                 .Replace('\\', separator)
@@ -549,7 +547,142 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return asset.ItemSpec;
         }
 
-        public override bool Equals(object obj) => obj is StaticWebAsset asset && Equals(asset);
+        // Compares all fields in this order
+        // Identity
+        // SourceType
+        // SourceId
+        // ContentRoot
+        // BasePath
+        // RelativePath
+        // AssetKind
+        // AssetMode
+        // AssetRole
+        // AssetMergeSource
+        // AssetMergeBehavior
+        // RelatedAsset
+        // AssetTraitName
+        // AssetTraitValue
+        // Fingerprint
+        // Integrity
+        // CopyToOutputDirectory
+        // CopyToPublishDirectory
+        // OriginalItemSpec
+
+        public int CompareTo(StaticWebAsset other)
+        {
+            var result = string.Compare(Identity, other.Identity, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(SourceId, other.SourceId, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(ContentRoot, other.ContentRoot, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(BasePath, other.BasePath, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(RelativePath, other.RelativePath, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetKind, other.AssetKind, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMode, other.AssetMode, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetRole, other.AssetRole, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMergeSource, other.AssetMergeSource, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetMergeBehavior, other.AssetMergeBehavior, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(RelatedAsset, other.RelatedAsset, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetTraitName, other.AssetTraitName, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(AssetTraitValue, other.AssetTraitValue, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(Fingerprint, other.Fingerprint, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(Integrity, other.Integrity, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(CopyToOutputDirectory, other.CopyToOutputDirectory, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(CopyToPublishDirectory, other.CopyToPublishDirectory, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = string.Compare(OriginalItemSpec, other.OriginalItemSpec, StringComparison.Ordinal);
+            return result;
+        }
+
+        public override bool Equals(object obj) => obj != null && Equals(obj as StaticWebAsset);
 
         public bool Equals(StaticWebAsset other) =>
             Identity == other.Identity &&
@@ -632,9 +765,66 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         internal static bool HasSourceId(string candidate, string source) =>
             string.Equals(candidate, source, StringComparison.Ordinal);
 
-        private string GetDebuggerDisplay()
+        private string GetDebuggerDisplay() => ToString();
+
+        public string ComputeLogicalPath() => CreatePathString("", '/');
+
+        private string CreatePathString(string pathPrefix, char separator)
         {
-            return ToString();
+            var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
+            // These have been normalized already, so only contain forward slashes
+            var computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+            if (computedBasePath == "/")
+            {
+                // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
+                computedBasePath = "";
+            }
+
+            var pathWithTokens = Path.Combine(prefix, computedBasePath, RelativePath)
+                .Replace('/', separator)
+                .Replace('\\', separator)
+                .TrimStart(separator);
+            return pathWithTokens;
+        }
+
+        public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens)
+        {
+            var pathWithTokens = CreatePathString(pathPrefix, separator);
+            return ReplaceTokens(pathWithTokens, providedTokens);
+        }
+
+        // Tokens in static web assets represent a similar concept to tokens within routing. They can be used to identify logical
+        // values that need to be replaced by well-known strings. The format for defining a token in static web assets is as follows
+        // #[.{tokenName}].
+        // # is used to make sure we never interpret any valid file path as a token (since # is not allowed to appear in file systems)
+        // [] delimit the token expression.
+        // Inside the [] there is a token expression that is represented as an interpolated string where {} delimit the variables and
+        // the content inside the name of the value they need to be replaced with.
+        // The expression inside the `[]` can contain any character that can appear in the file system, for example, to indicate that
+        // a fixed prefix needs to be added.
+        // For the time being the implementation unconditionally resolves and implements any token expression, but in the future,
+        // we will support features like `?` to indicate that an entire token expression is optional (this indicates that something
+        // can be referenced with or without the expression. For example file[.{integrity}]?.js will mean, the file can be addressed as
+        // file.js (no integrity  suffix) or file.asdfasdf.js where '.asdfasdf' is the integrity suffix.
+        // The reason we want to plan for this is that we don't have the ability to post process all content from the app (CSS files, JS, etc.)
+        // to replace the original paths with the replaced paths. This means some files should be served in their original formats so that they
+        // work with the content that we couldn't post process, and with the post processed format, so that they can benefit from fingerprinting
+        // and other features. This is why we want to bake into the format itself the information that specifies under which paths the file will
+        // be available at runtime so that tasks/tools can operate independently and produce correct results.
+        // The current token we support is the 'fingerprint' token, which computes a web friendly version of the hash of the file suitable
+        // to be embedded in other contexts.
+        // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
+        // project base path, etc.
+        public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
+            return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
+        }
+
+        public string ComputePathWithoutTokens(string pathWithTokens)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
+            return pattern.ComputePatternLabel();
         }
 
         public override string ToString() =>
@@ -705,6 +895,43 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
             return hashCode;
 #endif
+        }
+
+        internal IEnumerable<StaticWebAssetResolvedRoute> ComputeRoutes()
+        {
+            var tokenResolver = StaticWebAssetTokenResolver.Instance;
+            var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
+            foreach (var expandedPattern in pattern.ExpandPatternExpression())
+            {
+                var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
+                yield return new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens);
+            }
+        }
+
+        internal string EmbedTokens(string relativePath)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
+            var resolver = StaticWebAssetTokenResolver.Instance;
+            pattern.EmbedTokens(this, resolver);
+            return pattern.RawPattern;
+        }
+
+        [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+        internal class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)
+        {
+            public string PathLabel { get; set; } = pathLabel;
+            public string Path { get; set; } = path;
+            public Dictionary<string, string> Tokens { get; set; } = tokens;
+
+            public void Deconstruct(out string pathLabel, out string path, out Dictionary<string, string> tokens)
+            {
+                pathLabel = PathLabel;
+                path = Path;
+                tokens = Tokens;
+            }
+
+            private string GetDebuggerDisplay() =>
+                $"Label: {PathLabel}, Route: {Path}, Tokens: {string.Join(", ", Tokens.Select(t => $"{t.Key}={t.Value}"))}";
         }
     }
 }

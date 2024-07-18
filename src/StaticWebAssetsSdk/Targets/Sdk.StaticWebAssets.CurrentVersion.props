@@ -32,4 +32,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)..\Sdk\Sdk.StaticWebAssets.StaticAssets.ProjectSystem.props" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.StaticWebAssets.ContentTypeMappings.props" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.StaticWebAssets.FingerprintingPatterns.props" />
 </Project>

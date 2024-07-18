@@ -5,10 +5,8 @@ using System.Reflection;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class PublishIntegrationTest : AspNetSdkTest
+    public class PublishIntegrationTest(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public PublishIntegrationTest(ITestOutputHelper log) : base(log) { }
-
         [Fact]
         public void Publish_RazorCompileOnPublish_IsDefault()
         {

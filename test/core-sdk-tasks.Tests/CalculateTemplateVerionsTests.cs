@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using Xunit;
-using Microsoft.DotNet.Cli.Build;
+﻿using Microsoft.DotNet.Cli.Build;
 
 namespace EndToEnd
 {

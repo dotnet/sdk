@@ -40,7 +40,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     public string PackageVersion { get; set; }
 
-    public string InstallerPath { get; set; }
+    public string SdkPath { get; set; }
 
     public string ComponentTemplatePath { get; set; }
 
@@ -60,9 +60,9 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
         VmrPath = Path.GetFullPath(VmrPath);
         TmpPath = Path.GetFullPath(TmpPath);
 
-        var additionalRemotes = InstallerPath == null
+        var additionalRemotes = SdkPath == null
             ? Array.Empty<AdditionalRemote>()
-            : new[] { new AdditionalRemote("installer", InstallerPath) };
+            : new[] { new AdditionalRemote("sdk", SdkPath) };
 
         var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
         await vmrInitializer.InitializeRepository(

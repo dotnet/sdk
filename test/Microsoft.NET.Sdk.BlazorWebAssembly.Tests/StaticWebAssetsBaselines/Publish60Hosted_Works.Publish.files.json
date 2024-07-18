@@ -110,7 +110,7 @@
   "${OutputPath}\\wwwroot\\_framework\\icudt_no_CJK.dat.gz",
   "${OutputPath}\\wwwroot\\css\\app.css",
   "${OutputPath}\\wwwroot\\index.html",
-  "${OutputPath}\\wwwroot\\BlazorWasmHosted60.Client.styles.css",
+  "${OutputPath}\\wwwroot\\BlazorWasmHosted60.Client#[.{fingerprint}]?.styles.css",
   "${OutputPath}\\wwwroot\\_framework\\BlazorWasmHosted60.Client.dll",
   "${OutputPath}\\wwwroot\\_framework\\BlazorWasmHosted60.Client.dll.br",
   "${OutputPath}\\wwwroot\\_framework\\BlazorWasmHosted60.Client.dll.gz",
@@ -219,6 +219,6 @@
   "${OutputPath}\\wwwroot\\_framework\\icudt_no_CJK.dat",
   "${OutputPath}\\wwwroot\\_framework\\icudt_no_CJK.dat.br",
   "${OutputPath}\\wwwroot\\_framework\\icudt_no_CJK.dat.gz",
-  "${OutputPath}\\wwwroot\\css\\app.css",
-  "${OutputPath}\\wwwroot\\index.html"
+  "${OutputPath}\\wwwroot\\css\\app#[.{fingerprint}]?.css",
+  "${OutputPath}\\wwwroot\\index#[.{fingerprint}]?.html"
 ]

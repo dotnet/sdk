@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             ICreationResult creationResult = new MockCreationResult(primaryOutputs: new[] { new MockCreationPath("outputProj1.csproj") });
 
             Assert.False(DotnetSlnPostActionProcessor.TryGetProjectFilesToAdd(postAction, creationResult, string.Empty, out IReadOnlyList<string>? foundProjectFiles));
-            Assert.Null(foundProjectFiles);
+            Assert.Empty(foundProjectFiles);
         }
 
         [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindsMultipleProjectsToAddWithOutputBasePath))]

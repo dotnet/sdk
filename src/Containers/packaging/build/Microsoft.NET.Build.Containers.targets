@@ -43,7 +43,7 @@
     </PropertyGroup>
 
     <ComputeDotnetBaseImageAndTag
-      Condition="$(_ContainerIsUsingMicrosoftDefaultImages)"
+      UserBaseImage="$(ContainerBaseImage)"
       SdkVersion="$(NetCoreSdkVersion)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
       FrameworkReferences="@(FrameworkReference)"
@@ -93,16 +93,15 @@
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
 
       <!-- Set the WorkingDirectory depending on the RID -->
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows) ">/app</ContainerWorkingDirectory>
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
     </PropertyGroup>
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
       <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == ''" Include="dotnet;$(TargetFileName)" />
+      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -195,12 +194,35 @@
 
   <Target Name="_CheckContainersPackage" AfterTargets="Build">
     <PropertyGroup>
-      <ContainersPackageIdentity>Microsoft.NET.Build.Containers</ContainersPackageIdentity>
+      <!-- facts to base on comparisons on -->
+      <_ContainersPackageIdentity>Microsoft.NET.Build.Containers</_ContainersPackageIdentity>
+      <_WebDefaultSdkVersion>7.0.300</_WebDefaultSdkVersion>
+      <_WorkerDefaultSdkVersion>8.0.100</_WorkerDefaultSdkVersion>
+      <_ConsoleDefaultSdkVersion>8.0.200</_ConsoleDefaultSdkVersion>
+
+      <!-- capability detection for the executing SDK -->
+      <_SdkCanPublishWeb>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WebDefaultSdkVersion)'))</_SdkCanPublishWeb>
+      <_SdkCanPublishWorker>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WorkerDefaultSdkVersion)'))</_SdkCanPublishWorker>
+      <_SdkCanPublishConsole>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_ConsoleDefaultSdkVersion)'))</_SdkCanPublishConsole>
+
+      <!-- capability detection for the executing project -->
+      <_ContainerPackageIsPresent>false</_ContainerPackageIsPresent>
+      <_ContainerPackageIsPresent Condition="@(PackageReference->AnyHaveMetadataValue('Identity', '$(_ContainersPackageIdentity)'))">true</_ContainerPackageIsPresent>
+      <_IsWebProject>false</_IsWebProject>
+      <_IsWebProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWeb'))">true</_IsWebProject>
+      <_IsWorkerProject>false</_IsWorkerProject>
+      <_IsWorkerProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWorker'))">true</_IsWorkerProject>
     </PropertyGroup>
-    <ItemGroup>
-      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'" />
-    </ItemGroup>
-    <Warning Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK." Condition="'@(ContainersPackage)' != ''" />
+
+    <Warning
+      Condition="$(_ContainerPackageIsPresent)
+        and (
+          ($(_SdkCanPublishWeb) and $(_IsWebProject)) or
+          ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
+          ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
+        )"
+      Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
+
     <PropertyGroup>
       <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
     </PropertyGroup>
@@ -248,6 +270,7 @@
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
   </Target>
 </Project>

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.SourceBuild.SmokeTests;
+namespace Microsoft.DotNet.UnifiedBuild.Tests;
 
 internal static class ExecuteHelper
 {

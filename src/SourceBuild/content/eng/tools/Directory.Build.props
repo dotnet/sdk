@@ -1,13 +1,21 @@
 <Project>
 
-  <!--
-    Do not import the Arcade SDK for the local tooling projects. This lets us
-    build them with just the .NET SDK, simplifying the build.
-  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+
   <PropertyGroup>
-    <SkipArcadeSdkImport>true</SkipArcadeSdkImport>
+    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(ReferencePackagesDir);$(PrebuiltPackagesPath);$(PrebuiltSourceBuiltPackagesPath)</RestoreSources>
   </PropertyGroup>
 
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+  <!--
+    Use some assemblies from the SDK, instead of package references. This ensures they match what's
+    found when the task is loaded by the SDK's MSBuild.
+    Reference NuGet assemblies, except a command line assembly that causes warnings such as:
+    MSB3277: Found conflicts between different versions of "System.Collections" that could not be resolved.
+  -->
+  <ItemGroup>
+    <SdkAssembly Include="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'Newtonsoft.Json.dll'));
+                          $([MSBuild]::NormalizeDirectory('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)'))NuGet.*.dll"
+                 Exclude="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'NuGet.CommandLine.XPlat.dll'))" />
+  </ItemGroup>
 
 </Project>

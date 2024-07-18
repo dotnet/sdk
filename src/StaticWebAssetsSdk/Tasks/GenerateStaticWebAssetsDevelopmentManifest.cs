@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private IEnumerable<SegmentsAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets)
         {
             var assetsByTargetPath = assets
-                .GroupBy(a => a.ComputeTargetPath("", '/'));
+                .GroupBy(a => a.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance));
 
             foreach (var group in assetsByTargetPath)
             {

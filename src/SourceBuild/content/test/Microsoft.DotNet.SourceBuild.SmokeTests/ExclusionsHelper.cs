@@ -20,6 +20,8 @@ internal class ExclusionsHelper
 
     private readonly string _exclusionsFileName;
 
+    private readonly string _baselineSubDir;
+
     // Use this to narrow down the scope of exclusions to a specific category.
     // For instance, setting this to "test-templates" will consider 
     // "src/test-templates/exclusions.txt" but not "src/arcade/exclusions.txt".
@@ -29,7 +31,7 @@ internal class ExclusionsHelper
 
     private readonly Dictionary<string, HashSet<string>> _suffixToUnusedExclusions;
 
-    public ExclusionsHelper(string exclusionsFileName, string? exclusionRegexString = null)
+    public ExclusionsHelper(string exclusionsFileName, string baselineSubDir = "", string? exclusionRegexString = null)
     {
         if (exclusionsFileName is null)
         {
@@ -37,8 +39,9 @@ internal class ExclusionsHelper
         }
 
         _exclusionsFileName = exclusionsFileName;
+        _baselineSubDir = baselineSubDir;
         _exclusionRegex = string.IsNullOrWhiteSpace(exclusionRegexString) ? null : new Regex(exclusionRegexString);
-        _suffixToExclusions = ParseExclusionsFile(_exclusionsFileName);
+        _suffixToExclusions = ParseExclusionsFile();
         _suffixToUnusedExclusions = new Dictionary<string, HashSet<string>>(
             _suffixToExclusions.ToDictionary(pair => pair.Key, pair => new HashSet<string>(pair.Value)));
     }
@@ -57,7 +60,7 @@ internal class ExclusionsHelper
 
     internal void GenerateNewBaselineFile(string? updatedFileTag = null)
     {
-        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), _exclusionsFileName);
+        string exclusionsFilePath = BaselineHelper.GetBaselineFilePath(_exclusionsFileName, _baselineSubDir);
 
         string[] lines = File.ReadAllLines(exclusionsFilePath);
 
@@ -90,9 +93,9 @@ internal class ExclusionsHelper
         return false;
     }
 
-    private Dictionary<string, HashSet<string>> ParseExclusionsFile(string exclusionsFileName)
+    private Dictionary<string, HashSet<string>> ParseExclusionsFile()
     {
-        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), exclusionsFileName);
+        string exclusionsFilePath = BaselineHelper.GetBaselineFilePath(_exclusionsFileName, _baselineSubDir);
         return File.ReadAllLines(exclusionsFilePath)
             .Select(line =>
             {

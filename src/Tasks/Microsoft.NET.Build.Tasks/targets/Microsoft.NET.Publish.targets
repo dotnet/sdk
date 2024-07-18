@@ -715,6 +715,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                    Retries="$(CopyRetryCount)"
                    RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
                    />
   </Target>
 

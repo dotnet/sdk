@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [UsesVerify]
     public partial class DotnetNewUpdateTests
     {
         [Fact]

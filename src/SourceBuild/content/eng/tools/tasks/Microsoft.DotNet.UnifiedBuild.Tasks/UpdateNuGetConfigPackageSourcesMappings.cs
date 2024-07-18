@@ -349,7 +349,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Invalid nuspec file", nuspecFile), ex);
+                    throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Invalid nuspec file: {0}", nuspecFile), ex);
                 }
             }
         }
@@ -415,7 +415,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             }
             catch (Exception ex)
             {
-                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Invalid package", path), ex);
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Invalid package: {0}", path), ex);
             }
 
             throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Did not extract nuspec file from package: {0}", path));

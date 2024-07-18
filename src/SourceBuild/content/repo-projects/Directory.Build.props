@@ -68,7 +68,8 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
 
-    <BuildArgs>$(FlagParameterPrefix)ci</BuildArgs>
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
     <BuildArgs>$(BuildArgs) -bl</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
@@ -93,6 +94,17 @@
     <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TestActions>$(FlagParameterPrefix)restore</TestActions>
+    <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
+
+    <TestArgs Condition="'$(UseOfficialBuildVersioning)' != 'false'">$(FlagParameterPrefix)ci</TestArgs>
+    <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
+    <TestArgs>$(TestArgs) /bl:artifacts/log/$(Configuration)/Test.binlog</TestArgs>
+
+    <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(EnableExtraDebugging)' == 'true'">
     <MSBuildDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'msbuild-debug'))</MSBuildDebugPathTargetDir>
     <RoslynDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'roslyn-debug'))</RoslynDebugPathTargetDir>
@@ -115,35 +127,31 @@
     <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
     <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
 
-    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
-    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
-    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
-
     <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
-    <EnvironmentVariables Include="ContinuousIntegrationBuild=true" />
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'" Include="ContinuousIntegrationBuild=true" />
 
     <!-- Turn off node reuse for source build because repos use conflicting versions
          of compilers which cause assembly load errors.
          See https://github.com/dotnet/source-build/issues/541 -->
     <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
 
-    <!--
-      Apply official build versioning to match Microsoft build. These are based on build date, so
-      need to be parsed from Maestro++ auto-update and passed through.
-    -->
+  </ItemGroup>
+
+  <!--
+    Apply official build versioning to match Microsoft build. These are based on build date, so
+    need to be parsed from Maestro++ auto-update and passed through.
+  -->
+  <ItemGroup Condition="'$(UseOfficialBuildVersioning)' != 'false'">
     <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
     <EnvironmentVariables Include="BUILD_BUILDNUMBER=$(OfficialBuildId)" />
 
-    <!-- Give build access to commit info without necessarily requiring git queries. -->
-    <EnvironmentVariables Include="GitCommitCount=$(GitCommitCount)" />
-    <EnvironmentVariables Include="GitCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="GitInfoCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="SourceRevisionId=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="RepositoryCommit=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="COMMIT_SHA=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="GIT_COMMIT=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
-    <EnvironmentVariables Include="RepositoryType=Git" />
+    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
+    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
+    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
+  </ItemGroup>
 
+  <ItemGroup>
     <EnvironmentVariables Include="DeterministicSourcePaths=true" Condition="'$(DeterministicBuildOptOut)' != 'true'" />
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
@@ -182,31 +190,14 @@
   </ItemGroup>
 
   <!-- If we're using the bootstrapped arcade, we can set the override here. -->
-  <ItemGroup Condition="'$(UseBootstrapArcade)' == 'true'">
-    <SourceBuiltSdkOverride Include="Microsoft.DotNet.Arcade.Sdk"
-                            Group="ARCADE"
-                            Version="$(ArcadeBootstrapVersion)"
-                            Location="$(BootstrapPackagesDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
+    <!-- Configure the bootstrapped Arcade version here. Repositories that build before arcade (and arcade itself) will use the bootstrapped SDK. -->
+    <BootstrapArcadeSdkOverride Include="Microsoft.DotNet.Arcade.Sdk"
+                                Group="ARCADE"
+                                Version="$(ArcadeBootstrapVersion)"
+                                Location="$(BootstrapPackagesDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />
     <!-- Make the WindowsDesktop SDK override opt-in for repos that need it. -->
     <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-
-    <!--
-      Add Microsoft.Build.NoTargets and Microsoft.Build.Traversal SDK overrides, for all repos,
-      except source-build-reference-packages repo, that builds these packages and utility projects.
-
-      We need to override all SDK packages that are used by repos, to prevent NuGet SDK Resolver from trying to
-      restore these packages from online feeds. In offline build we only want to use local source-build feeds.
-      Therefore, we create a copy of repo's NuGet.config file, modify it, and pass it into repo build using
-      RestoreConfigFile property. MSBuild uses NuGetSdkResolver to restore missing SDKs, which doesn't honor
-      RestoreConfigFile property and uses NuGet.config file from repo's root which has online feeds.
-    -->
-    <NoTargetsSdkOverride Include="Microsoft.Build.NoTargets" Group="NOTARGETS" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
-    <TraversalSdkOverride Include="Microsoft.Build.Traversal" Group="TRAVERSAL" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
-    <SourceBuiltSdkOverride Include="@(NoTargetsSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
-    <SourceBuiltSdkOverride Include="@(TraversalSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
   </ItemGroup>
 
     <!-- CLI internal version is statically set by us to a version that will never show up in the wild.
@@ -236,17 +227,16 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
+    <!-- Used by windowsdesktop to determine msi version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
 
-    <!-- Used by installer to determine sdk version -->
+    <!-- Used by installer partition in sdk repo to determine sdk version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
-
-    <!-- non-rid-specific versions of RID-specific version variables to use for bootstrapping -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimeVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppCrossgen2Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
   </ItemGroup>
 
 </Project>

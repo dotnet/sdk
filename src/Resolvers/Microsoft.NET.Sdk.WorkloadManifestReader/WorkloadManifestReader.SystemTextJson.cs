@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if USE_SYSTEM_TEXT_JSON
-
 using System.Buffers;
 using System.Text.Json;
 
@@ -128,5 +126,3 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public static bool IsInt(this JsonTokenType tokenType) => tokenType == JsonTokenType.Number;
     }
 }
-
-#endif

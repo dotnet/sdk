@@ -23,8 +23,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _adManifestOnlyOption;
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
-        private readonly string _workloadSetMode;
-
         public WorkloadUpdateCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -38,12 +36,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                   tempDirPath: tempDirPath)
 
         {
-            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
             var resolvedReporter = _printDownloadLinkOnly || _printRollbackDefinitionOnly ? NullReporter.Instance : Reporter;
-            _workloadSetMode = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetMode);
 
             _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter,
                                 _sdkFeatureBand, _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader,
@@ -98,39 +95,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 var workloadSet = WorkloadSet.FromManifests(_workloadResolver.GetInstalledManifests());
                 Reporter.WriteLine(workloadSet.ToJson());
             }
-            else if (!string.IsNullOrWhiteSpace(_workloadSetMode))
-            {
-                if (_workloadSetMode.Equals("workloadset", StringComparison.OrdinalIgnoreCase))
-                {
-                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-                }
-                else if (_workloadSetMode.Equals("loosemanifest", StringComparison.OrdinalIgnoreCase) ||
-                         _workloadSetMode.Equals("auto", StringComparison.OrdinalIgnoreCase))
-                {
-                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
-                }
-                else
-                {
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto, _workloadSetMode), isUserError: true);
-                }
-            }
             else
             {
+                Reporter.WriteLine();
                 try
                 {
+                    var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
+
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+
+                    RunInNewTransaction(context =>
                     {
-                        CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache);
-                    }
-                    else
-                    {
-                        RunInNewTransaction(context =>
-                        {
-                            var manifestUpdates = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                            UpdateWorkloads(false, manifestUpdates, offlineCache, context);
-                        });
-                    }
+                        UpdateWorkloadManifests(context, offlineCache);
+                        _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
+                    });
+
+                    WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+                    //  TODO: potentially only do this in some cases (ie not if global.json specifies workload set)
+                    _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
+
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+                    Reporter.WriteLine();
                 }
                 catch (Exception e)
                 {
@@ -141,107 +128,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             _workloadInstaller.Shutdown();
             return _workloadInstaller.ExitCode;
-        }
-
-        public void CalculateManifestUpdatesAndUpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null)
-        {
-            Reporter.WriteLine();
-
-            var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
-
-            if (useRollback && useWorkloadSets)
-            {
-                // Rollback files are only for loose manifests. Update the mode to be loose manifests.
-                Reporter.WriteLine(LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
-                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
-                useWorkloadSets = false;
-            }
-
-            var workloadIds = GetUpdatableWorkloads();
-            WriteSDKInstallRecordsForVSWorkloads(workloadIds);
-            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
-
-            IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
-            RunInNewTransaction(context =>
-            {
-                if (useWorkloadSets)
-                {
-                    manifestsToUpdate = InstallWorkloadSet(context);
-                }
-                else
-                {
-                    manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-                }
-
-                UpdateWorkloads(useRollback, manifestsToUpdate, offlineCache, context);
-                
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
-                Reporter.WriteLine();
-            });
-        }
-
-        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context)
-        {
-            var workloadIds = GetUpdatableWorkloads();
-
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
-
-            WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
-
-            _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
-        }
-
-        private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)
-        {
-#if !DOT_NET_BUILD_FROM_SOURCE
-            if (OperatingSystem.IsWindows())
-            {
-                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, updateableWorkloads, Reporter);
-            }
-#endif
-        }
-
-        private void UpdateWorkloadsWithInstallRecord(
-            SdkFeatureBand sdkFeatureBand,
-            IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            bool useRollback,
-            ITransactionContext context,
-            DirectoryPath? offlineCache = null)
-        {
-            context.Run(
-                action: () =>
-                {
-                    foreach (var manifestUpdate in manifestsToUpdate)
-                    {
-                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, useRollback);
-                    }
-
-                    if (useRollback)
-                    {
-                        _workloadInstaller.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
-                    }
-                    else
-                    {
-                        _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
-                    }
-
-                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
-
-                    _workloadResolver.RefreshWorkloadManifests();
-
-                    var workloads = GetUpdatableWorkloads();
-
-                    _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
-                },
-                rollback: () =>
-                {
-                    //  Nothing to roll back at this level, InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
-                    //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
-                    _workloadResolver.RefreshWorkloadManifests();
-                });
         }
 
         private async Task DownloadToOfflineCacheAsync(DirectoryPath offlineCache, bool includePreviews)

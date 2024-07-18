@@ -1,11 +1,11 @@
 parameters:
 - name: pipeline
   type: string
-  default: $(INSTALLER_OFFICIAL_CI_PIPELINE_ID)
+  default: $(SDK_OFFICIAL_CI_PIPELINE_ID)
 
 - name: buildId
   type: string
-  default: $(InstallerBuildId)
+  default: $(SdkBuildId)
 
 - name: artifact
   type: string

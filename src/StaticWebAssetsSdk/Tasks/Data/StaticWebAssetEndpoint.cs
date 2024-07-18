@@ -8,7 +8,7 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
+public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
 {
     // Route as it should be registered in the routing table.
     public string Route { get; set; }
@@ -53,7 +53,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
         return result;
     }
 
-    internal static StaticWebAssetEndpoint FromTaskItem(ITaskItem item)
+    public static StaticWebAssetEndpoint FromTaskItem(ITaskItem item)
     {
         var result = new StaticWebAssetEndpoint()
         {
@@ -142,6 +142,95 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
 
     private string GetDebuggerDisplay() =>
         $"{nameof(StaticWebAssetEndpoint)}: Route = {Route}, AssetFile = {AssetFile}, Selectors = {StaticWebAssetEndpointSelector.ToMetadataValue(Selectors ?? [])}, ResponseHeaders = {ResponseHeaders?.Length}, EndpointProperties = {StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties ?? [])}";
+
+    public int CompareTo(StaticWebAssetEndpoint other)
+    {
+        var routeComparison = StringComparer.Ordinal.Compare(Route, Route);
+        if (routeComparison != 0)
+        {
+            return routeComparison;
+        }
+
+        var assetFileComparison = StringComparer.Ordinal.Compare(AssetFile, other.AssetFile);
+        if (assetFileComparison != 0)
+        {
+            return assetFileComparison;
+        }
+
+        if(Selectors.Length > other.Selectors.Length)
+        {
+            return 1;
+        }
+        else if (Selectors.Length < other.Selectors.Length)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < Selectors.Length; i++)
+        {
+            var selectorComparison = Selectors[i].Name.CompareTo(other.Selectors[i].Name);
+            if (selectorComparison != 0)
+            {
+                return selectorComparison;
+            }
+
+            selectorComparison = Selectors[i].Value.CompareTo(other.Selectors[i].Value);
+            if (selectorComparison != 0)
+            {
+                return selectorComparison;
+            }
+        }
+
+        if(EndpointProperties.Length > other.EndpointProperties.Length)
+        {
+            return 1;
+        }
+        else if (EndpointProperties.Length < other.EndpointProperties.Length)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < EndpointProperties.Length;i++)
+        {
+            var propertyComparison = EndpointProperties[i].Name.CompareTo(other.EndpointProperties[i].Name);
+            if (propertyComparison != 0)
+            {
+                return propertyComparison;
+            }
+
+            propertyComparison = EndpointProperties[i].Value.CompareTo(other.EndpointProperties[i].Value);
+            if (propertyComparison != 0)
+            {
+                return propertyComparison;
+            }
+        }
+
+        if (ResponseHeaders.Length > other.ResponseHeaders.Length)
+        {
+            return 1;
+        }
+        else if (ResponseHeaders.Length < other.ResponseHeaders.Length)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < ResponseHeaders.Length; i++)
+        {
+            var responseHeaderComparison = ResponseHeaders[i].Name.CompareTo(other.ResponseHeaders[i].Name);
+            if (responseHeaderComparison != 0)
+            {
+                return responseHeaderComparison;
+            }
+
+            responseHeaderComparison = ResponseHeaders[i].Value.CompareTo(other.ResponseHeaders[i].Value);
+            if (responseHeaderComparison != 0)
+            {
+                return responseHeaderComparison;
+            }
+        }
+
+        return 0;
+    }
 
     private class RouteAndAssetEqualityComparer : IEqualityComparer<StaticWebAssetEndpoint>
     {

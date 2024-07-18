@@ -107,10 +107,10 @@ namespace Microsoft.DotNet.Cli
             return arg;
         }
 
-        public static CliOption<bool> NoRestoreOption = new("--no-restore")
+        public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
         {
             Description = CommonLocalizableStrings.NoRestoreDescription
-        };
+        }.ForwardAs("-restore:false");
 
         public static CliOption<bool> InteractiveMsBuildForwardOption =
             new ForwardedOption<bool>("--interactive")
