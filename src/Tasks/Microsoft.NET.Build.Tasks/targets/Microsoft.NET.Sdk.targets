@@ -1099,6 +1099,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
 
+  <!-- TODO: can we now move all of this into the ComputeRunArguments target, or must this be kept for compat? -->
   <PropertyGroup>
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' == ''">$(StartWorkingDirectory)</RunWorkingDirectory>
   </PropertyGroup>
@@ -1144,8 +1145,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
   </PropertyGroup>
 
+  <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
+       This allows tools to run validation or logic required to compute any required data,
+       which cannot be done during evaluation.  -->
+  <Target Name="ComputeRunArguments" />
+
   <!-- Override MSBuild Run Target -->
-  <Target Name="Run">
+  <Target Name="Run" DependsOnTargets="ComputeRunArguments">
     <Exec Command="$(RunCommand) $(RunArguments)" WorkingDirectory="$(RunWorkingDirectory)"/>
   </Target>
 
