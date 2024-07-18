@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         public readonly SdkFeatureBand _currentSdkFeatureBand;
         private readonly string _targetSdkVersion;
         public string DotnetPath { get; }
+        public string UserLocalPath { get; }
 
         public WorkloadInfoHelper(
             bool isInteractive,
@@ -62,7 +63,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
             WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
 
-            DotnetPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
+            UserLocalPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
         }
 
         public IInstaller Installer { get; private init; }
