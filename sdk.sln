@@ -503,13 +503,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.Utilities", "test\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj", "{6E690AC5-8D00-419F-B5BC-C29D099EDE59}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EndToEnd-Installer.Tests", "test\EndToEnd-Installer.Tests\EndToEnd-Installer.Tests.csproj", "{149E3D40-8115-4965-9305-5A1ADBF04899}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WebTools.AspireService.Package", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.Package.csproj", "{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.WebTools.AspireService", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.shproj", "{94C8526E-DCC2-442F-9868-3DD0BA2688BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Net.Sdk.Compilers.Toolset", "src\Microsoft.Net.Sdk.Compilers.Toolset\Microsoft.Net.Sdk.Compilers.Toolset.csproj", "{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Sdk.Compilers.Toolset", "src\Microsoft.Net.Sdk.Compilers.Toolset\Microsoft.Net.Sdk.Compilers.Toolset.csproj", "{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -965,10 +963,6 @@ Global
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Release|Any CPU.Build.0 = Release|Any CPU
-		{149E3D40-8115-4965-9305-5A1ADBF04899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{149E3D40-8115-4965-9305-5A1ADBF04899}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{149E3D40-8115-4965-9305-5A1ADBF04899}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{149E3D40-8115-4965-9305-5A1ADBF04899}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -1153,7 +1147,6 @@ Global
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{21C21975-84C1-4A24-8E21-F7EC790A4584} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{149E3D40-8115-4965-9305-5A1ADBF04899} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{94C8526E-DCC2-442F-9868-3DD0BA2688BE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
