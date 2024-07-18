@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.TestInfrastructure;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
