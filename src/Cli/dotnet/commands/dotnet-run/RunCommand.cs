@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
@@ -54,31 +56,10 @@ namespace Microsoft.DotNet.Tools.Run
             try
             {
                 ICommand targetCommand = GetTargetCommand();
-                if (launchSettings != null)
-                {
-                    if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
-                    {
-                        targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
-                    }
-
-                    targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-                    foreach (var entry in launchSettings.EnvironmentVariables)
-                    {
-                        string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                        //NOTE: MSBuild variables are not expanded like they are in VS
-                        targetCommand.EnvironmentVariable(entry.Key, value);
-                    }
-                    if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
-                    {
-                        targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
-                    }
-                }
-
+                var launchSettingsCommand = ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-
-                return targetCommand.Execute().ExitCode;
+                return launchSettingsCommand.Execute().ExitCode;
             }
             catch (InvalidProjectFileException e)
             {
@@ -86,6 +67,31 @@ namespace Microsoft.DotNet.Tools.Run
                     string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, Project),
                     e);
             }
+        }
+
+        private ICommand ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+        {
+            if (launchSettings != null)
+            {
+                if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+                {
+                    targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+                }
+
+                targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+                foreach (var entry in launchSettings.EnvironmentVariables)
+                {
+                    string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                    //NOTE: MSBuild variables are not expanded like they are in VS
+                    targetCommand.EnvironmentVariable(entry.Key, value);
+                }
+                if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+                {
+                    targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+                }
+            }
+            return targetCommand;
         }
 
         public RunCommand(string configuration,
@@ -113,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Run
             Interactive = interactive;
         }
 
-        private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel launchSettingsModel)
+        private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
         {
             launchSettingsModel = default;
             if (!UseLaunchProfile)
@@ -121,57 +127,70 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            var buildPathContainer = File.Exists(Project) ? Path.GetDirectoryName(Project) : Project;
-            string propsDirectory;
-
-            // VB.NET projects store the launch settings file in the
-            // "My Project" directory instead of a "Properties" directory.
-            if (string.Equals(Path.GetExtension(Project), ".vbproj", StringComparison.OrdinalIgnoreCase))
+            var launchSettingsPath = TryFindLaunchSettings(Project);
+            if (!File.Exists(launchSettingsPath))
             {
-                propsDirectory = "My Project";
-            }
-            else
-            {
-                propsDirectory = "Properties";
+                if (!string.IsNullOrEmpty(LaunchProfile))
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
+                }
+                return true;
             }
 
-            var launchSettingsPath = Path.Combine(buildPathContainer, propsDirectory, "launchSettings.json");
-
-            if (File.Exists(launchSettingsPath))
+            if (!HasQuietVerbosity)
             {
-                if (!HasQuietVerbosity)
-                {
-                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
-                }
+                Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+            }
 
-                string profileName = string.IsNullOrEmpty(LaunchProfile) ? LocalizableStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
+            string profileName = string.IsNullOrEmpty(LaunchProfile) ? LocalizableStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
 
-                try
+            try
+            {
+                var launchSettingsFileContents = File.ReadAllText(launchSettingsPath);
+                var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
+                if (!applyResult.Success)
                 {
-                    var launchSettingsFileContents = File.ReadAllText(launchSettingsPath);
-                    var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
-                    if (!applyResult.Success)
-                    {
-                        Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
-                    }
-                    else
-                    {
-                        launchSettingsModel = applyResult.LaunchSettings;
-                    }
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
                 }
-                catch (IOException ex)
+                else
                 {
-                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
-                    Reporter.Error.WriteLine(ex.Message.Bold().Red());
-                    return false;
+                    launchSettingsModel = applyResult.LaunchSettings;
                 }
             }
-            else if (!string.IsNullOrEmpty(LaunchProfile))
+            catch (IOException ex)
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
+                Reporter.Error.WriteLine(ex.Message.Bold().Red());
+                return false;
             }
 
             return true;
+
+            static string? TryFindLaunchSettings(string projectFilePath)
+            {
+                var buildPathContainer = File.Exists(projectFilePath) ? Path.GetDirectoryName(projectFilePath) : projectFilePath;
+                if (buildPathContainer is null)
+                {
+                    return null;
+                }
+
+                string propsDirectory;
+
+                // VB.NET projects store the launch settings file in the
+                // "My Project" directory instead of a "Properties" directory.
+                // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
+                if (string.Equals(Path.GetExtension(projectFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    propsDirectory = "My Project";
+                }
+                else
+                {
+                    propsDirectory = "Properties";
+                }
+
+                var launchSettingsPath = Path.Combine(buildPathContainer, propsDirectory, "launchSettings.json");
+                return launchSettingsPath;
+            }
         }
 
         private void EnsureProjectIsBuilt()
@@ -212,63 +231,80 @@ namespace Microsoft.DotNet.Tools.Run
             return args;
         }
 
+        private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
+
         private ICommand GetTargetCommand()
         {
-            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                // This property disables default item globbing to improve performance
-                // This should be safe because we are not evaluating items, only properties
-                { Constants.EnableDefaultItems,    "false" },
-                { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
-            };
-
-            if (!string.IsNullOrWhiteSpace(Configuration))
-            {
-                globalProperties.Add("Configuration", Configuration);
-            }
-
-            if (!string.IsNullOrWhiteSpace(Framework))
-            {
-                globalProperties.Add("TargetFramework", Framework);
-            }
-
-            if (!string.IsNullOrWhiteSpace(Runtime))
-            {
-                globalProperties.Add("RuntimeIdentifier", Runtime);
-            }
-
-            var project = new ProjectInstance(Project, globalProperties, null);
-
-            string runProgram = project.GetPropertyValue("RunCommand");
-            if (string.IsNullOrEmpty(runProgram))
-            {
-                ThrowUnableToRunError(project);
-            }
-
-            string runArguments = project.GetPropertyValue("RunArguments");
-            string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
-
-            if (Args.Any())
-            {
-                runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(Args);
-            }
-
-            CommandSpec commandSpec = new(runProgram, runArguments);
-
-            var command = CommandFactoryUsingResolver.Create(commandSpec)
-                .WorkingDirectory(runWorkingDirectory);
-
-            var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
-                project.GetPropertyValue("RuntimeIdentifier"),
-                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-                project.GetPropertyValue("TargetFrameworkVersion"));
-
-            if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
-            {
-                command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
-            }
-
+            var project = EvaluateProject();
+            var runProperties = ReadRunPropertiesFromProject(project);
+            var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
+
+            ProjectInstance EvaluateProject()
+            {
+                var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    // This property disables default item globbing to improve performance
+                    // This should be safe because we are not evaluating items, only properties
+                    { Constants.EnableDefaultItems,    "false" },
+                    { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
+                };
+
+                if (!string.IsNullOrWhiteSpace(Configuration))
+                {
+                    globalProperties.Add("Configuration", Configuration);
+                }
+
+                if (!string.IsNullOrWhiteSpace(Framework))
+                {
+                    globalProperties.Add("TargetFramework", Framework);
+                }
+
+                if (!string.IsNullOrWhiteSpace(Runtime))
+                {
+                    globalProperties.Add("RuntimeIdentifier", Runtime);
+                }
+
+                var project = new ProjectInstance(Project, globalProperties, null);
+                return project;
+            }
+
+            RunProperties ReadRunPropertiesFromProject(ProjectInstance project)
+            {
+                string runProgram = project.GetPropertyValue("RunCommand");
+                if (string.IsNullOrEmpty(runProgram))
+                {
+                    ThrowUnableToRunError(project);
+                }
+
+                string runArguments = project.GetPropertyValue("RunArguments");
+                string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
+
+                if (Args.Any())
+                {
+                    runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(Args);
+                }
+                return new(runProgram, runArguments, runWorkingDirectory);
+            }
+
+            ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
+            {
+                CommandSpec commandSpec = new(runProperties.RunCommand, runProperties.RunArguments);
+
+                var command = CommandFactoryUsingResolver.Create(commandSpec)
+                    .WorkingDirectory(runProperties.RunWorkingDirectory);
+
+                var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
+                    project.GetPropertyValue("RuntimeIdentifier"),
+                    project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
+                    project.GetPropertyValue("TargetFrameworkVersion"));
+
+                if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
+                {
+                    command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
+                }
+                return command;
+            }
         }
 
         private void ThrowUnableToRunError(ProjectInstance project)
