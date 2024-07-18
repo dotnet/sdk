@@ -16,7 +16,7 @@ namespace EndToEnd.Tests
                 .WithVirtualHive()
                 .WithWorkingDirectory(directory.Path)
                 .Execute(template).Should().Fail()
-                    .And.HaveStdErrContaining($": {template}.");
+                    .And.HaveStdErrContaining($": '{template}'.");
         }
     }
 }
