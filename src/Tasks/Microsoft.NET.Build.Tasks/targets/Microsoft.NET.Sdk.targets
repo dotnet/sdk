@@ -250,8 +250,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists" Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'" BeforeTargets="CoreCompile">
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
-         (but they proceeded to build, e.g., in Visual Studio), display a custom error instead of the cryptic
-         'The "Microsoft.CodeAnalysis.BuildTasks.Csc" task could not be loaded'. -->
+         (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
         Condition="!Exists('$(RoslynTargetsPath)')" />
   </Target>
