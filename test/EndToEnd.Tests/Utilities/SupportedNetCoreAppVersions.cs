@@ -3,7 +3,7 @@
 
 using System.Collections;
 
-namespace EndToEnd
+namespace EndToEnd.Tests.Utilities
 {
     public static class TargetFrameworkHelper
     {
@@ -75,4 +75,3 @@ namespace EndToEnd
             SupportedAspNetCoreVersions.Versions.Where(v => new Version(v).Major < 3);
     }
 }
-

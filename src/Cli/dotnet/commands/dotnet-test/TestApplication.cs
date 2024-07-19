@@ -15,20 +15,19 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<HelpEventArgs> HelpRequested;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
 
-        public string ModuleName => _modulePath;
+        public string ModulePath => _modulePath;
 
-        public TestApplication(string moduleName, string pipeName, string[] args)
+        public TestApplication(string modulePath, string pipeName, string[] args)
         {
-            _modulePath = moduleName;
+            _modulePath = modulePath;
             _pipeName = pipeName;
             _args = args;
         }
 
         public async Task RunAsync()
         {
-            if (!File.Exists(_modulePath))
+            if (!ModulePathExists())
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
                 return;
             }
 
@@ -46,18 +45,65 @@ namespace Microsoft.DotNet.Cli
             await Process.Start(processStartInfo).WaitForExitAsync();
         }
 
+        public async Task RunHelpAsync()
+        {
+            if (!ModulePathExists())
+            {
+                return;
+            }
+
+            bool isDll = _modulePath.EndsWith(".dll");
+            ProcessStartInfo processStartInfo = new()
+            {
+                FileName = isDll ?
+                Environment.ProcessPath :
+                _modulePath,
+                Arguments = BuildHelpArgs(isDll)
+            };
+
+            VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+
+            await Process.Start(processStartInfo).WaitForExitAsync();
+        }
+
+        private bool ModulePathExists()
+        {
+            if (!File.Exists(_modulePath))
+            {
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
+                return false;
+            }
+            return true;
+        }
+
         private string BuildArgs(bool isDll)
         {
             StringBuilder builder = new();
 
             if (isDll)
+            {
                 builder.Append($"exec {_modulePath} ");
+            }
 
             builder.Append(_args.Length != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
             builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
+
+            return builder.ToString();
+        }
+
+        private string BuildHelpArgs(bool isDll)
+        {
+            StringBuilder builder = new();
+
+            if (isDll)
+            {
+                builder.Append($"exec {_modulePath} ");
+            }
+
+            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
 
             return builder.ToString();
         }

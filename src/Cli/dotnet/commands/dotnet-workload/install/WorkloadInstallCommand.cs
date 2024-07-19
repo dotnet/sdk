@@ -147,7 +147,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
                     }
                     workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
-                    workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
 
                     if (!_skipManifestUpdate)
                     {
@@ -174,6 +173,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             }
                             UpdateWorkloadManifests(context, offlineCache);
                         }
+
+                        //   This depends on getting the available workloads, so it needs to run after manifests hae potentially been installed
+                        workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
+
                         _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
 
                         //  Write workload installation records

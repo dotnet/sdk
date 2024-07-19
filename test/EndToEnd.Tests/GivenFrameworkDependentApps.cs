@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using EndToEnd.Tests.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
-using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
-using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
-namespace EndToEnd
+namespace EndToEnd.Tests
 {
-    public class GivenFrameworkDependentApps : TestBase
+    public class GivenFrameworkDependentApps(ITestOutputHelper log) : SdkTest(log)
     {
         [Theory]
         [ClassData(typeof(SupportedNetCoreAppVersions))]
@@ -42,42 +40,37 @@ namespace EndToEnd
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             // https://github.com/NuGet/Home/issues/8571
-            #if LINUX_PORTABLE
+#if LINUX_PORTABLE
                 return;
-            #else
-                var testProjectCreator = new TestProjectCreator()
-                {
-                    PackageName = packageName,
-                    MinorVersion = minorVersion,
-                };
+#else
+            var testProjectCreator = new TestProjectCreator()
+            {
+                PackageName = packageName,
+                MinorVersion = minorVersion,
+            };
 
-                var _testInstance = testProjectCreator.Create();
+            var _testInstance = testProjectCreator.Create(_testAssetsManager);
 
-                string projectDirectory = _testInstance.Root.FullName;
+            //  Get the resolved version of .NET Core
+            new RestoreCommand(_testInstance)
+                    .Execute().Should().Pass();
 
-                string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
+            string assetsFilePath = Path.Combine(_testInstance.TestRoot, "obj", "project.assets.json");
+            var assetsFile = new LockFileFormat().Read(assetsFilePath);
 
-                //  Get the resolved version of .NET Core
-                new RestoreCommand()
-                        .WithWorkingDirectory(projectDirectory)
-                        .Execute().Should().Pass();
+            var versionInAssertsJson = GetPackageVersion(assetsFile, packageName);
+            versionInAssertsJson.Should().NotBeNull();
 
-                string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
-                var assetsFile = new LockFileFormat().Read(assetsFilePath);
+            if (versionInAssertsJson.IsPrerelease && versionInAssertsJson.Patch == 0)
+            {
+                // if the bundled version is, for example, a prerelease of
+                // .NET Core 2.1.1, that we don't roll forward to that prerelease
+                // version for framework-dependent deployments.
+                return;
+            }
 
-                var versionInAssertsJson = GetPackageVersion(assetsFile, packageName);
-                versionInAssertsJson.Should().NotBeNull();
-
-                if (versionInAssertsJson.IsPrerelease && versionInAssertsJson.Patch == 0)
-                {
-                    // if the bundled version is, for example, a prerelease of
-                    // .NET Core 2.1.1, that we don't roll forward to that prerelease
-                    // version for framework-dependent deployments.
-                    return;
-                }
-
-                versionInAssertsJson.ToNormalizedString().Should().BeEquivalentTo(GetExpectedVersion(packageName, minorVersion));
-            #endif
+            versionInAssertsJson.ToNormalizedString().Should().BeEquivalentTo(GetExpectedVersion(packageName, minorVersion));
+#endif
         }
 
         private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName) => lockFile?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier == null)

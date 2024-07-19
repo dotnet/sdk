@@ -271,6 +271,7 @@ fi
   --component-template "$component_template" \
   --tpn-template "$tpn_template"             \
   --discard-patches                          \
+  --generate-credscansuppressions            \
   "$repository"
 
 if [[ $? == 0 ]]; then
