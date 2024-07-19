@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
         };
 
-        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additionalMSBuildParameters", "-msbuildParams")
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
         {
             Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
         };
