@@ -22,7 +22,15 @@ namespace Microsoft.DotNet.Tools.Run
             if (parseResult.UsingRunCommandShorthandProjectOption())
             {
                 Reporter.Output.WriteLine(LocalizableStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
-                project = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
+                var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
+                if (Directory.Exists(possibleProject))
+                {
+                    project = RunCommandParser.FindSingleProjectInDirectory(possibleProject);
+                }
+                else
+                {
+                    project = new FileInfo(possibleProject);
+                }
             }
 
             var command = new RunCommand(
