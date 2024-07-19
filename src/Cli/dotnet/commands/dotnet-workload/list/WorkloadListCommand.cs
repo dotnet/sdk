@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                     table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 
-                    table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+                    table.PrintRows(installedWorkloads.AsEnumerable().OrderBy(workload => workload.Key), l => Reporter.WriteLine(l));
                 }
 
                 Reporter.WriteLine();
