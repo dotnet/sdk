@@ -60,7 +60,10 @@ namespace Microsoft.DotNet.Cli
                 });
             }
 
-            VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
+            }
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
@@ -75,7 +78,10 @@ namespace Microsoft.DotNet.Cli
 
             if (testsProjectResult != 0)
             {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                }
                 return testsProjectResult;
             }
 
@@ -94,7 +100,10 @@ namespace Microsoft.DotNet.Cli
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
 
-            VSTestTrace.SafeWriteTrace(() => $"MSBuildParameters: {msBuildParameters}");
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"MSBuildParameters: {msBuildParameters}");
+            }
 
             parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
@@ -173,7 +182,10 @@ namespace Microsoft.DotNet.Cli
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
