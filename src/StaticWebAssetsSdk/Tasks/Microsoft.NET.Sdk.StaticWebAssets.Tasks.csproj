@@ -42,7 +42,7 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Text.Json"  Condition="'$(TargetFramework)'=='net472'" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <!-- Only include these files in the outer build to avoid double writes. -->
