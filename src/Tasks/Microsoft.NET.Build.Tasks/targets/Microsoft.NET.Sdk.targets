@@ -799,6 +799,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                                '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                                                $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">true</_UseSingleFileHostForPublish>
       <_DisableCetCompat Condition="'$(CetCompat)' == 'false'">true</_DisableCetCompat>
+
+      <!-- Default to AppHostDotNetSearch=AppRelative if AppHostRelativeDotNet is set -->
+      <AppHostDotNetSearch Condition="'$(AppHostRelativeDotNet)' != '' and '$(AppHostDotNetSearch)' == ''">AppRelative</AppHostDotNetSearch>
+      <_UpdateAppHostForPublish Condition="'$(_UseSingleFileHostForPublish)' != 'true' and
+                                          ('$(AppHostRelativeDotNet)' != '' or '$(AppHostDotNetSearch)' != '')">true</_UpdateAppHostForPublish>
     </PropertyGroup>
   </Target>
 
