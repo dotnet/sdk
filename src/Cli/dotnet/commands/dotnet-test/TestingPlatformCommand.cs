@@ -68,9 +68,8 @@ namespace Microsoft.DotNet.Cli
             ForwardingAppImplementation msBuildForwardingApp = new(
                 GetMSBuildExePath(),
                 [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                "-bl",
-                        $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                        "-verbosity:q"]);
+                    $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"]);
             int testsProjectResult = msBuildForwardingApp.Execute();
 
             if (testsProjectResult != 0)
