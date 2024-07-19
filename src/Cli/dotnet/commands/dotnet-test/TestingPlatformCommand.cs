@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
@@ -20,6 +21,7 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
+        private TestApplicationActionQueue _actionQueue;
 
         private Task _namedPipeConnectionLoop;
         private string[] _args;
@@ -31,7 +33,32 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = parseResult.GetArguments().Except(parseResult.UnmatchedTokens).ToArray();
+            _args = parseResult.GetArguments();
+
+            // User can decide what the degree of parallelism should be
+            // If not specified, we will default to the number of processors
+            if (!int.TryParse(parseResult.GetValue(TestCommandParser.DegreeOfParallelism), out int degreeOfParallelism))
+                degreeOfParallelism = Environment.ProcessorCount;
+
+            if (ContainsHelpOption(_args))
+            {
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    testApp.HelpRequested += OnHelpRequested;
+                    testApp.ErrorReceived += OnErrorReceived;
+
+                    await testApp.RunHelpAsync();
+                });
+            }
+            else
+            {
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    testApp.ErrorReceived += OnErrorReceived;
+
+                    await testApp.RunAsync();
+                });
+            }
 
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
@@ -41,13 +68,21 @@ namespace Microsoft.DotNet.Cli
             ForwardingAppImplementation msBuildForwardingApp = new(
                 GetMSBuildExePath(),
                 [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                        $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                        "-verbosity:q"]);
-            int getTestsProjectResult = msBuildForwardingApp.Execute();
+                    $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"]);
+            int testsProjectResult = msBuildForwardingApp.Execute();
+
+            if (testsProjectResult != 0)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                return testsProjectResult;
+            }
+
+            _actionQueue.EnqueueCompleted();
+
+            _actionQueue.WaitAllActions();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-            Task.WaitAll([.. _taskModuleName]);
-            Task.WaitAll([.. _testsRun]);
             _cancellationToken.Cancel();
             _namedPipeConnectionLoop.Wait();
 
@@ -81,12 +116,11 @@ namespace Microsoft.DotNet.Cli
 
         private Task<IResponse> OnRequest(IRequest request)
         {
-            if (TryGetModuleName(request, out string moduleName))
+            if (TryGetModulePath(request, out string modulePath))
             {
-                TestApplication testApplication = GenerateTestApplication(moduleName);
-                _testApplications[moduleName] = testApplication;
-
-                _testsRun.Add(Task.Run(async () => await testApplication.RunAsync()));
+                _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
+                // Write the test application to the channel
+                _actionQueue.Enqueue(_testApplications[modulePath]);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
@@ -94,7 +128,8 @@ namespace Microsoft.DotNet.Cli
             if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
             {
                 var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                testApplication?.OnCommandLineOptionMessages(commandLineOptionMessages);
+                Debug.Assert(testApplication is not null);
+                testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
 
                 return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
@@ -102,7 +137,7 @@ namespace Microsoft.DotNet.Cli
             throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
         }
 
-        private static bool TryGetModuleName(IRequest request, out string modulePath)
+        private static bool TryGetModulePath(IRequest request, out string modulePath)
         {
             if (request is Module module)
             {
@@ -124,19 +159,6 @@ namespace Microsoft.DotNet.Cli
 
             commandLineOptionMessages = null;
             return false;
-        }
-
-        private TestApplication GenerateTestApplication(string moduleName)
-        {
-            var testApplication = new TestApplication(moduleName, _pipeNameDescription.Name, _args);
-
-            if (ContainsHelpOption(_args))
-            {
-                testApplication.HelpRequested += OnHelpRequested;
-            }
-            testApplication.ErrorReceived += OnErrorReceived;
-
-            return testApplication;
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
