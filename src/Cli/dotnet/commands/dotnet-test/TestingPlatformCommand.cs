@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli
 
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestCommandParser.DegreeOfParallelism), out int degreeOfParallelism))
+            if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
 
             if (ContainsHelpOption(_args))
@@ -64,12 +64,13 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
+            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"];
 
-            ForwardingAppImplementation msBuildForwardingApp = new(
-                GetMSBuildExePath(),
-                [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                    $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"]);
+            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
+
+            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             int testsProjectResult = msBuildForwardingApp.Execute();
 
             if (testsProjectResult != 0)
@@ -87,6 +88,12 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop.Wait();
 
             return 0;
+        }
+
+        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        {
+            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
