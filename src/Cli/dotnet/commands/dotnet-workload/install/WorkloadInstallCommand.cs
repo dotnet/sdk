@@ -144,17 +144,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         Reporter.WriteLine();
 
                         DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                        var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
-
-                        // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
-                        var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                        var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
-                        if (previouslyInstalledWorkloads.Any())
-                        {
-                            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
-                        }
-                        workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
-                        workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
 
                         if (!_skipManifestUpdate)
                         {
@@ -181,6 +170,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 }
                                 UpdateWorkloadManifests(recorder, context, offlineCache);
                             }
+
+                            // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
+                            var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                            var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
+                            var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
+                            if (previouslyInstalledWorkloads.Any())
+                            {
+                                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
+                            }
+                            workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
+                            workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
+
                             _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
 
                             //  Write workload installation records
