@@ -319,6 +319,40 @@ namespace Microsoft.NET.Build.Tests
             isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
         }
 
+        [Fact]
+        public void It_does_not_configure_dotnet_search_options_on_build()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "AppHostDotNetSearch",
+                TargetFrameworks = targetFramework,
+                RuntimeIdentifier = runtimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
+            testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            // Output apphost should not have .NET search location options changed, so it
+            // should run successfully with the DOTNET_ROOT environment variable set
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: runtimeIdentifier);
+            outputDirectory.Should().HaveFiles(new[] { $"{testProject.Name}{Constants.ExeSuffix}" });
+            new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}"))
+                .WithEnvironmentVariable("DOTNET_ROOT", TestContext.Current.ToolsetUnderTest.DotNetRoot)
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
         [WindowsOnlyFact]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
