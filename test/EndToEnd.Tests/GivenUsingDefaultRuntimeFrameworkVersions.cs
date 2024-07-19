@@ -1,14 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using EndToEnd.Tests.Utilities;
 using NuGet.Versioning;
-using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
-using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
-using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
-namespace EndToEnd
+namespace EndToEnd.Tests
 {
-    public partial class GivenUsingDefaultRuntimeFrameworkVersions : TestBase
+    public partial class GivenUsingDefaultRuntimeFrameworkVersions(ITestOutputHelper log) : SdkTest(log)
     {
         private static readonly IEnumerable<string> frameworks = new string[] {"Microsoft.NETCore.App", "Microsoft.WindowsDesktop.App",
             "Microsoft.WindowsDesktop.App.WPF", "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.AspNetCore.App" };
@@ -24,9 +22,9 @@ namespace EndToEnd
                 PackageName = "DefaultRuntimeVersionsAreUpToDate",
                 MinorVersion = "3.0"
             };
-            var testProject = testProjectCreator.Create();
+            var testProject = testProjectCreator.Create(_testAssetsManager);
 
-            var projectFile = new DirectoryInfo(testProject.Root.FullName).GetFiles("*.csproj").First().FullName;
+            var projectFile = new DirectoryInfo(testProject.TestRoot).GetFiles("*.csproj").First().FullName;
             var project = XDocument.Load(projectFile);
             string writeResolvedVersionsTarget = @$"
     <Target Name=`WriteResolvedVersions` AfterTargets=`PrepareForBuild;ProcessFrameworkReferences`>
@@ -51,11 +49,10 @@ namespace EndToEnd
                 project.Save(file);
             }
 
-            new RestoreCommand()
-                    .WithWorkingDirectory(testProject.Root.FullName)
-                    .Execute().Should().Pass();
+            new RestoreCommand(testProject)
+                .Execute().Should().Pass();
 
-            var binDirectory = new DirectoryInfo(testProject.Root.FullName).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
+            var binDirectory = new DirectoryInfo(testProject.TestRoot).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
             binDirectory.Should().HaveFilesMatching(outputFile, SearchOption.TopDirectoryOnly);
             var resolvedVersionsFile = File.ReadAllLines(Path.Combine(binDirectory.FullName, outputFile));
             foreach (var framework in frameworks)

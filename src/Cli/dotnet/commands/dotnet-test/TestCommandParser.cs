@@ -162,6 +162,8 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
+
+
         public static CliCommand GetCommand()
         {
             return Command;
