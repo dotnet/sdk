@@ -60,10 +60,7 @@ namespace Microsoft.DotNet.Cli
                 });
             }
 
-            if (VSTestTrace.TraceEnabled)
-            {
-                VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
-            }
+            VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
@@ -73,15 +70,14 @@ namespace Microsoft.DotNet.Cli
 
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
 
+            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {msbuildCommandlineArgs}");
+
             ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             int testsProjectResult = msBuildForwardingApp.Execute();
 
             if (testsProjectResult != 0)
             {
-                if (VSTestTrace.TraceEnabled)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
-                }
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
                 return testsProjectResult;
             }
 
@@ -99,12 +95,6 @@ namespace Microsoft.DotNet.Cli
         private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
-
-            if (VSTestTrace.TraceEnabled)
-            {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuildParameters: {msBuildParameters}");
-            }
-
             parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
@@ -133,15 +123,15 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private Task<IResponse> OnRequest(IRequest request)
+        private async Task<IResponse> OnRequest(IRequest request)
         {
             if (TryGetModulePath(request, out string modulePath))
             {
                 _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
                 // Write the test application to the channel
-                _actionQueue.Enqueue(_testApplications[modulePath]);
+                await _actionQueue.Enqueue(_testApplications[modulePath]);
 
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                return await Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
 
             if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
@@ -150,7 +140,7 @@ namespace Microsoft.DotNet.Cli
                 Debug.Assert(testApplication is not null);
                 testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
 
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                return await Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
 
             throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
