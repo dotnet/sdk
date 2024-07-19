@@ -93,6 +93,9 @@ namespace Microsoft.DotNet.Cli
         private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+
+            VSTestTrace.SafeWriteTrace(() => $"MSBuildParameters: {msBuildParameters}");
+
             parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
