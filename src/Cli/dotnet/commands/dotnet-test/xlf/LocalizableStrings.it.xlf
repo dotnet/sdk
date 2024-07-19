@@ -12,6 +12,11 @@
         <target state="translated">Driver di test per la piattaforma .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Abilita la raccolta del dump di arresto anomalo in caso di chiusura prevista e imprevista dell'host di test.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Il valore di timeout viene specificato nel formato seguente: 1.5h / 90m / 5400s / 5400000ms. Quando non viene usata alcuna unità, ad esempio 5400000, si presuppone che il valore sia espresso in millisecondi.
 Se viene usato insieme a test basati sui dati, il comportamento di timeout dipende dall'adattatore di test usato. Per xUnit e NUnit e MSTest 2.2.4+, il timeout viene rinnovato dopo ogni test case.
 Per MSTest prima di 2.2.4, il timeout viene usato per tutti i test case.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

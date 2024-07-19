@@ -12,6 +12,11 @@
         <target state="translated">.NET 플랫폼용 테스트 드라이버입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">예상된 테스트 호스트 종료와 예기치 않은 테스트 호스트 종료 시 크래시 덤프 수집을 사용하도록 설정합니다.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 이 시간 제한 값은 1.5h/90m/5400s/5400000ms 형식으로 지정됩니다. 단위가 사용되지 않으면(예: 5400000), 값은 밀리초 단위로 간주됩니다.
 데이터 기반 테스트와 함께 사용되는 경우 시간 제한 동작은 사용되는 테스트 어댑터에 따라 달라집니다. xUnit, NUnit 및 MSTest 2.2.4 이상의 경우 모든 테스트 사례 후에 시간 제한이 갱신됩니다.
 2.2.4 이전 MSTest의 경우 모든 테스트 사례에 시간 제한이 사용됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

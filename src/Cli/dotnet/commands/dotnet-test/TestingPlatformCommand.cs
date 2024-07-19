@@ -65,11 +65,13 @@ namespace Microsoft.DotNet.Cli
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
 
-            ForwardingAppImplementation msBuildForwardingApp = new(
-                GetMSBuildExePath(),
-                [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+            List<string> parameters = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"]);
+                    "-verbosity:q"];
+
+            AddAdditionalMSBuildParameters(parseResult, parameters);
+
+            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), parameters);
             int testsProjectResult = msBuildForwardingApp.Execute();
 
             if (testsProjectResult != 0)
@@ -87,6 +89,12 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop.Wait();
 
             return 0;
+        }
+
+        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        {
+            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)

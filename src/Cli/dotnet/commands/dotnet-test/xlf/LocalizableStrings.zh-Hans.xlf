@@ -12,6 +12,11 @@
         <target state="translated">适用于 .NET 平台的测试驱动程序</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">允许在预期和意外的 testhost 退出时收集故障转储。</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 使用以下格式指定超时值: 1.5h / 90m / 5400s / 5400000ms。如果不使用单位(例如 5400000)，则假定该值以毫秒为单位。
 如果与数据驱动的测试一起使用，则超时行为取决于所使用的测试适配器。对于 xUnit、NUnit 和 MSTest 2.2.4+，超时会在每个测试用例后更新，
 对于 2.2.4 之前的 MSTest，超时用于所有测试用例。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

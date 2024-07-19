@@ -12,6 +12,11 @@
         <target state="translated">.NET Platformunun Test Sürücüsü</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Hem beklenen hem de beklenmeyen test ana bilgisayarı çıkışında kilitlenme bilgi dökümünün toplanmasını sağlar.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Zaman aşımı değeri şu biçimde belirtilir: 1.5s / 90dk / 5400sn / 5400000ms. Birim kullanılmadığında ör. 5400000 olarak belirtildiğinde değer, milisaniye cinsinden kabul edilir.
 Zaman aşımı davranışı veri tabanlı testlerle birlikte kullanıldığında, kullanılan test bağdaştırıcısına göre farklılık gösterir. xUnit, NUnit ve MSTest 2.2.4+ için zaman aşımı süresi her test çalışmasından sonra yenilenir.
 2.2.4’ten önceki MSTest sürümleri için zaman aşımı süresi tüm test çalışmalarına yönelik olarak kullanılır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

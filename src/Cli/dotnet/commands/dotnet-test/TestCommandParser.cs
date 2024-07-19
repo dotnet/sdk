@@ -13,9 +13,13 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> DegreeOfParallelism = new ForwardedOption<string>("--degree-of-parallelism", "-dop")
         {
-            Description = "degree of parallelism",
-            HelpName = "dop"
-        }.ForwardAs("-property:VSTestNoLogo=true");
+            Description = LocalizableStrings.CmdDegreeOfParallelismDescription,
+        };
+
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additionalMSBuildParameters", "-msbuildParams")
+        {
+            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
+        };
 
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
@@ -158,8 +162,6 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-
-
         public static CliCommand GetCommand()
         {
             return Command;
@@ -198,6 +200,7 @@ namespace Microsoft.DotNet.Cli
             var command = new TestingPlatformCommand("test");
             command.SetAction((parseResult) => command.Run(parseResult));
             command.Options.Add(DegreeOfParallelism);
+            command.Options.Add(AdditionalMSBuildParameters);
 
             return command;
         }

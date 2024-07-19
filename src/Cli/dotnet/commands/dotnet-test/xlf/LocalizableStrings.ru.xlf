@@ -12,6 +12,11 @@
         <target state="translated">Драйвер тестов для платформы .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Включает сбор аварийного дампа при ожидаемом и неожиданном завершении работы узла тестирования.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Значение времени ожидания указывается в следующем формате: 1.5h / 90m / 5400s / 5400000ms. Если единица измерения не указана (например, 5400000), предполагается, что время задано в миллисекундах.
 При использовании вместе с тестами под управлением данных время ожидания зависит от используемого адаптера теста. Для xUnit, NUnit и MSTest версии 2.2.4 и более поздних версий отсчет времени ожидания начинается заново для каждого тестового случая.
 Для MSTest версии ниже 2.2.4 время ожидания подсчитывается суммарно для всех тестовых случаев.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

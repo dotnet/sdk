@@ -12,6 +12,11 @@
         <target state="translated">Controlador de pruebas para la plataforma .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Habilita la recopilación del volcado de memoria en la salida del host de prueba esperada e inesperada.</target>
@@ -68,6 +73,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 El valor de tiempo de espera se especifica en el siguiente formato: 1,5h / 90m / 5400s / 5400000ms. Cuando no se usa ninguna unidad (por ejemplo, 5400000), se supone que el valor está en milisegundos.
 Cuando se usa junto con pruebas controladas por datos, el comportamiento del tiempo de espera depende del adaptador de prueba utilizado. Para xUnit, NUnit y MSTest 2.2.4+ el tiempo de espera se renueva después de cada caso de prueba,
 Para MSTest antes de 2.2.4, el tiempo de espera se usa para todos los casos de prueba.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

@@ -12,6 +12,11 @@
         <target state="translated">Pilote de test pour la plateforme .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Active la collecte des données de vidage sur plantage en cas de sortie attendue et inattendue de testhost.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 La valeur du délai d’attente est spécifiée au format suivant : 1,5 h/ 90 m / 5 400 / 54 000 000 ms. Lorsqu’aucune unité n’est utilisée (par exemple, 5 400 000), la valeur est supposée être en millisecondes.
 Lorsqu’elle est utilisée avec des tests pilotés par les données, le comportement du délai d’attente dépend de l’adaptateur de test utilisé. Pour xUnit, NUnit et MSTest 2.2.4+ le délai d’expiration est renouvelé après chaque cas de test,
 Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour tous les cas de test.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

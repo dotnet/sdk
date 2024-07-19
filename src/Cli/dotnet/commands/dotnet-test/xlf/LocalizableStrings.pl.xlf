@@ -12,6 +12,11 @@
         <target state="translated">Sterownik testów dla platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Włącza zbieranie zrzutów awaryjnych po oczekiwanym i nieoczekiwanym zakończenia działania przez host testowy.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Wartość limitu czasu jest określana w następującym formacie: 1.5 godz. / 90 min / 5400 sek. / 5400000 ms. Gdy nie jest używana żadna jednostka (np. 5400000), przyjmuje się, że wartość jest w milisekundach.
 W przypadku użycia razem z testami opartymi na danych zachowanie limitu czasu zależy od użytego adaptera testowego. W przypadku platform xUnit i NUnit i MSTest w wersji 2.2.4+ limit czasu jest odnawiany po każdym przypadku testowym,
 W przypadku platformy MSTest przed wersją 2.2.4 limit czasu jest używany dla wszystkich przypadków testowych.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

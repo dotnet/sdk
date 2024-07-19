@@ -12,6 +12,11 @@
         <target state="translated">.NET Platform 用テスト ドライバー</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">TestHost の予期されるおよび予期されない終了時にクラッシュ ダンプを収集することを有効にします。</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 タイムアウト値は次の形式で指定されます: 1.5h、90m、5400s、5400000ms。単位が使用されていない場合 (例: 5400000)、この値は ms (ミリ秒) 単位であると想定されます。
 データ ドリブン テストと共に使用すると、タイムアウトの動作は使用するテスト アダプターに依存します。xUnit、NUnit、MSTest 2.2.4+ の場合、タイムアウトはテスト ケースの後に毎回更新されます。
 MSTest 2.2.4 以前の場合、タイムアウトはすべてのテスト ケースに使用されます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

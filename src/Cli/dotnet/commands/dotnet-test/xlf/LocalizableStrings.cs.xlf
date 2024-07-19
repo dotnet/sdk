@@ -12,6 +12,11 @@
         <target state="translated">Testovací ovladač pro platformu .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Umožní shromažďovat výpisy stavu systému při očekávaných i neočekávaných ukončeních hostitele testů.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Hodnota časového limitu je zadána v následujícím formátu: 1,5 h / 90m / 5400 s / 5400000 ms. Pokud se nepoužije žádná jednotka (např. 5400000), předpokládá se, že hodnota je v milisekundách.
 Při použití společně s testy řízenými daty závisí chování časového limitu na použitém testovacím adaptéru. Pro xUnit, NUnit a MSTest 2.2.4+ se časový limit prodlouží po každém testovacím případu
 Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací případy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">

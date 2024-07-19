@@ -12,6 +12,11 @@
         <target state="translated">Testtreiber für die .NET-Plattform</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Aktiviert die Erfassung von Absturzabbildern bei einer erwarteten und einer unerwarteten Beendigung des Testhosts.</target>
@@ -66,6 +71,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Der Timeoutwert wird im folgenden Format angegeben: 1.5h. / 90m / 5400s / 5400000ms. Wenn keine Einheit verwendet wird (z. B. 5400000), wird davon ausgegangen, dass der Wert in Millisekunden angegeben ist.
 Wenn dies zusammen mit datengesteuerten Tests verwendet wird, hängt das Timeoutverhalten vom verwendeten Testadapter ab. Für xUnit, NUnit und MSTest 2.2.4+ wird das Timeout nach jedem Testfall erneuert,
 für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDegreeOfParallelismDescription">
+        <source>The degree of parallelism to run tests with.</source>
+        <target state="new">The degree of parallelism to run tests with.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
