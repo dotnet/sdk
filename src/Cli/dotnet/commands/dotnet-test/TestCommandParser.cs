@@ -11,9 +11,9 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-        public static readonly CliOption<string> DegreeOfParallelism = new ForwardedOption<string>("--degree-of-parallelism", "-dop")
+        public static readonly CliOption<string> DegreeOfParallelism = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
         {
-            Description = LocalizableStrings.CmdDegreeOfParallelismDescription,
+            Description = LocalizableStrings.CmdMaxParallelTestModules,
         };
 
         public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additionalMSBuildParameters", "-msbuildParams")

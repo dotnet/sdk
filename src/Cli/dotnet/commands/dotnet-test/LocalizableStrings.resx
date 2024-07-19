@@ -291,8 +291,8 @@ Examples:
   <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
       <value>No serializer registered with type '{0}'</value>
   </data>
-  <data name="CmdDegreeOfParallelismDescription" xml:space="preserve">
-    <value>The degree of parallelism to run tests with.</value>
+  <data name="CmdMaxParallelTestModules" xml:space="preserve">
+    <value>The max number of test modules that can run in parallel.</value>
   </data>
   <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
     <value>The additional msbuild parameters to pass.</value>

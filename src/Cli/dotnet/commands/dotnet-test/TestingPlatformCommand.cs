@@ -91,10 +91,10 @@ namespace Microsoft.DotNet.Cli
             return 0;
         }
 
-        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> msbuildCommandlineArgs)
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
-            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
+            msbuildCommandlineArgs.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
