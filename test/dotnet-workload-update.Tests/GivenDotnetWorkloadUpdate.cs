@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 }
 ";
             var nugetPackageDownloader = new MockNuGetPackageDownloader();
-            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) }, getPacks: id => Enumerable.Empty<WorkloadPackId>());
+            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) }, getPacks: id => Enumerable.Empty<WorkloadPackId>(), installedManifests: Enumerable.Empty<WorkloadManifestInfo>());
             var workloadInstaller = new MockPackWorkloadInstaller(
                 dotnetDir,
                 installedWorkloads: new List<WorkloadId>() { new WorkloadId("android")},
