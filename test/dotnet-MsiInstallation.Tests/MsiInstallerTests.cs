@@ -137,6 +137,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             else
             {
+                //  TODO: This doesn't work if we've installed additional runtimes to support the SDK
                 VM.GetRemoteDirectory($@"c:\Program Files\dotnet")
                     .Should()
                     .NotExist();

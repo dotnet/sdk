@@ -11,6 +11,12 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
+        public static readonly CliOption<string> DegreeOfParallelism = new ForwardedOption<string>("--degree-of-parallelism", "-dop")
+        {
+            Description = "degree of parallelism",
+            HelpName = "dop"
+        }.ForwardAs("-property:VSTestNoLogo=true");
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -152,6 +158,8 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
+
+
         public static CliCommand GetCommand()
         {
             return Command;
@@ -189,6 +197,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new TestingPlatformCommand("test");
             command.SetAction((parseResult) => command.Run(parseResult));
+            command.Options.Add(DegreeOfParallelism);
 
             return command;
         }
