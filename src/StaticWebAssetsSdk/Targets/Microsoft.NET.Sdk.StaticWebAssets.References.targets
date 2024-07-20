@@ -110,7 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'"
           KeepMetadata="@(_StaticWebAssetCanonicalMetadata)" />
 
-        <_ResolvedReferencedProjectBuildStaticWebAssetEndpoints
+        <_ReferencedProjectBuildStaticWebAssetEndpointsUpdateCandidates
           Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
           Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'"
           KeepMetadata="@(_StaticWebAssetEndpointCanonicalMetadata)" />
@@ -122,7 +122,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
       >
         <Output TaskParameter="UpdatedAssets" ItemName="_ResolvedReferencedProjectBuildStaticWebAssets" />
-        <Output TaskParameter="UpdatedEndpoints" ItemName="_ReferencedProjectBuildStaticWebAssetEndpoints" />
+        <Output TaskParameter="UpdatedEndpoints" ItemName="_ResolvedReferencedProjectBuildStaticWebAssetEndpoints" />
         <Output TaskParameter="AssetsWithoutEndpoints" ItemName="_ReferencedProjectBuildStaticWebAssetsWithoutEndpoints" />
       </UpdateExternallyDefinedStaticWebAssets>
 

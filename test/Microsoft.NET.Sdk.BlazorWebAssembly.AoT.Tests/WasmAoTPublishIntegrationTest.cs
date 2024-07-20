@@ -79,13 +79,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
-            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
             // Publish
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
-            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
 
             // Make sure the main project exists
