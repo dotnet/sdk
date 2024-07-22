@@ -29,7 +29,7 @@ internal abstract class NamedPipeBase
         else
         {
             return skipUnknownMessages
-                ? new UnknownMessageSerializer()
+                ? new UnknownMessageSerializer(id)
                 : throw new ArgumentException((string.Format(
                 CultureInfo.InvariantCulture,
 #if dotnet

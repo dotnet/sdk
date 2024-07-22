@@ -122,6 +122,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     VSTestTrace.SafeWriteTrace(() => ex.ToString());
                 }
+
                 Environment.FailFast(ex.ToString());
             }
         }
@@ -163,6 +164,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     VSTestTrace.SafeWriteTrace(() => ex.ToString());
                 }
+
                 Environment.FailFast(ex.ToString());
             }
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
