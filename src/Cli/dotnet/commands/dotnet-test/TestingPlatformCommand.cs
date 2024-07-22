@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Cli
             {
                 while (true)
                 {
-                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token);
+                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                     namedPipeServer.RegisterAllSerializers();
 
                     await namedPipeServer.WaitConnectionAsync(token);
@@ -147,9 +147,14 @@ namespace Microsoft.DotNet.Cli
 
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
                 }
-                if (VSTestTrace.TraceEnabled)
+
+                // If we don't recognize the message, log and skip it
+                if (TryGetUnknownMessage(request, out UnknownMessage unknownMessage))
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' is unsupported.");
+                    if (VSTestTrace.TraceEnabled)
+                    {
+                        VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -184,6 +189,18 @@ namespace Microsoft.DotNet.Cli
             }
 
             commandLineOptionMessages = null;
+            return false;
+        }
+
+        private static bool TryGetUnknownMessage(IRequest request, out UnknownMessage unknownMessage)
+        {
+            if (request is UnknownMessage result)
+            {
+                unknownMessage = result;
+                return true;
+            }
+
+            unknownMessage = null;
             return false;
         }
 
