@@ -1,8 +1,8 @@
 ﻿using Microsoft.DotNet.Cli.Build;
 
-namespace EndToEnd
+namespace Microsoft.CoreSdkTasks.Tests
 {
-    public class CalculateTemplateVersionsTests
+    public class CalculateTemplateVersionsTests(ITestOutputHelper log) : SdkTest(log)
     {
         [Fact]
         public void WhenAspNetCoreTemplateMajorVersionLowerthan3ItCanCalculateTemplateVersionsInStableBuilds()
