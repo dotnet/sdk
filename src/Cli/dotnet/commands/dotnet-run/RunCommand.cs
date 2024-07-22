@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Run
         private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
         public bool NoBuild { get; private set; }
-        public FileInfo ProjectFile { get; private set; }
+        public string Project { get; private set; }
         public string[] Args { get; set; }
         public bool NoRestore { get; private set; }
         public bool Interactive { get; private set; }
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         public RunCommand(
             bool noBuild,
-            FileInfo project,
+            string project,
             string launchProfile,
             bool noLaunchProfile,
             bool noRestore,
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Run
             string[] args)
         {
             NoBuild = noBuild;
-            ProjectFile = project;
+            Project = project;
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
             Args = args;
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tools.Run
             catch (InvalidProjectFileException e)
             {
                 throw new GracefulException(
-                    string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, ProjectFile.FullName),
+                    string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, Project),
                     e);
             }
         }
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            var launchSettingsPath = TryFindLaunchSettings(ProjectFile);
+            var launchSettingsPath = TryFindLaunchSettings(Project);
             if (!File.Exists(launchSettingsPath))
             {
                 if (!string.IsNullOrEmpty(LaunchProfile))
@@ -158,9 +158,9 @@ namespace Microsoft.DotNet.Tools.Run
 
             return true;
 
-            static string? TryFindLaunchSettings(FileInfo projectFile)
+            static string? TryFindLaunchSettings(string projectFilePath)
             {
-                var buildPathContainer = projectFile.Directory?.FullName;
+                var buildPathContainer = File.Exists(projectFilePath) ? Path.GetDirectoryName(projectFilePath) : projectFilePath;
                 if (buildPathContainer is null)
                 {
                     return null;
@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Tools.Run
                 // VB.NET projects store the launch settings file in the
                 // "My Project" directory instead of a "Properties" directory.
                 // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
-                if (string.Equals(projectFile.Extension, ".vbproj", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Path.GetExtension(projectFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
                 {
                     propsDirectory = "My Project";
                 }
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tools.Run
         {
             var buildResult =
                 new RestoringCommand(
-                    new string[] { ProjectFile.FullName }.Concat(RestoreArgs),
+                    RestoreArgs.Prepend(Project),
                     NoRestore,
                     advertiseWorkloadUpdates: false
                 ).Execute();
@@ -224,13 +224,13 @@ namespace Microsoft.DotNet.Tools.Run
         private ICommand GetTargetCommand()
         {
             // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
-            var project = EvaluateProject(ProjectFile, RestoreArgs);
+            var project = EvaluateProject(Project, RestoreArgs);
             InvokeRunArgumentsTarget(project);
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
 
-            static ProjectInstance EvaluateProject(FileInfo projectFile, string[] restoreArgs)
+            static ProjectInstance EvaluateProject(string projectFilePath, string[] restoreArgs)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Tools.Run
                         globalProperties[key] = string.Join(";", values);
                     }
                 }
-                var project = new ProjectInstance(projectFile.FullName, globalProperties, null);
+                var project = new ProjectInstance(projectFilePath, globalProperties, null);
                 return project;
             }
 
