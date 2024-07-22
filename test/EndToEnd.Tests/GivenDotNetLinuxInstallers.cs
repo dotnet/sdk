@@ -1,14 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Tests.EndToEnd
+namespace EndToEnd.Tests
 {
-    public class GivenDotNetLinuxInstallers : SdkTest
+    public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
     {
-        public GivenDotNetLinuxInstallers(ITestOutputHelper log) : base(log)
-        {
-        }
-
         [Fact]
         public void ItHasExpectedDependencies()
         {

@@ -4,7 +4,7 @@
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
+namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class MockFileSystemTests
     {

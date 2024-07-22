@@ -208,7 +208,6 @@ Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.x.y.z.nupkg: 14414
 Microsoft.NET.Sdk.x.y.z.nupkg: 994666
 Microsoft.NET.StringTools.x.y.z.nupkg: 74038
 Microsoft.NET.WebAssembly.Threading.x.y.z.nupkg: 44064
-Microsoft.NET.WebAssembly.Webcil.x.y.z.nupkg: 31426
 Microsoft.NET.Workload.Emscripten.Current.Manifest-x.y.z-1.nupkg: 6044
 Microsoft.NET.Workload.Emscripten.Current.Manifest-x.y.z.nupkg: 6036
 Microsoft.NET.Workload.Emscripten.net6.Manifest-x.y.z.nupkg: 5613
@@ -1642,8 +1641,8 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runt
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Numerics.pdb: 62392
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.pdb: 1152
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.dll: 6656
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Formatters.dll: 126464
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Formatters.pdb: 53552
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Formatters.dll: 55808
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Formatters.pdb: 20816
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Json.dll: 5632
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.Json.pdb: 1164
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/framework/System.Runtime.Serialization.pdb: 2576
@@ -3323,8 +3322,8 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hans/Microsoft.NET.Sdk.
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hant/Microsoft.NET.Sdk.Publish.Tasks.resources.dll: 62976
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.props: 1572
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.targets: 1113
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 72192
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.xml: 45965
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 94208
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.xml: 109395
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.deps.json: 14858
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.dll: 1335296
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.Extensions.ObjectPool.dll: 14848
@@ -3349,7 +3348,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/targets/Sdk.Razor.CurrentVersion.props: 4
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/targets/Sdk.Razor.CurrentVersion.targets: 42907
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.Extensions.FileSystemGlobbing.dll: 80896
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.NET.Sdk.Razor.Tasks.dll: 124928
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 150016
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 193024
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.dll: 3578368
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Css.Parser.dll: 329728
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Extensions.ObjectPool.dll: 25600
@@ -4783,7 +4782,7 @@ shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Intrinsics.dll: 6656
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Loader.dll: 5632
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Numerics.dll: 306688
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.dll: 6656
-shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.Formatters.dll: 294400
+shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.Formatters.dll: 107520
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.Json.dll: 5632
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.Primitives.dll: 18432
 shared/Microsoft.NETCore.App/x.y.z/System.Runtime.Serialization.Xml.dll: 6656
