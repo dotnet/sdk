@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Run
         private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
         public bool NoBuild { get; private set; }
-        public string Project { get; private set; }
+        public string ProjectFileFullPath { get; private set; }
         public string[] Args { get; set; }
         public bool NoRestore { get; private set; }
         public bool Interactive { get; private set; }
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         public RunCommand(
             bool noBuild,
-            string project,
+            string projectFileFullPath,
             string launchProfile,
             bool noLaunchProfile,
             bool noRestore,
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Run
             string[] args)
         {
             NoBuild = noBuild;
-            Project = project;
+            ProjectFileFullPath = projectFileFullPath;
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
             Args = args;
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tools.Run
             catch (InvalidProjectFileException e)
             {
                 throw new GracefulException(
-                    string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, Project),
+                    string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, ProjectFileFullPath),
                     e);
             }
         }
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            var launchSettingsPath = TryFindLaunchSettings(Project);
+            var launchSettingsPath = TryFindLaunchSettings(ProjectFileFullPath);
             if (!File.Exists(launchSettingsPath))
             {
                 if (!string.IsNullOrEmpty(LaunchProfile))
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tools.Run
         {
             var buildResult =
                 new RestoringCommand(
-                    RestoreArgs.Prepend(Project),
+                    RestoreArgs.Prepend(ProjectFileFullPath),
                     NoRestore,
                     advertiseWorkloadUpdates: false
                 ).Execute();
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Tools.Run
         private ICommand GetTargetCommand()
         {
             // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
-            var project = EvaluateProject(Project, RestoreArgs);
+            var project = EvaluateProject(ProjectFileFullPath, RestoreArgs);
             InvokeRunArgumentsTarget(project);
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);

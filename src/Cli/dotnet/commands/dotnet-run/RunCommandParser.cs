@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli
             },
         };
 
-        private static string FindSingleProjectInDirectory(string directory)
+        public static string FindSingleProjectInDirectory(string directory)
         {
             string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
 
