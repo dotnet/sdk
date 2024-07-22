@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public Task CanDisplayDetails_RemotePackage_OtherFeedNoVersion()
         {
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates")
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", "NUnit3.DotNetNew.Template")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_InstalledPackage_OtherFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.Azure.WebJobs.ItemTemplates")
+            new DotnetNewCommand(_log, "install", "NUnit3.DotNetNew.Template")
                 .WithoutBuiltInTemplates().WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates")
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", "NUnit3.DotNetNew.Template")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();

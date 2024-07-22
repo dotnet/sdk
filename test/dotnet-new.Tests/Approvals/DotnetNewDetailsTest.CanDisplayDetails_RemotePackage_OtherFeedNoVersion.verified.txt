@@ -1,9 +1,9 @@
-﻿Microsoft.Azure.WebJobs.ItemTemplates
-   Package version: 4.0.3062
-   Details: Collection of templates for Azure Functions
+﻿NUnit3.DotNetNew.Template
+   Package version: 1.9.0
+   Details: Project and item templates containing basic NUnit 3 Test Project.
    Source Feed: dotnet-public [https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json]
    Authors:
-      Microsoft
+      akharlov
    License Metadata:
-      License Url: https://go.microsoft.com/fwlink/?linkid=2028464
-      Repository Url: https://go.microsoft.com/fwlink/?linkid=848145
+      License Url: https://github.com/nunit/dotnet-new-nunit/blob/master/LICENSE
+      Repository Url: https://github.com/nunit/dotnet-new-nunit
