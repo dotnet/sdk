@@ -100,13 +100,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 Reporter.WriteLine();
                 try
                 {
-                    var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
+                    IEnumerable<WorkloadId> workloadIds = Enumerable.Empty<WorkloadId>();                    
 
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
 
                     RunInNewTransaction(context =>
                     {
                         UpdateWorkloadManifests(context, offlineCache);
+
+                        //   This depends on getting the available workloads, so it needs to run after manifests hae potentially been installed
+                        workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
+
                         _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
                     });
 

@@ -34,12 +34,10 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (Exception ex)
             {
-                Log.LogMessage(ex.Message);
+                Log.LogErrorFromException(ex);
 
-                throw;
             }
-
-            return true;
+            return !Log.HasLoggedErrors;
         }
     }
 }
