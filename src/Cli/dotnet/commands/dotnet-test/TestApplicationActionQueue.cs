@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Channels;
-using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -20,17 +19,10 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        public async Task Enqueue(TestApplication testApplication)
+        public void Enqueue(TestApplication testApplication)
         {
-            try
-            {
-                await _channel.Writer.WriteAsync(testApplication);
-            }
-            catch (Exception ex)
-            {
-                VSTestTrace.SafeWriteTrace(() => $"Failed to write to channel for test application: {testApplication.ModulePath}:\n {ex}");
-                throw;
-            }
+            if (!_channel.Writer.TryWrite(testApplication))
+                throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication.ModulePath}");
         }
 
         public void WaitAllActions()

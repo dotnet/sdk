@@ -123,15 +123,15 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private async Task<IResponse> OnRequest(IRequest request)
+        private Task<IResponse> OnRequest(IRequest request)
         {
             if (TryGetModulePath(request, out string modulePath))
             {
                 _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
                 // Write the test application to the channel
-                await _actionQueue.Enqueue(_testApplications[modulePath]);
+                _actionQueue.Enqueue(_testApplications[modulePath]);
 
-                return await Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
 
             if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli
                 Debug.Assert(testApplication is not null);
                 testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
 
-                return await Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
             }
 
             throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
