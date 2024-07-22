@@ -32,12 +32,13 @@
       <MsiNupkgId>%(Identity).Manifest-%(FeatureBand).Msi.$(MsiArchitectureForWorkloadManifests)</MsiNupkgId>
       <RestoredMsiNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(MsiNupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredMsiNupkgContentPath>
       <IncludedInSource Condition="'%(IncludedInSource)' == ''">false</IncludedInSource>
+      <PackageDownload Condition="'$(DotNetBuildSourceOnly)' != 'true' or '$(IncludedInSource)' != 'true'">true</PackageDownload>
     </BundledManifests>
   </ItemGroup>
 
   <!-- Restore workload manifests via PackageDownload -->
   <ItemGroup>
-    <PackageDownload Include="@(BundledManifests->'%(NupkgId)')">
+    <PackageDownload Include="@(BundledManifests->'%(NupkgId)'->WithMetadataValue('PackageDownload', 'true'))">
       <Version>[%(Version)]</Version>
     </PackageDownload>
   </ItemGroup>
