@@ -118,32 +118,49 @@ namespace Microsoft.DotNet.Cli
             }
             catch (Exception ex)
             {
-                VSTestTrace.SafeWriteTrace(() => ex.ToString());
-                throw;
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+                Environment.FailFast(ex.ToString());
             }
         }
 
         private Task<IResponse> OnRequest(IRequest request)
         {
-            if (TryGetModulePath(request, out string modulePath))
+            try
             {
-                _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-                // Write the test application to the channel
-                _actionQueue.Enqueue(_testApplications[modulePath]);
+                if (TryGetModulePath(request, out string modulePath))
+                {
+                    _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
+                    // Write the test application to the channel
+                    _actionQueue.Enqueue(_testApplications[modulePath]);
 
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                }
+
+                if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
+                {
+                    var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
+                    Debug.Assert(testApplication is not null);
+                    testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
+
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                }
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' is unsupported.");
+                }
             }
-
-            if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
+            catch (Exception ex)
             {
-                var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                Debug.Assert(testApplication is not null);
-                testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
-
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+                Environment.FailFast(ex.ToString());
             }
-
-            throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
         private static bool TryGetModulePath(IRequest request, out string modulePath)
