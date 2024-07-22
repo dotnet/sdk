@@ -58,9 +58,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42260")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public Task CanDisplayDetails_RemotePackage_OtherFeedNoVersion()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates")
@@ -127,9 +125,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42260")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public Task CanDisplayDetails_InstalledPackage_OtherFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
