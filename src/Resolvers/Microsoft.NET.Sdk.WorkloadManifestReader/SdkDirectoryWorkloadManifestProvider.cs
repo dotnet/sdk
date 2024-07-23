@@ -177,31 +177,28 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
+            _installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+            var installState = InstallStateContents.FromPath(_installStateFilePath);
             if (_workloadSet is null)
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
-                if (File.Exists(installStateFilePath))
+                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                 {
-                    var installState = InstallStateContents.FromPath(installStateFilePath);
-                    if (!string.IsNullOrEmpty(installState.WorkloadVersion))
+                    if (!TryGetWorkloadSet(installState.WorkloadVersion!, out _workloadSet))
                     {
-                        if (!TryGetWorkloadSet(installState.WorkloadVersion!, out _workloadSet))
-                        {
-                            throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
-                        }
+                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, _installStateFilePath));
                     }
-
-                    //  Note: It is possible here to have both a workload set and loose manifests listed in the install state.  This might happen if there is a
-                    //  third-party workload manifest installed that's not part of the workload set
-                    _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
-                    _installStateFilePath = installStateFilePath;
                 }
+
+                //  Note: It is possible here to have both a workload set and loose manifests listed in the install state.  This might happen if there is a
+                //  third-party workload manifest installed that's not part of the workload set
+                _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
             }
 
-            if (_workloadSet == null && availableWorkloadSets.Any())
+            if (_workloadSet == null && installState.UseWorkloadSets == true && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+                _useManifestsFromInstallState = false;
             }
         }
 
