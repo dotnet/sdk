@@ -1,8 +1,0 @@
-{
-  "files": [
-    {
-      "path": "src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Themes/Fluent.xaml",
-      "detected_license_expression": "mit AND bsd-2-clause-views"
-    }
-  ]
-}
