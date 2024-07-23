@@ -32,7 +32,7 @@
       <MsiNupkgId>%(Identity).Manifest-%(FeatureBand).Msi.$(MsiArchitectureForWorkloadManifests)</MsiNupkgId>
       <RestoredMsiNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(MsiNupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredMsiNupkgContentPath>
       <IncludedInSource Condition="'%(IncludedInSource)' == ''">false</IncludedInSource>
-      <PackageDownload Condition="'$(DotNetBuildSourceOnly)' != 'true' or '$(IncludedInSource)' != 'true'">true</PackageDownload>
+      <PackageDownload Condition="'$(DotNetBuildSourceOnly)' != 'true' or '%(IncludedInSource)' != 'true'">true</PackageDownload>
     </BundledManifests>
   </ItemGroup>
 
