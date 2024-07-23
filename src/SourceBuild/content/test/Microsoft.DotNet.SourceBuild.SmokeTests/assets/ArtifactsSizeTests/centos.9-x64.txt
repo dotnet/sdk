@@ -339,7 +339,7 @@ packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Authori
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Authorization.Policy.xml: 24586
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Authorization.xml: 77912
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.Authorization.dll: 12288
-packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.Authorization.xml: 11214
+packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.Authorization.xml: 14829
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.dll: 125440
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.Endpoints.dll: 87552
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.Components.Endpoints.xml: 70473
@@ -3323,7 +3323,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hant/Microsoft.NET.Sdk.
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.props: 1572
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.targets: 1113
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 94208
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.xml: 109395
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.xml: 148249
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.deps.json: 14858
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.dll: 1335296
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.Extensions.ObjectPool.dll: 14848
@@ -3348,7 +3348,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/targets/Sdk.Razor.CurrentVersion.props: 4
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/targets/Sdk.Razor.CurrentVersion.targets: 42907
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.Extensions.FileSystemGlobbing.dll: 80896
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.NET.Sdk.Razor.Tasks.dll: 124928
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 193024
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 246272
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.dll: 3578368
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Css.Parser.dll: 329728
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Extensions.ObjectPool.dll: 25600
