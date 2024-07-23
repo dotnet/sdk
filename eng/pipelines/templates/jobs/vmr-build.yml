@@ -489,9 +489,6 @@ jobs:
           find artifacts/log/binary-report/ -exec rsync -R {} -t ${targetFolder} \;
         fi
 
-        # Needed to diagnose https://github.com/dotnet/dnceng/issues/3305. Remove once the issue is resolved.
-        find src/ -type f -name "*.dmp" -exec rsync -R {} -t ${targetFolder} \;
-
         find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
 
