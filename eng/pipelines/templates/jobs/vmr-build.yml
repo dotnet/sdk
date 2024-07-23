@@ -344,6 +344,12 @@ jobs:
           extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
         fi
 
+        # Needed to diagnose https://github.com/dotnet/dnceng/issues/3305. These should be removed once the issue is resolved.
+        extraBuildProperties="$extraBuildProperties /p:Features=debug-analyzers"
+        export DOTNET_DbgEnableMiniDump=1
+        export DOTNET_DbgMiniDumpType=2
+        export DOTNET_DbgMiniDumpName=/vmr/artifacts/log/Release/%p.dmp
+
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
         # Only use Docker when a container is specified
@@ -482,6 +488,9 @@ jobs:
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
           find artifacts/log/binary-report/ -exec rsync -R {} -t ${targetFolder} \;
         fi
+
+        # Needed to diagnose https://github.com/dotnet/dnceng/issues/3305. Remove once the issue is resolved.
+        find src/ -type f -name "*.dmp" -exec rsync -R {} -t ${targetFolder} \;
 
         find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
