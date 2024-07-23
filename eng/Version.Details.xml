@@ -246,22 +246,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1f70f0cc663b5d45f77840e9728386e5fa7944f9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.7.24373.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-rc.1.24373.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c2ed504f22cca7f468822acb14189f38132942f0</Sha>
+      <Sha>42b73c1693015c6b5a479f43e16c166f62f36aee</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.7.24373.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rc.1.24373.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c2ed504f22cca7f468822acb14189f38132942f0</Sha>
+      <Sha>42b73c1693015c6b5a479f43e16c166f62f36aee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.7.24373.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-rc.1.24373.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c2ed504f22cca7f468822acb14189f38132942f0</Sha>
+      <Sha>42b73c1693015c6b5a479f43e16c166f62f36aee</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.7.24373.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rc.1.24373.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c2ed504f22cca7f468822acb14189f38132942f0</Sha>
+      <Sha>42b73c1693015c6b5a479f43e16c166f62f36aee</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-rc.1.24373.4" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
@@ -437,9 +437,9 @@
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24369.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24372.3">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>26c52d02b67816269e647cc584f6b5db9a91970f</Sha>
+      <Sha>220c6842488eb669f80b40d7de251a44dd183e9d</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
