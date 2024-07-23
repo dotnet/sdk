@@ -154,18 +154,35 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (!_isNuGetTool)
+            using PackageArchiveReader reader = new(nupkgPath);
+            var nuspec = reader.GetNuspec();
+            if (reader.CanVerifySignedPackages(new NuGet.Packaging.Signing.SignedPackageVerifierSettings(
+                allowUnsigned: true,
+                allowIllegal: true,
+                allowUntrusted: true,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
+                verificationTarget: NuGet.Packaging.Signing.VerificationTarget.Repository,
+                NuGet.Packaging.Signing.SignaturePlacement.Any,
+                NuGet.Packaging.Signing.SignatureVerificationBehavior.IfExists,
+                RevocationMode.Online)) || nuspec == null)
             {
-                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
+                if (!_isNuGetTool)
                 {
-                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    }
                 }
-            }
-            else
-            {
-                if (!FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
+                else
                 {
-                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    if (!FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    }
                 }
             }
         }
