@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
             }
 
-            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.DotnetPath), "default.json")).UseWorkloadSets;
+            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets;
             var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
             reporter.WriteLine(string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 

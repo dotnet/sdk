@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly string _downloadToCacheOption;
         protected readonly string _dotnetPath;
         protected readonly string _userProfileDir;
+        protected readonly string _workloadRootDir;
         protected readonly bool _checkIfManifestExist;
         protected readonly ReleaseVersion _sdkVersion;
         protected readonly SdkFeatureBand _sdkFeatureBand;
@@ -125,8 +126,9 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;
-            _sdkVersion = creationResult.SdkVersion;
             _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
+            _workloadRootDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetPath;
+            _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;
             _targetSdkVersion ??= _sdkVersion;
 
@@ -163,7 +165,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         InstallStateContents GetCurrentInstallState()
         {
-            return GetCurrentInstallState(_sdkFeatureBand, _dotnetPath);
+            return GetCurrentInstallState(_sdkFeatureBand, _workloadRootDir);
         }
 
         static InstallStateContents GetCurrentInstallState(SdkFeatureBand sdkFeatureBand, string dotnetDir)
@@ -179,7 +181,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
         {
-            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath) && !SpecifiedWorkloadSetVersionInGlobalJson;
+            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir) && !SpecifiedWorkloadSetVersionInGlobalJson;
             if (FromHistory && !string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.WorkloadSetVersion))
             {
                 // This is essentially the same as updating to a specific workload set version, and we're now past the error check,
@@ -201,7 +203,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 //  If a workload set version is specified, then switch to workload set update mode
                 //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
                 //  for MSI-based installs.
-                if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+                if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
                 {
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }

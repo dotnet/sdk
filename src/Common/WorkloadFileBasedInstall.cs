@@ -4,6 +4,8 @@ using System.Text.Json;
 #if DotnetCsproj
 using Microsoft.DotNet.Workloads.Workload.History;
 #endif
+using Microsoft.NET.Sdk.WorkloadManifestReader;
+
 namespace Microsoft.DotNet.Workloads.Workload
 {
     static class WorkloadFileBasedInstall
@@ -37,7 +39,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 sdkFeatureBand = $"{sdkVersionParsed.Major}.{sdkVersionParsed.Minor}.{Last2DigitsTo0(sdkVersionParsed.Build)}";
             }
 
-            return Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand, "userlocal");
+            return Path.Combine(dotnetDir, "metadata", "workloads", new SdkFeatureBand(sdkFeatureBand).ToString(), "userlocal");
         }
 
 #if DotnetCsproj

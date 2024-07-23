@@ -14,6 +14,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public const string WorkloadSetsFolderName = "workloadsets";
 
         private readonly string _sdkRootPath;
+        private readonly string _sdkOrUserLocalPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
         private static HashSet<string> _outdatedManifestIds = new(StringComparer.OrdinalIgnoreCase) { "microsoft.net.workload.android", "microsoft.net.workload.blazorwebassembly", "microsoft.net.workload.ios",
@@ -67,6 +68,23 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSetVersionFromConstructor = workloadSetVersion;
             _globalJsonPathFromConstructor = globalJsonPath;
 
+            string? userManifestsRoot = userProfileDir is null ? null : Path.Combine(userProfileDir, "sdk-manifests");
+            string dotnetManifestRoot = Path.Combine(_sdkRootPath, "sdk-manifests");
+            if (userManifestsRoot != null && WorkloadFileBasedInstall.IsUserLocal(_sdkRootPath, _sdkVersionBand.ToString()) && Directory.Exists(userManifestsRoot))
+            {
+                _sdkOrUserLocalPath = userProfileDir ?? _sdkRootPath;
+                if (getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS) == null)
+                {
+                    _manifestRoots = new[] { userManifestsRoot, dotnetManifestRoot };
+                }
+            }
+            else if (getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS) == null)
+            {
+                _manifestRoots = new[] { dotnetManifestRoot };
+            }
+
+            _sdkOrUserLocalPath ??= _sdkRootPath;
+
             var knownManifestIdsFilePath = Path.Combine(_sdkRootPath, "sdk", sdkVersion, "KnownWorkloadManifests.txt");
             if (!File.Exists(knownManifestIdsFilePath))
             {
@@ -80,20 +98,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 foreach (var manifestId in File.ReadAllLines(knownManifestIdsFilePath).Where(l => !string.IsNullOrEmpty(l)))
                 {
                     _knownManifestIdsAndOrder[manifestId] = lineNumber++;
-                }
-            }
-
-            if (getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS) == null)
-            {
-                string? userManifestsRoot = userProfileDir is null ? null : Path.Combine(userProfileDir, "sdk-manifests");
-                string dotnetManifestRoot = Path.Combine(_sdkRootPath, "sdk-manifests");
-                if (userManifestsRoot != null && WorkloadFileBasedInstall.IsUserLocal(_sdkRootPath, _sdkVersionBand.ToString()) && Directory.Exists(userManifestsRoot))
-                {
-                    _manifestRoots = new[] { userManifestsRoot, dotnetManifestRoot };
-                }
-                else
-                {
-                    _manifestRoots = new[] { dotnetManifestRoot };
                 }
             }
 
@@ -179,7 +183,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (workloadSet is null)
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
                 if (File.Exists(installStateFilePath))
                 {
                     var installState = InstallStateContents.FromPath(installStateFilePath);
