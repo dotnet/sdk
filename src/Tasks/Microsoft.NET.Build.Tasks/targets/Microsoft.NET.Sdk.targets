@@ -252,7 +252,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
-        Condition="!Exists('$(RoslynTargetsPath)')" />
+        Condition="!Exists('$(RoslynTargetsPath)')"
+        FormatArguments="$(NETCoreSdkVersion)" />
   </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.
