@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli
 
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestCommandParser.DegreeOfParallelism), out int degreeOfParallelism))
+            if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
 
             if (ContainsHelpOption(_args))
@@ -64,12 +64,15 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
+            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"];
 
-            ForwardingAppImplementation msBuildForwardingApp = new(
-                GetMSBuildExePath(),
-                [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                    $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"]);
+            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
+
+            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {msbuildCommandlineArgs}");
+
+            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             int testsProjectResult = msBuildForwardingApp.Execute();
 
             if (testsProjectResult != 0)
@@ -89,13 +92,19 @@ namespace Microsoft.DotNet.Cli
             return 0;
         }
 
+        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        {
+            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
+        }
+
         private async Task WaitConnectionAsync(CancellationToken token)
         {
             try
             {
                 while (true)
                 {
-                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token);
+                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                     namedPipeServer.RegisterAllSerializers();
 
                     await namedPipeServer.WaitConnectionAsync(token);
@@ -109,32 +118,60 @@ namespace Microsoft.DotNet.Cli
             }
             catch (Exception ex)
             {
-                VSTestTrace.SafeWriteTrace(() => ex.ToString());
-                throw;
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+
+                Environment.FailFast(ex.ToString());
             }
         }
 
         private Task<IResponse> OnRequest(IRequest request)
         {
-            if (TryGetModulePath(request, out string modulePath))
+            try
             {
-                _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-                // Write the test application to the channel
-                _actionQueue.Enqueue(_testApplications[modulePath]);
+                if (TryGetModulePath(request, out string modulePath))
+                {
+                    _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
+                    // Write the test application to the channel
+                    _actionQueue.Enqueue(_testApplications[modulePath]);
 
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                }
+
+                if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
+                {
+                    var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
+                    Debug.Assert(testApplication is not null);
+                    testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
+
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                }
+
+                // If we don't recognize the message, log and skip it
+                if (TryGetUnknownMessage(request, out UnknownMessage unknownMessage))
+                {
+                    if (VSTestTrace.TraceEnabled)
+                    {
+                        VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                    }
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                }
+
+                // If it doesn't match any of the above, throw an exception
+                throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
             }
-
-            if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
+            catch (Exception ex)
             {
-                var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                Debug.Assert(testApplication is not null);
-                testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
 
-                return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                Environment.FailFast(ex.ToString());
             }
-
-            throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
         private static bool TryGetModulePath(IRequest request, out string modulePath)
@@ -161,9 +198,24 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
+        private static bool TryGetUnknownMessage(IRequest request, out UnknownMessage unknownMessage)
+        {
+            if (request is UnknownMessage result)
+            {
+                unknownMessage = result;
+                return true;
+            }
+
+            unknownMessage = null;
+            return false;
+        }
+
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
