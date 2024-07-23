@@ -159,7 +159,7 @@
     <SystemTextJsonPackageVersion>9.0.0-preview.7.24366.18</SystemTextJsonPackageVersion>
     <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
-    <SystemTextJsonBasePackageVersion>8.0.0</SystemTextJsonBasePackageVersion>
+    <SystemTextJsonToolsetPackageVersion>8.0.0</SystemTextJsonToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-preview.7.24366.18</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
