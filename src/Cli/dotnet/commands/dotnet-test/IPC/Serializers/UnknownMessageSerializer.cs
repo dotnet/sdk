@@ -5,19 +5,17 @@ namespace Microsoft.DotNet.Tools.Test;
 
 internal sealed class UnknownMessageSerializer : BaseSerializer, INamedPipeSerializer
 {
-    public int Id => -1;
+    public int Id { get; }
 
-    public int SerializerId { get; }
-
-    public UnknownMessageSerializer(int SerializerId) => this.SerializerId = SerializerId;
+    public UnknownMessageSerializer(int SerializerId) => Id = SerializerId;
 
     public object Deserialize(Stream _)
     {
-        return new UnknownMessage(SerializerId);
+        return new UnknownMessage(Id);
     }
 
     public void Serialize(object _, Stream stream)
     {
-        WriteInt(stream, SerializerId);
+        WriteInt(stream, Id);
     }
 }
