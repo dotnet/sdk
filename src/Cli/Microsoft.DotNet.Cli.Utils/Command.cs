@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public CommandResult Execute()
         {
-            return Execute(_ => { });
+            return Execute(null);
         }
         public CommandResult Execute(Action<Process> processStarted)
         {
