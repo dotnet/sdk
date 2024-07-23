@@ -156,44 +156,18 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!_isNuGetTool)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
                 {
-                    if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
-                        out string commandOutput))
-                    {
-                        throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                                 Environment.NewLine +
-                                                                 commandOutput);
-                    }
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
             }
             else
             {
-                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
                 {
-                    if (!NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
-                    {
-                        throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                                 Environment.NewLine +
-                                                                 commandOutput);
-                    }
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
-                else
-                {
-                    _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
-                }   
             }
-        }
-
-        private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
-        {
-            var args = new[] { "verify", "--all", nupkgToVerify.Value };
-            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
-                .Create("nuget", args);
-
-            var commandResult = command.CaptureStdOut().Execute();
-            commandOutput = commandResult.StdOut + Environment.NewLine + commandResult.StdErr;
-            return commandResult.ExitCode == 0;
         }
 
         public async Task<string> GetPackageUrl(PackageId packageId,
@@ -354,7 +328,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
 
-            packageSourceMapping = packageSourceMapping ?? PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
