@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             using (HttpClient client = new HttpClient())
             {
-                string json = await client.GetStringAsync($"https://api.nuget.org/v3-flatcontainer/{packageName}/index.json");
+                string json = await client.GetStringAsync($"https://api.nuget.org/v3-flatcontainer/{packageName.ToLowerInvariant()}/index.json");
                 JObject obj = JObject.Parse(json);
 
                 var versions = obj["versions"]?.ToObject<List<string>>();
