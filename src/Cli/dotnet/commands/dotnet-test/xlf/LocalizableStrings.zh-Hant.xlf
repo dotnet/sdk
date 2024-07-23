@@ -12,6 +12,11 @@
         <target state="translated">適用於 .NET 平台的測試驅動程式</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">允許在測試主機如預期或未預期地結束時收集損毀傾印。</target>
@@ -96,6 +101,11 @@ Examples:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
