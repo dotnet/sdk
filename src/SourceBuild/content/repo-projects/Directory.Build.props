@@ -84,8 +84,8 @@
     <!-- Pass locations for assets -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
-    <!-- TODO Remove once https://github.com/dotnet/dnceng/issues/3305 is resolved -->
-    <BuildArgs>$(BuildArgs) /p:Features="$(Features)"</BuildArgs>
+    <!-- TODO: Needed to debug null ref issue. Remove once https://github.com/dotnet/dnceng/issues/3305 is resolved -->
+    <BuildArgs>$(BuildArgs) /p:Features=debug-analyzers</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -138,6 +138,10 @@
          See https://github.com/dotnet/source-build/issues/541 -->
     <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
 
+    <!-- TODO: Needed to debug null ref issue. Remove once https://github.com/dotnet/dnceng/issues/3305 is resolved -->
+    <EnvironmentVariables Include="DOTNET_DbgEnableMiniDump=1" />
+    <EnvironmentVariables Include="DOTNET_DbgMiniDumpType=2" />
+    <EnvironmentVariables Include="DOTNET_DbgMiniDumpName=$(ArtifactsLogDir)%p.dmp" />
   </ItemGroup>
 
   <!--
