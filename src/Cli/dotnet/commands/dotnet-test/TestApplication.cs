@@ -40,7 +40,10 @@ namespace Microsoft.DotNet.Cli
                 Arguments = BuildArgs(isDll)
             };
 
-            VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+            }
 
             await Process.Start(processStartInfo).WaitForExitAsync();
         }
@@ -61,7 +64,10 @@ namespace Microsoft.DotNet.Cli
                 Arguments = BuildHelpArgs(isDll)
             };
 
-            VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+            }
 
             await Process.Start(processStartInfo).WaitForExitAsync();
         }

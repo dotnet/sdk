@@ -41,6 +41,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             configProperties["Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported"].GetValue<bool>()
                     .Should().BeFalse();
+            configProperties["Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported"].GetValue<bool>()
+                    .Should().BeFalse();
             configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].GetValue<bool>()
                     .Should().BeFalse();
         }
@@ -97,6 +99,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             var responseFileContents = File.ReadLines(responseFile);
 
             responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported=false");
+            responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported=false");
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
             responseFileContents.Should().Contain("--runtimeknob:System.GC.DynamicAdaptationMode=1");
