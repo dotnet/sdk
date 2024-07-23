@@ -44,6 +44,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(SignalRCustomAwaitableSupport)' != ''"
                                     Value="$(SignalRCustomAwaitableSupport)"
                                     Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported"
+                                    Condition="'$(MvcEnhancedModelMetadataSupport)' != ''"
+                                    Value="$(MvcEnhancedModelMetadataSupport)"
+                                    Trim="true" />
   </ItemGroup>
 
 </Project>
