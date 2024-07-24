@@ -6,6 +6,8 @@ using System.CommandLine.Completions;
 using System.Text.Json;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Add.PackageReference;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -21,7 +23,23 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdVersionDescription,
             HelpName = LocalizableStrings.CmdVersion
-        }.ForwardAsSingle(o => $"--version {o}");
+        }.ForwardAsSingle(o => $"--version {o}")
+            .AddCompletions((context) =>
+            {
+                // we can only do version completion if we have a package id
+                if (context.ParseResult.GetValue(CmdPackageArgument) is string packageId)
+                {
+                    // we should take --prerelease flags into account for version completion
+                    var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
+                    return QueryVersionsForPackage(packageId, context.WordToComplete, allowPrerelease, CancellationToken.None)
+                        .Result
+                        .Select(version => new CompletionItem(version.ToNormalizedString()));
+                }
+                else
+                {
+                    return Enumerable.Empty<CompletionItem>();
+                }
+            });
 
         public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
         {
@@ -119,6 +137,20 @@ namespace Microsoft.DotNet.Cli
                         yield return packageIdElement.GetString();
                     }
                 }
+            }
+        }
+
+        internal static async Task<IEnumerable<NuGetVersion>> QueryVersionsForPackage(string packageId, string versionFragment, bool allowPrerelease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
+                var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
+                return versions;
+            }
+            catch (Exception)
+            {
+                return Enumerable.Empty<NuGetVersion>();
             }
         }
     }
