@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -24,6 +25,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private const string InstalledPacksDir = "InstalledPacks";
         private const string InstalledManifestsDir = "InstalledManifests";
         private const string InstalledWorkloadSetsDir = "InstalledWorkloadSets";
+        private const string HistoryDir = "history";
         protected readonly string _dotnetDir;
         protected readonly string _userProfileDir;
         protected readonly string _workloadRootDir;
@@ -525,6 +527,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     workloadRecordRepository.DeleteWorkloadInstallationRecord(workloadInstallationRecordId, potentialBandToClean);
                 }
             }
+        }
+
+        string GetWorkloadHistoryDirectory()
+        {
+            return Path.Combine(_workloadMetadataDir, RuntimeInformation.ProcessArchitecture.ToString(), _sdkFeatureBand.ToString(), HistoryDir);
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            var historyDirectory = GetWorkloadHistoryDirectory();
+            Directory.CreateDirectory(historyDirectory);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            return WorkloadFileBasedInstall.GetWorkloadHistoryRecords(GetWorkloadHistoryDirectory());
         }
 
         public void Shutdown()
