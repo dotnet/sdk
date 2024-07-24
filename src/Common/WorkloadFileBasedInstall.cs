@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload
 {
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 sdkFeatureBand = $"{sdkVersionParsed.Major}.{sdkVersionParsed.Minor}.{Last2DigitsTo0(sdkVersionParsed.Build)}";
             }
 
-            return Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand, "userlocal");
+            return Path.Combine(dotnetDir, "metadata", "workloads", new SdkFeatureBand(sdkFeatureBand).ToString(), "userlocal");
         }
     }
 }

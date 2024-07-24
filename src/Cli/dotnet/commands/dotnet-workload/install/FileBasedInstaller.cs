@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private const string InstalledWorkloadSetsDir = "InstalledWorkloadSets";
         protected readonly string _dotnetDir;
         protected readonly string _userProfileDir;
+        protected readonly string _workloadRootDir;
         protected readonly DirectoryPath _tempPackagesDir;
         private readonly INuGetPackageDownloader _nugetPackageDownloader;
         private IWorkloadResolver _workloadResolver;
@@ -57,7 +58,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                           new FirstPartyNuGetPackageSigningVerifier(), logger,
                                           restoreActionConfig: _restoreActionConfig);
             bool userLocal = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, sdkFeatureBand.ToString());
-            _workloadMetadataDir = Path.Combine(userLocal ? _userProfileDir : _dotnetDir, "metadata", "workloads");
+            _workloadRootDir = userLocal ? _userProfileDir : _dotnetDir;
+            _workloadMetadataDir = Path.Combine(_workloadRootDir, "metadata", "workloads");
             _reporter = reporter;
             _sdkFeatureBand = sdkFeatureBand;
             _workloadResolver = workloadResolver;
@@ -92,7 +94,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
             var workloadSetPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand);
 
-            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
             try
             {
@@ -226,9 +228,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)
         {
-            string rootInstallDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetDir;
-            var manifestInstallDir = Path.Combine(rootInstallDir, "sdk-manifests", sdkFeatureBand);
-            return manifestInstallDir;
+            return Path.Combine(_workloadRootDir, "sdk-manifests", sdkFeatureBand);
         }
 
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
@@ -341,7 +341,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
-            var garbageCollector = new WorkloadGarbageCollector(_dotnetDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
+            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -479,44 +479,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = InstallStateContents.FromPath(path);
-            installStateContents.WorkloadVersion = workloadVersion;
-            File.WriteAllText(path, installStateContents.ToString());
+            UpdateInstallState(sdkFeatureBand, contents => contents.WorkloadVersion = workloadVersion);
         }
 
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            
-            if (File.Exists(path))
-            {
-                var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
-                installStateContents.Manifests = null;
-                File.WriteAllText(path, installStateContents.ToString());
-            }
+            UpdateInstallState(sdkFeatureBand, contents => contents.Manifests = null);
         }
 
         public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = InstallStateContents.FromPath(path);
-            installStateContents.Manifests = manifestContents;
-            File.WriteAllText(path, installStateContents.ToString());
+            UpdateInstallState(sdkFeatureBand, contents => contents.Manifests = manifestContents);
         }
 
         public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = InstallStateContents.FromPath(path);
-            installStateContents.UseWorkloadSets = newMode;
-            File.WriteAllText(path, installStateContents.ToString());
+            UpdateInstallState(sdkFeatureBand, contents => contents.UseWorkloadSets = newMode);
 
             var newModeString = newMode == null ? "<null>" : (newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests);
             _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
+        }
+
+        private void UpdateInstallState(SdkFeatureBand sdkFeatureBand, Action<InstallStateContents> update)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _workloadRootDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var installStateContents = InstallStateContents.FromPath(path);
+            update(installStateContents);
+            File.WriteAllText(path, installStateContents.ToString());
         }
 
         /// <summary>
