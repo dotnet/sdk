@@ -122,12 +122,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _exceptionToThrow = null;
             _globalJsonWorkloadSetVersion = null;
 
-            _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
             _useManifestsFromInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets(_sdkVersionBand);
             var workloadSets80100 = GetAvailableWorkloadSets(new SdkFeatureBand("8.0.100"));
+            WorkloadSet? workloadSet = null;
 
             bool TryGetWorkloadSet(string workloadSetVersion, out WorkloadSet? workloadSet)
             {
@@ -161,19 +161,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             if (_workloadSetVersionFromConstructor != null)
             {
                 _useManifestsFromInstallState = false;
-                if (!TryGetWorkloadSet(_workloadSetVersionFromConstructor, out _workloadSet))
+                if (!TryGetWorkloadSet(_workloadSetVersionFromConstructor, out workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
             }
 
-            if (_workloadSet is null)
+            if (workloadSet is null)
             {
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
                     _useManifestsFromInstallState = false;
-                    if (!TryGetWorkloadSet(_globalJsonWorkloadSetVersion, out _workloadSet))
+                    if (!TryGetWorkloadSet(_globalJsonWorkloadSetVersion, out workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
                         return;
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (_workloadSet is null)
+            if (workloadSet is null)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
                 if (File.Exists(installStateFilePath))
@@ -189,7 +189,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installState = InstallStateContents.FromPath(installStateFilePath);
                     if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                     {
-                        if (!TryGetWorkloadSet(installState.WorkloadVersion!, out _workloadSet))
+                        if (!TryGetWorkloadSet(installState.WorkloadVersion!, out workloadSet))
                         {
                             throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                         }
@@ -202,11 +202,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (_workloadSet == null && availableWorkloadSets.Any())
+            if (workloadSet == null && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
-                _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+                workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
+
+            _workloadSet = workloadSet;
         }
 
         private static int VersionCompare(string first, string second)
@@ -323,7 +325,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             else
             {
                 //  If the same folder name is in multiple of the workload manifest directories, take the first one
-                Dictionary<string, string> directoriesWithManifests = new(StringComparer.OrdinalIgnoreCase);
+                Dictionary<string, string> directoriesWithManifests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var manifestRoot in _manifestRoots.Reverse())
                 {
                     var manifestVersionBandDirectory = Path.Combine(manifestRoot, _sdkVersionBand.ToString());
@@ -376,7 +378,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
-            if (missingManifestIds != null && missingManifestIds.Any())
+            if (missingManifestIds?.Any() == true)
             {
                 foreach (var missingManifestId in missingManifestIds)
                 {
