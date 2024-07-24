@@ -20,9 +20,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                 .WithProjectChanges((p, doc) =>
                 {
                     var itemGroup = new XElement("PropertyGroup");
-                    var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
                     itemGroup.Add(new XElement("WasmFingerprintAssets", false));
-                    itemGroup.Add(serviceWorkerAssetsManifest);
                     doc.Root.Add(itemGroup);
                 });
 
@@ -65,9 +63,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                 .WithProjectChanges((p, doc) =>
                 {
                     var itemGroup = new XElement("PropertyGroup");
-                    var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
                     itemGroup.Add(new XElement("WasmFingerprintAssets", false));
-                    itemGroup.Add(serviceWorkerAssetsManifest);
                     doc.Root.Add(itemGroup);
                 });
 
@@ -97,9 +93,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                     if (Path.GetFileName(p) == "blazorwasm.csproj")
                     {
                         var itemGroup = new XElement("PropertyGroup");
-                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
                         itemGroup.Add(new XElement("WasmFingerprintAssets", false));
-                        itemGroup.Add(serviceWorkerAssetsManifest);
                         doc.Root.Add(itemGroup);
                     }
                 });
