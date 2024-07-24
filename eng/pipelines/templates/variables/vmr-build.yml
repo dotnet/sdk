@@ -81,7 +81,7 @@ variables:
   - name: shortStackPoolName
     value: NetCore-Public
   - name: poolImage_Linux
-    value: 1es-ubuntu-2004-open
+    value: build.ubuntu.2204.amd64.open
   - name: poolImage_LinuxArm64
     value: Mariner-2-Docker-ARM64
   - name: poolName_LinuxArm64
@@ -102,7 +102,7 @@ variables:
     - name: shortStackPoolName
       value: $(DncEngInternalBuildPool)
   - name: poolImage_Linux
-    value: 1es-ubuntu-2204
+    value: build.ubuntu.2204.amd64
   - name: poolImage_LinuxArm64
     value: Mariner-2-Docker-ARM64
   - name: poolName_LinuxArm64
