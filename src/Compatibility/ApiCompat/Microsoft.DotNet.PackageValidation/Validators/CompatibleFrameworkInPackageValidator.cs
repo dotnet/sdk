@@ -40,29 +40,28 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             foreach (NuGetFramework framework in options.Package.FrameworksInPackage.OrderByDescending(f => f.Version))
             {
                 IReadOnlyList<ContentItem>? compileTimeAsset = options.Package.FindBestCompileAssetForFramework(framework);
-                if (compileTimeAsset != null)
+                if (compileTimeAsset != null && !compileTimeAsset.IsPlaceholderFile())
+                {
                     compileAssetsQueue.Enqueue((framework, compileTimeAsset));
+                }
             }
 
-            while (compileAssetsQueue.Count > 0)
+            // Iterate as long as assets are available for comparison.
+            while (compileAssetsQueue.Count > 1)
             {
                 (NuGetFramework framework, IReadOnlyList<ContentItem> compileTimeAsset) = compileAssetsQueue.Dequeue();
 
-                // If no assets are available for comparison, stop the iteration.
-                if (compileAssetsQueue.Count == 0) break;
-
                 SelectionCriteria managedCriteria = conventions.Criteria.ForFramework(framework);
-
                 ContentItemCollection contentItemCollection = new();
                 // The collection won't contain the current compile time asset as it is already dequeued.
                 contentItemCollection.Load(compileAssetsQueue.SelectMany(a => a.Item2).Select(a => a.Path));
 
                 // Search for a compatible compile time asset and compare it.
-                IList<ContentItem>? compatibleFrameworkAsset = contentItemCollection.FindBestItemGroup(managedCriteria, patternSet)?.Items;
-                if (compatibleFrameworkAsset != null)
+                IList<ContentItem>? compatibleCompileTimeAsset = contentItemCollection.FindBestItemGroup(managedCriteria, patternSet)?.Items;
+                if (compatibleCompileTimeAsset != null)
                 {
                     apiCompatRunner.QueueApiCompatFromContentItem(log,
-                        new ReadOnlyCollection<ContentItem>(compatibleFrameworkAsset),
+                        new ReadOnlyCollection<ContentItem>(compatibleCompileTimeAsset),
                         compileTimeAsset,
                         apiCompatOptions,
                         options.Package);

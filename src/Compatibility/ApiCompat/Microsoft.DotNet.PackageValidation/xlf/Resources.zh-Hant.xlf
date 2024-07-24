@@ -57,6 +57,11 @@
         <target state="translated">找不到套件 '{0}'。請提供有效的套件路徑。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkipApiCompatForPlaceholderFiles">
+        <source>Skipping api compatiblity check for target framework {0} as the package assets are placeholder files.</source>
+        <target state="new">Skipping api compatiblity check for target framework {0} as the package assets are placeholder files.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

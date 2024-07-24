@@ -6,7 +6,6 @@ using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.PackageValidation
@@ -136,7 +135,7 @@ namespace Microsoft.DotNet.PackageValidation
             NuspecReader nuspecReader = packageReader.NuspecReader;
             string packageId = nuspecReader.GetId();
             string version = nuspecReader.GetVersion().ToString();
-            IEnumerable<string> packageAssets = packageReader.GetFiles().Where(t => t.EndsWith(".dll")).ToArray();
+            IEnumerable<string> packageAssets = packageReader.GetFiles().ToArray();
 
             return new Package(packagePath!, packageId, version, packageAssets, packageAssemblyReferences);
         }

@@ -43,12 +43,20 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 {
                     // Search for compatible compile time assets in the latest package.
                     IReadOnlyList<ContentItem>? latestCompileAssets = options.Package.FindBestCompileAssetForFramework(baselineTargetFramework);
-                    if (latestCompileAssets == null)
+                    // Emit an error if
+                    // - No latest compile time asset is available or
+                    // - The latest compile time asset is a placeholder but the baseline compile time asset isn't.
+                    if (latestCompileAssets == null ||
+                        (latestCompileAssets.IsPlaceholderFile() && !baselineCompileAssets.IsPlaceholderFile()))
                     {
                         log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
                             string.Format(Resources.MissingTargetFramework,
                                 baselineTargetFramework));
+                    }
+                    else if (baselineCompileAssets.IsPlaceholderFile() && !latestCompileAssets.IsPlaceholderFile())
+                    {
+                        // Ignore the newly added compile time asset in the latest package.
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -67,12 +75,20 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 {
                     // Search for compatible runtime assets in the latest package.
                     IReadOnlyList<ContentItem>? latestRuntimeAssets = options.Package.FindBestRuntimeAssetForFramework(baselineTargetFramework);
-                    if (latestRuntimeAssets == null)
+                    // Emit an error if
+                    // - No latest runtime asset is available or
+                    // - The latest runtime asset is a placeholder but the baseline runtime asset isn't.
+                    if (latestRuntimeAssets == null ||
+                        (latestRuntimeAssets.IsPlaceholderFile() && !baselineRuntimeAssets.IsPlaceholderFile()))
                     {
                         log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
                             string.Format(Resources.MissingTargetFramework,
                                 baselineTargetFramework));
+                    }
+                    else if (baselineRuntimeAssets.IsPlaceholderFile() && !latestRuntimeAssets.IsPlaceholderFile())
+                    {
+                        // Ignore the newly added run time asset in the latest package.
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -95,8 +111,13 @@ namespace Microsoft.DotNet.PackageValidation.Validators
 
                     foreach (IGrouping<string, ContentItem> baselineRuntimeSpecificAssetsRidGroup in baselineRuntimeSpecificAssetsRidGroupedPerRid)
                     {
+                        IReadOnlyList<ContentItem> baselineRuntimeSpecificAssetsForRid = baselineRuntimeSpecificAssetsRidGroup.ToArray();
                         IReadOnlyList<ContentItem>? latestRuntimeSpecificAssets = options.Package.FindBestRuntimeAssetForFrameworkAndRuntime(baselineTargetFramework, baselineRuntimeSpecificAssetsRidGroup.Key);
-                        if (latestRuntimeSpecificAssets == null)
+                        // Emit an error if
+                        // - No latest runtime specific asset is available or
+                        // - The latest runtime specific asset is a placeholder but the baseline runtime specific asset isn't.
+                        if (latestRuntimeSpecificAssets == null ||
+                            (latestRuntimeSpecificAssets.IsPlaceholderFile() && !baselineRuntimeSpecificAssetsForRid.IsPlaceholderFile()))
                         {
                             log.LogError(new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped) { Target = baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key },
                                 DiagnosticIds.TargetFrameworkAndRidPairDropped,
@@ -104,10 +125,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                                     baselineTargetFramework,
                                     baselineRuntimeSpecificAssetsRidGroup.Key));
                         }
+                        else if (baselineRuntimeSpecificAssetsForRid.IsPlaceholderFile() && !latestRuntimeSpecificAssets.IsPlaceholderFile())
+                        {
+                            // Ignore the newly added runtime specific asset in the latest package.
+                        }
                         else if (options.EnqueueApiCompatWorkItems)
                         {
                             apiCompatRunner.QueueApiCompatFromContentItem(log,
-                                baselineRuntimeSpecificAssetsRidGroup.ToArray(),
+                                baselineRuntimeSpecificAssetsForRid,
                                 latestRuntimeSpecificAssets,
                                 apiCompatOptions,
                                 options.BaselinePackage,

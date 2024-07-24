@@ -45,18 +45,33 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         DiagnosticIds.ApplicableCompileTimeAsset,
                         string.Format(Resources.NoCompatibleCompileTimeAsset,
                             framework));
-                    break;
+                    continue;
                 }
 
                 IReadOnlyList<ContentItem>? runtimeAsset = options.Package.FindBestRuntimeAssetForFramework(framework);
-                if (runtimeAsset == null)
+                // Emit an error if
+                // - No runtime asset is available or
+                // - The runtime asset is a placeholder but the compile time asset isn't.
+                if (runtimeAsset == null ||
+                    (runtimeAsset.IsPlaceholderFile() && !compileTimeAsset.IsPlaceholderFile()))
                 {
                     log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidLessAsset) { Target = framework.ToString() },
                         DiagnosticIds.CompatibleRuntimeRidLessAsset,
                         string.Format(Resources.NoCompatibleRuntimeAsset,
                             framework));
                 }
-                // Invoke ApiCompat to compare the compile time asset with the runtime asset if they are not the same assembly.
+                // Ignore the additional runtime asset when performing in non-strict mode, otherwise emit a missing
+                // compile time asset error.
+                else if (compileTimeAsset.IsPlaceholderFile() && !runtimeAsset.IsPlaceholderFile())
+                {
+                    if (options.EnableStrictMode)
+                    {
+                        log.LogError(new Suppression(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()),
+                            DiagnosticIds.ApplicableCompileTimeAsset,
+                            string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString()));
+                    }
+                }
+                // Invoke ApiCompat to compare the compile time asset with the runtime asset.
                 else if (options.EnqueueApiCompatWorkItems)
                 {
                     apiCompatRunner.QueueApiCompatFromContentItem(log,
@@ -69,7 +84,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 foreach (string rid in options.Package.Rids.Where(packageRid => framework.SupportsRuntimeIdentifier(packageRid)))
                 {
                     IReadOnlyList<ContentItem>? runtimeRidSpecificAsset = options.Package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
-                    if (runtimeRidSpecificAsset == null)
+                    // Emit an error if
+                    // - No runtime specific asset is available or
+                    // - The runtime specific asset is a placeholder but the compile time asset isn't.
+                    if (runtimeRidSpecificAsset == null ||
+                        (runtimeRidSpecificAsset.IsPlaceholderFile() && !compileTimeAsset.IsPlaceholderFile()))
                     {
                         log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidSpecificAsset) { Target = framework.ToString() + "-" + rid },
                             DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
@@ -77,8 +96,18 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                                 framework,
                                 rid));
                     }
-                    // Invoke ApiCompat to compare the compile time asset with the runtime specific asset if they are not the same and
-                    // if the comparison hasn't already happened (when the runtime asset is the same as the runtime specific asset).
+                    // Ignore the additional runtime specific asset when performing in non-strict mode, otherwise emit a
+                    // missing compile time asset error.
+                    else if (compileTimeAsset.IsPlaceholderFile() && !runtimeRidSpecificAsset.IsPlaceholderFile())
+                    {
+                        if (options.EnableStrictMode)
+                        {
+                            log.LogError(new Suppression(DiagnosticIds.ApplicableCompileTimeAsset, framework.ToString()),
+                                DiagnosticIds.ApplicableCompileTimeAsset,
+                                string.Format(Resources.NoCompatibleCompileTimeAsset, framework.ToString()));
+                        }
+                    }
+                    // Invoke ApiCompat to compare the compile asset with the runtime specific asset.
                     else if (options.EnqueueApiCompatWorkItems)
                     {
                         apiCompatRunner.QueueApiCompatFromContentItem(log,
@@ -100,7 +129,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         {
             Dictionary<NuGetFramework, HashSet<NuGetFramework>> packageTfmMapping = [];
 
-            // creating a map framework in package => frameworks to test based on default compatibilty mapping.
+            // creating a map framework in package => frameworks to test based on default compatibility mapping.
             foreach (OneWayCompatibilityMappingEntry item in DefaultFrameworkMappings.Instance.CompatibilityMappings)
             {
                 NuGetFramework forwardTfm = item.SupportedFrameworkRange.Max;
