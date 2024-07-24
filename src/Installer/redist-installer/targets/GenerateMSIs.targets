@@ -488,8 +488,6 @@
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
-                            GenerateVSToolsNupkg;
-                            GenerateVSToolsResolverNupkg;
                             GenerateSdkMSBuildExtensionsNupkg;
                             GenerateVSTemplateLocatorNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
