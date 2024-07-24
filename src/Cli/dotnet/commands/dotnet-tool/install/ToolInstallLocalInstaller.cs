@@ -26,7 +26,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
-            IToolPackageDownloader toolPackageDownloader = null)
+            IToolPackageDownloader toolPackageDownloader = null,
+            string runtimeJsonPathForTests = null)
         {
             _parseResult = parseResult;
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
@@ -38,7 +39,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                     = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
+                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()), runtimeJsonPathForTests: runtimeJsonPathForTests);
             _toolPackageStore = toolPackageStoresAndDownloader.store;
             _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
 

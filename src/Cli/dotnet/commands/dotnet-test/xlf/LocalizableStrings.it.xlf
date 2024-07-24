@@ -12,6 +12,11 @@
         <target state="translated">Driver di test per la piattaforma .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Abilita la raccolta del dump di arresto anomalo in caso di chiusura prevista e imprevista dell'host di test.</target>
@@ -96,6 +101,11 @@ Esempi:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="VALORE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
