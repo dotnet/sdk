@@ -13,11 +13,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
 
             var build = CreateBuildCommand(ProjectDirectory);
+
             var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
@@ -46,7 +55,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
 
@@ -74,7 +91,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
             var buildResult = ExecuteCommand(build);
@@ -104,7 +131,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             // Check that static web assets is correctly configured by setting up a css file to triger css isolation.
             // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
@@ -134,7 +171,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             // Check that static web assets is correctly configured by setting up a css file to triger css isolation.
             // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
