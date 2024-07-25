@@ -4,9 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
@@ -322,6 +323,19 @@ namespace Microsoft.DotNet.Installer.Windows
             }
 
             throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+        }
+
+        internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dotnet", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureBand.ToString(), "history");
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
+        {
+            var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            Directory.CreateDirectory(historyDirectory);
+            File.WriteAllText(logFile, (JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true })));
         }
 
         /// <summary>

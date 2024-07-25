@@ -52,6 +52,7 @@ public class LicenseScanTests : TestBase
         "apsl-2.0", // https://opensource.org/license/apsl-2-0-php/
         "blueoak-1.0.0", // https://blueoakcouncil.org/license/1.0.0
         "boost-1.0", // https://opensource.org/license/bsl-1-0/
+        "bsd-2-clause-views", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-2-clause-views.LICENSE
         "bsd-new", // https://opensource.org/license/BSD-3-clause/
         "bsd-original", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original.LICENSE
         "bsd-original-uc", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original-uc.LICENSE
