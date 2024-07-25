@@ -208,5 +208,14 @@ namespace Microsoft.DotNet.Installer.Windows
                 WorkloadSetVersion = newVersion,
             });
         }
+
+        public InstallResponseMessage SendOpenWorkloadRootsFileRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.OpenWorkloadRootsFile,
+                SdkFeatureBand = sdkFeatureBand.ToString()
+            });
+        }
     }
 }

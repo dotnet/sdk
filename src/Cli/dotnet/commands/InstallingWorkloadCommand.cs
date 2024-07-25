@@ -273,6 +273,11 @@ namespace Microsoft.DotNet.Workloads.Workload
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
+
+                    if (_workloadSetVersionFromGlobalJson != null)
+                    {
+                        //  TODO: Record GC Root for this global.json file
+                    }
                 },
                 rollback: () =>
                 {

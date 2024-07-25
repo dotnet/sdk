@@ -57,6 +57,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
         void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
+
+        //  This is redundant with UpdateWorkloadSetsInGlobalJson, probably we don't need it
+        //void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion);
+
+        IWorkloadSetRootUpdater UpdateWorkloadSetsInGlobalJson(SdkFeatureBand sdkFeatureBand);
+
+        public interface IWorkloadSetRootUpdater : IDisposable
+        {
+            //  Key is path to global.json file, value is workload set version
+            public Dictionary<string, string> GlobalJsonWorkloadSetVersions { get; }
+        }
     }
 
     // Interface to pass to workload manifest updater

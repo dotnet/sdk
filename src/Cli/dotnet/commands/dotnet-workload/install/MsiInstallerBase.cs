@@ -13,6 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.IInstaller;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -29,6 +30,14 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Backing field for the install location of .NET
         /// </summary>
         private string _dotNetHome;
+
+        private Dictionary<SdkFeatureBand, FileStream> _openGCRootFiles = new();
+
+        private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Full path to the root directory for storing workload data.
@@ -255,6 +264,40 @@ namespace Microsoft.DotNet.Installer.Windows
                 throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
             }
         }
+
+        protected Dictionary<string, string> OpenWorkloadRootsFile(SdkFeatureBand sdkFeatureBand)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                if (_openGCRootFiles.ContainsKey(sdkFeatureBand))
+                {
+                    throw new InvalidOperationException($"GCRoots file for {sdkFeatureBand} is already open.");
+                }
+
+                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "globaljsonworkloadsets.json");
+                var fileStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                _openGCRootFiles[sdkFeatureBand] = fileStream;
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendOpenWorkloadRootsFileRequest(sdkFeatureBand);
+                ExitOnFailure(response, "Failed to open workload roots file");
+                return response.GlobalJsonWorkloadSetVersions;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        protected void CloseWorkloadRootsFile(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> globalJsonWorkloadSetVersions)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// Installs the specified MSI.

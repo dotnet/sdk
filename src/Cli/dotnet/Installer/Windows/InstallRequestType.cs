@@ -74,5 +74,10 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Changes the workload set version
         /// </summary>
         AdjustWorkloadSetVersion,
+
+        /// <summary>
+        /// Open workload roots file, which keeps track of workload sets that are specified in global.json files
+        /// </summary>
+        OpenWorkloadRootsFile,
     }
 }
