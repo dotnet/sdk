@@ -41,6 +41,11 @@ parameters:
   type: boolean
   default: false
 
+# Overrides the rid that is produced by the build.
+- name: targetRid
+  type: string
+  default: ''
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -314,6 +319,7 @@ jobs:
 
         if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --source-only"
+          extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
         fi
 
         if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
@@ -322,6 +328,10 @@ jobs:
 
         if [[ '${{ parameters.useDevVersions }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --dev"
+        fi
+
+        if [[ -n "${{ parameters.targetRid }}" ]]; then
+          customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
         fi
 
         if [[ -n "${{ parameters.crossRootFs }}" ]]; then
@@ -400,6 +410,10 @@ jobs:
             customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
           fi
 
+          if [[ -n "${{ parameters.targetRid }}" ]]; then
+            customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
+          fi
+
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
           fi
@@ -433,8 +447,7 @@ jobs:
 
         cd "$(sourcesPath)"
 
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*.binlog"
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*.log"
+        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
@@ -468,8 +481,7 @@ jobs:
         mkdir -p ${targetFolder}
 
         cd "$(sourcesPath)"
-        find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
         if [ -d "artifacts/scenario-tests/" ]; then
           find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"

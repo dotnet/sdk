@@ -51,6 +51,17 @@ namespace Microsoft.NET.TestFramework
 
         public const string LatestRuntimePatchForNetCoreApp2_0 = "2.0.9";
 
+        public static string GetRuntimeGraphFilePath()
+        {
+            string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+
+            DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
+
+            var lastWrittenSdk = sdksDir.EnumerateDirectories().OrderByDescending(di => di.LastWriteTime).First();
+
+            return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
+        }
+
         public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
         {
             environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";

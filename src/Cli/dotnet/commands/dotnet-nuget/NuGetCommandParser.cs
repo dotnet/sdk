@@ -125,13 +125,13 @@ namespace Microsoft.DotNet.Cli
             CliOption<bool> allowUntrustedRoot = new("--allow-untrusted-root");
             CliOption<string> owners = new("--owners");
 
-            trustCommand.Subcommands.Add (new CliCommand("list"));
-            trustCommand.Subcommands.Add (AuthorCommand());
-            trustCommand.Subcommands.Add (RepositoryCommand());
-            trustCommand.Subcommands.Add (SourceCommand());
-            trustCommand.Subcommands.Add (CertificateCommand());
-            trustCommand.Subcommands.Add (RemoveCommand());
-            trustCommand.Subcommands.Add (SyncCommand());
+            trustCommand.Subcommands.Add(new CliCommand("list"));
+            trustCommand.Subcommands.Add(AuthorCommand());
+            trustCommand.Subcommands.Add(RepositoryCommand());
+            trustCommand.Subcommands.Add(SourceCommand());
+            trustCommand.Subcommands.Add(CertificateCommand());
+            trustCommand.Subcommands.Add(RemoveCommand());
+            trustCommand.Subcommands.Add(SyncCommand());
 
             CliOption<string> configFile = new("--configfile");
 
@@ -168,7 +168,8 @@ namespace Microsoft.DotNet.Cli
                 new CliOption<string>("--source-url"),
             };
 
-            CliCommand CertificateCommand() {
+            CliCommand CertificateCommand()
+            {
                 CliOption<string> algorithm = new("--algorithm")
                 {
                     DefaultValueFactory = (_argResult) => "SHA256"
@@ -220,8 +221,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand GetWhyCommand()
         {
-            CliCommand whyCommand = new("why");
-
+            DocumentedCommand whyCommand = new("why", "https://learn.microsoft.com/dotnet/core/tools/dotnet-nuget-why");
             whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
             whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
 
@@ -230,7 +230,6 @@ namespace Microsoft.DotNet.Cli
                 .AllowSingleArgPerToken());
 
             whyCommand.SetAction(NuGetCommand.Run);
-
             return whyCommand;
         }
     }

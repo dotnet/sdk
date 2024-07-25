@@ -39,7 +39,6 @@
       "test\\Microsoft.DotNet.PackageValidation.Tests\\Microsoft.DotNet.PackageValidation.Tests.csproj",
       "test\\Microsoft.DotNet.TemplateLocator.Tests\\Microsoft.DotNet.TemplateLocator.Tests.csproj",
       "test\\Microsoft.DotNet.Tools.Tests.ComponentMocks\\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj",
-      "test\\Microsoft.DotNet.Tools.Tests.Utilities.Tests\\Microsoft.DotNet.Tools.Tests.Utilities.Tests.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
       "test\\Microsoft.NET.Build.Tests\\Microsoft.NET.Build.Tests.csproj",
       "test\\Microsoft.NET.Clean.Tests\\Microsoft.NET.Clean.Tests.csproj",

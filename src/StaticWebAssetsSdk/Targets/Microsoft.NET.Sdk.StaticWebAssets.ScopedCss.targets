@@ -83,6 +83,15 @@ Integration with static web assets:
 
 </PropertyGroup>
 
+<PropertyGroup>
+
+  <GenerateComputedBuildStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+    $(GenerateComputedBuildStaticWebAssetsDependsOn);
+    BundleScopedCssFiles;
+  </GenerateComputedBuildStaticWebAssetsDependsOn>
+
+</PropertyGroup>
+
 <Target Name="GenerateScopedCssFiles" DependsOnTargets="$(GenerateScopedCssFilesDependsOn)" />
 
 <Target Name="ResolveScopedCssAssets" DependsOnTargets="$(ResolveScopedCssAssetsDependsOn)">

@@ -244,6 +244,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
       <_UseAppHost Condition=" '$(_UseAppHost)' == '' ">$(SelfContained)</_UseAppHost>
       <_UseAppHost Condition=" '$(_UseAppHost)' == '' Or '$(RuntimeIdentifier)' == '' ">false</_UseAppHost>
       <_ExecutableExtension Condition=" '$(_ExecutableExtension)' == '' And $(RuntimeIdentifier.StartsWith('win')) ">.exe</_ExecutableExtension>
+      <_IsLinux Condition=" '$(IsLinux)' == 'True'">true</_IsLinux>
     </PropertyGroup>
 
     <GenerateRunCommandFile
@@ -252,6 +253,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         TargetPath="$(TargetPath)"
         WebJobsDirectory="$(PublishIntermediateOutputPath)\app_data\Jobs\$(WebJobType)\$(WebJobName)\"
         UseAppHost="$(_UseAppHost)"
-        ExecutableExtension="$(_ExecutableExtension)" />
+        ExecutableExtension="$(_ExecutableExtension)"
+        IsLinux="$(_IsLinux)" />
   </Target>
 </Project>

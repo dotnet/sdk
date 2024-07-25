@@ -132,7 +132,7 @@ stages:
           artifactsRid: ${{ variables.alpinePreviousX64Rid }}
           pool: ${{ parameters.pool_Linux }}
           container: ${{ variables.alpinePreviousContainer }}
-          extraProperties: /p:TargetRID=${{ variables.alpinePreviousX64Rid }}
+          targetRid: ${{ variables.alpinePreviousX64Rid }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: true                 # ✅
@@ -154,7 +154,7 @@ stages:
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.almaLinuxContainer }}
-            extraProperties: /p:TargetRID=${{ variables.almaLinuxX64Rid }}
+            targetRid: ${{ variables.almaLinuxX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -172,7 +172,7 @@ stages:
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.alpineLatestContainer }}
-            extraProperties: /p:TargetRID=${{ variables.alpineLatestX64Rid }}
+            targetRid: ${{ variables.alpineLatestX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -319,6 +319,24 @@ stages:
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
             reuseBuildArtifactsFrom: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+            buildName: ${{ format('{0}_Mono_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.centOSStreamContainer }}
+            buildFromArchive: true             # ✅
+            buildSourceOnly: true              # ✅
+            enablePoison: false                # 🚫
+            excludeOmniSharpTests: true        # ✅
+            runOnline: false                   # 🚫
+            useMonoRuntime: true               # ✅
+            withPreviousSDK: false             # 🚫
+            reuseBuildArtifactsFrom: ${{ format('{0}_Mono_Offline_MsftSdk', variables.centOSStreamName) }}
 
 #### VERTICAL BUILD ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -858,7 +876,7 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
-            extraProperties: /p:TargetRID=linux-musl-x64
+            targetRid: ${{ variables.linuxMuslX64Rid}}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -872,7 +890,7 @@ stages:
             useMonoRuntime: true
             targetOS: linux-musl
             targetArchitecture: x64
-            extraProperties: /p:TargetRID=linux-musl-x64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -885,7 +903,7 @@ stages:
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
-            extraProperties: /p:TargetRID=linux-musl-arm
+            targetRid: ${{ variables.linuxMuslArmRid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -898,7 +916,7 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            extraProperties: /p:TargetRID=linux-musl-arm64
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:

@@ -101,5 +101,32 @@ namespace Microsoft.NET.Restore.Tests
             result.Should().Pass();
             result.Should().HaveStdOutContaining("NETSDK1205");
         }
+
+        [FullMSBuildOnlyFact]
+        public void It_throws_an_error_when_the_package_is_not_downloaded()
+        {
+            const string testProjectName = "NetCoreApp";
+            var project = new TestProject
+            {
+                Name = testProjectName,
+                TargetFrameworks = "net6.0",
+            };
+            
+            project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "false");
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(project);
+
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
+
+            testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass();
+
+            var buildCommand = (BuildCommand)new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir);
+            buildCommand.ExecuteWithoutRestore("/p:BuildWithNetFrameworkHostedCompiler=true")
+                .Should().Fail().And.HaveStdOutContaining("NETSDK1216");
+        }
     }
 }
