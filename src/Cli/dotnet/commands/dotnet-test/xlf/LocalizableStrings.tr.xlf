@@ -12,6 +12,11 @@
         <target state="translated">.NET Platformunun Test Sürücüsü</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Hem beklenen hem de beklenmeyen test ana bilgisayarı çıkışında kilitlenme bilgi dökümünün toplanmasını sağlar.</target>
@@ -96,6 +101,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">AD="DEĞER"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">

@@ -11,6 +11,16 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
+        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
+        {
+            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
+        };
+
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
+        {
+            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -152,6 +162,8 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
+
+
         public static CliCommand GetCommand()
         {
             return Command;
@@ -189,6 +201,8 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new TestingPlatformCommand("test");
             command.SetAction((parseResult) => command.Run(parseResult));
+            command.Options.Add(MaxParallelTestModules);
+            command.Options.Add(AdditionalMSBuildParameters);
 
             return command;
         }

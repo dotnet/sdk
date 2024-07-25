@@ -52,6 +52,7 @@ public class LicenseScanTests : TestBase
         "apsl-2.0", // https://opensource.org/license/apsl-2-0-php/
         "blueoak-1.0.0", // https://blueoakcouncil.org/license/1.0.0
         "boost-1.0", // https://opensource.org/license/bsl-1-0/
+        "bsd-2-clause-views", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-2-clause-views.LICENSE
         "bsd-new", // https://opensource.org/license/BSD-3-clause/
         "bsd-original", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original.LICENSE
         "bsd-original-uc", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original-uc.LICENSE
@@ -93,6 +94,7 @@ public class LicenseScanTests : TestBase
         "object-form-exception-to-mit", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/object-form-exception-to-mit.LICENSE
         "ofl-1.1", // https://opensource.org/license/ofl-1-1/
         "osf-1990", // https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#HP_Variant
+        "pcre2-exception", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/pcre2-exception.LICENSE
         "public-domain", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain.LICENSE
         "public-domain-disclaimer", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain-disclaimer.LICENSE
         "python", // https://opensource.org/license/python-2-0/
