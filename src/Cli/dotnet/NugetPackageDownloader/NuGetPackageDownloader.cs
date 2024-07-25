@@ -327,7 +327,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
 
-            packageSourceMapping = packageSourceMapping ?? PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)

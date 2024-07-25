@@ -116,7 +116,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                 nugetLogger,
                 Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures);
+                verifySignatures: VerifySignatures,
+                isNuGetTool: true);
         }
 
         /// <summary>
