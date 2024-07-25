@@ -876,7 +876,7 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.alpinelinuxX64Rid }}
+            targetRid: ${{ variables.linuxMuslX64Rid}}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -890,7 +890,7 @@ stages:
             useMonoRuntime: true
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.alpinelinuxX64Rid }}
+            targetRid: ${{ variables.linuxMuslX64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -903,7 +903,7 @@ stages:
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
-            targetRid: ${{ variables.alpinelinuxArmRid }}
+            targetRid: ${{ variables.linuxMuslArmRid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -916,7 +916,7 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.alpinelinuxArm64Rid }}
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
