@@ -136,6 +136,12 @@ namespace Microsoft.DotNet.Installer.Windows
             get; set;
         }
 
+        public Dictionary<string, string> GlobalJsonWorkloadSetVersions
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Converts a deserialized array of bytes into an <see cref="InstallRequestMessage"/>.
         /// </summary>
