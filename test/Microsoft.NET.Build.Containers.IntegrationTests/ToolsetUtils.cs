@@ -11,13 +11,7 @@ internal static class ToolsetUtils
     /// <returns></returns>
     internal static string GetRuntimeGraphFilePath()
     {
-        string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
-
-        DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
-
-        var lastWrittenSdk = sdksDir.EnumerateDirectories().OrderByDescending(di => di.LastWriteTime).First();
-
-        return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
+        return TestContext.GetRuntimeGraphFilePath();
     }
 
     internal static IManifestPicker RidGraphManifestPicker { get; } = new RidGraphManifestPicker(GetRuntimeGraphFilePath());
