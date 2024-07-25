@@ -3,11 +3,13 @@
 
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -632,6 +634,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 LogException(e);
                 throw;
             }
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            return WorkloadFileBasedInstall.GetWorkloadHistoryRecords(GetWorkloadHistoryDirectory(sdkFeatureBand.ToString()));
         }
 
         public void Shutdown()
