@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var installer = new MockPackWorkloadInstaller(dotnetRoot, failingWorkload: "xamarin-android-build", failingRollback: true);
+            var installer = new MockPackWorkloadInstaller(failingWorkload: "xamarin-android-build", failingRollback: true);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var installer = new MockPackWorkloadInstaller(dotnetRoot, failingGarbageCollection: true);
+            var installer = new MockPackWorkloadInstaller(failingGarbageCollection: true);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
@@ -324,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "UnsupportedPlatform.json");
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var installer = new MockPackWorkloadInstaller(dotnetRoot);
+            var installer = new MockPackWorkloadInstaller();
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater();
@@ -468,7 +468,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var installer = new MockPackWorkloadInstaller(dotnetRoot, failingWorkload)
+            var installer = new MockPackWorkloadInstaller(failingWorkload: failingWorkload)
             {
                 WorkloadResolver = workloadResolver
             };
