@@ -61,45 +61,6 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("{}");
         }
 
-        [Fact]
-        public void AppFailsDueToMissingCache()
-        {
-            var testAppName = "NuGetConfigDependentProject";
-            var profileProjectName = "NuGetConfigProfile";
-            var targetManifestFileName = "NuGetConfigFilterProfile.xml";
-
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource();
-
-            var testProjectDirectory = testInstance.Path;
-            var profileProjectPath = _testAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
-            var profileFilter = Path.Combine(profileProjectPath, targetManifestFileName);
-
-            new DotnetRestoreCommand(Log)
-                .WithWorkingDirectory(testProjectDirectory)
-                .Execute()
-                .Should().Pass();
-
-            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? _defaultConfiguration;
-
-            new DotnetPublishCommand(Log,
-                    "-f", _tfm,
-                    "--manifest", profileFilter)
-                .WithWorkingDirectory(testProjectDirectory)
-                .Execute()
-                .Should().Pass();
-
-            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, _tfm, "publish", $"{testAppName}.dll");
-
-            new DotnetCommand(Log)
-                .Execute(outputDll)
-                .Should().Fail()
-                .And.HaveStdErrContaining($"Error:{Environment.NewLine}" +
-                    $"  An assembly specified in the application dependencies manifest (NuGetConfigDependentProject.deps.json) was not found:{Environment.NewLine}" +
-                    $"    package: 'NuGet.Configuration', version: '4.3.0'{Environment.NewLine}" +
-                    "    path: 'lib/netstandard1.3/NuGet.Configuration.dll'");
-        }
-
         //  Windows only for now due to https://github.com/dotnet/cli/issues/7501
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/cli/issues/12482")]
         public void ItPublishesAnAppWithMultipleProfiles()

@@ -9,7 +9,7 @@ namespace ConsoleApplication
     {
         public static void Main()
         {
-            Console.WriteLine("netcoreapp1.0");
+            Console.WriteLine("net9.0");
         }
     }
 }

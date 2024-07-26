@@ -13,8 +13,7 @@ namespace Microsoft.DotNet.Tests
 {
     public class GivenAProjectToolsCommandResolver : SdkTest
     {
-        private static readonly NuGetFramework s_toolPackageFramework =
-            FrameworkConstants.CommonFrameworks.NetCoreApp22;
+        private static readonly NuGetFramework s_toolPackageFramework = new (".NETCoreApp", new Version(9, 0, 0, 0));
 
         private const string TestProjectName = "AppWithToolDependency";
 

@@ -38,8 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotnetCliToolTargetFramework)' == ''">
-    <!-- Maximum supported target framework for DotnetCliProjectTools is .NET Core 2.2 -->
-    <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
+    <!-- Maximum supported target framework for DotnetCliProjectTools is .NET Core 9.0 -->
+    <DotnetCliToolTargetFramework>net9.0</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

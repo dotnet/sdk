@@ -24,7 +24,7 @@
     <FileSignInfo Include="dotnet-dependency-context-test.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-fallbackfoldertool.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-hello.dll" CertificateName="None" />
-    <FileSignInfo Include="dotnet-outputsframeworkversion-netcoreapp1.0.dll" CertificateName="None" />
+    <FileSignInfo Include="dotnet-outputsframeworkversion-net9.0.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-portable-v1-prefercli.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-portable-v1.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-portable.dll" CertificateName="None" />

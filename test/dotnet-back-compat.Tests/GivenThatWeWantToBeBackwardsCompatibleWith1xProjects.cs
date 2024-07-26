@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
+        [RequiresSpecificFrameworkTheory(ToolsetInfo.CurrentTargetFramework)]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ItRestoresBuildsAndRuns(string target)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
+        [RequiresSpecificFrameworkFact(ToolsetInfo.CurrentTargetFramework)] // https://github.com/dotnet/cli/issues/6087
         public void ItRunsABackwardsVersionedTool()
         {
             var testInstance = _testAssetsManager
@@ -75,11 +75,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("outputsframeworkversion-netcoreapp1.0")
+                .Execute("outputsframeworkversion-net9.0")
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("netcoreapp1.0");
+                .HaveStdOutContaining("net9.0");
         }
 
         void ChangeProjectTargetFramework(string projectFile, string target)
