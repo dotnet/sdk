@@ -41,6 +41,11 @@ parameters:
   type: boolean
   default: false
 
+# Overrides the rid that is produced by the build.
+- name: targetRid
+  type: string
+  default: ''
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -325,6 +330,10 @@ jobs:
           customBuildArgs="$customBuildArgs --dev"
         fi
 
+        if [[ -n "${{ parameters.targetRid }}" ]]; then
+          customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
+        fi
+
         if [[ -n "${{ parameters.crossRootFs }}" ]]; then
           customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
           if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
@@ -399,6 +408,10 @@ jobs:
               customBuildArgs="$customBuildArgs --poison"
             fi
             customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+          fi
+
+          if [[ -n "${{ parameters.targetRid }}" ]]; then
+            customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
           fi
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
