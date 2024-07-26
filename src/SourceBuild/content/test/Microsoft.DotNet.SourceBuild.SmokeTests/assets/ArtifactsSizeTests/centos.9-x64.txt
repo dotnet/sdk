@@ -2123,7 +2123,6 @@ sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Newtonsoft.Json.dll: 69273
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Collections.Immutable.dll: 243712
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -2401,7 +2400,6 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Newt
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Collections.Immutable.dll: 243712
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -3164,8 +3162,6 @@ sdk/x.y.z/Roslyn/bincore/pt-BR/Microsoft.CodeAnalysis.VisualBasic.resources.dll:
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll: 589312
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll: 49152
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll: 398336
-sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll: 782336
-sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll: 1117184
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.CSharp.resources.dll: 421888
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.resources.dll: 37376
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.VisualBasic.resources.dll: 291840
