@@ -130,6 +130,13 @@
 
   </Target>
 
+  <Target Name="PublishRuntimeAnalyzers"
+          DependsOnTargets="GenerateRuntimeAnalyzers"
+          BeforeTargets="Build">
+    <Copy SourceFiles="@(RuntimeAnalyzersContent)"
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\RuntimeAnalyzers\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
   <Target Name="PublishNetSdks"
           BeforeTargets="Build">
     <ItemGroup>

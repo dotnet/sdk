@@ -1,0 +1,24 @@
+<Project>
+
+  <PropertyGroup>
+    <RuntimeAnalyzersSourceRoot>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RuntimeAnalyzersSourceRoot>
+    <NetCoreRuntimeAnalyzersSubPath>packs\Microsoft.NetCore.App.Ref\9.*\analyzers</NetCoreRuntimeAnalyzersSubPath>
+    <WindowsDesktopRuntimeAnalyzersSubPath>packs\Microsoft.WindowsDesktop.App.Ref\9.*\analyzers</WindowsDesktopRuntimeAnalyzersSubPath>
+    <AspNetCoreRuntimeAnalyzersSubPath>packs\Microsoft.AspNetCore.App.Ref\9.*\analyzers</AspNetCoreRuntimeAnalyzersSubPath>
+    <SDKAnalyzersSubPath>sdk\9.*\Sdks\Microsoft.NET.Sdk\Analyzers</SDKAnalyzersSubPath>
+    <WebSDKAnalyzersSubPath>sdk\9.*\Sdks\Microsoft.NET.Sdk.Web\Analyzers</WebSDKAnalyzersSubPath>
+  </PropertyGroup>
+
+  <Target Name="GenerateRuntimeAnalyzers">
+
+    <ItemGroup>
+      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(NetCoreRuntimeAnalyzersSubPath)\**\*.*" DeploymentSubpath="NetCoreAnalyzers"/>
+      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(WindowsDesktopRuntimeAnalyzersSubPath)\**\*.*" DeploymentSubpath="WindowsDesktopAnalyzers"/>
+      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(AspNetCoreRuntimeAnalyzersSubPath)\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers"/>
+      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(SDKAnalyzersSubPath)\**\*.*" DeploymentSubpath="SDKAnalyzers"/>
+      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(WebSDKAnalyzersSubPath)\**\*.*" DeploymentSubpath="WebSDKAnalyzers"/>
+    </ItemGroup>
+
+  </Target>
+
+</Project>

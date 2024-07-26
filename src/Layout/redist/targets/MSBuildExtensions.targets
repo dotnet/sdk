@@ -22,9 +22,6 @@
       <MSBuildExtensionsContent Include="$(MSBuildExtensionsSourceRoot)\msbuildExtensions-ver\**\*.*"
                           DeploymentSubpath="$(MSBuildExtensionsVersionSubfolder)/" />
 
-
-
-
     </ItemGroup>
 
   </Target>
