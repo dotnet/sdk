@@ -250,3 +250,4 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resourc
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resources/Theme/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|mpl-2.0
+src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Themes/*.xaml|bsd-2-clause-views
