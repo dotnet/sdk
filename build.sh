@@ -14,4 +14,4 @@ else
   packInstallerFlag=
 fi
 
-. "$ScriptRoot/eng/common/build.sh --build --restore " $packInstallerFlag "$@"
+. "$ScriptRoot/eng/common/build.sh" --build --restore $packInstallerFlag "$@"
