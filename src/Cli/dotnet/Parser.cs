@@ -54,7 +54,8 @@ namespace Microsoft.DotNet.Cli
             HelpCommandParser.GetCommand(),
             SdkCommandParser.GetCommand(),
             InstallSuccessCommand,
-            WorkloadCommandParser.GetCommand()
+            WorkloadCommandParser.GetCommand(),
+            new Completions.CompletionsCommand()
         };
 
         public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
