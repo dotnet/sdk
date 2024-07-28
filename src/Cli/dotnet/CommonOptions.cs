@@ -133,20 +133,16 @@ namespace Microsoft.DotNet.Cli
 
         public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
         {
-            Description = CommonLocalizableStrings.NoRestoreDescription
+            Description = CommonLocalizableStrings.NoRestoreDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-restore:false");
 
         public static CliOption<bool> InteractiveMsBuildForwardOption =
             new ForwardedOption<bool>("--interactive")
             {
-                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
+                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:NuGetInteractive=true");
-
-        public static CliOption<bool> InteractiveOption =
-            new("--interactive")
-            {
-                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-            };
 
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
@@ -182,7 +178,10 @@ namespace Microsoft.DotNet.Cli
                 HelpName = CommonLocalizableStrings.OSArgumentName
             }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
-        public static CliOption<bool> DebugOption = new("--debug");
+        public static CliOption<bool> DebugOption = new("--debug")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
         public static CliOption<bool> SelfContainedOption =
             new ForwardedOption<bool>("--self-contained", "--sc")
@@ -194,10 +193,10 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<bool> NoSelfContainedOption =
             new ForwardedOption<bool>("--no-self-contained")
             {
-                Description = CommonLocalizableStrings.FrameworkDependentOptionDescription
+                Description = CommonLocalizableStrings.FrameworkDependentOptionDescription,
+                Arity = ArgumentArity.Zero
             }
-            // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
+            .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
 
         public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
         {
