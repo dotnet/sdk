@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "build",
                 "build-server",
                 "clean",
+                "completions",
                 "format",
                 "sdk",
                 "fsi",
