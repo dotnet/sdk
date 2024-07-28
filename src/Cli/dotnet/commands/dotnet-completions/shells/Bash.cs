@@ -3,6 +3,8 @@
 
 namespace Microsoft.DotNet.Cli.Completions.Shells;
 
+#nullable enable
+
 using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.CommandLine.Completions;
@@ -152,7 +154,7 @@ public class BashShellProvider : IShellProvider
 
     private static string GenerateOptionHandlers(CliCommand command)
     {
-        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler);
+        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
         return string.Join("\n", optionHandlers);
     }
 
@@ -173,7 +175,7 @@ public class BashShellProvider : IShellProvider
     /// </summary>
     /// <param name="option"></param>
     /// <returns>a bash switch case expression for providing completions for this option</returns>
-    private static string GenerateOptionHandler(CliOption option)
+    private static string? GenerateOptionHandler(CliOption option)
     {
         var optionNames = string.Join('|', option.Names());
         string completionCommand;
@@ -183,6 +185,11 @@ public class BashShellProvider : IShellProvider
         {
             // dynamic options require a call into the app for completions
             completionCommand = GenerateChoicesPrompt($"({GenerateDynamicCall()})");
+        }
+        else if (option.Arity.MaximumNumberOfValues == 0)
+        {
+            // do not generate completions for flags-style options - the only completion is the option's _name_
+            return null;
         }
         else
         {
@@ -219,7 +226,7 @@ public static class HelpExtensions
     /// <param name="command"></param>
     /// <param name="prefix"></param>
     /// <returns></returns>
-    public static string FunctionName(this CliCommand command, string[] parentCommandNames = null) => parentCommandNames switch
+    public static string FunctionName(this CliCommand command, string[]? parentCommandNames = null) => parentCommandNames switch
     {
         null => "_" + command.Name,
         [] => "_" + command.Name,
