@@ -53,7 +53,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoRestoreOption = new("--no-restore", "-n")
         {
-            Description = LocalizableStrings.CmdNoRestoreDescription
+            Description = LocalizableStrings.CmdNoRestoreDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> SourceOption = new ForwardedOption<string>("--source", "-s")
@@ -71,11 +72,13 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
         {
             Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--interactive");
 
         public static readonly CliOption<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
         {
-            Description = CommonLocalizableStrings.CommandPrereleaseOptionDescription
+            Description = CommonLocalizableStrings.CommandPrereleaseOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--prerelease");
 
         private static readonly CliCommand Command = ConstructCommand();

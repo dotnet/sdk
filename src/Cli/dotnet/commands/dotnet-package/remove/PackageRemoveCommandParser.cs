@@ -17,7 +17,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
         {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
+            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--interactive");
 
         private static readonly CliCommand Command = ConstructCommand();
