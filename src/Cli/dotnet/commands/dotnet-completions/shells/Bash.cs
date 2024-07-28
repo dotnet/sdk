@@ -10,6 +10,8 @@ public class BashShellProvider : IShellProvider
     private static readonly string _dynamicCompletionScript =
         """
         # bash parameter completion for the dotnet CLI
+        # add this to your .bashrc, .bash_profile, .bash_login, or .profile to enable completion
+
         function _dotnet_bash_complete()
         {
         local cur="${COMP_WORDS[COMP_CWORD]}" IFS=$'\n' # On Windows you may need to use use IFS=$'\r\n'
