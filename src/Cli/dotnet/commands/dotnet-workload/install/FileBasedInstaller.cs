@@ -511,6 +511,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             File.WriteAllText(path, installStateContents.ToString());
         }
 
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+        }
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).GetGlobalJsonWorkloadSetVersions();
+        }
+
         /// <summary>
         /// Remove all workload installation records that aren't from Visual Studio.
         /// </summary>

@@ -276,7 +276,8 @@ namespace Microsoft.DotNet.Workloads.Workload
 
                     if (_workloadSetVersionFromGlobalJson != null)
                     {
-                        //  TODO: Record GC Root for this global.json file
+                        //  Record GC Root for this global.json file
+                        _workloadInstaller.RecordWorkloadSetInGlobalJson(_sdkFeatureBand, _globalJsonPath, _workloadSetVersionFromGlobalJson);
                     }
                 },
                 rollback: () =>

@@ -209,12 +209,23 @@ namespace Microsoft.DotNet.Installer.Windows
             });
         }
 
-        public InstallResponseMessage SendOpenWorkloadRootsFileRequest(SdkFeatureBand sdkFeatureBand)
+        public InstallResponseMessage SendRecordWorkloadSetInGlobalJsonRequest(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
         {
             return Send(new InstallRequestMessage
             {
-                RequestType = InstallRequestType.OpenWorkloadRootsFile,
-                SdkFeatureBand = sdkFeatureBand.ToString()
+                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                GlobalJsonPath = globalJsonPath,
+                WorkloadSetVersion = workloadSetVersion,
+            });
+        }
+
+        public InstallResponseMessage SendGetGlobalJsonWorkloadSetVersionsRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
             });
         }
     }
