@@ -16,7 +16,6 @@ using Microsoft.Win32.Msi;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Versioning;
-using static Microsoft.DotNet.Workloads.Workload.Install.IInstaller;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
@@ -1100,32 +1099,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             UpdateInstallMode(sdkFeatureBand, newMode);
             string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
             Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
-        }
-
-        public IWorkloadSetRootUpdater UpdateWorkloadSetsInGlobalJson(SdkFeatureBand sdkFeatureBand)
-        {
-            //  TODO: Create a copy here (or somewhere else) so the close implementation can check if anything has been changed?
-            var workloadSetsInGlobalJson = OpenWorkloadRootsFile(sdkFeatureBand);
-
-            return new WorkloadSetRootUpdater(workloadSetsInGlobalJson, () =>
-            {
-                CloseWorkloadRootsFile(sdkFeatureBand, workloadSetsInGlobalJson);
-            });
-        }
-
-        class WorkloadSetRootUpdater : IWorkloadSetRootUpdater
-        {
-            Action _disposeFunc;
-
-            public WorkloadSetRootUpdater(Dictionary<string, string> globalJsonWorkloadSetVersions, Action disposeFunc)
-            {
-                GlobalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
-                _disposeFunc = disposeFunc;
-            }
-
-            public Dictionary<string, string> GlobalJsonWorkloadSetVersions { get; }
-
-            public void Dispose() => _disposeFunc();
         }
     }
 }

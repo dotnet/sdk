@@ -31,8 +31,6 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         private string _dotNetHome;
 
-        private Dictionary<SdkFeatureBand, FileStream> _openGCRootFiles = new();
-
         private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
@@ -265,27 +263,18 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        protected Dictionary<string, string> OpenWorkloadRootsFile(SdkFeatureBand sdkFeatureBand)
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
         {
             Elevate();
 
             if (IsElevated)
             {
-                if (_openGCRootFiles.ContainsKey(sdkFeatureBand))
-                {
-                    throw new InvalidOperationException($"GCRoots file for {sdkFeatureBand} is already open.");
-                }
-
-                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "globaljsonworkloadsets.json");
-                var fileStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                _openGCRootFiles[sdkFeatureBand] = fileStream;
-                return JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);
+                new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendOpenWorkloadRootsFileRequest(sdkFeatureBand);
-                ExitOnFailure(response, "Failed to open workload roots file");
-                return response.GlobalJsonWorkloadSetVersions;
+                InstallResponseMessage response = Dispatcher.SendRecordWorkloadSetInGlobalJsonRequest(sdkFeatureBand, globalJsonPath, workloadSetVersion);
+                ExitOnFailure(response, "Failed to record workload set version in GC Roots file.");
             }
             else
             {
@@ -293,11 +282,25 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        protected void CloseWorkloadRootsFile(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> globalJsonWorkloadSetVersions)
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
         {
-            throw new NotImplementedException();
-        }
+            Elevate();
 
+            if (IsElevated)
+            {
+                return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).GetGlobalJsonWorkloadSetVersions();
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendGetGlobalJsonWorkloadSetVersionsRequest(sdkFeatureBand);
+                ExitOnFailure(response, "Failed to get global.json GC roots");
+                return response.GlobalJsonWorkloadSetVersions;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
 
         /// <summary>
         /// Installs the specified MSI.
