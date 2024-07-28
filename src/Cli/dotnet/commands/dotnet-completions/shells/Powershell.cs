@@ -12,6 +12,8 @@ public class PowershellShellProvider : IShellProvider
     private static readonly string _dynamicCompletionScript =
         """
         # PowerShell parameter completion shim for the dotnet CLI
+        # Add this to your $PROFILE to enable completion
+
         Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
             param($wordToComplete, $commandAst, $cursorPosition)
                 dotnet complete --position $cursorPosition "$commandAst" | ForEach-Object {
