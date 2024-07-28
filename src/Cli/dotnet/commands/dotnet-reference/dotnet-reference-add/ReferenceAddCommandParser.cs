@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli
 
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
-        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;
+        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveMsBuildForwardOption;
 
         private static readonly CliCommand Command = ConstructCommand();
 
