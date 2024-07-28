@@ -14,24 +14,22 @@ public class BashShellProvider : IShellProvider
 
     public string GenerateCompletions(System.CommandLine.CliCommand command)
     {
-        var initialFunctionName = new[] { command }.FunctionName().MakeSafeFunctionName();
+        var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
         return
             $"""
             #! /bin/bash
-            {GenerateCommandsCompletions([command])}
+            {GenerateCommandsCompletions([], command, isNestedCommand: false)}
 
             complete -F {initialFunctionName} {command.Name}
             """;
     }
 
-    private string GenerateCommandsCompletions(CliCommand[] commands)
+    private string GenerateCommandsCompletions(string[] parentCommandNames, CliCommand command, bool isNestedCommand)
     {
-        var command = commands.Last();
-        var functionName = commands.FunctionName().MakeSafeFunctionName();
+        var functionName = command.FunctionName(parentCommandNames).MakeSafeFunctionName();
 
-        var isRootCommand = commands.Length == 1;
-        var dollarOne = isRootCommand ? "1" : "$1";
-        var subcommandArgument = isRootCommand ? "2" : "$(($1+1))";
+        var dollarOne = !isNestedCommand ? "1" : "$1";
+        var subcommandArgument = !isNestedCommand ? "2" : "$(($1+1))";
 
         // generate the words for options and subcommands
         var visibleSubcommands = command.Subcommands.Where(c => !c.Hidden).ToArray();
@@ -57,7 +55,7 @@ public class BashShellProvider : IShellProvider
         writer.WriteLine();
 
         // fill in a set of completions for all of the subcommands and flag options for the top-level command
-        writer.WriteLine($"""opts="{String.Join(' ', completionWords)}" """);
+        writer.WriteLine($"""opts="{string.Join(' ', completionWords)}" """);
         foreach (var positionalArgumentCompletion in positionalArgumentCompletions)
         {
             writer.WriteLine($"""opts="$opts {positionalArgumentCompletion}" """);
@@ -66,9 +64,9 @@ public class BashShellProvider : IShellProvider
 
         // emit a short-circuit for when the first argument index (COMP_CWORD) is 1 (aka "dotnet")
         // in this short-circuit we'll just use the choices we set up above in $opts
-        writer.WriteLine($"""if [[ $COMP_CWORD == {dollarOne} ]]; then""");
+        writer.WriteLine($"""if [[ $COMP_CWORD == "{dollarOne}" ]]; then""");
         writer.Indent++;
-        writer.WriteLine("""COMPREPLY=( $(compgen -W "$opts" -- "$cur") )""");
+        writer.WriteLine(GenerateChoicesPrompt("$opts"));
         writer.WriteLine("return");
         writer.Indent--;
         writer.WriteLine("fi");
@@ -110,14 +108,15 @@ public class BashShellProvider : IShellProvider
         }
 
         // write the final trailer for the overall completion script
-        writer.WriteLine("""COMPREPLY=( $(compgen -W "$opts" -- "$cur") )""");
+        writer.WriteLine(GenerateChoicesPrompt("$opts"));
         writer.Indent--;
         writer.WriteLine("}");
         writer.WriteLine();
 
         // annnnd flush!
         writer.Flush();
-        return textWriter.ToString() + String.Join('\n', visibleSubcommands.Select(c => GenerateCommandsCompletions([.. commands, c])));
+        string[] parentCommandNamesForSubcommands = [.. parentCommandNames, command.Name];
+        return textWriter.ToString() + string.Join('\n', visibleSubcommands.Select(c => GenerateCommandsCompletions(parentCommandNamesForSubcommands, c, isNestedCommand: true)));
     }
 
     private static string[] PositionalArgumentTerms(CliArgument[] arguments)
@@ -135,7 +134,7 @@ public class BashShellProvider : IShellProvider
             if (argCompletions.Length != 0)
             {
                 // otherwise emit a direct list of choices
-                completions.Add($"""({String.Join(' ', argCompletions)})""");
+                completions.Add($"""({string.Join(' ', argCompletions)})""");
             }
         }
 
@@ -148,25 +147,42 @@ public class BashShellProvider : IShellProvider
     /// <returns></returns>
     private static string GenerateDynamicCall()
     {
-        return $$"""${COMP_WORDS[0]} complete --position "${COMP_POINT}" "${COMP_LINE}" 2>/dev/null | tr '\n' ' '""";
+        return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
     private static string GenerateOptionHandlers(CliCommand command)
     {
         var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler);
-        return String.Join("\n", optionHandlers);
+        return string.Join("\n", optionHandlers);
     }
 
+    /// <summary>
+    /// Emit a bash command that calls compgen with a set of choices given the current work/stem, and sets those choices to COMPREPLY.
+    /// Think of this like a 'return' from a function.
+    /// </summary>
+    /// <param name="choicesInvocation">The expression used to generate the set of choices - will be passed to compgen with the -W flag, so should be either
+    /// * a concrete set of choices in a bash array already ($opts), or
+    /// * a subprocess that will return such an array (aka '(dotnet complete --position 10 'dotnet ad')') </param>
+    /// <returns></returns>
+    private static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
+
+    /// <summary>
+    /// Generates a concrete set of bash completion selection for a given option.
+    /// If the option's completions are dynamic, this will emit a call to the dynamic completion function (dotnet complete)
+    /// to get completions when the user requests completions for this option.
+    /// </summary>
+    /// <param name="option"></param>
+    /// <returns>a bash switch case expression for providing completions for this option</returns>
     private static string GenerateOptionHandler(CliOption option)
     {
-        var optionNames = String.Join('|', option.Names());
+        var optionNames = string.Join('|', option.Names());
         string completionCommand;
         if (option.GetType().IsGenericType &&
             (option.GetType().GetGenericTypeDefinition() == typeof(DynamicOption<int>).GetGenericTypeDefinition()
              || option.GetType().GetGenericTypeDefinition() == typeof(DynamicForwardedOption<string>).GetGenericTypeDefinition()))
         {
             // dynamic options require a call into the app for completions
-            completionCommand = $$"""COMPREPLY=( $(compgen -W "$({{GenerateDynamicCall()}})" -- "$cur") )""";
+            completionCommand = GenerateChoicesPrompt($"({GenerateDynamicCall()})");
         }
         else
         {
@@ -179,7 +195,7 @@ public class BashShellProvider : IShellProvider
             else
             {
                 // otherwise emit a direct list of choices
-                completionCommand = $"""COMPREPLY=( $(compgen -W "{String.Join(' ', completions)}" -- "$cur") )""";
+                completionCommand = GenerateChoicesPrompt($"{string.Join(' ', completions)}");
             }
         }
 
@@ -195,8 +211,33 @@ public class BashShellProvider : IShellProvider
 
 public static class HelpExtensions
 {
-    public static string FunctionName(this CliCommand[] commands) => "_" + String.Join('_', commands.Select(c => c.Name));
+    /// <summary>
+    /// Create a unique shell function name for a command - these names should be
+    /// * distinct from the 'root' command's name (i.e. we should not generate the function name 'dotnet' for the binary 'dotnet')
+    /// * distinct based on 'path' to get to this function (hence the parentCommandNames)
+    /// </summary>
+    /// <param name="command"></param>
+    /// <param name="prefix"></param>
+    /// <returns></returns>
+    public static string FunctionName(this CliCommand command, string[] parentCommandNames = null) => parentCommandNames switch
+    {
+        null => "_" + command.Name,
+        [] => "_" + command.Name,
+        var names => "_" + string.Join('_', names) + "_" + command.Name
+    };
+
+    /// <summary>
+    /// sanitizes a function name to be safe for bash
+    /// </summary>
+    /// <param name="functionName"></param>
+    /// <returns></returns>
     public static string MakeSafeFunctionName(this string functionName) => functionName.Replace('-', '_');
+
+    /// <summary>
+    /// Get all names for an option, including the primary name and all aliases
+    /// </summary>
+    /// <param name="option"></param>
+    /// <returns></returns>
     public static string[] Names(this CliOption option)
     {
         if (option.Aliases.Count == 0)
@@ -205,9 +246,17 @@ public static class HelpExtensions
         }
         else
         {
-            return [option.Name, .. option.Aliases];
+            return [SanitizeName(option.Name), .. option.Aliases.Select(SanitizeName)];
         }
+
+        static string SanitizeName(string name) => name.Contains('?') ? name.Replace("?", "\\?") : name;
     }
+
+    /// <summary>
+    /// Get all names for a command, including the primary name and all aliases
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
     public static string[] Names(this CliCommand command)
     {
         if (command.Aliases.Count == 0)
