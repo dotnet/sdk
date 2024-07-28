@@ -15,14 +15,15 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
-            CustomParser = arguments => {
+            CustomParser = arguments =>
+            {
                 var result = arguments.Tokens.TakeWhile(t => !t.Value.StartsWith("-"));
                 arguments.OnlyTake(result.Count());
                 return result.Select(t => t.Value);
             }
         };
 
-        public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
+        public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = CommonLocalizableStrings.CmdFramework

@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli
 
             if (includeRuntimeOption)
             {
-                CliOption<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
+                CliOption<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
                 {
                     Description = LocalizableStrings.CmdRuntimeOptionDescription,
                     HelpName = LocalizableStrings.CmdRuntimeOption,

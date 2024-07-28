@@ -10,6 +10,28 @@ using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {
+    /// <summary>
+    /// Represents an Option whose completions are dynamically generated and so should not be emitted in static completion scripts.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal class DynamicOption<T> : CliOption<T>
+    {
+        public DynamicOption(string name, params string[] aliases) : base(name, aliases)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Represents an Argument whose completions are dynamically generated and so should not be emitted in static completion scripts.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal class DynamicArgument<T> : CliArgument<T>
+    {
+        public DynamicArgument(string name) : base(name)
+        {
+        }
+    }
+
     internal static class CommonOptions
     {
         public static CliOption<string[]> PropertiesOption =
@@ -36,13 +58,13 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAsSingle(o => $"-verbosity:{o}");
 
         public static CliOption<string> FrameworkOption(string description) =>
-            new ForwardedOption<string>("--framework", "-f")
+            new DynamicForwardedOption<string>("--framework", "-f")
             {
                 Description = description,
                 HelpName = CommonLocalizableStrings.FrameworkArgumentName
-
-            }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
-            .AddCompletions(Complete.TargetFrameworksFromProjectFile);
+            }
+            .AddCompletions(Complete.TargetFrameworksFromProjectFile)
+            .ForwardAsSingle(o => $"-property:TargetFramework={o}");
 
         public static CliOption<string> ArtifactsPathOption =
             new ForwardedOption<string>(
@@ -64,14 +86,14 @@ namespace Microsoft.DotNet.Cli
         }
 
         public static CliOption<string> RuntimeOption =
-            new ForwardedOption<string>("--runtime", "-r")
+            new DynamicForwardedOption<string>("--runtime", "-r")
             {
                 HelpName = RuntimeArgName
             }.ForwardAsMany(RuntimeArgFunc)
             .AddCompletions(Complete.RunTimesFromProjectFile);
 
         public static CliOption<string> LongFormRuntimeOption =
-            new ForwardedOption<string>("--runtime")
+            new DynamicForwardedOption<string>("--runtime")
             {
                 HelpName = RuntimeArgName
             }.ForwardAsMany(RuntimeArgFunc)
@@ -84,7 +106,7 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
 
         public static CliOption<string> ConfigurationOption(string description) =>
-            new ForwardedOption<string>("--configuration", "-c")
+            new DynamicForwardedOption<string>("--configuration", "-c")
             {
                 Description = description,
                 HelpName = CommonLocalizableStrings.ConfigurationArgumentName
@@ -316,6 +338,18 @@ namespace Microsoft.DotNet.Cli
         {
             argument.CompletionSources.Add(completionSource);
             return argument;
+        }
+
+        internal static DynamicOption<T> AddCompletions<T>(this DynamicOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
+        }
+
+        internal static DynamicForwardedOption<T> AddCompletions<T>(this DynamicForwardedOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
         }
     }
 

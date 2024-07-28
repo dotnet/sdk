@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PackageAddCommandParser
     {
-        public static readonly CliArgument<string> CmdPackageArgument = new CliArgument<string>(LocalizableStrings.CmdPackage)
+        public static readonly CliArgument<string> CmdPackageArgument = new DynamicArgument<string>(LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.CmdPackageDescription
         }.AddCompletions((context) =>
