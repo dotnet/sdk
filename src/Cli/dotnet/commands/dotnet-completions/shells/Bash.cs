@@ -196,8 +196,8 @@ public class BashShellProvider : IShellProvider
             var completions = option.GetCompletions(CompletionContext.Empty).Select(c => c.Label);
             if (completions.Count() == 0)
             {
-                // if no completions, assume that we need to call into the app for completions
-                completionCommand = "";
+                // if no static completions are available, then don't emit anything
+                return null;
             }
             else
             {
