@@ -60,13 +60,25 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 
-        public static readonly CliOption<bool> VersionOption = new("--version");
+        public static readonly CliOption<bool> VersionOption = new("--version")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> InfoOption = new("--info");
+        public static readonly CliOption<bool> InfoOption = new("--info")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks");
+        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
+        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
         // Argument
         public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };

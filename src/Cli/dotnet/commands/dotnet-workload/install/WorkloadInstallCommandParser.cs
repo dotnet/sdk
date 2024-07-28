@@ -20,12 +20,14 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> SkipSignCheckOption = new("--skip-sign-check")
         {
             Description = LocalizableStrings.SkipSignCheckOptionDescription,
-            Hidden = true
+            Hidden = true,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
         {
-            Description = LocalizableStrings.SkipManifestUpdateOptionDescription
+            Description = LocalizableStrings.SkipManifestUpdateOptionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> TempDirOption = new("--temp-dir")

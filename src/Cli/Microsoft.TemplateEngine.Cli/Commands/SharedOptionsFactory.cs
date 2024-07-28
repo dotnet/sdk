@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             return new("--columns-all")
             {
-                Arity = new ArgumentArity(0, 1),
+                Arity = ArgumentArity.Zero,
                 Description = SymbolStrings.Option_ColumnsAll
             };
         }
