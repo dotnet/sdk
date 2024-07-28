@@ -202,6 +202,7 @@ namespace Microsoft.DotNet.Cli
                 yield return new ForwardedOption<bool>("--no-dependencies")
                 {
                     Description = LocalizableStrings.CmdNoDependenciesOptionDescription,
+                    Arity = ArgumentArity.Zero,
                     Hidden = !showHelp
                 }.ForwardAs("-property:RestoreRecursive=false");
             }

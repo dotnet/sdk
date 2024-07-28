@@ -24,16 +24,22 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.OutputOptionName
         }.ForwardAsOutputPath("OutputPath");
 
-        public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental") { Description = LocalizableStrings.NoIncrementalOptionDescription };
+        public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental")
+        {
+            Description = LocalizableStrings.NoIncrementalOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
 
         public static readonly CliOption<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
         {
-            Description = LocalizableStrings.NoDependenciesOptionDescription
+            Description = LocalizableStrings.NoDependenciesOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:BuildProjectReferences=false");
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-nologo");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
