@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.OneOrMore
         };
 
-        public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
+        public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
