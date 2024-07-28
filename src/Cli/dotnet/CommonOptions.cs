@@ -102,7 +102,8 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<bool> CurrentRuntimeOption(string description) =>
             new ForwardedOption<bool>("--use-current-runtime", "--ucr")
             {
-                Description = description
+                Description = description,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
 
         public static CliOption<string> ConfigurationOption(string description) =>
@@ -150,7 +151,8 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
             {
-                Description = CommonLocalizableStrings.DisableBuildServersOptionDescription
+                Description = CommonLocalizableStrings.DisableBuildServersOptionDescription,
+                Arity = ArgumentArity.Zero
             }
             .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
