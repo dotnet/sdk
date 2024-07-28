@@ -152,9 +152,13 @@ public class BashShellProvider : IShellProvider
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
-    private static string GenerateOptionHandlers(CliCommand command)
+    private static string? GenerateOptionHandlers(CliCommand command)
     {
         var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
+        if (optionHandlers.Length == 0)
+        {
+            return null;
+        }
         return string.Join("\n", optionHandlers);
     }
 
