@@ -20,7 +20,8 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<string> VersionOption = new("--version")
         {
             Description = LocalizableStrings.VersionOptionDescription,
-            HelpName = LocalizableStrings.VersionOptionName
+            HelpName = LocalizableStrings.VersionOptionName,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> ConfigOption = new("--configfile")
@@ -45,13 +46,15 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
         {
-            Description = LocalizableStrings.CreateManifestIfNeededOptionDescription
+            Description = LocalizableStrings.CreateManifestIfNeededOptionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
         {
-            Description = LocalizableStrings.AllowPackageDowngradeOptionDescription
-        }; 
+            Description = LocalizableStrings.AllowPackageDowngradeOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
@@ -63,7 +66,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
         {
-            Description = LocalizableStrings.RollForwardOptionDescription
+            Description = LocalizableStrings.RollForwardOptionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
@@ -101,7 +105,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         public static CliCommand AddCommandOptions(CliCommand command)
-        {   
+        {
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
             command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));

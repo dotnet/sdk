@@ -63,12 +63,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
         {
-            Description = LocalizableStrings.SkipOptimizationOptionDescription
+            Description = LocalizableStrings.SkipOptimizationOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:SkipOptimization=true");
 
         public static readonly CliOption<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
         {
-            Description = LocalizableStrings.SkipSymbolsOptionDescription
+            Description = LocalizableStrings.SkipSymbolsOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:CreateProfilingSymbols=false");
 
         private static readonly CliCommand Command = ConstructCommand();
