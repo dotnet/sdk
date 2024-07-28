@@ -19,12 +19,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
         {
-            Description = LocalizableStrings.AdManifestOnlyOptionDescription
+            Description = LocalizableStrings.AdManifestOnlyOptionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> PrintRollbackOption = new("--print-rollback")
         {
-            Hidden = true
+            Hidden = true,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<int> FromHistoryOption = new("--from-history")

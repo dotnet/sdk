@@ -34,19 +34,23 @@ namespace Microsoft.DotNet.Cli
                     new ForwardedOption<bool>("--use-lock-file")
                     {
                         Description = LocalizableStrings.CmdUseLockFileOptionDescription,
+                        Arity = ArgumentArity.Zero
                     }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
                     new ForwardedOption<bool>("--locked-mode")
                     {
-                        Description = LocalizableStrings.CmdLockedModeOptionDescription
+                        Description = LocalizableStrings.CmdLockedModeOptionDescription,
+                        Arity = ArgumentArity.Zero
                     }.ForwardAs("-property:RestoreLockedMode=true"),
                     new ForwardedOption<string>("--lock-file-path")
                     {
                         Description = LocalizableStrings.CmdLockFilePathOptionDescription,
-                        HelpName = LocalizableStrings.CmdLockFilePathOption
+                        HelpName = LocalizableStrings.CmdLockFilePathOption,
+                        Arity = ArgumentArity.Zero
                     }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
                     new ForwardedOption<bool>("--force-evaluate")
                     {
-                        Description = LocalizableStrings.CmdReevaluateOptionDescription
+                        Description = LocalizableStrings.CmdReevaluateOptionDescription,
+                        Arity = ArgumentArity.Zero
                     }.ForwardAs("-property:RestoreForceEvaluate=true"),
                 ]);
 
@@ -137,7 +141,8 @@ namespace Microsoft.DotNet.Cli
             yield return new ForwardedOption<bool>("--disable-parallel")
             {
                 Description = showHelp ? LocalizableStrings.CmdDisableParallelOptionDescription : string.Empty,
-                Hidden = !showHelp
+                Hidden = !showHelp,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:RestoreDisableParallel=true");
 
             yield return new ForwardedOption<string>("--configfile")
@@ -150,25 +155,29 @@ namespace Microsoft.DotNet.Cli
             yield return new ForwardedOption<bool>("--no-cache")
             {
                 Description = string.Empty,
-                Hidden = true
+                Hidden = true,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:RestoreNoCache=true");
 
             yield return new ForwardedOption<bool>("--no-http-cache")
             {
                 Description = showHelp ? LocalizableStrings.CmdNoHttpCacheOptionDescription : string.Empty,
-                Hidden = !showHelp
+                Hidden = !showHelp,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:RestoreNoHttpCache=true");
 
             yield return new ForwardedOption<bool>("--ignore-failed-sources")
             {
                 Description = showHelp ? LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
-                Hidden = !showHelp
+                Hidden = !showHelp,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:RestoreIgnoreFailedSources=true");
 
             ForwardedOption<bool> forceOption = new ForwardedOption<bool>("--force")
             {
                 Description = LocalizableStrings.CmdForceRestoreOptionDescription,
-                Hidden = !showHelp
+                Hidden = !showHelp,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:RestoreForce=true");
             if (useShortOptions)
             {
