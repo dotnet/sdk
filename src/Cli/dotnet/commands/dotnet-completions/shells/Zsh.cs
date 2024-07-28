@@ -10,6 +10,7 @@ public class ZshShellProvider : IShellProvider
     private static readonly string _dynamicCompletionScript =
         """
         # zsh parameter completion for the dotnet CLI
+        # add this to your .zshrc file to enable completion
 
         _dotnet_zsh_complete()
         {
