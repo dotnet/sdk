@@ -44,8 +44,7 @@ namespace Microsoft.DotNet.Cli
                     new ForwardedOption<string>("--lock-file-path")
                     {
                         Description = LocalizableStrings.CmdLockFilePathOptionDescription,
-                        HelpName = LocalizableStrings.CmdLockFilePathOption,
-                        Arity = ArgumentArity.Zero
+                        HelpName = LocalizableStrings.CmdLockFilePathOption
                     }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
                     new ForwardedOption<bool>("--force-evaluate")
                     {

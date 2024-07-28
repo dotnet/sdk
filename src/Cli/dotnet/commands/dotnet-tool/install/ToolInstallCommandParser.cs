@@ -20,8 +20,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<string> VersionOption = new("--version")
         {
             Description = LocalizableStrings.VersionOptionDescription,
-            HelpName = LocalizableStrings.VersionOptionName,
-            Arity = ArgumentArity.Zero
+            HelpName = LocalizableStrings.VersionOptionName
         };
 
         public static readonly CliOption<string> ConfigOption = new("--configfile")
