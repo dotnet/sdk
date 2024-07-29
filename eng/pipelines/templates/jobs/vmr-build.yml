@@ -407,7 +407,7 @@ jobs:
             if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
               customBuildArgs="$customBuildArgs --poison"
             fi
-            customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+            customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsIncludeArtifactsSizeTests=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
           fi
 
           if [[ -n "${{ parameters.targetRid }}" ]]; then

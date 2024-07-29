@@ -17,67 +17,63 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-[Trait("Category", "SdkContent")]
 public class ArtifactsSizeTests : SdkTests
 {
-    private const int SizeThresholdPercentage = 25;
-    private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"{Config.TargetRid}.txt", nameof(ArtifactsSizeTests));
-    private readonly Dictionary<string, long> Baseline = new();
-    private Dictionary<string, int> FilePathCountMap = new();
-    private StringBuilder Differences = new();
+    private const string PreviouslySourceBuiltArtifactsType = "psb";
+    private const string SdkType = "sdk";
+    private const string SdkSymbolsType = "symSdk";
+    private const string UnifiedSymbolsType = "sdkUnified";
 
-    public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper)
-    {
-        if (File.Exists(BaselineFilePath))
-        {
-            string[] baselineFileContent = File.ReadAllLines(BaselineFilePath);
-            foreach (string entry in baselineFileContent)
-            {
-                string[] splitEntry = entry.Split(':', StringSplitOptions.TrimEntries);
-                Baseline[splitEntry[0]] = long.Parse(splitEntry[1]);
-            }
-        }
-        else
-        {
-            Assert.Fail($"Baseline file `{BaselineFilePath}' does not exist. Please create the baseline file then rerun the test.");
-        }
-    }
+    private StringBuilder Differences = new();
+    private List<string> NewExclusions = new List<string>();
+    private Dictionary<string, int> FilePathCountMap = new();
+    ExclusionsHelper exclusionsHelper = new ExclusionsHelper("ArtifactExclusions.txt", nameof(ArtifactsSizeTests));
+
+    public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper) {}
 
     [ConditionalFact(typeof(Config), nameof(Config.IncludeArtifactsSizeTests))]
-    public void CompareArtifactsToBaseline()
+    public void CheckZeroSizeArtifacts()
     {
         Assert.False(string.IsNullOrWhiteSpace(Config.SourceBuiltArtifactsPath));
         Assert.False(string.IsNullOrWhiteSpace(Config.SdkTarballPath));
+        Assert.False(string.IsNullOrWhiteSpace(Config.SdkSymbolsTarballPath));
+        Assert.False(string.IsNullOrWhiteSpace(Config.UnifiedSymbolsTarballPath));
 
-        var tarEntries = ProcessSdkAndArtifactsTarballs();
-        ScanForDifferences(tarEntries);
-        UpdateBaselineFile();
+        ProcessTarball(Config.SourceBuiltArtifactsPath, PreviouslySourceBuiltArtifactsType);
+        ProcessTarball(Config.SdkTarballPath, SdkType);
+        ProcessTarball(Config.SdkSymbolsTarballPath, SdkSymbolsType);
+        ProcessTarball(Config.UnifiedSymbolsTarballPath, UnifiedSymbolsType);
 
-        // Must wait to report differences until after the baseline file is updated else a failure
-        // will cause the baseline file to not be updated.
+        exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, NewExclusions);
+
+        // Wait to report differences until after the baseline file is updated. 
+        // Else a failure will cause the baseline file to not be updated.
         ReportDifferences();
     }
 
-    private Dictionary<string, long> ProcessSdkAndArtifactsTarballs()
+    private void ProcessTarball(string tarballPath, string type)
     {
         string tempTarballDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(tempTarballDir);
 
-        Utilities.ExtractTarball(Config.SdkTarballPath!, tempTarballDir, OutputHelper);
-        Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath!, tempTarballDir, OutputHelper);
+        Utilities.ExtractTarball(tarballPath, tempTarballDir, OutputHelper);
 
-        Dictionary<string, long> tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
-            .Where(filePath => !filePath.Contains("SourceBuildReferencePackages"))
-            .Select(filePath =>
+        foreach (string filePath in Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories))
+        {
+            string relativePath = filePath.Substring(tempTarballDir.Length + 1);
+            string processedPath = ProcessFilePath(relativePath);
+
+            if (new FileInfo(filePath).Length == 0)
             {
-                string relativePath = filePath.Substring(tempTarballDir.Length + 1);
-                return (ProcessFilePath(relativePath), new FileInfo(filePath).Length);
-            })
-            .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+                if (!exclusionsHelper.IsFileExcluded(processedPath, type))
+                {
+                    NewExclusions.Add($"{processedPath}|{type}");
+                    TrackDifference($"{processedPath} is 0 bytes.");
+                }
+            }
+        }
 
         Directory.Delete(tempTarballDir, true);
-
-        return tarEntries;
     }
 
     private string ProcessFilePath(string originalPath)
@@ -123,62 +119,6 @@ public class ArtifactsSizeTests : SdkTests
         return filePath;
     }
 
-    private void ScanForDifferences(Dictionary<string, long> tarEntries)
-    {
-        foreach (var entry in tarEntries)
-        {
-            if (!Baseline.TryGetValue(entry.Key, out long baselineBytes))
-            {
-                TrackDifference($"{entry.Key} does not exist in baseline. It is {entry.Value} bytes. Adding it to the baseline file.");
-                Baseline.Add(entry.Key, entry.Value); 
-            }
-            else
-            {
-                CompareFileSizes(entry.Key, entry.Value, baselineBytes);
-            }
-        }
-
-        foreach (var removedFile in Baseline.Keys.Except(tarEntries.Keys))
-        {
-            TrackDifference($"`{removedFile}` is no longer being produced. It was {Baseline[removedFile]} bytes.");
-            Baseline.Remove(removedFile);
-        }
-    }
-
-    private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
-    {
-        // Only update the baseline with breaking differences. Non-breaking differences are file size changes
-        // less than the threshold percentage. This makes it easier to review the breaking changes and prevents
-        // inadvertently allowing small percentage changes to be accepted that can add up to a significant
-        // difference over time.
-        string breakingDifference = string.Empty;
-
-        if (fileSize == 0 && baselineSize != 0)
-        {
-            breakingDifference = $"'{filePath}' is now 0 bytes. It was {baselineSize} bytes.";
-        }
-        else if (fileSize != 0 && baselineSize == 0)
-        {
-            breakingDifference = $"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes.";
-        }
-        else if (baselineSize != 0 && (((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
-        {
-            breakingDifference =
-                $"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes.";
-        }
-        else if (baselineSize != 0 && (((baselineSize - fileSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
-        {
-            breakingDifference =
-                $"'{filePath}' decreased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes.";
-        }
-
-        if (!string.IsNullOrEmpty(breakingDifference))
-        {
-            TrackDifference(breakingDifference);
-            Baseline[filePath] = fileSize;
-        }
-    }
-
     private void TrackDifference(string difference) => Differences.AppendLine(difference);
 
     private void ReportDifferences()
@@ -194,23 +134,6 @@ public class ArtifactsSizeTests : SdkTests
                 OutputHelper.WriteLine(Differences.ToString());
                 Assert.Fail("Differences were found in the artifacts sizes.");
             }
-        }
-    }
-
-    private void UpdateBaselineFile()
-    {
-        try
-        {
-            string actualFilePath = Path.Combine(Config.LogsDirectory, $"Updated{Config.TargetRid}.txt");
-            File.WriteAllLines(
-                actualFilePath,
-                Baseline
-                    .OrderBy(kvp => kvp.Key)
-                    .Select(kvp => $"{kvp.Key}: {kvp.Value}"));
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
         }
     }
 }

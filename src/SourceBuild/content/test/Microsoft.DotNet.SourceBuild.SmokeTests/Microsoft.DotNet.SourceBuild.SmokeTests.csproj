@@ -40,10 +40,14 @@
           BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup Condition="'$(SourceBuiltArtifactsPath)' == ''">
       <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
+      <SdkSymbolsTarballItem Include="$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)" />
+      <UnifiedSymbolsTarballItem Include="$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)" />
     </ItemGroup>
 
     <PropertyGroup>
       <SourceBuiltArtifactsPath Condition="'$(SourceBuiltArtifactsPath)' == ''">%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
+      <SdkSymbolsTarballPath Condition="'$(SdkSymbolsTarballPath)' == ''">%(SdkSymbolsTarballItem.Identity)</SdkSymbolsTarballPath>
+      <UnifiedSymbolsTarballPath Condition="'$(UnifiedSymbolsTarballPath)' == ''">%(UnifiedSymbolsTarballItem.Identity)</UnifiedSymbolsTarballPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -89,6 +93,12 @@
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SdkSymbolsTarballPath">
+        <Value>$(SdkSymbolsTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).UnifiedSymbolsTarballPath">
+        <Value>$(UnifiedSymbolsTarballPath)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnLicenseScanDiffs">
         <Value>$(SmokeTestsWarnOnLicenseScanDiffs)</Value>

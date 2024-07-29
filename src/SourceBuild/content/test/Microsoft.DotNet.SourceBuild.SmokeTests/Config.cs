@@ -28,6 +28,8 @@ internal static class Config
     public static string? PrereqsPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(PrereqsPath))!;
     public static string? SdkTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(SdkTarballPath))!;
     public static string? SourceBuiltArtifactsPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(SourceBuiltArtifactsPath))!;
+    public static string? SdkSymbolsTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(SdkSymbolsTarballPath))!;
+    public static string? UnifiedSymbolsTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(UnifiedSymbolsTarballPath))!;
     public static bool WarnOnLicenseScanDiffs => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(WarnOnLicenseScanDiffs))!, out bool warnOnLicenseScanDiffs) && warnOnLicenseScanDiffs;
     public static bool WarnOnSdkContentDiffs => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(WarnOnSdkContentDiffs))!, out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
 
