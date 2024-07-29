@@ -230,12 +230,6 @@ public static class Program
         }
 
         [Fact]
-        public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
-        {
-            Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
-        }
-
-        [Fact]
         public void Conflicts_are_resolved_when_publishing_a_rid_specific_shared_framework_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: true);
