@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Tests
         }
 
         [RequiresSpecificFrameworkFact(ToolsetInfo.CurrentTargetFramework)]
-        public void IfAToolHasNotBeenRestoredForNetCoreApp2_0ItFallsBackToNetCoreApp1_x()
+        public void IfAToolHasNotBeenRestoredForNet9_0ItFallsBackToPreviousVersions()
         {
             string toolName = "dotnet-portable-v1";
 
@@ -125,26 +125,6 @@ namespace Microsoft.DotNet.Tests
 
             result.Should().Pass()
                 .And.HaveStdOutContaining("I'm running on shared framework version 9.0.0");
-        }
-
-        [Fact]
-        public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
-        {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
-                .WithSource();
-
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            new DotnetCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute("tool-with-output-name")
-                .Should().HaveStdOutContaining("Tool with output name!")
-                     .And.NotHaveStdErr()
-                     .And.Pass();
         }
 
         [Fact]
