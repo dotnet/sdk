@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Run;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -40,27 +42,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
-            var directory = Directory.GetCurrentDirectory();
             var ridGraphPath = TestContext.GetRuntimeGraphFilePath();
-            try
-            {
-                Directory.SetCurrentDirectory("/tmp/folder");
+            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
+            var parseResult = Parser.Instance.Parse("tool install dotnetsay");
+            new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath, toolManifestFinder: new ToolManifestFinder(new DirectoryPath("/tmp/folder"))).Execute().Should().Be(0);
 
-                new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder").WithWorkingDirectory("/tmp/folder").Execute().Should().Pass();
-                var parseResult = Parser.Instance.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
+            new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
+            parseResult = Parser.Instance.Parse("tool install dotnetsay");
+            new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath, toolManifestFinder: new ToolManifestFinder(new DirectoryPath("/tmp/folder/sub"))).Execute().Should().Be(0);
 
-                Directory.SetCurrentDirectory("/tmp/folder/sub");
-                new DotnetNewCommand(Log, "tool-manifest").WithCustomHive("/tmp/folder/sub").WithWorkingDirectory("/tmp/folder/sub").Execute().Should().Pass();
-                parseResult = Parser.Instance.Parse("tool install dotnetsay");
-                new ToolInstallLocalCommand(parseResult, runtimeJsonPathForTests: ridGraphPath).Execute().Should().Be(0);
-
-                new ToolRunCommand(Parser.Instance.Parse($"tool run dotnetsay")).Execute().Should().Be(0);
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(directory);
-            }
+            new ToolRunCommand(Parser.Instance.Parse($"tool run dotnetsay"), toolManifest: new ToolManifestFinder(new DirectoryPath("/tmp/folder/sub"))).Execute().Should().Be(0);
         }
 
         [Fact]
