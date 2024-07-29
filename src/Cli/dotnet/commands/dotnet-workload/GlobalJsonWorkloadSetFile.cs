@@ -40,8 +40,26 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions()
         {
-            using (var fileStream = File.Open(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            //  If the file doesn't exist, we don't need to create it
+            FileStream OpenFile()
             {
+                try
+                {
+                    return File.Open(_path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                }
+                catch (FileNotFoundException)
+                {
+                    return null;
+                }
+            }
+
+            using (var fileStream = OpenFile())
+            {
+                if (fileStream == null)
+                {
+                    return new Dictionary<string, string>();
+                }
+
                 var globalJsonWorkloadSetVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);
                 bool updated = false;
 

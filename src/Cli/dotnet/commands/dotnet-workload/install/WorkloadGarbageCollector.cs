@@ -30,19 +30,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         string _dotnetDir;
         IEnumerable<WorkloadId> _installedWorkloads;
         Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
+        Dictionary<string, string> _globalJsonWorkloadSetVersions;
         IReporter _verboseReporter;
 
         public HashSet<string> WorkloadSetsToKeep = new();
         public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = new();
         public HashSet<(WorkloadPackId id, string version)> PacksToKeep = new();
 
+        //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
+        //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
+        //  file by removing any outdated entries in it (where ie the global.json file doesn't exist or no longer specifies the same worlkload set
+        //  version).
         public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
-            IReporter verboseReporter)
+            Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
         {
             _dotnetDir = dotnetDir;
             _sdkFeatureBand = sdkFeatureBand;
             _installedWorkloads = installedWorkloads;
             _getResolverForWorkloadSet = getResolverForWorkloadSet;
+            _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
             _verboseReporter = verboseReporter ?? Reporter.NullReporter;
         }
 
@@ -68,17 +74,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             //  - Workload sets from global.json GC roots (after scanning to see if GC root data is up-to-date)
             //  - Baseline workload sets
 
-            //  What happens if there's a later SDK installed?  Could a workload set from a previous band be pinned to a later SDK?
-
             var resolver = GetResolver();
 
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-
-            foreach (var set in installedWorkloadSets.Keys)
-            {
-                WorkloadSetsToKeep.Add(set);
-                _verboseReporter.WriteLine($"GC: Keeping workload set version {set} because workload set GC isn't implemented yet.");
-            }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(installStateFilePath))
@@ -102,21 +100,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
+            foreach (var kvp in _globalJsonWorkloadSetVersions)
+            {
+                WorkloadSetsToKeep.Add(kvp.Value);
+                _verboseReporter.WriteLine($"GC: Keeping workload set version {kvp.Value} because it is referenced by {kvp.Value}.");
+            }
+            
+
             //  Add baseline workload set versions for installed SDKs to list that shouldn't be collected.  They should stay installed until the SDK is uninstalled
             foreach (var workloadSet in installedWorkloadSets.Values)
             {
                 if (workloadSet.IsBaselineWorkloadSet)
                 {
+                    //  TODO: we shouldn't necessarily keep packs from baseline workload sets that aren't active, otherwise we'll never collect those packs
                     WorkloadSetsToKeep.Add(workloadSet.Version);
                     _verboseReporter.WriteLine($"GC: Keeping baseline workload set version {workloadSet.Version}");
                 }
             }
-
-            //  TODO:
-            //  Scan workload set GC roots, which correspond to global.json files that pinned to a workload set.  For each one, check to see if it's up-to-date.  If the global.json file
-            //  doesn't exist anymore (or doesn't specify a workload set version), delete the GC root.  If the workload set version in global.json has changed, update the GC root.
-            //  After updating GC roots, add workload sets listed in GC roots to list of workload sets to keep
-
         }
 
         void GarbageCollectWorkloadManifestsAndPacks()
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            //  NOTE: We should not collect baseline workload manifests. When we have a corresponding baseline manifest, this will happen, as we have logic
+            //  NOTE: We should not collect baseline workload manifests. When we have a corresponding baseline workload set, this will happen, as we have logic
             //  to avoid collecting baseline manifests. Until then, it will be possible for the baseline manifests to be collected.
         }
     }
