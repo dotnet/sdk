@@ -343,7 +343,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
-            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
+            var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
+
+            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
+                getResolverForWorkloadSet, globalJsonWorkloadSetVersions, Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -375,6 +378,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     //  In that case just ignore it, as the CLI doesn't manage that install
                     Directory.Delete(workloadSetDirectory, true);
                 }
+
+                //  TODO: Garbage collect workload sets
             }
 
             //  Garbage collect workload manifests

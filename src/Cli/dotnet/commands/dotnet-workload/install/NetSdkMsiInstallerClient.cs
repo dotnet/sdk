@@ -131,11 +131,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage($"Starting garbage collection.");
                 Log?.LogMessage($"Garbage Collection Mode: CleanAllPacks={cleanAllPacks}.");
 
-                var garbageCollector = new WorkloadGarbageCollector(DotNetHome, _sdkFeatureBand, RecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, new SetupLogReporter(Log));
+                var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
+
+                var garbageCollector = new WorkloadGarbageCollector(DotNetHome, _sdkFeatureBand, RecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
+                    getResolverForWorkloadSet, globalJsonWorkloadSetVersions, new SetupLogReporter(Log));
                 garbageCollector.Collect();
 
-
                 IEnumerable<SdkFeatureBand> installedFeatureBands = GetInstalledFeatureBands(Log);
+
+                //  TODO: Garbage collect workload sets
 
                 List<WorkloadManifestRecord> manifestsToRemove = new();
 
