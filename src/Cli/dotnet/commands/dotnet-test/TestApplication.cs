@@ -11,9 +11,16 @@ namespace Microsoft.DotNet.Cli
         private readonly string _modulePath;
         private readonly string _pipeName;
         private readonly string[] _args;
+        private readonly List<string> _outputData = [];
+        private readonly List<string> _errorData = [];
 
         public event EventHandler<HelpEventArgs> HelpRequested;
+        public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
+        public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
+        public event EventHandler<FileArtifactInfoEventArgs> FileArtifactInfoReceived;
+        public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
+        public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
         public string ModulePath => _modulePath;
 
@@ -24,11 +31,11 @@ namespace Microsoft.DotNet.Cli
             _args = args;
         }
 
-        public async Task RunAsync()
+        public async Task<int> RunAsync()
         {
             if (!ModulePathExists())
             {
-                return;
+                return 1;
             }
 
             bool isDll = _modulePath.EndsWith(".dll");
@@ -37,22 +44,19 @@ namespace Microsoft.DotNet.Cli
                 FileName = isDll ?
                 Environment.ProcessPath :
                 _modulePath,
-                Arguments = BuildArgs(isDll)
+                Arguments = BuildArgs(isDll),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
-            if (VSTestTrace.TraceEnabled)
-            {
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
-            }
-
-            await Process.Start(processStartInfo).WaitForExitAsync();
+            return await StartProcess(processStartInfo);
         }
 
-        public async Task RunHelpAsync()
+        public async Task<int> RunHelpAsync()
         {
             if (!ModulePathExists())
             {
-                return;
+                return 1;
             }
 
             bool isDll = _modulePath.EndsWith(".dll");
@@ -61,15 +65,44 @@ namespace Microsoft.DotNet.Cli
                 FileName = isDll ?
                 Environment.ProcessPath :
                 _modulePath,
-                Arguments = BuildHelpArgs(isDll)
+                Arguments = BuildHelpArgs(isDll),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
+            return await StartProcess(processStartInfo);
+        }
+
+        private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
+        {
             if (VSTestTrace.TraceEnabled)
             {
                 VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
             }
 
-            await Process.Start(processStartInfo).WaitForExitAsync();
+            var process = Process.Start(processStartInfo);
+            StoreOutputAndErrorData(process);
+            await process.WaitForExitAsync();
+
+            TestProcessExited.Invoke(this, new TestProcessExitEventArgs { OutputData = _outputData, ErrorData = _errorData, ExitCode = process.ExitCode });
+
+            return process.ExitCode;
+        }
+
+        private void StoreOutputAndErrorData(Process process)
+        {
+            process.EnableRaisingEvents = true;
+
+            process.OutputDataReceived += (sender, e) =>
+            {
+                _outputData.Add(e.Data);
+            };
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                _errorData.Add(e.Data);
+            };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
         }
 
         private bool ModulePathExists()
@@ -117,6 +150,26 @@ namespace Microsoft.DotNet.Cli
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
             HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
+        }
+
+        internal void OnSuccessfulTestResultMessage(SuccessfulTestResultMessage successfulTestResultMessage)
+        {
+            SuccessfulTestResultReceived?.Invoke(this, new SuccessfulTestResultEventArgs { SuccessfulTestResultMessage = successfulTestResultMessage });
+        }
+
+        internal void OnFailedTestResultMessage(FailedTestResultMessage failedTestResultMessage)
+        {
+            FailedTestResultReceived?.Invoke(this, new FailedTestResultEventArgs { FailedTestResultMessage = failedTestResultMessage });
+        }
+
+        internal void OnFileArtifactInfoReceived(FileArtifactInfo fileArtifactInfo)
+        {
+            FileArtifactInfoReceived?.Invoke(this, new FileArtifactInfoEventArgs { FileArtifactInfo = fileArtifactInfo });
+        }
+
+        internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
+        {
+            SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = sessionEvent });
         }
     }
 }

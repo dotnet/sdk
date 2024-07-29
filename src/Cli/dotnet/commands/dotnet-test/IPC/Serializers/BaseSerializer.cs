@@ -228,6 +228,8 @@ internal abstract class BaseSerializer
         WriteString(stream, value);
     }
 
+    protected static bool IsNull(string value) => value is null;
+
     protected static void WriteField(Stream stream, ushort id, bool value)
     {
         WriteShort(stream, id);
