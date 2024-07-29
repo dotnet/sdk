@@ -6,8 +6,6 @@ The following properties are automatically available during test execution but c
 - PoisonUsageReportFile
 - SdkTarballPath
 - SourceBuiltArtifactsPath
-- SdkSymbolsTarballPath
-- UnifiedSymbolsTarballPath
 
 Optional msbuild properties:
 - MsftSdkTarballPath

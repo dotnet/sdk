@@ -4,11 +4,8 @@
 #   Exclude the path entirely: 
 #     <path> [# comment]
 #   Exclude a path from a specific artifact:
-#     <path>|{sdk|symSdk|symUnified|psb} [# comment]
+#     <path>|{sdk} [# comment]
 #   sdk        = source-built SDK
-#   symSdk     = SDK symbols
-#   symUnified = unified symbols
-#   psb        = previously source-built artifacts
 #
 # '*' in exclusions match zero or more characters.
 # '*' will match files and directory names but it will not match separator characters.

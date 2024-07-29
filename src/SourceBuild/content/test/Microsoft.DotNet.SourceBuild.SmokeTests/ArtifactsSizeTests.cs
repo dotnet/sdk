@@ -19,10 +19,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class ArtifactsSizeTests : SdkTests
 {
-    private const string PreviouslySourceBuiltArtifactsType = "psb";
     private const string SdkType = "sdk";
-    private const string SdkSymbolsType = "symSdk";
-    private const string UnifiedSymbolsType = "sdkUnified";
 
     private StringBuilder Differences = new();
     private List<string> NewExclusions = new List<string>();
@@ -34,15 +31,9 @@ public class ArtifactsSizeTests : SdkTests
     [ConditionalFact(typeof(Config), nameof(Config.IncludeArtifactsSizeTests))]
     public void CheckZeroSizeArtifacts()
     {
-        Assert.False(string.IsNullOrWhiteSpace(Config.SourceBuiltArtifactsPath));
         Assert.False(string.IsNullOrWhiteSpace(Config.SdkTarballPath));
-        Assert.False(string.IsNullOrWhiteSpace(Config.SdkSymbolsTarballPath));
-        Assert.False(string.IsNullOrWhiteSpace(Config.UnifiedSymbolsTarballPath));
 
-        ProcessTarball(Config.SourceBuiltArtifactsPath, PreviouslySourceBuiltArtifactsType);
         ProcessTarball(Config.SdkTarballPath, SdkType);
-        ProcessTarball(Config.SdkSymbolsTarballPath, SdkSymbolsType);
-        ProcessTarball(Config.UnifiedSymbolsTarballPath, UnifiedSymbolsType);
 
         exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, NewExclusions);
 
