@@ -1019,9 +1019,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewUseUwpFeature">
-        <source>NETSDK1217: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
-        <target state="new">NETSDK1217: UseUwp and all associated functionality are currently experimental and not officially supported.</target>
-        <note>{StrBegin="NETSDK1217: "}</note>
+        <source>NETSDK1218: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
+        <target state="new">NETSDK1218: UseUwp and all associated functionality are currently experimental and not officially supported.</target>
+        <note>{StrBegin="NETSDK1218: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
@@ -1058,20 +1058,20 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1136: Hedef platform, Windows Forms veya WPF kullanılırken veya kullanan projelere veya paketlere başvurulurken Windows olarak ayarlanmalıdır (genellikle TargetFramework özelliğine '-windows' öğesini dahil ederek).</target>
         <note>{StrBegin="NETSDK1136: "}</note>
       </trans-unit>
+      <trans-unit id="WindowsSDKFullMissingUseUwpProperty">
+        <source>NETSDK1217: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
+        <target state="new">NETSDK1217: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</target>
+        <note>{StrBegin="NETSDK1217: "}</note>
+      </trans-unit>
       <trans-unit id="WindowsSDKVersionConflicts">
         <source>NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</source>
         <target state="translated">NETSDK1148: Başvurulan bütünleştirilmiş kod, Microsoft.Windows.SDK.NET.dll'nin daha yeni bir sürümü kullanılarak derlendi. Bu bütünleştirilmiş koda başvurmak için lütfen daha yeni bir .NET SDK'ya güncelleştirin.</target>
         <note>{StrBegin="NETSDK1148: "}</note>
       </trans-unit>
       <trans-unit id="WindowsSDKXamlInvalidTfm">
-        <source>NETSDK1218: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</source>
-        <target state="new">NETSDK1218: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</target>
-        <note>{StrBegin="NETSDK1218: "}</note>
-      </trans-unit>
-      <trans-unit id="WindowsSDKXamlMissingUseUwpProperty">
-        <source>NETSDK1216: This project has a transitive dependency on the XAML Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
-        <target state="new">NETSDK1216: This project has a transitive dependency on the XAML Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</target>
-        <note>{StrBegin="NETSDK1216: "}</note>
+        <source>NETSDK1219: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</source>
+        <target state="new">NETSDK1219: UseUwp and all associated functionality require using a TFM of 'net6.0-windows' or greater.</target>
+        <note>{StrBegin="NETSDK1219: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
