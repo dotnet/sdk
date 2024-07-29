@@ -250,7 +250,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
   </Target>
 
-  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists" Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'" BeforeTargets="CoreCompile">
+  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists"
+          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true'"
+          BeforeTargets="CoreCompile">
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
