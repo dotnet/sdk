@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
                 verifySignatures: VerifySignatures,
-                isNuGetTool: true);
+                shouldUsePackageSourceMapping: true);
         }
 
         /// <summary>

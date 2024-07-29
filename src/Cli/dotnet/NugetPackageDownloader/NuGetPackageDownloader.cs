@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
         private IDictionary<PackageSource, SourceRepository> _sourceRepositories;
-        private readonly bool _isNuGetTool;
+        private readonly bool _shouldUsePackageSourceMapping;
 
         private bool _verifySignatures;
         private VerbosityOptions _verbosityOptions;
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             RestoreActionConfig restoreActionConfig = null,
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
-            bool isNuGetTool = false,
+            bool shouldUsePackageSourceMapping = false,
             VerbosityOptions verbosityOptions = VerbosityOptions.normal)
         {
             _packageInstallDir = packageInstallDir;
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
                 !_restoreActionConfig.Interactive);
-            _isNuGetTool = isNuGetTool;
+            _shouldUsePackageSourceMapping = shouldUsePackageSourceMapping;
             _verbosityOptions = verbosityOptions;
         }
 
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
-            if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
+            if (_shouldUsePackageSourceMapping && packageSourceMapping?.IsEnabled == true)
             {
                 IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
 
