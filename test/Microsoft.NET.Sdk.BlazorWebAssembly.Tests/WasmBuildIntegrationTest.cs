@@ -24,7 +24,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             var testAsset = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAsset);
+            var testInstance = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
 
             var build = CreateBuildCommand(testInstance);
@@ -48,7 +56,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: identifier);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: identifier)
+                .WithProjectChanges((path, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
             ExecuteCommand(buildCommand)
@@ -82,6 +97,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 if (Path.GetFileNameWithoutExtension(project) == "blazorwasm")
                 {
+                    document.Root.Add(new XElement("PropertyGroup",
+                        new XElement("WasmFingerprintAssets", false)));
+
                     var reference = document
                         .Descendants()
                         .Single(e =>
@@ -125,7 +143,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
             ExecuteCommand(buildCommand, "/p:Configuration=Release")
@@ -153,7 +181,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var wwwroot = Path.Combine(testInstance.TestRoot, "blazorwasm", "wwwroot");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
@@ -190,7 +228,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var wwwroot = Path.Combine(testInstance.TestRoot, "blazorwasm", "wwwroot");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
@@ -231,9 +279,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("BlazorEnableTimeZoneSupport", false));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
-
 
             var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
             ExecuteCommand(buildCommand)
@@ -263,6 +311,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("InvariantGlobalization", true));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -300,6 +349,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("InvariantGlobalization", true));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -337,6 +387,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("BlazorIcuDataFileName", customIcuFilename));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -379,6 +430,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("BlazorIcuDataFileName", customIcuFilename));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -422,6 +474,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("BlazorWebAssemblyLoadAllGlobalizationData", true));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -465,6 +518,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
                 itemGroup.Add(new XElement("BlazorWebAssemblyLoadAllGlobalizationData", true));
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 project.Root.Add(itemGroup);
             });
 
@@ -511,7 +565,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -525,6 +579,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = new XElement(ns + "PropertyGroup");
                     propertyGroup.Add(new XElement("DefineConstants", @"$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies"));
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
                     var itemGroup = new XElement(ns + "ItemGroup");
                     itemGroup.Add(new XElement("ProjectReference", new XAttribute("Include", @"..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj")));
                     project.Root.Add(propertyGroup);
@@ -555,7 +610,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 manifest,
                 outputPath,
                 intermediateOutputPath);
-
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm")).Should().Exist();
@@ -606,6 +660,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             testInstance.WithProjectChanges((path, project) =>
             {
+                if (path.Contains("blazorwasm.csproj"))
+                {
+                    var propertyGroup = new XElement(project.Root.Name.Namespace + "PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(propertyGroup);
+                }
+
                 if (path.Contains("razorclasslibrary"))
                 {
                     var ns = project.Root.Name.Namespace;
@@ -643,7 +704,17 @@ public class TestReference
         public void Build_WithReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
-            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary");
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary")
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm.csproj"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var propertyGroup = new XElement(ns + "PropertyGroup");
+                        propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(propertyGroup);
+                    }
+                });
 
             var buildCommand = CreateBuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
             ExecuteCommand(buildCommand).Should().Pass();
@@ -667,6 +738,10 @@ public class TestReference
                             new XAttribute("HintPath", referenceAssemblyPath)));
 
                     project.Root.Add(itemGroup);
+
+                    var propertyGroup = new XElement(ns + "PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(propertyGroup);
                 }
             });
 
