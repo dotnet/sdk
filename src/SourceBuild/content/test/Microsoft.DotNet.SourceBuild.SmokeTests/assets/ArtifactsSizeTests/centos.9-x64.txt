@@ -4074,7 +4074,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/ko/Microsoft.CodeAnalysis.VisualBa
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.CodeStyle.dll: 1696768
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.CodeStyle.Fixes.dll: 621056
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.dll: 273408
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll: 212992
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll: 307200
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.CodeStyle.Fixes.resources.dll: 12288
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.CodeStyle.resources.dll: 31232
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.resources.dll: 6144
