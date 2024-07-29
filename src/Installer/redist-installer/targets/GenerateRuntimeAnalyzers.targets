@@ -1,22 +1,7 @@
 <Project>
 
   <PropertyGroup>
-      <RuntimeAnalyzersLayoutDirectory>$(BaseOutputPath)$(Configuration)\RuntimeAnalyzersLayout\</RuntimeAnalyzersLayoutDirectory>
-      <RuntimeAnalyzersOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</RuntimeAnalyzersOutputPath>
+      <RuntimeAnalyzersLayoutDirectory>$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers</RuntimeAnalyzersLayoutDirectory>
   </PropertyGroup>
-
-  <Target Name="GenerateRuntimeAnalyzers" DependsOnTargets="GenerateBundledVersionsProps">
-    <ItemGroup>
-      <!-- The VSRuntimeAnalyzersContent item is for the files that will be included in the VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers
-           package and inserted into Visual Studio -->
-      <VSRuntimeAnalyzersContent Include="$(RuntimeAnalyzersOutputPath)\RuntimeAnalyzers\**\*.*" />
-
-      <VSRuntimeAnalyzersContent Update="@(VSMSBuildExtensionsContent)">
-        <DestinationPath>$(RuntimeAnalyzersLayoutDirectory)/%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
-      </VSRuntimeAnalyzersContent>
-     </ItemGroup>
-
-    <Copy SourceFiles="@(VSRuntimeAnalyzersContent)" DestinationFiles="%(VSRuntimeAnalyzersContent.DestinationPath)" />
-  </Target>
 
 </Project>

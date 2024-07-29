@@ -16,15 +16,31 @@ namespace Microsoft.DotNet.Cli.Build
             StringBuilder sb = new StringBuilder(SWR_HEADER);
 
             AddFolder(sb,
-                      @"RuntimeAnalyzers",
-                      @"MSBuild");
+                      @"AspNetCoreAnalyzers",
+                      @"SDK\AspNetCoreAnalyzers");
+
+            AddFolder(sb,
+                      @"NetCoreAnalyzers",
+                      @"SDK\NetCoreAnalyzers");
+
+            AddFolder(sb,
+                      @"WindowsDesktopAnalyzers",
+                      @"SDK\WindowsDesktopAnalyzers");
+
+            AddFolder(sb,
+                      @"SDKAnalyzers",
+                      @"SDK\SDKAnalyzers");
+
+            AddFolder(sb,
+                      @"WebSDKAnalyzers",
+                      @"SDK\WebSDKAnalyzers");
 
             File.WriteAllText(OutputFile, sb.ToString());
 
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false)
+        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = true)
         {
             string sourceFolder = Path.Combine(RuntimeAnalyzersLayoutDirectory, relativeSourcePath);
             var files = Directory.GetFiles(sourceFolder)
@@ -33,7 +49,17 @@ namespace Microsoft.DotNet.Cli.Build
             if (files.Any(f => !Path.GetFileName(f).Equals("_._")))
             {
                 sb.Append(@"folder ""InstallDir:\");
-                sb.Append(swrInstallDir);
+                // remove the version number and everything until we get to the real analyzers folder
+                Console.WriteLine(swrInstallDir);
+
+                var startIndex = swrInstallDir.IndexOf("analyzers", StringComparison.OrdinalIgnoreCase);
+                var endIndex = swrInstallDir.IndexOf("analyzers", startIndex + 1, StringComparison.OrdinalIgnoreCase);
+                var tempinstalldir = swrInstallDir;
+                if (startIndex >= 0 && endIndex >= 0)
+                {
+                    tempinstalldir = swrInstallDir.Remove(startIndex + 9, endIndex - startIndex );
+                }
+                sb.Append(tempinstalldir);
                 sb.AppendLine(@"\""");
 
                 foreach (var file in files)

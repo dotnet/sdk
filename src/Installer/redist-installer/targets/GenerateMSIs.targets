@@ -502,7 +502,7 @@
   </Target>
 
 <Target Name="GenerateRuntimeAnalyzersNupkg"
-  DependsOnTargets="GenerateLayout;GenerateRuntimeAnalyzers;MsiTargetsSetupInputOutputs"
+  DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
   Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
   Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
             $(SdkRuntimeAnalyzersNuspecFile);

@@ -18,7 +18,6 @@
       <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(SDKAnalyzersSubPath)\**\*.*" DeploymentSubpath="SDKAnalyzers"/>
       <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)$(WebSDKAnalyzersSubPath)\**\*.*" DeploymentSubpath="WebSDKAnalyzers"/>
     </ItemGroup>
-
   </Target>
 
 </Project>

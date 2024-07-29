@@ -134,7 +134,7 @@
           DependsOnTargets="GenerateRuntimeAnalyzers"
           BeforeTargets="Build">
     <Copy SourceFiles="@(RuntimeAnalyzersContent)"
-          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\RuntimeAnalyzers\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="PublishNetSdks"
