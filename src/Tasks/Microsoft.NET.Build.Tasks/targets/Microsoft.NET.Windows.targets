@@ -63,10 +63,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompilerVisibleProperty Include="CsWinRTAotWarningLevel" />
   </ItemGroup>
 
-  <!-- Add the right Windows SDK projections depending on whether 'UseUwp' is also set in the project -->
+  <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project -->
   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
-    <FrameworkReference Condition=" '$(UseUwp)' != 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+    <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
   </ItemGroup>
 
   <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
@@ -98,7 +97,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           AfterTargets="ResolveAssemblyReferences"
           Condition=" '@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)' != '' ">
     <ItemGroup>
-      <_WindowsSDKUnresolvedRef Include="@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)" Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET' " />
+      <_WindowsSDKUnresolvedRef Include="@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)" Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Windows' " />
     </ItemGroup>
 
     <NETSdkError ResourceName="WindowsSDKVersionConflicts"
@@ -134,7 +133,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <!-- Target to emit an error when 'UseUwp' is not set, but the full 'Microsoft.Windows.SDK.NET.Ref' item is transitively referenced -->
+  <!-- Target to emit an error when 'UseUwp' is not set, but the 'Microsoft.Windows.SDK.NET.Ref.Xaml' item is transitively referenced -->
   <Target Name="_CheckForTransitiveWindowsSDKFullDependencies"
           AfterTargets="ResolvePackageAssets"
           Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
@@ -142,19 +141,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and '@(TransitiveFrameworkReference)' != ''
                       and '$(UseUwp)' != 'true' ">
     <ItemGroup>
-      <_WindowsSDKFullTransitiveFrameworkReference Include="@(TransitiveFrameworkReference)"
-                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref'" />
+      <_WindowsSDKXamlTransitiveFrameworkReference Include="@(TransitiveFrameworkReference)"
+                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref.Xaml'" />
     </ItemGroup>
-    <NetSdkError Condition="'@(_WindowsSDKFullTransitiveFrameworkReference)' != ''"
-                 ResourceName="WindowsSDKFullMissingUseUwpProperty" />
+    <NetSdkError Condition="'@(_WindowsSDKXamlTransitiveFrameworkReference)' != ''"
+                 ResourceName="WindowsSDKXamlMissingUseUwpProperty" />
   </Target>
 
   <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net6.0-windows' or greater -->
-  <Target Name="_CheckForInvalidTfmForWindowsSDKFullDependencies"
+  <Target Name="_CheckForInvalidTfmForWindowsSDKXamlDependencies"
           AfterTargets="ResolvePackageAssets"
           Condition=" !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))
                       and '$(UseUwp)' == 'true' ">
-    <NetSdkError ResourceName="WindowsSDKFullInvalidTfm" />
+    <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
 
   <!--
