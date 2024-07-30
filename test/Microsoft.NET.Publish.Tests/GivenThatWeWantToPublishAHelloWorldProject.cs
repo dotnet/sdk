@@ -1160,7 +1160,9 @@ public static class Program
             if (appRelativeDotNet != null)
                 testProject.AdditionalProperties.Add("AppHostRelativeDotNet", appRelativeDotNet);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            // Identifer based on test inputs to create test assets that are unique for each test case
+            string assetIdentifier = $"{searchLocation}{appRelativeDotNet}{expectedLocation}";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: assetIdentifier);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute()
