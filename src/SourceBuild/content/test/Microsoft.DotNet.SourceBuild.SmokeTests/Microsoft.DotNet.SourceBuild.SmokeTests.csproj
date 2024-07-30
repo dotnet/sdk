@@ -68,9 +68,6 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ExcludeOmniSharpTests">
         <Value>$(SmokeTestsExcludeOmniSharpTests)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).IncludeArtifactsSizeTests">
-        <Value>$(SmokeTestsIncludeArtifactsSizeTests)</Value>
-      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LicenseScanPath">
         <Value>$(SmokeTestsLicenseScanPath)</Value>
       </RuntimeHostConfigurationOption>
