@@ -20,19 +20,17 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class ArtifactsSizeTests : SdkTests
 {
     private const string SdkType = "sdk";
-
     private StringBuilder Differences = new();
     private List<string> NewExclusions = new List<string>();
     private Dictionary<string, int> FilePathCountMap = new();
     ExclusionsHelper exclusionsHelper = new ExclusionsHelper("ArtifactExclusions.txt", nameof(ArtifactsSizeTests));
+    public static bool IncludeArtifactsSizeTests => !string.IsNullOrWhiteSpace(Config.SdkTarballPath);
 
     public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper) {}
 
-    [ConditionalFact(typeof(Config), nameof(Config.IncludeArtifactsSizeTests))]
+    [ConditionalFact(typeof(ArtifactsSizeTests), nameof(IncludeArtifactsSizeTests))]
     public void CheckZeroSizeArtifacts()
     {
-        Assert.False(string.IsNullOrWhiteSpace(Config.SdkTarballPath));
-
         ProcessTarball(Config.SdkTarballPath, SdkType);
 
         exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, NewExclusions);
