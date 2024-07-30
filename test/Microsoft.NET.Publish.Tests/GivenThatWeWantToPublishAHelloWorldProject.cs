@@ -1195,6 +1195,12 @@ public static class Program
             var result = runCommand.Execute();
             if (expectedRoot != null)
             {
+                // On macOS, /tmp actually points to /private/tmp - the app will print the resolved path
+                if (OperatingSystem.IsMacOS() && expectedRoot.StartsWith("/tmp/"))
+                {
+                    expectedRoot = $"/private{expectedRoot}";
+                }
+
                 result.Should().Pass()
                     .And.HaveStdOutContaining($"Runtime directory: {expectedRoot}");
             }
