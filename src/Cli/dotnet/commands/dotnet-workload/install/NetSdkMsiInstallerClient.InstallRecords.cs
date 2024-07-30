@@ -18,6 +18,41 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal partial class NetSdkMsiInstallerClient
     {
+        protected List<WorkloadSetRecord> GetWorkloadSetRecords()
+        {
+            Log?.LogMessage($"Detecting installed workload sets for {HostArchitecture}.");
+
+            var workloadSetRecords = new List<WorkloadSetRecord>();
+
+            using RegistryKey installedManifestsKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledWorkloadSets\{HostArchitecture}");
+            if (installedManifestsKey != null)
+            {
+                foreach (string workloadSetFeatureBand in installedManifestsKey.GetSubKeyNames())
+                {
+                    using RegistryKey workloadSetFeatureBandKey = installedManifestsKey.OpenSubKey(workloadSetFeatureBand);
+                    foreach (string workloadSetVersion in workloadSetFeatureBandKey.GetSubKeyNames())
+                    {
+                        using RegistryKey workloadSetVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetVersion);
+
+                        WorkloadSetRecord record = new WorkloadSetRecord()
+                        {
+                            ProviderKeyName = (string)workloadSetVersionKey.GetValue("DependencyProviderKey"),
+                            WorkloadSetVersion = workloadSetVersion,
+                            WorkloadSetFeatureBand = workloadSetFeatureBand,
+                            ProductCode = (string)workloadSetVersionKey.GetValue("ProductCode"),
+                            ProductVersion = new Version((string)workloadSetVersionKey.GetValue("ProductVersion")),
+                            UpgradeCode = (string)workloadSetVersionKey.GetValue("UpgradeCode"),
+                        };
+
+                        Log.LogMessage($"Found workload set record, version: {workloadSetVersion}, feature band: {workloadSetFeatureBand}, ProductCode: {record.ProductCode}, provider key: {record.ProviderKeyName}");
+                        workloadSetRecords.Add(record);
+                    }
+                }
+            }
+
+            return workloadSetRecords;
+        }
+
         //  Manifest IDs are lowercased on disk, we need to map them back to the original casing to generate the right UpgradeCode
         private static readonly string[] CasedManifestIds =
             [
