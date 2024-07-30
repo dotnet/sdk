@@ -20,10 +20,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class ArtifactsSizeTests : SdkTests
 {
     private const string SdkType = "sdk";
-    private StringBuilder Differences = new();
-    private List<string> NewExclusions = new List<string>();
-    private Dictionary<string, int> FilePathCountMap = new();
-    ExclusionsHelper exclusionsHelper = new ExclusionsHelper("ArtifactExclusions.txt", nameof(ArtifactsSizeTests));
+    private readonly StringBuilder _differences = new();
+    private readonly List<string> _newExclusions = new List<string>();
+    private readonly Dictionary<string, int> _filePathCountMap = new();
+    private readonly ExclusionsHelper _exclusionsHelper = new ExclusionsHelper("ArtifactExclusions.txt", nameof(ArtifactsSizeTests));
     public static bool IncludeArtifactsSizeTests => !string.IsNullOrWhiteSpace(Config.SdkTarballPath);
 
     public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper) {}
@@ -31,9 +31,9 @@ public class ArtifactsSizeTests : SdkTests
     [ConditionalFact(typeof(ArtifactsSizeTests), nameof(IncludeArtifactsSizeTests))]
     public void CheckZeroSizeArtifacts()
     {
-        ProcessTarball(Config.SdkTarballPath, SdkType);
+        ProcessTarball(Config.SdkTarballPath!, SdkType);
 
-        exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, NewExclusions);
+        _exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, _newExclusions);
 
         // Wait to report differences until after the baseline file is updated. 
         // Else a failure will cause the baseline file to not be updated.
@@ -47,27 +47,25 @@ public class ArtifactsSizeTests : SdkTests
 
         Utilities.ExtractTarball(tarballPath, tempTarballDir, OutputHelper);
 
-        foreach (string filePath in Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories))
-        {
-            string relativePath = filePath.Substring(tempTarballDir.Length + 1);
-            string processedPath = ProcessFilePath(relativePath);
+        var newZeroSizedFiles = Directory
+            .EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
+            .Where(filePath => new FileInfo(filePath).Length == 0)
+            .Select(filePath => ProcessFilePath(tempTarballDir, filePath))
+            .Where(processedPath => !_exclusionsHelper.IsFileExcluded(processedPath, type));
 
-            if (new FileInfo(filePath).Length == 0)
-            {
-                if (!exclusionsHelper.IsFileExcluded(processedPath, type))
-                {
-                    NewExclusions.Add($"{processedPath}|{type}");
-                    TrackDifference($"{processedPath} is 0 bytes.");
-                }
-            }
+        foreach (string file in newZeroSizedFiles)
+        {
+            _newExclusions.Add($"{file}|{type}");
+            TrackDifference($"{file} is 0 bytes.");
         }
 
         Directory.Delete(tempTarballDir, true);
     }
 
-    private string ProcessFilePath(string originalPath)
+    private string ProcessFilePath(string relativeTo, string originalPath)
     {
-        string result = BaselineHelper.RemoveRids(originalPath);
+        string relativePath = Path.GetRelativePath(relativeTo, originalPath);
+        string result = BaselineHelper.RemoveRids(relativePath);
         result = BaselineHelper.RemoveVersions(result);
 
         return AddDifferenciatingSuffix(result);
@@ -96,8 +94,8 @@ public class ArtifactsSizeTests : SdkTests
 
         if (matchIndex != -1)
         {
-            int count = FilePathCountMap.TryGetValue(filePath, out count) ? count : 0;
-            FilePathCountMap[filePath] = count + 1;
+            int count = _filePathCountMap.TryGetValue(filePath, out count) ? count : 0;
+            _filePathCountMap[filePath] = count + 1;
 
             if (count > 0)
             {
@@ -108,19 +106,19 @@ public class ArtifactsSizeTests : SdkTests
         return filePath;
     }
 
-    private void TrackDifference(string difference) => Differences.AppendLine(difference);
+    private void TrackDifference(string difference) => _differences.AppendLine(difference);
 
     private void ReportDifferences()
     {
-        if (Differences.Length > 0)
+        if (_differences.Length > 0)
         {
             if (Config.WarnOnSdkContentDiffs)
             {
-                OutputHelper.LogWarningMessage(Differences.ToString());
+                OutputHelper.LogWarningMessage(_differences.ToString());
             }
             else
             {
-                OutputHelper.WriteLine(Differences.ToString());
+                OutputHelper.WriteLine(_differences.ToString());
                 Assert.Fail("Differences were found in the artifacts sizes.");
             }
         }
