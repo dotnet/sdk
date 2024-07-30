@@ -958,7 +958,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="InvalidAppHostDotNetSearch" xml:space="preserve">
     <value>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</value>
-    <comment>{StrBegin="NETSDK1216: "}</comment>
+    <comment>{StrBegin="NETSDK1217: "}</comment>
   </data>
   <!-- The latest message added is InvalidAppHostDotNetSearch. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
