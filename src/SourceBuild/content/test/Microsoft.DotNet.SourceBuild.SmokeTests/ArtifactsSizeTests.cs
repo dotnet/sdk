@@ -112,15 +112,8 @@ public class ArtifactsSizeTests : SdkTests
     {
         if (_differences.Length > 0)
         {
-            if (Config.WarnOnSdkContentDiffs)
-            {
-                OutputHelper.LogWarningMessage(_differences.ToString());
-            }
-            else
-            {
-                OutputHelper.WriteLine(_differences.ToString());
-                Assert.Fail("Differences were found in the artifacts sizes.");
-            }
+            OutputHelper.LogWarningMessage(_differences.ToString());
+            Assert.Fail("Differences were found in the artifacts sizes.");
         }
     }
 }
