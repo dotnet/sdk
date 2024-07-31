@@ -1154,10 +1154,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Signals that this project supports the target-based run invocation protocol powered by the ComputeRunArguments target. -->
+    <ProjectCapability Include="SupportsComputeRunCommand" />
+  </ItemGroup>
   <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
        This allows tools to run validation or logic required to compute any required data,
        which cannot be done during evaluation.  -->
   <Target Name="ComputeRunArguments" />
+
 
   <!-- Override MSBuild Run Target -->
   <Target Name="Run" DependsOnTargets="ComputeRunArguments">
