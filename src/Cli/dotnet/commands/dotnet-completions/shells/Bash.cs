@@ -36,7 +36,7 @@ public class BashShellProvider : IShellProvider
         // generate the words for options and subcommands
         var visibleSubcommands = command.Subcommands.Where(c => !c.Hidden).ToArray();
         // notably, do not generate completions for all option aliases - since a user is tab-completing we can use the longest forms
-        var completionOptions = AllOptionsForCommand(command).Where(o => !o.Hidden).Select(o => o.Name).ToArray();
+        var completionOptions = command.HeirarchicalOptions().Where(o => !o.Hidden).Select(o => o.Name).ToArray();
         var completionSubcommands = visibleSubcommands.Select(x => x.Name).ToArray();
         string[] completionWords = [.. completionSubcommands, .. completionOptions];
 
@@ -122,35 +122,7 @@ public class BashShellProvider : IShellProvider
         return textWriter.ToString() + string.Join('\n', visibleSubcommands.Select(c => GenerateCommandsCompletions(parentCommandNamesForSubcommands, c, isNestedCommand: true)));
     }
 
-    private static IEnumerable<CliOption> AllOptionsForCommand(CliCommand c)
-    {
-        if (c.Parents.Count() == 0)
-        {
-            return c.Options;
-        }
-        else
-        {
-            return c.Options.Concat(c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent));
-        }
-
-    }
-
-    private static IEnumerable<CliOption> OptionsForParent(CliCommand c)
-    {
-        foreach (var o in c.Options)
-        {
-            if (o.Recursive) yield return o;
-        }
-        foreach (var p in c.Parents.OfType<CliCommand>())
-        {
-            foreach (var o in OptionsForParent(p))
-            {
-                yield return o;
-            }
-        }
-    }
-
-    private static string[] PositionalArgumentTerms(CliArgument[] arguments)
+    internal static string[] PositionalArgumentTerms(CliArgument[] arguments)
     {
         var completions = new List<string>();
         foreach (var argument in arguments)
@@ -176,12 +148,12 @@ public class BashShellProvider : IShellProvider
     /// Generates a call to `dotnet complete <string> --position <int>` for dynamic completions where necessary, but in a more generic way
     /// </summary>
     /// <returns></returns>
-    private static string GenerateDynamicCall()
+    internal static string GenerateDynamicCall()
     {
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
-    private static string? GenerateOptionHandlers(CliCommand command)
+    internal static string? GenerateOptionHandlers(CliCommand command)
     {
         var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
         if (optionHandlers.Length == 0)
@@ -199,7 +171,7 @@ public class BashShellProvider : IShellProvider
     /// * a concrete set of choices in a bash array already ($opts), or
     /// * a subprocess that will return such an array (aka '(dotnet complete --position 10 'dotnet ad')') </param>
     /// <returns></returns>
-    private static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
+    internal static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
 
     /// <summary>
     /// Generates a concrete set of bash completion selection for a given option.
@@ -208,7 +180,7 @@ public class BashShellProvider : IShellProvider
     /// </summary>
     /// <param name="option"></param>
     /// <returns>a bash switch case expression for providing completions for this option</returns>
-    private static string? GenerateOptionHandler(CliOption option)
+    internal static string? GenerateOptionHandler(CliOption option)
     {
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.
@@ -249,7 +221,6 @@ public class BashShellProvider : IShellProvider
                 """;
     }
 }
-
 
 public static class HelpExtensions
 {
@@ -310,6 +281,41 @@ public static class HelpExtensions
         else
         {
             return [command.Name, .. command.Aliases];
+        }
+    }
+
+    public static IEnumerable<CliOption> HeirarchicalOptions(this CliCommand c)
+    {
+        var myOptions = c.Options.Where(o => !o.Hidden);
+        if (c.Parents.Count() == 0)
+        {
+            return myOptions;
+        }
+        else
+        {
+            return c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent).Concat(myOptions);
+        }
+
+    }
+
+    private static IEnumerable<CliOption> OptionsForParent(CliCommand c)
+    {
+        foreach (var o in c.Options)
+        {
+            if (o.Recursive)
+            {
+                if (!o.Hidden)
+                {
+                    yield return o;
+                }
+            }
+        }
+        foreach (var p in c.Parents.OfType<CliCommand>())
+        {
+            foreach (var o in OptionsForParent(p))
+            {
+                yield return o;
+            }
         }
     }
 
