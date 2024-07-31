@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
+            await VerifySigning(nupkgPath, repository);
             
             return nupkgPath;
         }
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
         }
 
-        private void VerifySigning(string nupkgPath)
+        private async Task VerifySigning(string nupkgPath, SourceRepository repository)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
@@ -154,21 +154,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            using PackageArchiveReader reader = new(nupkgPath);
-            var nuspec = reader.GetNuspec();
-            if (reader.CanVerifySignedPackages(new NuGet.Packaging.Signing.SignedPackageVerifierSettings(
-                allowUnsigned: true,
-                allowIllegal: true,
-                allowUntrusted: true,
-                allowIgnoreTimestamp: true,
-                allowMultipleTimestamps: true,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: true,
-                reportUnknownRevocation: false,
-                verificationTarget: NuGet.Packaging.Signing.VerificationTarget.Repository,
-                NuGet.Packaging.Signing.SignaturePlacement.Any,
-                NuGet.Packaging.Signing.SignatureVerificationBehavior.IfExists,
-                RevocationMode.Online)) || nuspec == null)
+            if (await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is var resource &&
+                resource.AllRepositorySigned)
             {
                 if (!_isNuGetTool)
                 {
