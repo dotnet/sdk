@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks
                     try
                     {
                         HostWriter.DotNetSearchOptions options = null;
-                        if (DotNetSearchLocations != null && DotNetSearchLocations.Length > 0)
+                        if (DotNetSearchLocations?.Length > 0)
                         {
                             HostWriter.DotNetSearchOptions.SearchLocation searchLocation = default;
                             foreach (var locationItem in DotNetSearchLocations)

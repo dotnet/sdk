@@ -1195,10 +1195,14 @@ public static class Program
             var result = runCommand.Execute();
             if (expectedRoot != null)
             {
-                // On macOS, /tmp actually points to /private/tmp - the app will print the resolved path
-                if (OperatingSystem.IsMacOS() && expectedRoot.StartsWith("/tmp/"))
+                // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
+                if (OperatingSystem.IsMacOS())
                 {
-                    expectedRoot = $"/private{expectedRoot}";
+                    DirectoryInfo tmp = new DirectoryInfo("/tmp/");
+                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmp.FullName))
+                    {
+                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmp.FullName.Length..]);
+                    }
                 }
 
                 result.Should().Pass()
