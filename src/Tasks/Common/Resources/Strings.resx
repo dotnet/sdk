@@ -960,7 +960,7 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</value>
     <comment>{StrBegin="NETSDK1217: "}</comment>
   </data>
-  <data name="WindowsSDKFullMissingUseUwpProperty" xml:space="preserve">
+  <data name="WindowsSDKXamlMissingUseUwpProperty" xml:space="preserve">
     <value>NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</value>
     <comment>{StrBegin="NETSDK1218: "}</comment>
   </data>
