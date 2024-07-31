@@ -58,7 +58,12 @@ internal class ExclusionsHelper
             (suffix != NullSuffix && CheckAndRemoveIfExcluded(filePath, NullSuffix));
     }
 
-    internal void GenerateNewBaselineFile(string? updatedFileTag = null)
+    /// <summary>
+    /// Generates a new baseline file with the exclusions that were used during the test run.
+    /// <param name="updatedFileTag">Optional tag to append to the updated file name.</param>
+    /// <param name="additionalLines">Optional additional lines to append to the updated file.</param>
+    /// </summary>
+    internal void GenerateNewBaselineFile(string? updatedFileTag = null, List<string>? additionalLines = null)
     {
         string exclusionsFilePath = BaselineHelper.GetBaselineFilePath(_exclusionsFileName, _baselineSubDir);
 
@@ -67,6 +72,11 @@ internal class ExclusionsHelper
         var newLines = lines
             .Select(line => UpdateExclusionsLine(line))
             .Where(line => line is not null);
+
+        if (additionalLines is not null)
+        {
+            newLines = newLines.Concat(additionalLines);
+        }
 
         string updatedFileName = updatedFileTag is null
             ? $"Updated{_exclusionsFileName}"
