@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         public RunCommand(
             bool noBuild,
-            string projectFileFullPath,
+            string projectFileOrDirectory,
             string launchProfile,
             bool noLaunchProfile,
             bool noRestore,
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Run
             string[] args)
         {
             NoBuild = noBuild;
-            ProjectFileFullPath = projectFileFullPath;
+            ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
             Args = args;
@@ -349,6 +349,36 @@ namespace Microsoft.DotNet.Tools.Run
                         "dotnet run",
                         "OutputType",
                         project.GetPropertyValue("OutputType")));
+        }
+
+        private string DiscoverProjectFilePath(string projectFileOrDirectoryPath)
+        {
+            if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
+            {
+                projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
+            }
+
+            if (Directory.Exists(projectFileOrDirectoryPath))
+            {
+                projectFileOrDirectoryPath = FindSingleProjectInDirectory(projectFileOrDirectoryPath);
+            }
+            return projectFileOrDirectoryPath;
+        }
+
+        public static string FindSingleProjectInDirectory(string directory)
+        {
+            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
+
+            if (projectFiles.Length == 0)
+            {
+                throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, directory, "--project");
+            }
+            else if (projectFiles.Length > 1)
+            {
+                throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+            }
+
+            return projectFiles[0];
         }
     }
 }

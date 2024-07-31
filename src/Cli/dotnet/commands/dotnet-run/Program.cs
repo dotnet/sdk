@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Run
                 var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
                 if (Directory.Exists(possibleProject))
                 {
-                    project = RunCommandParser.FindSingleProjectInDirectory(possibleProject);
+                    project = FindSingleProjectInDirectory(possibleProject);
                 }
                 else
                 {
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             var command = new RunCommand(
                 noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
-                projectFileFullPath: project,
+                projectFileOrDirectory: project,
                 launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption),
                 noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),

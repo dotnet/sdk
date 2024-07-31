@@ -19,33 +19,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ProjectOption = new("--project")
         {
-            Description = LocalizableStrings.CommandOptionProjectDescription,
-            DefaultValueFactory = (System.CommandLine.Parsing.ArgumentResult inputArg) =>
-            {
-                return inputArg.Tokens switch
-                {
-                [] => FindSingleProjectInDirectory(Environment.CurrentDirectory),
-                [var dirOrFile] => Directory.Exists(dirOrFile.Value) ? FindSingleProjectInDirectory(dirOrFile.Value) : dirOrFile.Value,
-                    _ => throw new System.InvalidOperationException("Impossible, System.CommandLine parser prevents this due to arity constraints.") //
-                };
-            },
+            Description = LocalizableStrings.CommandOptionProjectDescription
         };
-
-        public static string FindSingleProjectInDirectory(string directory)
-        {
-            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
-
-            if (projectFiles.Length == 0)
-            {
-                throw new Utils.GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, directory, "--project");
-            }
-            else if (projectFiles.Length > 1)
-            {
-                throw new Utils.GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
-            }
-
-            return projectFiles[0];
-        }
 
         public static readonly CliOption<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
