@@ -494,7 +494,7 @@ packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.WebSock
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.WebUtilities.dll: 34304
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.WebUtilities.xml: 88562
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.AspNetCore.xml: 30739
-packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Extensions.Caching.Abstractions.dll: 12288
+packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Extensions.Caching.Abstractions.dll: 15360
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Extensions.Caching.Abstractions.xml: 45465
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Extensions.Caching.Memory.dll: 9216
 packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Extensions.Caching.Memory.xml: 16131
@@ -1804,7 +1804,7 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/Syste
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/apibridge.c: 19841
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/apibridge.h: 4036
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/CMakeLists.txt: 4888
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/configure.cmake: 684
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/configure.cmake: 903
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/entrypoints.c: 18380
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/extra_libs.cmake: 2198
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/openssl_1_0_structs.h: 3718
@@ -1814,7 +1814,7 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/Syste
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/opensslshim.h: 60952
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/osslcompat_102.h: 1083
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/osslcompat_111.h: 4916
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/osslcompat_30.h: 2553
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/osslcompat_30.h: 3665
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_asn1.c: 2412
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_asn1.h: 2205
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_bignum.c: 795
@@ -1827,8 +1827,6 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/Syste
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_dsa.h: 2207
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_ecc_import_export.c: 15347
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_ecc_import_export.h: 2164
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_ecdsa.c: 878
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_ecdsa.h: 837
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_eckey.c: 1442
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_eckey.h: 1255
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_err.c: 2055
@@ -1840,12 +1838,14 @@ packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/Syste
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_dsa.c: 410
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_dsa.h: 550
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_ecdh.c: 1599
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_ecdh.h: 515
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_ecdh.h: 368
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_ecdsa.c: 2024
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_ecdsa.h: 1440
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_eckey.c: 428
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_eckey.h: 572
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_rsa.c: 10328
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey_rsa.h: 3227
-packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey.c: 15053
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey.c: 20121
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp_pkey.h: 3514
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp.c: 9919
 packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/native/src/libs/System.Security.Cryptography.Native/pal_evp.h: 5165
@@ -2123,7 +2123,6 @@ sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Newtonsoft.Json.dll: 69273
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Collections.Immutable.dll: 243712
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -2401,7 +2400,6 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Newt
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pl/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Collections.Immutable.dll: 243712
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.CommandLine.dll: 136192
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/tr/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/zh-Hans/System.CommandLine.resources.dll: 8704
@@ -2505,7 +2503,6 @@ sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/Microsoft.CodeAnaly
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll: 7680
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/Microsoft.CodeAnalysis.Workspaces.resources.dll: 47104
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll: 790528
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Windows.Extensions.dll: 61952
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CodeDom.dll: 174080
 sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CommandLine.dll: 136192
@@ -3164,8 +3161,6 @@ sdk/x.y.z/Roslyn/bincore/pt-BR/Microsoft.CodeAnalysis.VisualBasic.resources.dll:
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll: 589312
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll: 49152
 sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll: 398336
-sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll: 782336
-sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll: 1117184
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.CSharp.resources.dll: 421888
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.resources.dll: 37376
 sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.VisualBasic.resources.dll: 291840
@@ -4014,7 +4009,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/ko/Microsoft.CodeAnalysis.CodeStyl
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/ko/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.resources.dll: 9728
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/ko/Microsoft.CodeAnalysis.CSharp.CodeStyle.resources.dll: 17920
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/Microsoft.CodeAnalysis.CodeStyle.dll: 1696768
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/Microsoft.CodeAnalysis.CodeStyle.Fixes.dll: 621056
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/Microsoft.CodeAnalysis.CodeStyle.Fixes.dll: 785408
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/Microsoft.CodeAnalysis.CSharp.CodeStyle.dll: 617472
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll: 734720
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/cs/pl/Microsoft.CodeAnalysis.CodeStyle.Fixes.resources.dll: 12288
@@ -4076,9 +4071,9 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/ko/Microsoft.CodeAnalysis.CodeStyl
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/ko/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.resources.dll: 6144
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/ko/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.resources.dll: 6144
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.CodeStyle.dll: 1696768
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.CodeStyle.Fixes.dll: 621056
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.CodeStyle.Fixes.dll: 785408
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.dll: 273408
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll: 212992
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll: 323072
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.CodeStyle.Fixes.resources.dll: 12288
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.CodeStyle.resources.dll: 31232
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/codestyle/vb/pl/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.resources.dll: 6144
@@ -4595,7 +4590,7 @@ shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.AspNetCore.StaticAssets.dll: 152
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.AspNetCore.StaticFiles.dll: 143872
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.AspNetCore.WebSockets.dll: 53248
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.AspNetCore.WebUtilities.dll: 240640
-shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.Extensions.Caching.Abstractions.dll: 38400
+shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.Extensions.Caching.Abstractions.dll: 48640
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.Extensions.Caching.Memory.dll: 73728
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.Extensions.Configuration.Abstractions.dll: 27136
 shared/Microsoft.AspNetCore.App/x.y.z/Microsoft.Extensions.Configuration.Binder.dll: 65536
