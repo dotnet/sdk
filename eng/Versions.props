@@ -157,6 +157,9 @@
     <SystemSecurityPermissionsPackageVersion>9.0.0-rc.1.24378.5</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-rc.1.24378.5</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-rc.1.24378.5</SystemTextJsonPackageVersion>
+    <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
+         because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
+    <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24378.5</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
