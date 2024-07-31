@@ -475,6 +475,27 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyFact]
+        public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "netstandard2.0"
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1219");
+        }
+
+        [WindowsOnlyFact]
         public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
         {
             TestProject testProjectA = new()
