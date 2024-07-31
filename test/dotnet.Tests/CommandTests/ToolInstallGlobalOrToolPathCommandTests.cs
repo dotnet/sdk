@@ -815,10 +815,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                  _parseResult,
-                 _createToolPackageStoreDownloaderUninstaller,
-                 _createShellShimRepository,
-                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
-                 _reporter);
+                 createToolPackageStoreDownloaderUninstaller: _createToolPackageStoreDownloaderUninstaller,
+                 createShellShimRepository: _createShellShimRepository,
+                 environmentPathInstruction: new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                 reporter: _reporter);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
             _reporter.Lines.Should().NotContain(l => l.Contains(NuGetPackageDownloaderLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
