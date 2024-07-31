@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -52,7 +51,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             {
                 {"SkipResolvePackageAssets", "true"}
             };
-
 
             var allWorkloadId = new List<WorkloadId>();
             foreach (string projectFile in allProjects)
