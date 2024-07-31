@@ -242,12 +242,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
   </ItemGroup>
 
-  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageReference" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
+  <Target Name="_CheckMicrosoftNetCompilersToolsetFrameworkPackageReference" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
     <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
          If they do, and BuildWithNetFrameworkHostedCompiler is also set, the former will override the latter.
          This makes it more explicit that that is not supported. -->
     <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
+  </Target>
+
+  <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists"
+          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true'"
+          BeforeTargets="CoreCompile">
+    <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
+         (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
+    <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
+        Condition="!Exists('$(RoslynTargetsPath)')"
+        FormatArguments="$(NETCoreSdkVersion)" />
   </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.
