@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             if (await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is var resource &&
                 resource.AllRepositorySigned)
             {
-                if (!_isNuGetTool)
+                if (!_shouldUsePackageSourceMapping)
                 {
                     if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
                     {
