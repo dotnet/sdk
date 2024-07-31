@@ -29,9 +29,20 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public void RecordWorkloadSetInGlobalJson(string globalJsonPath, string workloadSetVersion)
         {
+            //  Create install state folder if needed
+            Directory.CreateDirectory(Path.GetDirectoryName(_path));
+
             using (var fileStream = File.Open(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
-                var globalJsonWorkloadSetVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);
+                Dictionary<string, string> globalJsonWorkloadSetVersions;
+                if (fileStream.Length > 0)
+                {
+                    globalJsonWorkloadSetVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);
+                }
+                else
+                {
+                    globalJsonWorkloadSetVersions = new();
+                }
                 globalJsonWorkloadSetVersions[globalJsonPath] = workloadSetVersion;
                 fileStream.Seek(0, SeekOrigin.Begin);
                 JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, _jsonSerializerOptions);
