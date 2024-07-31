@@ -14,7 +14,8 @@ namespace Microsoft.DotNet.Tools.Test;
  * SuccessfulTestResultMessageSerializer: 5
  * FailedTestResultMessageSerializer: 6
  * FileArtifactInfoSerializer: 7
- * SessionEventSerializer: 8
+ * TestSessionEventSerializer: 8
+ * HandshakeInfoSerializer: 9
  */
 
 internal static class RegisterSerializers
@@ -28,5 +29,6 @@ internal static class RegisterSerializers
         namedPipeBase.RegisterSerializer(new FailedTestResultMessageSerializer(), typeof(FailedTestResultMessage));
         namedPipeBase.RegisterSerializer(new FileArtifactInfoSerializer(), typeof(FileArtifactInfo));
         namedPipeBase.RegisterSerializer(new TestSessionEventSerializer(), typeof(TestSessionEvent));
+        namedPipeBase.RegisterSerializer(new HandshakeInfoSerializer(), typeof(HandshakeInfo));
     }
 }

@@ -8,7 +8,6 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -34,9 +33,6 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            //Debugger.Launch();
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(16268, true);
-
             _args = parseResult.GetArguments();
 
             // User can decide what the degree of parallelism should be
@@ -59,6 +55,7 @@ namespace Microsoft.DotNet.Cli
             {
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
+                    testApp.HandshakeInfoReceived += OnHandshakeInfoReceived;
                     testApp.SuccessfulTestResultReceived += OnTestResultReceived;
                     testApp.FailedTestResultReceived += OnTestResultReceived;
                     testApp.FileArtifactInfoReceived += OnFileArtifactInfoReceived;
@@ -80,7 +77,7 @@ namespace Microsoft.DotNet.Cli
 
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
 
-            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {msbuildCommandlineArgs}");
+            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
 
             ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             int testsProjectResult = msBuildForwardingApp.Execute();
@@ -151,6 +148,18 @@ namespace Microsoft.DotNet.Cli
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
                 }
 
+                if (TryGetHandshakeInfo(request, out HandshakeInfo handshakeInfo))
+                {
+                    if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ModulePath, out string value))
+                    {
+                        var testApplication = _testApplications[value];
+                        Debug.Assert(testApplication is not null);
+                        testApplication.OnHandshakeInfo(handshakeInfo);
+
+                        return Task.FromResult((IResponse)CreateHandshakeInfo());
+                    }
+                }
+
                 if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
                 {
                     var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
@@ -182,7 +191,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     var testApplication = _testApplications[fileArtifactInfo.ModulePath];
                     Debug.Assert(testApplication is not null);
-                    testApplication.OnFileArtifactInfoReceived(fileArtifactInfo);
+                    testApplication.OnFileArtifactInfo(fileArtifactInfo);
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
                 }
 
@@ -190,7 +199,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     var testApplication = _testApplications[sessionEvent.ModulePath];
                     Debug.Assert(testApplication is not null);
-                    testApplication.OnSessionEventReceived(sessionEvent);
+                    testApplication.OnSessionEvent(sessionEvent);
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
                 }
 
@@ -219,6 +228,16 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
+        private static HandshakeInfo CreateHandshakeInfo() =>
+            new(new Dictionary<string, string>
+            {
+                { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+                { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
+                { HandshakeInfoPropertyNames.Framework, RuntimeInformation.FrameworkDescription },
+                { HandshakeInfoPropertyNames.OS, RuntimeInformation.OSDescription },
+                { HandshakeInfoPropertyNames.ProtocolVersion, ProtocolConstants.Version }
+            });
+
         private static bool TryGetModulePath(IRequest request, out string modulePath)
         {
             if (request is Module module)
@@ -228,6 +247,18 @@ namespace Microsoft.DotNet.Cli
             }
 
             modulePath = null;
+            return false;
+        }
+
+        private static bool TryGetHandshakeInfo(IRequest request, out HandshakeInfo handshakeInfo)
+        {
+            if (request is HandshakeInfo result)
+            {
+                handshakeInfo = result;
+                return true;
+            }
+
+            handshakeInfo = null;
             return false;
         }
 
@@ -301,6 +332,18 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
+        private void OnHandshakeInfoReceived(object sender, HandshakeInfoArgs args)
+        {
+            if (VSTestTrace.TraceEnabled)
+            {
+                var handshakeInfo = args.handshakeInfo;
+
+                foreach (var property in handshakeInfo.Properties)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
+                }
+            }
+        }
         private void OnTestResultReceived(object sender, EventArgs args)
         {
             if (VSTestTrace.TraceEnabled)
@@ -337,7 +380,7 @@ namespace Microsoft.DotNet.Cli
             if (VSTestTrace.TraceEnabled)
             {
                 var sessionEvent = args.SessionEvent;
-                VSTestTrace.SafeWriteTrace(() => $"SessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
+                VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
             }
         }
 
@@ -353,10 +396,20 @@ namespace Microsoft.DotNet.Cli
         {
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => args.ExitCode.ToString());
+                if (args.ExitCode != 0)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
+                }
 
-                VSTestTrace.SafeWriteTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
-                VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
+                if (args.OutputData.Count > 0)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
+                }
+
+                if (args.ErrorData.Count > 0)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
+                }
             }
         }
 

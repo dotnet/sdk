@@ -5,6 +5,11 @@ using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
+    internal class HandshakeInfoArgs : EventArgs
+    {
+        public HandshakeInfo handshakeInfo { get; set; }
+    }
+
     internal class HelpEventArgs : EventArgs
     {
         public CommandLineOptionMessages CommandLineOptionMessages { get; set; }

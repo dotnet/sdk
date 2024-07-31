@@ -66,18 +66,18 @@ namespace Microsoft.DotNet.Tools.Test
         {
             Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
 
-            var sessionEvent = (TestSessionEvent)objectToSerialize;
+            var testSessionEvent = (TestSessionEvent)objectToSerialize;
 
-            WriteShort(stream, GetFieldCount(sessionEvent));
+            WriteShort(stream, GetFieldCount(testSessionEvent));
 
-            WriteField(stream, TestSessionEventFieldsId.SessionType, sessionEvent.SessionType);
-            WriteField(stream, TestSessionEventFieldsId.SessionUid, sessionEvent.SessionUid);
-            WriteField(stream, TestSessionEventFieldsId.ModulePath, sessionEvent.ModulePath);
+            WriteField(stream, TestSessionEventFieldsId.SessionType, testSessionEvent.SessionType);
+            WriteField(stream, TestSessionEventFieldsId.SessionUid, testSessionEvent.SessionUid);
+            WriteField(stream, TestSessionEventFieldsId.ModulePath, testSessionEvent.ModulePath);
         }
 
-        private static ushort GetFieldCount(TestSessionEvent sessionEvent) =>
-            (ushort)((IsNull(sessionEvent.SessionType) ? 0 : 1) +
-            (IsNull(sessionEvent.SessionUid) ? 0 : 1) +
-            (IsNull(sessionEvent.ModulePath) ? 0 : 1));
+        private static ushort GetFieldCount(TestSessionEvent testSessionEvent) =>
+            (ushort)((IsNull(testSessionEvent.SessionType) ? 0 : 1) +
+            (IsNull(testSessionEvent.SessionUid) ? 0 : 1) +
+            (IsNull(testSessionEvent.ModulePath) ? 0 : 1));
     }
 }

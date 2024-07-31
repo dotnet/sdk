@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli
         private readonly List<string> _outputData = [];
         private readonly List<string> _errorData = [];
 
+        public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
         public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
         public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
@@ -95,10 +96,16 @@ namespace Microsoft.DotNet.Cli
 
             process.OutputDataReceived += (sender, e) =>
             {
+                if (string.IsNullOrEmpty(e.Data))
+                    return;
+
                 _outputData.Add(e.Data);
             };
             process.ErrorDataReceived += (sender, e) =>
             {
+                if (string.IsNullOrEmpty(e.Data))
+                    return;
+
                 _errorData.Add(e.Data);
             };
             process.BeginOutputReadLine();
@@ -147,6 +154,11 @@ namespace Microsoft.DotNet.Cli
             return builder.ToString();
         }
 
+        public void OnHandshakeInfo(HandshakeInfo handshakeInfo)
+        {
+            HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
+        }
+
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
             HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
@@ -162,12 +174,12 @@ namespace Microsoft.DotNet.Cli
             FailedTestResultReceived?.Invoke(this, new FailedTestResultEventArgs { FailedTestResultMessage = failedTestResultMessage });
         }
 
-        internal void OnFileArtifactInfoReceived(FileArtifactInfo fileArtifactInfo)
+        internal void OnFileArtifactInfo(FileArtifactInfo fileArtifactInfo)
         {
             FileArtifactInfoReceived?.Invoke(this, new FileArtifactInfoEventArgs { FileArtifactInfo = fileArtifactInfo });
         }
 
-        internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
+        internal void OnSessionEvent(TestSessionEvent sessionEvent)
         {
             SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = sessionEvent });
         }
