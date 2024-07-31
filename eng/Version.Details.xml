@@ -246,22 +246,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0912e94a6c81f4743946831137ba6c3ec3f1a179</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-rc.1.24381.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-rc.1.24381.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>bff5f8175524ead209c8fc4b3f05509510de2f8f</Sha>
+      <Sha>c4fa5a2baa4fc4da45593a31afe6f40f3ee088a2</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rc.1.24381.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rc.1.24381.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>bff5f8175524ead209c8fc4b3f05509510de2f8f</Sha>
+      <Sha>c4fa5a2baa4fc4da45593a31afe6f40f3ee088a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-rc.1.24381.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-rc.1.24381.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>bff5f8175524ead209c8fc4b3f05509510de2f8f</Sha>
+      <Sha>c4fa5a2baa4fc4da45593a31afe6f40f3ee088a2</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rc.1.24381.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rc.1.24381.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>bff5f8175524ead209c8fc4b3f05509510de2f8f</Sha>
+      <Sha>c4fa5a2baa4fc4da45593a31afe6f40f3ee088a2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-rc.1.24381.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
