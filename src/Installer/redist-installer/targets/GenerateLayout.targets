@@ -590,6 +590,8 @@
              Importance="High" />
   </Target>
 
+  <!-- This target no longer runs by default. The ResolveAssemblyReference task is substantially faster if it has a cache, so the idea was to precompute a cache for commonly resolved (SDK) assemblies,
+       but the expected performance win did not materialize. This target can take multiple minutes to run with every build, so disabling it until/unless we find good value for it. -->
   <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
     <ItemGroup>
       <AssembliesToResolve Include="$(RedistLayoutPath)\**\*.dll" Exclude="$(RedistLayoutPath)\**\native\**\*.dll" />
@@ -621,7 +623,6 @@
                             RetargetTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
-                            GeneratePrecomputedRarCache;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
           BeforeTargets="AfterBuild" />
 
