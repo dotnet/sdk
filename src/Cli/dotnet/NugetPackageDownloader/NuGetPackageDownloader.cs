@@ -722,6 +722,21 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return packageMetadata.Identity.Version;
         }
 
+        public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
+        {
+            // grab allowed sources for the package in question
+            PackageId packageId = new(idStem);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            var autoCompletes = await Task.WhenAll(packagesSources.Select(async (source) => await GetAutocompleteAsync(source, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+            // filter down to autocomplete endpoints (not all sources support this)
+            var validAutoCompletes = autoCompletes.SelectMany(x => x);
+            // get versions valid for this source
+            var versionTasks = validAutoCompletes.Select(autocomplete => GetPackageIdsForSource(autocomplete, packageId, allowPrerelease, cancellationToken)).ToArray();
+            var versions = await Task.WhenAll(versionTasks).ConfigureAwait(false);
+            // sources may have the same versions, so we have to dedupe.
+            return versions.SelectMany(v => v).Distinct().OrderDescending();
+        }
+
         public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(PackageId packageId, string versionPrefix = null, bool allowPrerelease = false, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
         {
             // grab allowed sources for the package in question
@@ -760,6 +775,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             catch (Exception)
             {
                 return Enumerable.Empty<NuGetVersion>();
+            }
+        }
+
+        private async Task<IEnumerable<string>> GetPackageIdsForSource(AutoCompleteResource autocomplete, PackageId packageId, bool allowPrerelease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(_cliCompletionsTimeout);
+                var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+                // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
+                return await autocomplete.IdStartsWith(packageId.ToString(), includePrerelease: allowPrerelease, log: NullLogger.Instance, token: linkedCts.Token);
+            }
+            // any errors (i.e. auth) should just be ignored for completions
+            catch (Exception)
+            {
+                return Enumerable.Empty<string>();
             }
         }
 
