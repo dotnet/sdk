@@ -1198,10 +1198,11 @@ public static class Program
                 // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
                 if (OperatingSystem.IsMacOS())
                 {
-                    DirectoryInfo tmp = new DirectoryInfo("/tmp/");
-                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmp.FullName))
+                    string tmpPath = "/tmp/";
+                    DirectoryInfo tmp = new DirectoryInfo(tmpPath[..^1]); // No trailing slash in order to properly check the link target
+                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmpPath))
                     {
-                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmp.FullName.Length..]);
+                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmpPath.Length..]);
                     }
                 }
 
