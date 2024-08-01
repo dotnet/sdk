@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
-        private readonly bool _local;
         private readonly string _framework;
 
         public ToolInstallCommand(
@@ -32,7 +31,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 ?? new ToolInstallGlobalOrToolPathCommand(_parseResult);
 
             _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-            _local = parseResult.GetValue(ToolAppliedOption.LocalOption);
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
         }
