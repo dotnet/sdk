@@ -11,10 +11,6 @@ parameters:
 - name: dotnetDotnetRunId
   type: string
 
-- name: includeArtifactsSize
-  type: boolean
-  default: false
-
 - name: publishTestResultsPr
   type: boolean
   default: false
@@ -131,7 +127,6 @@ jobs:
       /p:SdkTarballPath=$(SdkTarballPath)
       /p:SourceBuiltArtifactsPath=$(SourceBuiltArtifactsPath)
       /p:SmokeTestsWarnOnSdkContentDiffs=false
-      /p:SmokeTestsIncludeArtifactsSizeTests=${{ parameters.includeArtifactsSize }}
       /p:TargetRid=${{ parameters.targetRid }}
       /p:PortableRid=$(Platform)-${{ parameters.architecture }}
     displayName: Run Tests
