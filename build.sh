@@ -8,4 +8,10 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-. "$ScriptRoot/eng/common/build.sh" --build --restore "$@"
+if [[ "$@" != *"-pack"* ]]; then
+  packInstallerFlag="/p:PackInstaller=false"
+else
+  packInstallerFlag=
+fi
+
+. "$ScriptRoot/eng/common/build.sh" --build --restore $packInstallerFlag "$@"

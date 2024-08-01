@@ -3,7 +3,7 @@
   <PropertyGroup>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
 
-    <BuildArgs>$(BuildArgs) /p:SemanticVersioningV1=true</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:SemanticVersioningV1=true /p:IncludeSourceRevisionInInformationalVersion=false</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
