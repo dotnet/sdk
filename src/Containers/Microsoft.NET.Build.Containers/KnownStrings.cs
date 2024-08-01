@@ -49,8 +49,14 @@ internal static class KnownStrings
 
     public static class ErrorCodes
     {
+        // current version doesn't support containerization
         public static readonly string CONTAINER002 = nameof(CONTAINER002);
+        // containerimagename rename
         public static readonly string CONTAINER003 = nameof(CONTAINER003);
+        // generic http error
+        public static readonly string CONTAINER004 = nameof(CONTAINER004);
+        // don't use the containers package
+        public static readonly string CONTAINER005 = nameof(CONTAINER005);
         public static readonly string CONTAINER1011 = nameof(CONTAINER1011);
         public static readonly string CONTAINER1012 = nameof(CONTAINER1012);
         public static readonly string CONTAINER1013 = nameof(CONTAINER1013);
