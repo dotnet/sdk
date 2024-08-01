@@ -342,15 +342,27 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            // Output apphost should not have .NET search location options changed, so it
-            // should run successfully with the DOTNET_ROOT environment variable set
             var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: runtimeIdentifier);
             outputDirectory.Should().HaveFiles(new[] { $"{testProject.Name}{Constants.ExeSuffix}" });
-            new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}"))
-                .WithEnvironmentVariable("DOTNET_ROOT", TestContext.Current.ToolsetUnderTest.DotNetRoot)
-                .Execute()
-                .Should()
-                .Pass();
+
+            // Value in default apphost executable for configuration of how it will search for the .NET install
+            const string dotNetSearchPlaceholder = "\0\019ff3e9c3602ae8e841925bb461a0adb064a1f1903667a5e0d87e8f608f425ac";
+
+            // Output apphost should not have .NET search location options changed, so it
+            // should have the same placeholder sequence as in the default apphost binary
+            ReadOnlySpan<byte> expectedBytes = Encoding.UTF8.GetBytes(dotNetSearchPlaceholder);
+            ReadOnlySpan<byte> appBytes = File.ReadAllBytes(Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}"));
+            bool found = false;
+            for (int i = 0; i < appBytes.Length - expectedBytes.Length; i++)
+            {
+                if (!appBytes.Slice(i, expectedBytes.Length).SequenceEqual(expectedBytes))
+                    continue;
+
+                found = true;
+                break;
+            }
+
+            Assert.True(found, "Expected placeholder sequence for .NET install search options was not found");
         }
 
         [WindowsOnlyFact]
