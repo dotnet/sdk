@@ -218,27 +218,27 @@ internal abstract class BaseSerializer
 
     protected static void WriteField(Stream stream, ushort id, string? value)
     {
-        if (value is null)
+        if (IsNull(value))
         {
             return;
         }
 
         WriteShort(stream, id);
-        WriteStringSize(stream, value);
-        WriteString(stream, value);
+        WriteStringSize(stream, value!);
+        WriteString(stream, value!);
     }
 
     protected static void WriteField(Stream stream, string? value)
     {
-        if (value is null)
+        if (IsNull(value))
         {
             return;
         }
 
-        WriteString(stream, value);
+        WriteString(stream, value!);
     }
 
-    protected static bool IsNull(string value) => value is null;
+    protected static bool IsNull(string? value) => value is null;
 
     protected static void WriteField(Stream stream, ushort id, bool value)
     {
