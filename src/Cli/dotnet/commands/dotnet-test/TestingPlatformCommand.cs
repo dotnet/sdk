@@ -107,7 +107,6 @@ namespace Microsoft.DotNet.Cli
 
         private async Task WaitConnectionAsync(CancellationToken token)
         {
-            //Process.GetCurrentProcess().Id;
             try
             {
                 while (true)
