@@ -1,7 +1,4 @@
-﻿#if (csharpFeature_TopLevelProgram)
-// See https://aka.ms/new-console-template for more information
-#endif
-#if (!csharpFeature_ImplicitUsings)
+﻿#if (!csharpFeature_ImplicitUsings)
 using System;
 
 #endif
