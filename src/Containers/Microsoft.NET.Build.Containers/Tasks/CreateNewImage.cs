@@ -388,12 +388,12 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     private class Telemetry(Microsoft.Build.Utilities.TaskLoggingHelper Log, PublishTelemetryContext context)
     {
-        private IDictionary<string, string?> ContextProperties() => new Dictionary<string, string?>
+        private IDictionary<string, string> ContextProperties() => new Dictionary<string, string>
             {
-                { nameof(context.RemotePullType), context.RemotePullType?.ToString() },
-                { nameof(context.LocalPullType), context.LocalPullType?.ToString() },
-                { nameof(context.RemotePushType), context.RemotePushType?.ToString() },
-                { nameof(context.LocalPushType), context.LocalPushType?.ToString() }
+                { nameof(context.RemotePullType), context.RemotePullType?.ToString() ?? "" },
+                { nameof(context.LocalPullType), context.LocalPullType?.ToString()  ?? "" },
+                { nameof(context.RemotePushType), context.RemotePushType?.ToString() ?? "" },
+                { nameof(context.LocalPushType), context.LocalPushType?.ToString() ?? "" }
             };
 
         public void LogPublishSuccess()
@@ -428,7 +428,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             var props = ContextProperties();
             props.Add("error", "rid_mismatch");
-            props.Add("target_rid", desiredRid);
+            props.Add("target_rid", desiredRid ?? "");
             props.Add("available_rids", string.Join(",", availableRids));
             Log.LogTelemetry("sdk/container/publish/error", props);
         }

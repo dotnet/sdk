@@ -332,13 +332,13 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private void LogTelemetryData(InferenceTelemetryData telemetryData)
     {
-        var telemetryProperties = new Dictionary<string, string?>
+        var telemetryProperties = new Dictionary<string, string>
         {
             { nameof(telemetryData.InferencePerformed), telemetryData.InferencePerformed.ToString() },
             { nameof(telemetryData.TargetFramework), telemetryData.TargetFramework },
-            { nameof(telemetryData.BaseImage), telemetryData.BaseImage },
-            { nameof(telemetryData.BaseImageTag), telemetryData.BaseImageTag },
-            { nameof(telemetryData.ContainerFamily), telemetryData.ContainerFamily },
+            { nameof(telemetryData.BaseImage), telemetryData.BaseImage ?? "" },
+            { nameof(telemetryData.BaseImageTag), telemetryData.BaseImageTag ?? "" },
+            { nameof(telemetryData.ContainerFamily), telemetryData.ContainerFamily ?? "" },
             { nameof(telemetryData.ProjectType), telemetryData.ProjectType.ToString() },
             { nameof(telemetryData.PublishMode), telemetryData.PublishMode.ToString() },
             { nameof(telemetryData.IsInvariant), telemetryData.IsInvariant.ToString() },
