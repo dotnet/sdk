@@ -154,7 +154,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (repository is not null && await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is var resource &&
+            if (repository is not null &&
+                await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
                 resource.AllRepositorySigned)
             {
                 if (!_shouldUsePackageSourceMapping)
