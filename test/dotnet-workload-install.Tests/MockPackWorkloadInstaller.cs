@@ -234,14 +234,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             WorkloadInstallRecord.Remove(workloadId);
         }
-        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
-        {
-            return InstalledWorkloads;
-        }
 
-        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords()
-        {
-            return Enumerable.Empty<SdkFeatureBand>();
-        }
+        public IEnumerable<WorkloadId> GetInstalledWorkloads() => InstalledWorkloads;
+        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => InstalledWorkloads;
+
+        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => Enumerable.Empty<SdkFeatureBand>();
     }
 }

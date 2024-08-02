@@ -15,10 +15,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _workloadIds = workloadIds;
         }
 
-        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
-        {
-            return _workloadIds;
-        }
+        public IEnumerable<WorkloadId> GetInstalledWorkloads() => _workloadIds;
+        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => _workloadIds;
 
         public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand) => throw new System.NotImplementedException();
         public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => throw new System.NotImplementedException();
