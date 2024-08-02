@@ -2,6 +2,7 @@
 using System.Reflection.Metadata;
 
 [assembly: MetadataUpdateHandler(typeof(UpdateHandler))]
+[assembly: MetadataUpdateHandler(typeof(Dep.UpdateHandler))]
 
 // delete the dependency dll to cause load failure of DepSubType
 var depPath = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location!)!, "Dep.dll");

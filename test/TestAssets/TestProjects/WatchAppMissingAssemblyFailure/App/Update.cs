@@ -1,6 +1,6 @@
 using System;
 
-class DepSubType : Dep
+class DepSubType : Dep.DepType
 {
     int F() => 1;
 }
