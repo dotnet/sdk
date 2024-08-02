@@ -17,6 +17,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public bool ShouldTestStage2 { get; set; } = true;
 
+        public string[] NuGetSourcesToAdd { get; set; }
+
 
     }
 }
