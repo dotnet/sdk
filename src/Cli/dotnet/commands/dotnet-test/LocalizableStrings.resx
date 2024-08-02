@@ -297,4 +297,7 @@ Examples:
   <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
     <value>The additional msbuild parameters to pass.</value>
   </data>
+  <data name="CmdTestModulesDescription" xml:space="preserve">
+    <value>Run tests from the specified test modules</value>
+  </data>
 </root>

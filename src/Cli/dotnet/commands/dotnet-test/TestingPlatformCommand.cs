@@ -7,7 +7,10 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -33,7 +36,8 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = parseResult.GetArguments();
+            DebuggerUtility.AttachCurrentProcessToVSProcessPID(12016);
+            _args = [.. parseResult.UnmatchedTokens];
 
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
@@ -70,25 +74,35 @@ namespace Microsoft.DotNet.Cli
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
-            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"];
-
-            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
-
-            if (VSTestTrace.TraceEnabled)
+            if (parseResult.HasOption(TestCommandParser.TestModules))
             {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
+                // If the module path pattern(s) was provided, we will use that to filter the test modules
+                string testModules = parseResult.GetValue(TestCommandParser.TestModules);
+
+                var testModulePaths = GetMatchedModulePaths(testModules);
+
+                if (!testModulePaths.Any())
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules}");
+                    return 1;
+                }
+
+
+                foreach (string testModule in testModulePaths)
+                {
+                    _testApplications[testModule] = new TestApplication(testModule, _pipeNameDescription.Name, _args);
+                    _actionQueue.Enqueue(_testApplications[testModule]);
+                }
             }
-
-            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
-            int testsProjectResult = msBuildForwardingApp.Execute();
-
-            if (testsProjectResult != 0)
+            else
             {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
-                return testsProjectResult;
+                // If no filter was provided, MSBuild will get the test project paths
+                var result = RunMSBuildTask(parseResult);
+                if (result != 0)
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                    return result;
+                }
             }
 
             _actionQueue.EnqueueCompleted();
@@ -106,6 +120,40 @@ namespace Microsoft.DotNet.Cli
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
             parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
+        }
+
+        private IEnumerable<string> GetMatchedModulePaths(string testModules)
+        {
+            var testModulePatterns = testModules.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+            Matcher matcher = new();
+            matcher.AddIncludePatterns(testModulePatterns);
+
+            string searchDirectory = Directory.GetCurrentDirectory();
+
+            PatternMatchingResult result = matcher.Execute(
+                new DirectoryInfoWrapper(
+                    new DirectoryInfo(searchDirectory)));
+
+            return result.Files.Select(file => $"{searchDirectory}\\{file.Path.Replace("/", "\\")}");
+        }
+
+        private int RunMSBuildTask(ParseResult parseResult)
+        {
+            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
+            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"];
+
+            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
+
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
+            }
+
+            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
+            return msBuildForwardingApp.Execute();
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)

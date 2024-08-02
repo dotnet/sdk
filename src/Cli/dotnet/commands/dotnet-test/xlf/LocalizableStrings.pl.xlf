@@ -215,6 +215,11 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <target state="translated">RESULTS_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests from the specified test modules</source>
+        <target state="new">Run tests from the specified test modules</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
         <target state="translated">DUMP_TYPE</target>
