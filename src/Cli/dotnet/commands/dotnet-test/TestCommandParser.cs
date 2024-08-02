@@ -21,6 +21,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
         };
 
+        public static readonly CliOption<string> TestModules = new ForwardedOption<string>("--test-modules")
+        {
+            Description = LocalizableStrings.CmdTestModulesDescription
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -203,8 +208,9 @@ namespace Microsoft.DotNet.Cli
             command.SetAction((parseResult) => command.Run(parseResult));
             command.Options.Add(MaxParallelTestModules);
             command.Options.Add(AdditionalMSBuildParameters);
+			command.Options.Add(TestModules);
 
-            return command;
+			return command;
         }
 
         private static CliCommand GetVSTestCliCommand()
