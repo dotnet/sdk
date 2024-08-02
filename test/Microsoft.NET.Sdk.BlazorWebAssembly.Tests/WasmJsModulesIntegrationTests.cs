@@ -13,7 +13,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
             var build = CreateBuildCommand(ProjectDirectory);
@@ -43,7 +51,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAsset = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "wwwroot", "blazorwasm.lib.module.js"), "console.log('Hello initializer')");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "razorclasslibrary", "wwwroot", "razorclasslibrary.lib.module.js"), "console.log('Hello RCL initializer')");
 
@@ -78,7 +97,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
             var publish = CreatePublishCommand(ProjectDirectory);
@@ -117,20 +144,31 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Publish initializer')");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.build.js"), "console.log('Build initializer')");
 
             ProjectDirectory.WithProjectChanges(document =>
             {
+                var itemGroup = new XElement("PropertyGroup");
+                var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                itemGroup.Add(fingerprintAssets);
+                document.Root.Add(itemGroup);
+
                 document.Root.Add(new XElement("ItemGroup",
                     new XElement("Content",
                         new XAttribute("Update", "wwwroot\\blazorwasm-minimal.lib.module.build.js"),
                         new XAttribute("CopyToPublishDirectory", "Never"),
                         new XAttribute("TargetPath", "wwwroot\\blazorwasm-minimal.lib.module.js"))));
             });
-
 
             var publish = CreatePublishCommand(ProjectDirectory);
             var publishResult = ExecuteCommand(publish);
@@ -173,7 +211,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -183,6 +221,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             ProjectDirectory.WithProjectChanges(document =>
             {
+                document.Root.Add(new XElement("PropertyGroup",
+                    new XElement("WasmFingerprintAssets", false)));
                 document.Root.Add(
                     XElement.Parse(@"
 <PropertyGroup>
@@ -236,7 +276,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -248,6 +288,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 if (Path.GetFileNameWithoutExtension(path) == "blazorwasm")
                 {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    document.Root.Add(itemGroup);
+
                     document.Root.Add(
                         XElement.Parse(@"
 <PropertyGroup>
