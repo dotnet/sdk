@@ -138,82 +138,69 @@ namespace Microsoft.DotNet.Cli
         {
             try
             {
-                if (TryGetModulePath(request, out string modulePath))
+                switch (request)
                 {
-                    _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-                    // Write the test application to the channel
-                    _actionQueue.Enqueue(_testApplications[modulePath]);
+                    case Module module:
+                        string modulePath = module.DLLPath;
+                        _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
+                        // Write the test application to the channel
+                        _actionQueue.Enqueue(_testApplications[modulePath]);
+                        break;
 
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
+                    case HandshakeInfo handshakeInfo:
+                        if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ModulePath, out string value))
+                        {
+                            var testApp = _testApplications[value];
+                            Debug.Assert(testApp is not null);
+                            testApp.OnHandshakeInfo(handshakeInfo);
 
-                if (TryGetHandshakeInfo(request, out HandshakeInfo handshakeInfo))
-                {
-                    if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ModulePath, out string value))
-                    {
-                        var testApplication = _testApplications[value];
+                            return Task.FromResult((IResponse)CreateHandshakeInfo());
+                        }
+                        break;
+
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
                         Debug.Assert(testApplication is not null);
-                        testApplication.OnHandshakeInfo(handshakeInfo);
+                        testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
 
-                        return Task.FromResult((IResponse)CreateHandshakeInfo());
-                    }
+                    case SuccessfulTestResultMessage successfulTestResultMessage:
+                        testApplication = _testApplications[successfulTestResultMessage.ModulePath];
+                        Debug.Assert(testApplication is not null);
+
+                        testApplication.OnSuccessfulTestResultMessage(successfulTestResultMessage);
+                        break;
+
+                    case FailedTestResultMessage failedTestResultMessage:
+                        testApplication = _testApplications[failedTestResultMessage.ModulePath];
+                        Debug.Assert(testApplication is not null);
+
+                        testApplication.OnFailedTestResultMessage(failedTestResultMessage);
+                        break;
+
+                    case FileArtifactInfo fileArtifactInfo:
+                        testApplication = _testApplications[fileArtifactInfo.ModulePath];
+                        Debug.Assert(testApplication is not null);
+                        testApplication.OnFileArtifactInfo(fileArtifactInfo);
+                        break;
+
+                    case TestSessionEvent sessionEvent:
+                        testApplication = _testApplications[sessionEvent.ModulePath];
+                        Debug.Assert(testApplication is not null);
+                        testApplication.OnSessionEvent(sessionEvent);
+                        break;
+
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        if (VSTestTrace.TraceEnabled)
+                        {
+                            VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        }
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
-
-                if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
-                {
-                    var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                    Debug.Assert(testApplication is not null);
-                    testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
-
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                if (TryGetSuccessfulTestResultMessage(request, out SuccessfulTestResultMessage successfulTestResultMessage))
-                {
-                    var testApplication = _testApplications[successfulTestResultMessage.ModulePath];
-                    Debug.Assert(testApplication is not null);
-
-                    testApplication.OnSuccessfulTestResultMessage(successfulTestResultMessage);
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                if (TryGetFailedTestResultMessage(request, out FailedTestResultMessage failedTestResultMessage))
-                {
-                    var testApplication = _testApplications[failedTestResultMessage.ModulePath];
-                    Debug.Assert(testApplication is not null);
-
-                    testApplication.OnFailedTestResultMessage(failedTestResultMessage);
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                if (TryGetFileArtifactInfo(request, out FileArtifactInfo fileArtifactInfo))
-                {
-                    var testApplication = _testApplications[fileArtifactInfo.ModulePath];
-                    Debug.Assert(testApplication is not null);
-                    testApplication.OnFileArtifactInfo(fileArtifactInfo);
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                if (TryGetSessionEvent(request, out TestSessionEvent sessionEvent))
-                {
-                    var testApplication = _testApplications[sessionEvent.ModulePath];
-                    Debug.Assert(testApplication is not null);
-                    testApplication.OnSessionEvent(sessionEvent);
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                // If we don't recognize the message, log and skip it
-                if (TryGetUnknownMessage(request, out UnknownMessage unknownMessage))
-                {
-                    if (VSTestTrace.TraceEnabled)
-                    {
-                        VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    }
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                // If it doesn't match any of the above, throw an exception
-                throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
             }
             catch (Exception ex)
             {
@@ -237,178 +224,96 @@ namespace Microsoft.DotNet.Cli
                 { HandshakeInfoPropertyNames.ProtocolVersion, ProtocolConstants.Version }
             });
 
-        private static bool TryGetModulePath(IRequest request, out string modulePath)
-        {
-            if (request is Module module)
-            {
-                modulePath = module.DLLPath;
-                return true;
-            }
-
-            modulePath = null;
-            return false;
-        }
-
-        private static bool TryGetHandshakeInfo(IRequest request, out HandshakeInfo handshakeInfo)
-        {
-            if (request is HandshakeInfo result)
-            {
-                handshakeInfo = result;
-                return true;
-            }
-
-            handshakeInfo = null;
-            return false;
-        }
-
-        private static bool TryGetHelpResponse(IRequest request, out CommandLineOptionMessages commandLineOptionMessages)
-        {
-            if (request is CommandLineOptionMessages result)
-            {
-                commandLineOptionMessages = result;
-                return true;
-            }
-
-            commandLineOptionMessages = null;
-            return false;
-        }
-
-        public static bool TryGetSuccessfulTestResultMessage(IRequest response, out SuccessfulTestResultMessage testResultMessage)
-        {
-            if (response is SuccessfulTestResultMessage result)
-            {
-                testResultMessage = result;
-                return true;
-            }
-            testResultMessage = null;
-            return false;
-        }
-
-        public static bool TryGetFailedTestResultMessage(IRequest response, out FailedTestResultMessage testResultMessage)
-        {
-            if (response is FailedTestResultMessage result)
-            {
-                testResultMessage = result;
-                return true;
-            }
-            testResultMessage = null;
-            return false;
-        }
-
-        private bool TryGetFileArtifactInfo(IRequest request, out FileArtifactInfo fileArtifactInfo)
-        {
-            if (request is FileArtifactInfo result)
-            {
-                fileArtifactInfo = result;
-                return true;
-            }
-
-            fileArtifactInfo = null;
-            return false;
-        }
-
-        private bool TryGetSessionEvent(IRequest request, out TestSessionEvent sessionEvent)
-        {
-            if (request is TestSessionEvent result)
-            {
-                sessionEvent = result;
-                return true;
-            }
-
-            sessionEvent = null;
-            return false;
-        }
-
-        private static bool TryGetUnknownMessage(IRequest request, out UnknownMessage unknownMessage)
-        {
-            if (request is UnknownMessage result)
-            {
-                unknownMessage = result;
-                return true;
-            }
-
-            unknownMessage = null;
-            return false;
-        }
-
         private void OnHandshakeInfoReceived(object sender, HandshakeInfoArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                var handshakeInfo = args.handshakeInfo;
+                return;
+            }
 
-                foreach (var property in handshakeInfo.Properties)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
-                }
+            var handshakeInfo = args.handshakeInfo;
+
+            foreach (var property in handshakeInfo.Properties)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
             }
         }
         private void OnTestResultReceived(object sender, EventArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                if (args is SuccessfulTestResultEventArgs successfulTestResultEventArgs)
-                {
-                    var successfulTestResultMessage = successfulTestResultEventArgs.SuccessfulTestResultMessage;
-                    VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, " +
-                    $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}, {successfulTestResultMessage.ModulePath}");
-                }
-                else if (args is FailedTestResultEventArgs failedTestResultEventArgs)
-                {
-                    var failedTestResultMessage = failedTestResultEventArgs.FailedTestResultMessage;
-                    VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {failedTestResultMessage.Uid}, {failedTestResultMessage.DisplayName}, " +
-                    $"{failedTestResultMessage.State}, {failedTestResultMessage.Reason}, {failedTestResultMessage.ErrorMessage}," +
-                    $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}, {failedTestResultMessage.ModulePath}");
-                }
+                return;
+            }
+
+            if (args is SuccessfulTestResultEventArgs successfulTestResultEventArgs)
+            {
+                var successfulTestResultMessage = successfulTestResultEventArgs.SuccessfulTestResultMessage;
+                VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, " +
+                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}, {successfulTestResultMessage.ModulePath}");
+            }
+            else if (args is FailedTestResultEventArgs failedTestResultEventArgs)
+            {
+                var failedTestResultMessage = failedTestResultEventArgs.FailedTestResultMessage;
+                VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {failedTestResultMessage.Uid}, {failedTestResultMessage.DisplayName}, " +
+                $"{failedTestResultMessage.State}, {failedTestResultMessage.Reason}, {failedTestResultMessage.ErrorMessage}," +
+                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}, {failedTestResultMessage.ModulePath}");
             }
         }
 
         private void OnFileArtifactInfoReceived(object sender, FileArtifactInfoEventArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                var fileArtifactInfo = args.FileArtifactInfo;
-                VSTestTrace.SafeWriteTrace(() => $"FileArtifactInfo: {fileArtifactInfo.FullPath}, {fileArtifactInfo.DisplayName}, " +
-                    $"{fileArtifactInfo.Description}, {fileArtifactInfo.TestUid}, {fileArtifactInfo.TestDisplayName}, " +
-                    $"{fileArtifactInfo.SessionUid}, {fileArtifactInfo.ModulePath}");
+                return;
             }
+
+            var fileArtifactInfo = args.FileArtifactInfo;
+            VSTestTrace.SafeWriteTrace(() => $"FileArtifactInfo: {fileArtifactInfo.FullPath}, {fileArtifactInfo.DisplayName}, " +
+                $"{fileArtifactInfo.Description}, {fileArtifactInfo.TestUid}, {fileArtifactInfo.TestDisplayName}, " +
+                $"{fileArtifactInfo.SessionUid}, {fileArtifactInfo.ModulePath}");
         }
 
         private void OnSessionEventReceived(object sender, SessionEventArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                var sessionEvent = args.SessionEvent;
-                VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
+                return;
             }
+
+            var sessionEvent = args.SessionEvent;
+            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+                return;
             }
+
+            VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
         }
 
         private void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (!VSTestTrace.TraceEnabled)
             {
-                if (args.ExitCode != 0)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
-                }
+                return;
+            }
 
-                if (args.OutputData.Count > 0)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
-                }
+            if (args.ExitCode != 0)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
+            }
 
-                if (args.ErrorData.Count > 0)
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
-                }
+            if (args.OutputData.Count > 0)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
+            }
+
+            if (args.ErrorData.Count > 0)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
             }
         }
 
