@@ -8,7 +8,7 @@ public class DepType
     }
 }
 
-static class UpdateHandler
+public static class UpdateHandler
 {
     // Lock to avoid the updated Print method executing concurrently with the update handler.
     public static object Guard = new object();
