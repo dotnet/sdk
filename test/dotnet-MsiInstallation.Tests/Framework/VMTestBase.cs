@@ -65,17 +65,22 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             {
                 return;
             }
+            IEnumerable<VMAction> AddNuGetSourceActions = Enumerable.Empty<VMAction>();
+            if (VM.VMTestSettings.NuGetSourcesToAdd != null)
+            {
+                AddNuGetSourceActions = VM.VMTestSettings.NuGetSourcesToAdd.Select(source =>
 
-            VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
-                .WithDescription("Disable .NET SDK first run message")
-                .Execute()
-                .Should()
-                .Pass();
+                    VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
+                ).ToList();
+            }
 
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-                .WithDescription($"Install SDK {SdkInstallerVersion}")
+            VM.CreateActionGroup($"Install and setup SDK {SdkInstallerVersion}",
+                    [
+                        VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true"),
+                        VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet"),
+                        ..AddNuGetSourceActions
+                    ])
                 .Execute().Should().Pass();
-
             if (deployStage2)
             {
                 DeployStage2Sdk();
