@@ -20,18 +20,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
 
         Lazy<Dictionary<string, string>> _testWorkloadSetVersions;
-        string WorkloadSetVersion1 => _testWorkloadSetVersions.Value.GetValueOrDefault("version1", "8.0.300-preview.0.24178.1");
-        string WorkloadSetVersion2 => _testWorkloadSetVersions.Value.GetValueOrDefault("version2", "8.0.300-preview.0.24217.2");
+        string WorkloadSetVersion1 => _testWorkloadSetVersions.Value["version1"];
+        string WorkloadSetVersion2 => _testWorkloadSetVersions.Value["version2"];
         string WorkloadSetPreviousBandVersion => _testWorkloadSetVersions.Value.GetValueOrDefault("previousbandversion", "8.0.204");
 
         public WorkloadSetTests(ITestOutputHelper log) : base(log)
         {
             _testWorkloadSetVersions = new Lazy<Dictionary<string, string>>(() =>
             {
-                var versionsFile = VM.GetRemoteFile(@"c:\SdkTesting\workloadsets\testworkloadsetversions.json");
+                string remoteFilePath = @"c:\SdkTesting\workloadsets\testworkloadsetversions.json";
+                var versionsFile = VM.GetRemoteFile(remoteFilePath);
                 if (!versionsFile.Exists)
                 {
-                    return new Dictionary<string, string>();
+                    throw new FileNotFoundException($"Could not find file {remoteFilePath} on VM");
                 }
 
                 return JsonSerializer.Deserialize<Dictionary<string, string>>(versionsFile.ReadAllText());
