@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.WaitForSessionStarted();
 
             var newSrc = /* lang=c#-test */"""
-                class DepSubType : Dep
+                class DepSubType : Dep.DepType
                 {
                     int F() => 2;
                 }
