@@ -229,10 +229,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PublishContainer"
-    DependsOnTargets="$(PublishContainerDependsOn)"
-    Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
-
+  <Target Name="_PublishSingleContainer" DependsOnTargets="$(PublishContainerDependsOn)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -274,4 +271,45 @@
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
   </Target>
+
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)">
+    <ItemGroup>
+      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
+      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
+      <_InnerBuild
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
+      <_rids Remove ="$(_rids)" />
+    </ItemGroup>
+
+    <!-- would BuildInParallel, but for some reason the 'compute' targets aren't being called -->
+
+    <MSBuild
+        Projects="@(_InnerBuild)"
+        Targets="Publish;_PublishSingleContainer"
+        BuildInParallel="false">
+        <!-- we need the digest + platform at minimum to make the index, so we'll need to add that to the returns from the per-image generation -->
+        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedImage"  />
+    </MSBuild>
+
+    <!-- Create Image Index -->
+    <!-- Push Image Index -->
+  </Target>
+
+  <Target Name="PublishContainer"
+  DependsOnTargets="$(PublishContainerDependsOn)"
+  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
+    <PropertyGroup>
+      <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
+      <_IsMultiRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == '')">true</_IsMultiRIDBuild>
+      <_IsSingleRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' != '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' != '')">true</_IsSingleRIDBuild>
+    </PropertyGroup>
+
+    <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
+    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers" />
+    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer" />
+
+    <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
+  </Target>
+
 </Project>
