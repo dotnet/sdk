@@ -728,12 +728,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
      -->
   <Target Name="_CreateAppHostForPublish"
+          Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
+          Outputs="$(AppHostForPublishIntermediatePath)"
           DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
           Condition="'$(_UpdateAppHostForPublish)' == 'true' and
                      Exists('@(IntermediateAssembly)') and
                      Exists('$(AppHostSourcePath)')">
     <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
-                   AppHostDestinationPath="$(AppHostIntermediatePath)"
+                   AppHostDestinationPath="$(AppHostForPublishIntermediatePath)"
                    AppBinaryName="$(AssemblyName)$(TargetExt)"
                    IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
                    WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
@@ -887,6 +889,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Add the single-file host created as part of publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UpdateAppHostForPublish)' == 'true' and Exists('$(AppHostForPublishIntermediatePath)')">
+      <!-- Remove apphost from build from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the apphost created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(AppHostForPublishIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>
