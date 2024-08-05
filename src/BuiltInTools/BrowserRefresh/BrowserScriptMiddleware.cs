@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorHotReload.js";
             using var stream = new MemoryStream();
-            var manifestStream = typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!;
+            using var manifestStream = typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!;
             manifestStream.CopyTo(stream);
 
             return stream.ToArray();
