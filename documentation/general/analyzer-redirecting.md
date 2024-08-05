@@ -1,7 +1,7 @@
 # Redirecting analyzers in SDK to VS
 
 We will redirect analyzers from the SDK to ones deployed in the VS to avoid the [torn SDK][torn-sdk] issue.
-Only major versions will be redirected because different major versions of the same analyzer are not compatible.
+Only major versions will be redirected because different major versions of the same analyzer cannot be assumed to be compatible.
 So this applies to a situation like:
 - Having an analyzer in SDK 9.0.1 referencing Roslyn 4.12. That gets deployed to VS 17.12.
 - Having an analyzer in SDK 9.0.7 referencing Roslyn 4.13.
@@ -11,7 +11,7 @@ So this applies to a situation like:
 
 Loading analyzers with older major version should not be a problem because they must reference an older version of Roslyn.
 
-Loading analyzers with newer major version in an old VS will result in an error like:
+Targeting an SDK (and hence also loading analyzers) with newer major version in an old VS already results in an error like:
 
 > error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 9.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from
 https://aka.ms/dotnet/download
