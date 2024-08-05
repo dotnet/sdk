@@ -22,13 +22,11 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
         var projectGraph = Program.TryReadProject(options, reporter);
-        var projectMap = new ProjectNodeMap(projectGraph, reporter);
+        var handler = new CompilationHandler(reporter);
 
-        var handler = new CompilationHandler(reporter, projectMap);
-
-        var projectsToBeRebuilt = handler.CurrentSolution.Projects.Where(p => p.Name == "Host").Select(p => p.Id).ToHashSet();
+        var projectsToBeRebuilt = handler.Workspace.CurrentSolution.Projects.Where(p => p.Name == "Host").Select(p => p.Id).ToHashSet();
         await handler.RestartSessionAsync(projectsToBeRebuilt, CancellationToken.None);
 
-        AssertEx.SequenceEqual(["Host", "Lib", "A", "B"], handler.CurrentSolution.Projects.Select(p => p.Name));
+        AssertEx.SequenceEqual(["Host", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
     }
 }

@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Watcher
 
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(Context.ProjectGraph, Context.Reporter);
-                    await using var compilationHandler = new CompilationHandler(Context.Reporter, projectMap);
+                    await using var compilationHandler = new CompilationHandler(Context.Reporter);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Watcher
 
                     var buildCompletionTime = DateTime.UtcNow;
 
-                    await compilationHandler.LoadSolutionAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
+                    await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
                     // when the EnC session captures content of the file after the changes has already been made.
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Watcher
 
                             evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
-                            await compilationHandler.LoadSolutionAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
+                            await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
                             if (shutdownCancellationToken.IsCancellationRequested)
                             {
@@ -202,12 +202,14 @@ namespace Microsoft.DotNet.Watcher
                                 }
                             }
 
+                            ReportFileChanges(changedFiles);
+
                             fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter);
                         }
                         else
                         {
                             // update the workspace to reflect changes in the file content:
-                            await compilationHandler.UpdateSolutionAsync(changedFiles, iterationCancellationToken);
+                            await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                         }
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.Main);

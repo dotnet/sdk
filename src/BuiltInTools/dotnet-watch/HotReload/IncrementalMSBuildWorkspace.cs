@@ -12,11 +12,16 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Tools.Internal;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.DotNet.Watcher.Tools;
 
 internal class IncrementalMSBuildWorkspace : Workspace
 {
+    private readonly IReporter _reporter;
+
     public IncrementalMSBuildWorkspace(IReporter reporter)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
     {
@@ -25,72 +30,168 @@ internal class IncrementalMSBuildWorkspace : Workspace
             // Errors reported here are not fatal, an exception would be thrown for fatal issues.
             reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
         };
+
+        _reporter = reporter;
     }
 
-    internal async Task OpenProjectAsync(string rootProjectPath, CancellationToken cancellationToken)
+    public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
     {
         var oldSolution = CurrentSolution;
 
         var loader = new MSBuildProjectLoader(this);
-        var projectMap = ProjectMap.Create(oldSolution);
+        var projectMap = ProjectMap.Create();
         var projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+
+        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => p.FilePath!, elementSelector: static p => p.Id);
+
+        // Map new project id to the corresponding old one based on file path, if it exists, and null for added projects.
+        // Deleted projects won't be included in this map.
+        var projectIdMap = projectInfos.ToDictionary(
+            keySelector: static info => info.Id,
+            elementSelector: info => oldProjectIdsByPath.TryGetValue(info.FilePath!, out var oldProjectId) ? oldProjectId : null);
 
         var newSolution = oldSolution;
 
-        foreach (var projectInfo in projectInfos)
+        foreach (var newProjectInfo in projectInfos)
         {
-            var projectId = projectInfo.Id;
-            if (oldSolution.GetProject(projectId) is { } oldProject)
+            Debug.Assert(newProjectInfo.FilePath != null);
+
+            var oldProjectId = projectIdMap[newProjectInfo.Id];
+            if (oldProjectId == null)
             {
-                newSolution = newSolution
-                    .WithProjectAnalyzerReferences(projectId, projectInfo.AnalyzerReferences)
-                    .WithProjectAssemblyName(projectId, projectInfo.AssemblyName)
-                    .WithProjectCompilationOptions(projectId, projectInfo.CompilationOptions!)
-                    .WithProjectCompilationOutputInfo(projectId, projectInfo.CompilationOutputInfo)
-                    .WithProjectDefaultNamespace(projectId, projectInfo);
-                   
-                var x = oldProject.WithAnalyzerReferences(projectInfo.AnalyzerReferences);
-
-                // LoadProjectInfoAsync maps projects to the existing ones but not documents.
-
-                OnAddedDocuments(oldProject, projectInfo.Documents, OnDocumentAdded);
-                OnAddedDocuments(oldProject, projectInfo.AdditionalDocuments, OnAdditionalDocumentAdded);
-                OnAddedDocuments(oldProject, projectInfo.AnalyzerConfigDocuments, OnAnalyzerConfigDocumentAdded);
-
-                OnRemovedDocuments(oldProject, projectInfo.Documents, OnDocumentRemoved);
-                OnRemovedDocuments(oldProject, projectInfo.AdditionalDocuments, OnAdditionalDocumentRemoved);
-                OnRemovedDocuments(oldProject, projectInfo.AnalyzerConfigDocuments, OnAnalyzerConfigDocumentRemoved);
-
-                static void OnAddedDocuments(Project oldProject, IReadOnlyList<DocumentInfo> newDocumentInfos, Action<DocumentInfo> action)
-                {
-                    foreach (var newDocumentInfo in newDocumentInfos)
-                    {
-                        Debug.Assert(newDocumentInfo.FilePath != null);
-                        if (!oldProject.Solution.GetDocumentIdsWithFilePath(newDocumentInfo.FilePath).Any(d => d.ProjectId == oldProject.Id))
-                        {
-                            action(newDocumentInfo);
-                        }
-                    }
-                }
-
-                static void OnRemovedDocuments(Project oldProject, IReadOnlyList<DocumentInfo> newDocumentInfos, Action<DocumentId> action)
-                {
-                    foreach (var oldDocument in oldProject.Documents)
-                    {
-                        Debug.Assert(oldDocument.FilePath != null);
-                        if (!newDocumentInfos.Any(info => info.FilePath == oldDocument.FilePath))
-                        {
-                            action(oldDocument.Id);
-                        }
-                    }
-                }
+                newSolution = newSolution.AddProject(newProjectInfo);
+                continue;
             }
-            else
+
+            newSolution = WatchHotReloadService.WithProjectInfo(newSolution, ProjectInfo.Create(
+                oldProjectId,
+                newProjectInfo.Version,
+                newProjectInfo.Name,
+                newProjectInfo.AssemblyName,
+                newProjectInfo.Language,
+                newProjectInfo.FilePath,
+                newProjectInfo.OutputFilePath,
+                newProjectInfo.CompilationOptions,
+                newProjectInfo.ParseOptions,
+                MapDocuments(oldProjectId, newProjectInfo.Documents),
+                newProjectInfo.ProjectReferences.Select(MapProjectReference),
+                newProjectInfo.MetadataReferences,
+                newProjectInfo.AnalyzerReferences,
+                MapDocuments(oldProjectId, newProjectInfo.AdditionalDocuments),
+                isSubmission: false,
+                hostObjectType: null,
+                outputRefFilePath: newProjectInfo.OutputRefFilePath)
+                .WithAnalyzerConfigDocuments(MapDocuments(oldProjectId, newProjectInfo.AnalyzerConfigDocuments))
+                .WithCompilationOutputInfo(newProjectInfo.CompilationOutputInfo));
+        }
+
+        await ReportSolutionFilesAsync(SetCurrentSolution(newSolution), cancellationToken);
+        UpdateReferencesAfterAdd();
+
+        ProjectReference MapProjectReference(ProjectReference pr)
+            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing:
+            => new(projectIdMap.TryGetValue(pr.ProjectId, out var mappedId) ? mappedId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
+
+        ImmutableArray<DocumentInfo> MapDocuments(ProjectId mappedProjectId, IReadOnlyList<DocumentInfo> documents)
+            => documents.Select(docInfo =>
             {
-                newSolution = newSolution.AddProject(projectInfo);
+                // TODO: can there be multiple documents of the same path in the project?
+
+                // Map to a document of the same path. If there isn't one (a new document is added to the project),
+                // create a new document id with the mapped project id.
+                var mappedDocumentId = oldSolution.GetDocumentIdsWithFilePath(docInfo.FilePath).FirstOrDefault(id => id.ProjectId == mappedProjectId)
+                    ?? DocumentId.CreateNewId(mappedProjectId);
+
+                return docInfo.WithId(mappedDocumentId);
+            }).ToImmutableArray();
+    }
+
+    public async ValueTask UpdateFileContentAsync(IEnumerable<FileItem> changedFiles, CancellationToken cancellationToken)
+    {
+        var updatedSolution = CurrentSolution;
+
+        foreach (var changedFile in changedFiles)
+        {
+            var documentIds = updatedSolution.GetDocumentIdsWithFilePath(changedFile.FilePath);
+            foreach (var documentId in documentIds)
+            {
+                var textDocument = updatedSolution.GetDocument(documentId)
+                    ?? updatedSolution.GetAdditionalDocument(documentId)
+                    ?? updatedSolution.GetAnalyzerConfigDocument(documentId);
+
+                if (textDocument == null)
+                {
+                    _reporter.Verbose($"Could not find document with path '{changedFile.FilePath}' in the workspace.");
+                    continue;
+                }
+
+                var project = updatedSolution.GetProject(documentId.ProjectId);
+                Debug.Assert(project?.FilePath != null);
+
+                var sourceText = await GetSourceTextAsync(changedFile.FilePath, cancellationToken);
+
+                updatedSolution = textDocument is Document document
+                    ? document.WithText(sourceText).Project.Solution
+                    : updatedSolution.WithAdditionalDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue);
             }
         }
 
-        UpdateReferencesAfterAdd();
+        _ = SetCurrentSolution(updatedSolution);
+    }
+
+    private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
+    {
+        var zeroLengthRetryPerformed = false;
+        for (var attemptIndex = 0; attemptIndex < 6; attemptIndex++)
+        {
+            try
+            {
+                // File.OpenRead opens the file with FileShare.Read. This may prevent IDEs from saving file
+                // contents to disk
+                SourceText sourceText;
+                using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                }
+
+                if (!zeroLengthRetryPerformed && sourceText.Length == 0)
+                {
+                    zeroLengthRetryPerformed = true;
+
+                    // VSCode (on Windows) will sometimes perform two separate writes when updating a file on disk.
+                    // In the first update, it clears the file contents, and in the second, it writes the intended
+                    // content.
+                    // It's atypical that a file being watched for hot reload would be empty. We'll use this as a
+                    // hueristic to identify this case and perform an additional retry reading the file after a delay.
+                    await Task.Delay(20, cancellationToken);
+
+                    using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                }
+
+                return sourceText;
+            }
+            catch (IOException) when (attemptIndex < 5)
+            {
+                await Task.Delay(20 * (attemptIndex + 1), cancellationToken);
+            }
+        }
+
+        Debug.Fail("This shouldn't happen.");
+        return null;
+    }
+
+    public async Task ReportSolutionFilesAsync(Solution solution, CancellationToken cancellationToken)
+    {
+        _reporter.Verbose($"Solution: {solution.FilePath}");
+        foreach (var project in solution.Projects)
+        {
+            _reporter.Verbose($"  Project: {project.FilePath} {project.Id.Id}");
+            foreach (var document in project.Documents)
+            {
+                var text = await document.GetTextAsync(cancellationToken);
+                _reporter.Verbose($"    Document: {document.FilePath} {document.Id.Id} {BitConverter.ToString(text.GetChecksum().ToArray())}");
+            }
+        }
     }
 }

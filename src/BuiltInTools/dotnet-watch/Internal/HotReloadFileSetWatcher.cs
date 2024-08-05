@@ -84,14 +84,22 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
+                // only handle file changes:
+                if (Directory.Exists(path))
+                {
+                    return;
+                }
+
                 try
                 {
+                    // TODO: Deleted files will be ignored https://github.com/dotnet/sdk/issues/42535
+
                     // Do not report changes to files that happened during build:
                     var creationTime = File.GetCreationTimeUtc(path);
                     var writeTime = File.GetLastWriteTimeUtc(path);
                     if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
                     {
-                        reporter.Verbose($"Ignoring file updated during build: '{path}' ({creationTime.Ticks},{writeTime.Ticks} < {buildCompletionTime.Ticks}).");
+                        reporter.Verbose($"Ignoring file updated during build: '{path}' ({FormatTimestamp(creationTime)},{FormatTimestamp(writeTime)} < {FormatTimestamp(buildCompletionTime)}).");
                         return;
                     }
                 }
@@ -132,5 +140,8 @@ namespace Microsoft.DotNet.Watcher.Internal
             cancellationToken.Register(() => tcs.TrySetResult(null));
             return tcs.Task;
         }
+
+        internal static string FormatTimestamp(DateTime time)
+            => time.ToString("yyyy-MM-dd HH:mm:ss.fffffff");
     }
 }

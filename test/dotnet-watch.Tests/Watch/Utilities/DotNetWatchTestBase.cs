@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watcher.Internal;
+
 namespace Microsoft.DotNet.Watcher.Tests;
 
 /// <summary>
@@ -26,7 +28,7 @@ public abstract class DotNetWatchTestBase : IDisposable
     public void UpdateSourceFile(string path, string text)
     {
         File.WriteAllText(path, text, Encoding.UTF8);
-        Logger.WriteLine($"File '{path}' updated (timestamp: {File.GetLastWriteTimeUtc(path).Ticks}).");
+        Logger.WriteLine($"File '{path}' updated ({HotReloadFileSetWatcher.FormatTimestamp(File.GetLastWriteTimeUtc(path))}).");
     }
 
     public void UpdateSourceFile(string path, Func<string, string> contentTransform)

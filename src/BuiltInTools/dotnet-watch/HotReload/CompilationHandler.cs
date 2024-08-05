@@ -4,13 +4,11 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.EditAndContinue;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
@@ -19,16 +17,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class CompilationHandler : IAsyncDisposable
     {
-        private readonly IReporter _reporter;
-        private readonly ProjectNodeMap _projectMap;
-        private readonly MSBuildWorkspace _workspace;
-        private readonly WatchHotReloadService _hotReloadService;
+        public readonly IncrementalMSBuildWorkspace Workspace;
 
-        /// <summary>
-        /// The current solution. We do not use the current solutions of the <see cref="_workspace"/>
-        /// since updating it with new document content saves the content to disk, which would re-trigger file watcher events.
-        /// </summary>
-        private Solution _currentSolution;
+        private readonly IReporter _reporter;
+        private readonly WatchHotReloadService _hotReloadService;
 
         /// <summary>
         /// Lock to synchronize:
@@ -56,27 +48,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, ProjectNodeMap projectMap)
+        public CompilationHandler(IReporter reporter)
         {
             _reporter = reporter;
-            _projectMap = projectMap;
-            _workspace = MSBuildWorkspace.Create();
-            _currentSolution = _workspace.CurrentSolution;
-
-            _workspace.WorkspaceFailed += (_sender, diag) =>
-            {
-                // Errors reported here are not fatal, an exception would be thrown for fatal issues.
-                reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
-            };
-
-            _hotReloadService = new WatchHotReloadService(_currentSolution.Services, GetAggregateCapabilitiesAsync);
+            Workspace = new IncrementalMSBuildWorkspace(reporter);
+            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, GetAggregateCapabilitiesAsync);
         }
 
         public async ValueTask DisposeAsync()
         {
             _isDisposed = true;
 
-            _workspace?.Dispose();
+            Workspace?.Dispose();
 
             IEnumerable<RunningProject> projects;
             lock (_runningProjectsAndUpdatesGuard)
@@ -106,22 +89,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        // for testing
-        internal Solution CurrentSolution
-            => _currentSolution;
-
-        public async ValueTask LoadSolutionAsync(string rootProjectPath, CancellationToken cancellationToken)
-        {
-            // solution should be empty:
-            Debug.Assert(_workspace.CurrentSolution.ProjectIds is []);
-
-            _ = await _workspace.OpenProjectAsync(rootProjectPath, cancellationToken: cancellationToken);
-            _currentSolution = _workspace.CurrentSolution;
-
-            // the workspace is only used to load the solution, we don't needed it once we capture the solution:
-            _workspace.CloseSolution();
-        }
-
         public ValueTask RestartSessionAsync(IReadOnlySet<ProjectId> projectsToBeRebuilt, CancellationToken cancellationToken)
         {
             // Remove previous updates to all modules that were affected by rude edits.
@@ -144,7 +111,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _reporter.Report(MessageDescriptor.HotReloadSessionStarting);
 
-            await _hotReloadService.StartSessionAsync(_currentSolution, cancellationToken);
+            await _hotReloadService.StartSessionAsync(Workspace.CurrentSolution, cancellationToken);
 
             _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
         }
@@ -245,7 +212,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
-            if (_currentSolution is { ProjectIds: not [] } currentSolution)
+            if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)
             {
                 // If capabilities have been observed by an edit session, restart the session. Next time EnC service needs
                 // capabilities it calls GetAggregateCapabilitiesAsync which uses the set of projects assigned above to calculate them.
@@ -306,42 +273,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask UpdateSolutionAsync(IEnumerable<FileItem> changedFiles, CancellationToken cancellationToken)
-        {
-            var updatedSolution = _currentSolution;
-
-            foreach (var changedFile in changedFiles)
-            {
-                var documentIds = updatedSolution.GetDocumentIdsWithFilePath(changedFile.FilePath);
-                foreach (var documentId in documentIds)
-                {
-                    var textDocument = updatedSolution.GetDocument(documentId) ?? updatedSolution.GetAdditionalDocument(documentId);
-                    if (textDocument == null)
-                    {
-                        _reporter.Verbose($"Could not find document with path '{changedFile.FilePath}' in the workspace.");
-                        continue;
-                    }
-
-                    var project = updatedSolution.GetProject(documentId.ProjectId);
-                    Debug.Assert(project?.FilePath != null);
-
-                    var sourceText = await GetSourceTextAsync(changedFile.FilePath, cancellationToken);
-
-                    updatedSolution = textDocument is Document document
-                        ? document.WithText(sourceText).Project.Solution
-                        : updatedSolution.WithAdditionalDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue);
-                }
-            }
-
-            // Do not call Workspace.TryApplyChanges here as that would save the document text to disk and trigger file watchers!
-            _currentSolution = updatedSolution;
-        }
-
         public async ValueTask<(IReadOnlySet<ProjectId> projectsToBeRebuilt, IEnumerable<RunningProject> terminatedProjects)> HandleFileChangesAsync(
             Func<IEnumerable<Project>, CancellationToken, Task> restartPrompt,
             CancellationToken cancellationToken)
         {
-            var currentSolution = _currentSolution;
+            var currentSolution = Workspace.CurrentSolution;
             var runningProjects = _runningProjects;
 
             var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, isRunningProject: p => runningProjects.ContainsKey(p.FilePath!), cancellationToken);
@@ -532,47 +468,5 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)
             => Task.WhenAll(projects.SelectMany(entry => entry.Value).Select(project => action(project, cancellationToken))).WaitAsync(cancellationToken);
-
-        private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
-        {
-            var zeroLengthRetryPerformed = false;
-            for (var attemptIndex = 0; attemptIndex < 6; attemptIndex++)
-            {
-                try
-                {
-                    // File.OpenRead opens the file with FileShare.Read. This may prevent IDEs from saving file
-                    // contents to disk
-                    SourceText sourceText;
-                    using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        sourceText = SourceText.From(stream, Encoding.UTF8);
-                    }
-
-                    if (!zeroLengthRetryPerformed && sourceText.Length == 0)
-                    {
-                        zeroLengthRetryPerformed = true;
-
-                        // VSCode (on Windows) will sometimes perform two separate writes when updating a file on disk.
-                        // In the first update, it clears the file contents, and in the second, it writes the intended
-                        // content.
-                        // It's atypical that a file being watched for hot reload would be empty. We'll use this as a
-                        // hueristic to identify this case and perform an additional retry reading the file after a delay.
-                        await Task.Delay(20, cancellationToken);
-
-                        using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                        sourceText = SourceText.From(stream, Encoding.UTF8);
-                    }
-
-                    return sourceText;
-                }
-                catch (IOException) when (attemptIndex < 5)
-                {
-                    await Task.Delay(20 * (attemptIndex + 1), cancellationToken);
-                }
-            }
-
-            Debug.Fail("This shouldn't happen.");
-            return null;
-        }
     }
 }

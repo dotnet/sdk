@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertWaitingForChanges();
 
+            // add a new file:
             UpdateSourceFile(Path.Combine(dependencyDir, "AnotherLib.cs"), """
                 public class AnotherLib
                 {
@@ -25,6 +26,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                 }
                 """);
 
+            // update existing file:
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
                 public class Lib
                 {
