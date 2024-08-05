@@ -425,6 +425,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
+        [Fact]
+        public void FinalizerUninstallsWorkloadSets()
+        {
+            UpdateWithWorkloadSets();
+
+            //  Get workload set feature band
+            WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var workloadSetFeatureBand);
+
+            string workloadSetPath = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
+
+            VM.GetRemoteDirectory(workloadSetPath).Should().Exist();
+
+            UninstallSdk();
+
+            VM.GetRemoteDirectory(workloadSetPath).Should().NotExist();
+        }
+
         string GetWorkloadVersion(string workingDirectory = null)
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "--version")
