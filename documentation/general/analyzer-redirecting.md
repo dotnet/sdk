@@ -81,7 +81,7 @@ into
 If multiple SDKs are inserted into VS,
 they should have different major versions,
 but if there are two SDKs trying to copy the same pattern with the same major version,
-only the more recent SDK should win.
+an error will be reported (can be changed later to have only the more recent SDK win if needed).
 
 ### Redirecting analyzer loads in Roslyn
 [roslyn-redirecting]: #redirecting-analyzer-loads-in-roslyn
