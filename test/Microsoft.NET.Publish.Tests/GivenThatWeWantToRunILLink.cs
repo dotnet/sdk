@@ -826,6 +826,7 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
 
+#if false // https://github.com/dotnet/runtime/issues/105857
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_verify_analysis_warnings_framework_assemblies(string targetFramework)
@@ -908,6 +909,7 @@ namespace Microsoft.NET.Publish.Tests
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
+#endif
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
