@@ -205,7 +205,7 @@ public class ReferencedExeProgram
 
             CreateProjects();
 
-            ReferencedProject.TargetFrameworks = "netcoreapp3.1";
+            ReferencedProject.TargetFrameworks = ToolsetInfo.CurrentTargetFramework;
             ReferencedProject.AdditionalProperties["LangVersion"] = "9.0";
 
             RunTest();

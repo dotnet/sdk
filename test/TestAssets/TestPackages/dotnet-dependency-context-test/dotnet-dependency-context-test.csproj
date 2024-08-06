@@ -2,8 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
   <PropertyGroup>
-    <!-- netcoreapp2.2 is the maximum TFM project tools support -->
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <!-- net9.0 is the maximum TFM project tools support -->
+    <TargetFramework>net9.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>

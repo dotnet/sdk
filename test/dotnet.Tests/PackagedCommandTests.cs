@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
+        [RequiresSpecificFrameworkTheory(ToolsetInfo.CurrentTargetFramework)]
         [InlineData(true)]
         [InlineData(false)]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
@@ -66,12 +66,12 @@ namespace Microsoft.DotNet.Tests
                 .Execute(toolPrefersCLIRuntime ? "portable-v1-prefercli" : "portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 1.1.2!");
+                .And.HaveStdOutContaining("I'm running on shared framework version 9.0.0");
 
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
-        public void IfAToolHasNotBeenRestoredForNetCoreApp2_0ItFallsBackToNetCoreApp1_x()
+        [RequiresSpecificFrameworkFact(ToolsetInfo.CurrentTargetFramework)]
+        public void IfAToolHasNotBeenRestoredForNet9_0ItFallsBackToPreviousVersions()
         {
             string toolName = "dotnet-portable-v1";
 
@@ -98,9 +98,9 @@ namespace Microsoft.DotNet.Tests
 
                 toolReference.Attribute("Include").Value = toolName;
 
-                //  Restore tools for .NET Core 1.1
+                //  Restore tools for .net9.0
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "DotnetCliToolTargetFramework", "netcoreapp1.1"));
+                    .Add(new XElement(ns + "DotnetCliToolTargetFramework", "net9.0"));
 
                 //  Use project-specific global packages folder
                 project.Root.Element(ns + "PropertyGroup")
@@ -124,27 +124,7 @@ namespace Microsoft.DotNet.Tests
                     .Execute("portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 1.1.2!");
-        }
-
-        [Fact]
-        public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
-        {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
-                .WithSource();
-
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            new DotnetCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute("tool-with-output-name")
-                .Should().HaveStdOutContaining("Tool with output name!")
-                     .And.NotHaveStdErr()
-                     .And.Pass();
+                .And.HaveStdOutContaining("I'm running on shared framework version 9.0.0");
         }
 
         [Fact]

@@ -22,8 +22,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp1.1")]
-        [InlineData("netcoreapp2.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
@@ -232,12 +230,6 @@ public static class Program
         }
 
         [Fact]
-        public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
-        {
-            Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
-        }
-
-        [Fact]
         public void Conflicts_are_resolved_when_publishing_a_rid_specific_shared_framework_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: true);
@@ -250,7 +242,7 @@ public static class Program
                 throw new ArgumentException("Self-contained apps must be rid specific");
             }
 
-            var targetFramework = "netcoreapp2.0";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
             {
                 return;

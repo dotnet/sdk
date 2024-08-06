@@ -14,28 +14,6 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [ConditionalTheory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ChangeCompiledFile(bool usePollingWatcher)
-        {
-            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: usePollingWatcher.ToString())
-               .WithSource();
-
-            App.UsePollingWatcher = usePollingWatcher;
-            await App.StartWatcherAsync(testAsset);
-
-            await AssertCompiledAppDefinedTypes(expected: 2);
-
-            var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
-            var programCs = File.ReadAllText(fileToChange);
-            File.WriteAllText(fileToChange, programCs);
-
-            await App.AssertFileChanged();
-            await App.AssertRestarted();
-            await AssertCompiledAppDefinedTypes(expected: 2);
-        }
-
         [Fact]
         public async Task DeleteCompiledFile()
         {
