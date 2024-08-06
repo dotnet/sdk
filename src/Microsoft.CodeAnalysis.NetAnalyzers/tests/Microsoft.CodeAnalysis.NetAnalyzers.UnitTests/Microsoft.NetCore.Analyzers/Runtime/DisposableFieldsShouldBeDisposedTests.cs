@@ -3739,6 +3739,95 @@ class C : IAsyncDisposable
             }.RunAsync();
         }
 
+        [Fact]
+        public async Task DisposeCoreAsync_Override_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
+class A : IAsyncDisposable
+{
+    private readonly object disposedValueLock = new object();
+    private bool disposedValue;
+    private readonly Inner innerA;
+
+    public A() 
+    {
+        innerA = new Inner();
+    }
+
+    protected virtual async ValueTask DisposeCoreAsync()
+    {
+        lock (disposedValueLock)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            disposedValue = true;
+        }
+
+        await innerA.DisposeAsync().ConfigureAwait(false);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+}
+
+class B : A
+{
+    private readonly object disposedValueLock = new object();
+    private bool disposedValue;
+
+    // Newly, we want to test that no diagnostic is reported on this line.
+    private readonly Inner innerB;
+
+    public B() : base()
+    {
+        innerB = new Inner();
+    }
+
+    protected override async ValueTask DisposeCoreAsync()
+    {
+        lock (disposedValueLock)
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            disposedValue = true;
+        }
+
+        await innerB.DisposeAsync().ConfigureAwait(false);
+
+        await base.DisposeCoreAsync().ConfigureAwait(false);
+    }
+}
+
+// Declares an IAsyncDisposable type.
+class Inner : IAsyncDisposable
+{
+    public Inner() 
+    {
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+}
+"
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
         public async Task OwnDisposableButDoesNotOverrideDisposableMember_Dispose()
         {
