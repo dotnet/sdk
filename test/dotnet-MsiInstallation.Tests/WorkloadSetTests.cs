@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -17,8 +18,24 @@ namespace Microsoft.DotNet.MsiInstallerTests
     {
         readonly string SdkTestingDirectory = @"C:\SdkTesting";
 
+
+        Lazy<Dictionary<string, string>> _testWorkloadSetVersions;
+        string WorkloadSetVersion1 => _testWorkloadSetVersions.Value.GetValueOrDefault("version1", "8.0.300-preview.0.24178.1");
+        string WorkloadSetVersion2 => _testWorkloadSetVersions.Value.GetValueOrDefault("version2", "8.0.300-preview.0.24217.2");
+        string WorkloadSetPreviousBandVersion => _testWorkloadSetVersions.Value.GetValueOrDefault("previousbandversion", "8.0.204");
+
         public WorkloadSetTests(ITestOutputHelper log) : base(log)
         {
+            _testWorkloadSetVersions = new Lazy<Dictionary<string, string>>(() =>
+            {
+                var versionsFile = VM.GetRemoteFile(@"c:\SdkTesting\workloadsets\testworkloadsetversions.json");
+                if (!versionsFile.Exists)
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(versionsFile.ReadAllText());
+            });
         }
 
         [Fact]
@@ -91,7 +108,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             newRollback.ManifestVersions.Should().NotBeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
         [Fact]
@@ -113,10 +130,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
         }
 
-        [Theory]
-        [InlineData("8.0.300-preview.0.24178.1")]
-        [InlineData("8.0.204")]
-        public void UpdateToSpecificWorkloadSetVersion(string versionToInstall)
+        [Fact]
+        public void UpdateToSpecificWorkloadSetVersion()
+        {
+            UpdateToWorkloadSetVersion(WorkloadSetVersion1);
+        }
+
+        [Fact]
+        public void UpdateToPreviousBandWorkloadSetVersion()
+        {
+            UpdateToWorkloadSetVersion(WorkloadSetPreviousBandVersion);
+        }
+
+        private void UpdateToWorkloadSetVersion(string versionToInstall)
         {
             InstallSdk();
 
@@ -148,7 +174,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Should()
                 .Pass();
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
         [Fact]
@@ -189,8 +215,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--source", @"c:\SdkTesting\workloadsets")
                 .Execute()
                 .Should()
-                .Pass()
-                .And.HaveStdOutContaining("No workload update found");
+                .Fail();
 
             VM.CreateRunCommand("dotnet", "workload", "search")
                 .WithIsReadOnly(true)
@@ -208,7 +233,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var workloadVersionBeforeUpdate = GetWorkloadVersion();
 
-            VM.CreateRunCommand("dotnet", "workload", "update", "--version", @"8.0.300-preview.0.24217.2", "--source", @"c:\SdkTesting\workloadsets")
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion2, "--source", @"c:\SdkTesting\workloadsets")
                 .Execute()
                 .Should()
                 .Fail();
@@ -226,7 +251,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             InstallSdk();
 
-            var versionToUpdateTo = "8.0.300-preview.0.24217.2";
+            var versionToUpdateTo = WorkloadSetVersion2;
 
             string originalVersion = GetWorkloadVersion();
 
@@ -287,7 +312,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             InstallSdk();
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update", "--version", "8.0.300-preview.0.24178.1")
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update", "--version", WorkloadSetVersion1)
                 .Execute().Should().Fail()
                 .And.HaveStdErrContaining("--skip-manifest-update")
                 .And.HaveStdErrContaining("--sdk-version");
@@ -301,17 +326,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
             AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
             string originalVersion = GetWorkloadVersion();
-            originalVersion.Should().NotBe("8.0.300-preview.0.24178.1");
+            originalVersion.Should().NotBe(WorkloadSetVersion1);
 
-            VM.CreateRunCommand("dotnet", "workload", "update", "--version", "8.0.300-preview.0.24178.1")
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1)
                 .Execute().Should().Pass();
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24178.1");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--version", "8.0.300-preview.0.24217.2")
+            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--version", WorkloadSetVersion2)
                 .Execute().Should().Pass();
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
         [Fact]
@@ -322,18 +347,18 @@ namespace Microsoft.DotNet.MsiInstallerTests
             //AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
             string originalVersion = GetWorkloadVersion();
-            originalVersion.Should().NotBe("8.0.300-preview.0.24178.1");
+            originalVersion.Should().NotBe(WorkloadSetVersion1);
 
-            VM.CreateRunCommand("dotnet", "workload", "update", "--version", "8.0.300-preview.0.24178.1")
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1)
                 .Execute().Should().Pass();
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24178.1");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
             VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
                 .WithWorkingDirectory(SdkTestingDirectory)
                 .Execute().Should().Pass();
 
-            GetWorkloadVersion(SdkTestingDirectory).Should().Be("8.0.300-preview.0.24217.2");
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be(WorkloadSetVersion2);
 
             GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
 
@@ -347,22 +372,28 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
+            var packageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var sdkFeatureBand);
+
             //  Rename latest workload set so it won't be installed
-            VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.nupkg", $"Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.bak")
+            VM.CreateActionGroup($"Disable {WorkloadSetVersion2}",
+                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak"),
+                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak"))
                 .Execute().Should().Pass();
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute().Should().Pass();
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24178.1");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
             //  Bring latest workload set version back, so installing workload should update to it
-            VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.bak", $"Microsoft.NET.Workloads.8.0.300-preview.*.24217.2.nupkg")
+            VM.CreateActionGroup($"Enable {WorkloadSetVersion2}",
+                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg"),
+                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg"))
                 .Execute().Should().Pass();
 
             InstallWorkload("aspire", skipManifestUpdate: false);
 
-            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
         [Fact]

@@ -62,7 +62,7 @@ public class WriteSbrpUsageReport : Task
     {
         PackageInfo[] existingSbrps = [.. _sbrpPackages.Values.OrderBy(pkg => pkg.Id)];
         PurgeNonReferencedReferences();
-        IEnumerable<string> unreferencedSbrps = GetUnreferencedSbrps().Select(pkg => pkg.Id).OrderBy(id => id);
+        IEnumerable<string> unreferencedSbrps = GetUnreferencedSbrps().Select(pkg => pkg.Path).OrderBy(id => id);
         Report report = new(existingSbrps, unreferencedSbrps);
 
         string reportFilePath = Path.Combine(OutputPath, "sbrpPackageUsage.json");
@@ -151,7 +151,7 @@ public class WriteSbrpUsageReport : Task
             LockFile lockFile = new LockFileFormat().Read(projectJsonFile);
             foreach (LockFileTargetLibrary lib in lockFile.Targets.SelectMany(t => t.Libraries))
             {
-                if (!_sbrpPackages.TryGetValue($"{lib.Name}/{lib.Version}", out PackageInfo? info))
+                if (!_sbrpPackages.TryGetValue(PackageInfo.GetId(lib.Name, lib.Version?.ToString()), out PackageInfo? info))
                 {
                     continue;
                 }
@@ -175,10 +175,12 @@ public class WriteSbrpUsageReport : Task
 
     private record PackageInfo(string Name, string Version, string Path, HashSet<string>? Tfms = default)
     {
-        public string Id => $"{Name}/{Version}";
+        public string Id => GetId(Name, Version);
 
         // Dictionary of projects referencing the SBRP and the TFMs referenced by each project
         public Dictionary<string, HashSet<string>> References { get; } = [];
+
+        public static string GetId(string? Name, string? Version) => $"{Name?.ToLowerInvariant()}/{Version}";
     }
 
     private record Report(IEnumerable<PackageInfo> Sbrps, IEnumerable<string> UnreferencedSbrps);

@@ -56,12 +56,12 @@ namespace Microsoft.DotNet.Installer.Windows
         DeleteWorkloadInstallationRecord,
 
         /// <summary>
-        /// Creates an install state file.
+        /// Adds manifests to the install state file.
         /// </summary>
         SaveInstallStateManifestVersions,
 
         /// <summary>
-        /// Removes an install state file.
+        /// Removes manifests from an install state file.
         /// </summary>
         RemoveManifestsFromInstallStateFile,
 

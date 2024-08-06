@@ -21,7 +21,6 @@ internal static class Config
 
     public static string? CustomPackagesPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(CustomPackagesPath))!;
     public static bool ExcludeOmniSharpTests => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(ExcludeOmniSharpTests))!, out bool excludeOmniSharpTests) && excludeOmniSharpTests;
-    public static bool IncludeArtifactsSizeTests => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(IncludeArtifactsSizeTests))!, out bool includeArtifactsSizeTests) && includeArtifactsSizeTests;
     public static string? LicenseScanPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(LicenseScanPath))!;
     public static string? MsftSdkTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(MsftSdkTarballPath))!;
     public static string? PoisonReportPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(PoisonReportPath))!;
