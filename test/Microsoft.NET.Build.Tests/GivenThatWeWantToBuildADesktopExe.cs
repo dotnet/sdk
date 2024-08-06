@@ -40,20 +40,18 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_not_pass_excess_references_to_the_compiler()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
-            var testProject = new TestProject()
-            {
-                TargetFrameworks = tfm,
-                IsExe = true,
-                ProjectSdk = "Microsoft.NET.Sdk"
-            };
+            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFrameworks(tfm);
+            var getValues =
+                new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm)
+                {
+                    DependsOnTargets = "CoreBuild",
+                    WorkingDirectory = testAsset.TestRoot,
+                };
+            getValues.Execute($"-p:TargetFramework={tfm}", "-bl").Should().Pass();
 
-            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFramework(tfm);
-
-            var getValues = new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm);
-            getValues.DependsOnTargets = "Compile;CoreGenerateSatelliteAssemblies";
-            getValues.Execute().Should().Pass();
-
-            getValues.GetValues().Count.Should().Be(1);
+            var referenceAssemblies = getValues.GetValues().Select(p => Path.GetFileName(p)).Order().ToArray();
+            // only the 'primary' assemblies for the three potential frameworks (netcoreapp, netframework, netstandard) should be used for satellite assembly generation.
+            referenceAssemblies.Should().Equal(["mscorlib.dll", "netstandard.dll", "System.Runtime.dll",]);
         }
 
         [WindowsOnlyTheory]
