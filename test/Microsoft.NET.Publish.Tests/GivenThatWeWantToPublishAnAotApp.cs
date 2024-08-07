@@ -953,6 +953,28 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
         }
 
+        private void SetMetadata(XDocument project, string assemblyName, string key, string value)
+        {
+            var ns = project.Root.Name.Namespace;
+            var targetName = "SetTrimmerMetadata";
+            var target = project.Root.Elements(ns + "Target")
+                .Where(e => e.Attribute("Name")?.Value == targetName)
+                .FirstOrDefault();
+
+            if (target == null)
+            {
+                target = new XElement(ns + "Target",
+                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("Name", targetName));
+                project.Root.Add(target);
+            }
+
+            target.Add(new XElement(ns + "ItemGroup",
+                new XElement("ManagedAssemblyToLink",
+                    new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
+                    new XAttribute(key, value))));
+        }
+
         private void GetKnownILCompilerPackVersion(TestAsset testAsset, string targetFramework, out string version)
         {
             var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework)
