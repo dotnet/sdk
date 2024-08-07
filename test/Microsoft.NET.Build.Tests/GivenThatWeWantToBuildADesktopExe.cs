@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_does_not_pass_excess_references_to_the_compiler()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
