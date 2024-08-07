@@ -123,6 +123,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _installStateFilePath = null;
             _useManifestsFromInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets(_sdkVersionBand);
+            var workloadSets80100 = GetAvailableWorkloadSets(new SdkFeatureBand("8.0.100"));
 
             bool TryGetWorkloadSet(string workloadSetVersion, out WorkloadSet? workloadSet)
             {
@@ -140,6 +141,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         return true;
                     }
+                }
+
+                // The baseline workload sets were merged with a fixed 8.0.100 feature band. That means they will always be here
+                // regardless of where they would otherwise belong. This is a workaround for that.
+                if (workloadSets80100.TryGetValue(workloadSetVersion, out workloadSet))
+                {
+                    return true;
                 }
 
                 workloadSet = null;
