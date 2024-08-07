@@ -34,20 +34,5 @@ namespace Microsoft.DotNet.Watcher.Internal
             AssertEx.SequenceEqual([$"[env:DOTNET_STARTUP_HOOKS=a1{Path.PathSeparator}a2]"], builder.GetCommandLineDirectives());
             AssertEx.SequenceEqual([("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b1;b2")], values.Select(e => (e.Key, e.Value)));
         }
-
-        [Fact]
-        public void ExistingHostingStartupAssembly()
-        {
-            var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHookDirective.Add("value1");
-
-            var values = new Dictionary<string, string>()
-            {
-                ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "value3"
-            };
-
-            // variables shouild only be set via builder:
-            Assert.Throws<ArgumentException>(() => builder.AddToEnvironment(values));
-        }
     }
 }

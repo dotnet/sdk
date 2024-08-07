@@ -11,7 +11,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
     [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchAppAspire")
+        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
             .WithSource();
 
         var workingDirectory = testAsset.Path;
@@ -24,9 +24,14 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var projectGraph = Program.TryReadProject(options, reporter);
         var handler = new CompilationHandler(reporter);
 
-        var projectsToBeRebuilt = handler.Workspace.CurrentSolution.Projects.Where(p => p.Name == "Host").Select(p => p.Id).ToHashSet();
-        await handler.RestartSessionAsync(projectsToBeRebuilt, CancellationToken.None);
+        await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 
-        AssertEx.SequenceEqual(["Host", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
+        // all projects are present
+        AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
+
+        // Host does not have project reference to A, B:
+        AssertEx.SequenceEqual(["Host", "Lib2"],
+            handler.Workspace.CurrentSolution.Projects.Single(p => p.Name == "Host").ProjectReferences
+                .Select(r => handler.Workspace.CurrentSolution.GetProject(r.ProjectId)!.Name));
     }
 }

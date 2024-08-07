@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.UsePollingWatcher = usePollingWatcher;
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await App.AssertStarted();
 
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            App.Start(testAsset, []);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await App.AssertStarted();
 
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.DotnetWatchArgs.Clear();
-            App.Start(testAsset, new[] { "--list" });
+            App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
             var files = lines.Where(l => !l.StartsWith("watch :"));
 
