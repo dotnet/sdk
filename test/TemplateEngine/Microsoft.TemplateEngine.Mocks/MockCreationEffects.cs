@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Xunit.Abstractions;
@@ -12,11 +9,11 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockCreationEffects : ICreationEffects, ICreationEffects2, IXunitSerializable
     {
-        private string[] _primaryOutputs = Array.Empty<string>();
+        private string[] _primaryOutputs = [];
 
-        private MockFileChange[] _mockFileChanges = Array.Empty<MockFileChange>();
+        private MockFileChange[] _mockFileChanges = [];
 
-        private string[] _absentFiles = Array.Empty<string>();
+        private string[] _absentFiles = [];
 
         public MockCreationEffects()
         {

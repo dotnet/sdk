@@ -21,7 +21,7 @@ the `template.json` file. This requires that a few changes have to be done on th
 ```
 
 The templates can be packaged to a NuGet package for further distribution.
-A tutorial on how to create the template package can be find [here](https://learn.microsoft.com/en-us/dotnet/core/tutorials/cli-templates-create-template-package).
+A tutorial on how to create the template package can be found [here](https://learn.microsoft.com/en-us/dotnet/core/tutorials/cli-templates-create-template-package).
 
 
 |Category|Description|  
@@ -37,7 +37,7 @@ A tutorial on how to create the template package can be find [here](https://lear
 |`author`|The author of the template|no|
 |<a name="classifications"></a>`classifications`| Zero or more characteristics of the template which are shown in the tabular output of `dotnet new list` and `dotnet new search` as "Tags". It is possible to filter the templates based on them using `--tag` option. In Visual Studio those items are shown in New Project Dialog in the available list of templates together with template name, description and language. Common classifications are: `Library`, `Test`, `Web` etc. |no|
 |`name`|The name for the template. This is displayed as the template name when using `dotnet new` and Visual Studio.|yes|
-|`groupIdentity`|The ID of the group this template belongs to. This allows multiple templates to be displayed as one, with the the decision for which one to use based on the template options. |no|
+|`groupIdentity`|The ID of the group this template belongs to. This allows multiple templates to be displayed as one, with the decision for which one to use based on the template options. See more information on templates grouping in [this article](./Using-Group-Identity.md). |no|
 |`tags`|You can use tags to improve the metadata of your project. Well-known tags are: `language` and `type`. To specify the template language, use the tag `language`. To specify the template type, use the tag `type`. Supported types are: `project`, `item`, `solution`.|no|
 |`shortName`|A name for selecting the template in CLI environment. This is the name shown as `Short Name` in `dotnet new` list of templates, and is the name to use to run this template. It is possible to specify multiple short names for the single template, and then any of them can be used to instantiate the template. The first element of the array is considered as the primary and first choice in scenarios where only single value is allowed (for example in tab completion of `dotnet new`). Be mindful when selecting the short name and using synonyms to avoid conflicts with other templates - the template short name should be unique. In case multiple template with the same short name are installed at the same time, the user won't be able to use any of them until one of the packages is uninstalled making the short name unique again. This doesn't apply for the templates that are part of the same group (have same `groupIdentity`). |yes|
 |`postActions`|Enables actions to be performed after the project is created. See [the article](Post-Action-Registry.md) on post actions for more details.|no|

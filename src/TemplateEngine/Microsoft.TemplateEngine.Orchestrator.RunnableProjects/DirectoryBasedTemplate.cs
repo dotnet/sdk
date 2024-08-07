@@ -1,13 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -142,9 +136,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             string filename = locFile.Name;
             string localeStr = filename.Substring(LocalizationFilePrefix.Length, filename.Length - LocalizationFilePrefix.Length - LocalizationFileExtension.Length);
+            CultureInfo? locale = null;
 
-            CultureInfo? locale = CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(c => c.Name.Equals(localeStr, StringComparison.OrdinalIgnoreCase));
-            if (locale == null)
+            try
+            {
+                // PERF: Avoid calling CultureInfo.GetCultures and searching the results as it heavily allocates on each invocation.
+                locale = CultureInfo.GetCultureInfo(localeStr);
+            }
+            catch (CultureNotFoundException)
             {
                 Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_UnknownLocale, localeStr);
             }

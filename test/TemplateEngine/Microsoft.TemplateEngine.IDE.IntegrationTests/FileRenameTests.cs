@@ -276,7 +276,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task GetCreationEffectsTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
-            string packageLocation = PackTestTemplatesNuGetPackage(_packageManager);
+            PackTestTemplatesNuGetPackage(_packageManager);
             await InstallTestTemplateAsync(bootstrapper, templateName);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);
@@ -310,7 +310,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         internal async Task CreateTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
-            string packageLocation = PackTestTemplatesNuGetPackage(_packageManager);
+            PackTestTemplatesNuGetPackage(_packageManager);
             await InstallTestTemplateAsync(bootstrapper, templateName);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);

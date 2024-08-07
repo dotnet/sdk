@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             public Guid Id { get; } = new Guid("{AB083D9D-857A-419E-8394-113F97FFBD6B}");
 
-            public object? ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError) => throw new NotImplementedException();
+            public object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError) => throw new NotImplementedException();
 
             [Obsolete]
             public Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate template, IParameterSet parameters, string targetDirectory, CancellationToken cancellationToken) => throw new NotImplementedException();
@@ -154,11 +154,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public bool IsNameAgreementWithFolderPreferred => false;
 
-                public string? Author => "Microsoft";
+                public string Author => "Microsoft";
 
-                public string? Description => "This is the description";
+                public string Description => "This is the description";
 
-                public IReadOnlyList<string> Classifications => Array.Empty<string>();
+                public IReadOnlyList<string> Classifications => [];
 
                 public string? DefaultName => null;
 
@@ -204,15 +204,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public IReadOnlyList<string> ShortNameList => new[] { ShortName };
 
-                public IReadOnlyList<Guid> PostActions => Array.Empty<Guid>();
+                public IReadOnlyList<Guid> PostActions => [];
 
-                public IReadOnlyList<TemplateConstraintInfo> Constraints => Array.Empty<TemplateConstraintInfo>();
+                public IReadOnlyList<TemplateConstraintInfo> Constraints => [];
 
                 public IFileSystemInfo? HostSpecificConfiguration => null;
 
                 public bool IsValid => true;
 
-                public IReadOnlyList<IValidationEntry> ValidationErrors => Array.Empty<IValidationEntry>();
+                public IReadOnlyList<IValidationEntry> ValidationErrors => [];
 
                 public IReadOnlyDictionary<string, ILocalizationLocator> Localizations { get; } = new Dictionary<string, ILocalizationLocator>();
 
@@ -260,7 +260,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public static ICreationResult Instance { get; } = new SimpleCreationResult();
 
-                public IReadOnlyList<IPostAction> PostActions { get; } = Array.Empty<IPostAction>();
+                public IReadOnlyList<IPostAction> PostActions { get; } = [];
 
                 public IReadOnlyList<ICreationPath> PrimaryOutputs => new[] { CreationPath.Instance };
 

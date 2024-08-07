@@ -1,11 +1,17 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(NetCurrent);netstandard2.0;$(NetFrameworkCurrent)</TargetFrameworks>
     <Description>Components used by all Template Engine extensions and consumers</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- DesignTimeBuild requires all the TargetFramework Derived Properties to not be present in the first property group. -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp'">
+    <!-- TODO: Resolve nullable errors and remove this block: https://github.com/dotnet/templating/issues/8100. -->
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,21 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="LocalizableStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LocalizableStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="LocalizableStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      GenerateSource="true" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Utils.UnitTests" Key="$(TemplateEnginePublicKey)" />
   </ItemGroup>
+
 </Project>

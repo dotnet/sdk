@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -11,36 +10,33 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "expandvariables";
 
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public ExpandVariables(string? id, bool initialState)
         {
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
-            return new Impl(processor, _id, _initialState);
+            return new Implementation(processor, Id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
-            private readonly string? _id;
-
-            public Impl(IProcessorState processor, string? id, bool initialState)
+            public Implementation(IProcessorState processor, string? id, bool initialState)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 

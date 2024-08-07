@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -34,12 +30,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             RunInternal(sourceDir, targetDir, spec);
@@ -54,12 +48,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                 EngineConfig config = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
                 IProcessor processor = Processor.Create(config, spec.Operations);
                 stream.Position = 0;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    processor.Run(stream, ms);
-                    ms.Position = 0;
-                    spec = RunSpecLoader(ms);
-                }
+                using MemoryStream ms = new MemoryStream();
+                processor.Run(stream, ms);
+                ms.Position = 0;
+                spec = RunSpecLoader(ms);
             }
 
             return GetFileChangesInternal(sourceDir, targetDir, spec);
@@ -132,14 +124,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
-                bool checkingDirWithPlaceholderFile = false;
 
-                if (spec.IgnoreFileNames.Contains(fileName))
-                {
-                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // The change checking / reporting is different, setting this variable tracks it.
-                    checkingDirWithPlaceholderFile = true;
-                }
+                // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                // The change checking / reporting is different, setting this variable tracks it.
+                bool checkingDirWithPlaceholderFile = spec.IgnoreFileNames.Contains(fileName);
 
                 foreach (IPathMatcher include in spec.Include)
                 {
@@ -207,14 +195,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
-                bool checkingDirWithPlaceholderFile = false;
 
-                if (spec.IgnoreFileNames.Contains(fileName))
-                {
-                    // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // The change checking / reporting is different, setting this variable tracks it.
-                    checkingDirWithPlaceholderFile = true;
-                }
+                // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                // The change checking / reporting is different, setting this variable tracks it.
+                bool checkingDirWithPlaceholderFile = spec.IgnoreFileNames.Contains(fileName);
 
                 foreach (IPathMatcher include in spec.Include)
                 {
@@ -254,11 +238,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                             {
                                 string targetPath = CreateTargetDir(_fileSystem, sourceRel, targetDir, spec);
 
-                                using (Stream sourceStream = file.OpenRead())
-                                using (Stream targetStream = _fileSystem.CreateFile(targetPath))
-                                {
-                                    sourceStream.CopyTo(targetStream);
-                                }
+                                using Stream sourceStream = file.OpenRead();
+                                using Stream targetStream = _fileSystem.CreateFile(targetPath);
+                                sourceStream.CopyTo(targetStream);
                             }
                         }
 
@@ -287,23 +269,21 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             try
             {
-                using (Stream source = sourceFile.OpenRead())
-                using (Stream target = _fileSystem.CreateFile(targetPath))
+                using Stream source = sourceFile.OpenRead();
+                using Stream target = _fileSystem.CreateFile(targetPath);
+                if (!customBufferSize)
                 {
-                    if (!customBufferSize)
+                    runner.Run(source, target);
+                }
+                else
+                {
+                    if (!customFlushThreshold)
                     {
-                        runner.Run(source, target);
+                        runner.Run(source, target, bufferSize);
                     }
                     else
                     {
-                        if (!customFlushThreshold)
-                        {
-                            runner.Run(source, target, bufferSize);
-                        }
-                        else
-                        {
-                            runner.Run(source, target, bufferSize, flushThreshold);
-                        }
+                        runner.Run(source, target, bufferSize, flushThreshold);
                     }
                 }
             }

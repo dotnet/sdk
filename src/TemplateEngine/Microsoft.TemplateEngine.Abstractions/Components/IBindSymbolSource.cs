@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.TemplateEngine.Abstractions.Components
 {
     /// <summary>
@@ -18,7 +15,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         public string DisplayName { get; }
 
         /// <summary>
-        /// Prefix that is used in binding to refernece the component.
+        /// Prefix that is used in binding to reference the component.
         /// </summary>
         public string? SourcePrefix { get; }
 
@@ -28,12 +25,12 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         public bool RequiresPrefixMatch { get; }
 
         /// <summary>
-        /// Gets the value corresponding to <paramref name="bindname"/>.
+        /// Gets the value corresponding to <paramref name="bindName"/>.
         /// </summary>
         /// <param name="settings">template engine environment settings.</param>
-        /// <param name="bindname">the value to retrieve (without prefix).</param>
+        /// <param name="bindName">the value to retrieve (without prefix).</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns></returns>
-        public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken);
+        public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindName, CancellationToken cancellationToken);
     }
 }

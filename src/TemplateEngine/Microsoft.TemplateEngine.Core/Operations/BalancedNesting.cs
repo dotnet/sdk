@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -23,7 +22,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly ITokenConfig _startToken;
         private readonly ITokenConfig _realEndToken;
         private readonly ITokenConfig _pseudoEndToken;
-        private readonly string? _id;
         private readonly string? _resetFlag;
         private readonly bool _initialState;
 
@@ -32,12 +30,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _startToken = startToken;
             _realEndToken = realEndToken;
             _pseudoEndToken = pseudoEndToken;
-            _id = id;
+            Id = id;
             _resetFlag = resetFlag;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -45,36 +43,33 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken realEndToken = _realEndToken.ToToken(encoding);
             IToken pseudoEndToken = _pseudoEndToken.ToToken(encoding);
 
-            return new Impl(startToken, realEndToken, pseudoEndToken, _id, _resetFlag, _initialState);
+            return new Implementation(startToken, realEndToken, pseudoEndToken, Id, _resetFlag, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             // the order they're added to this.Tokens in the constructor must be the same as this!
             private const int StartTokenIndex = 0;
 
             private const int RealEndTokenIndex = 1;
             private const int PseudoEndTokenIndex = 2;
-            private readonly IToken _startToken;
             private readonly IToken _realEndToken;
-            private readonly IToken _psuedoEndToken;
-            private readonly string? _id;
+            private readonly IToken _pseudoEndToken;
             private readonly string? _resetFlag;
             private int _depth;
 
-            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
+            public Implementation(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
             {
-                _startToken = start;
                 _realEndToken = realEnd;
-                _psuedoEndToken = pseudoEnd;
-                _id = id;
+                _pseudoEndToken = pseudoEnd;
+                Id = id;
                 _resetFlag = resetFlag;
-                Tokens = new[] { _startToken, _realEndToken, _psuedoEndToken };
+                Tokens = new[] { start, _realEndToken, _pseudoEndToken };
                 _depth = 0;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
@@ -83,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 // check if this operation has been reset. If so, set _depth = 0
-                // this fixes the reset problem, but not the trailing unbalanced pseduo comment problem, i.e. it won't turn this:
+                // this fixes the reset problem, but not the trailing unbalanced pseudo comment problem, i.e. it won't turn this:
                 //      <!-- <!-- comment -- >
                 // into this:
                 //      <!-- <!-- comment -->
@@ -114,7 +109,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (_depth == 0 && token == PseudoEndTokenIndex)
                 {
                     processor.WriteToTarget(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
-                    return _psuedoEndToken.Length;  // the source buffer needs to skip over this token.
+                    return _pseudoEndToken.Length;  // the source buffer needs to skip over this token.
                 }
                 else
                 {

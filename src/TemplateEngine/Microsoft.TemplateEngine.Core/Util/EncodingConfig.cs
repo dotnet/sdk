@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -58,12 +56,12 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         private void ExpandVariables(IEngineConfig config, Encoding encoding)
         {
-            foreach (string key in config.Variables.Keys)
+            foreach (var item in config.Variables)
             {
-                string formattedKey = string.Format(config.VariableFormatString, key);
+                string formattedKey = string.Format(config.VariableFormatString, item.Key);
                 IToken keyBytes = formattedKey.Token(encoding);
                 _variableKeys.Add(keyBytes);
-                _values[Variables.AddToken(keyBytes)] = () => config.Variables[key];
+                _values[Variables.AddToken(keyBytes)] = () => item.Value;
             }
         }
     }

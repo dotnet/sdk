@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [InlineData("Hello There!", 1, 1, false, "Hello", " ", null)]
         [InlineData("Hello There!", 5, 6, true, null, " ", "There!")]
         [InlineData("Hello There!", 0, 6, true, "Hello", " ", "There!")]
-        public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string after, string value, string before)
+        public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string? after, string value, string? before)
         {
             byte[] data = Encoding.UTF8.GetBytes(original);
 
@@ -42,21 +42,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTokenTrieAtBegin))]
         public void VerifyTokenTrieAtBegin()
         {
-            byte[] hello = Encoding.UTF8.GetBytes("hello");
-            byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
-            byte[] hi = Encoding.UTF8.GetBytes("hi");
+            byte[] hello = "hello"u8.ToArray();
+            byte[] helloBang = "hello!"u8.ToArray();
+            byte[] hi = "hi"u8.ToArray();
 
             TokenTrie t = new TokenTrie();
             t.AddToken(hello);
             t.AddToken(helloBang);
             t.AddToken(hi);
 
-            byte[] source1 = Encoding.UTF8.GetBytes("hello there");
-            byte[] source2 = Encoding.UTF8.GetBytes("hello1 there");
-            byte[] source3 = Encoding.UTF8.GetBytes("hello! there");
-            byte[] source4 = Encoding.UTF8.GetBytes("hi there");
-            byte[] source5 = Encoding.UTF8.GetBytes("hi");
-            byte[] source6 = Encoding.UTF8.GetBytes("he");
+            byte[] source1 = "hello there"u8.ToArray();
+            byte[] source2 = "hello1 there"u8.ToArray();
+            byte[] source3 = "hello! there"u8.ToArray();
+            byte[] source4 = "hi there"u8.ToArray();
+            byte[] source5 = "hi"u8.ToArray();
+            byte[] source6 = "he"u8.ToArray();
 
             int pos = 0;
             Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));
@@ -86,15 +86,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTokenTrieNotEnoughBufferLeft))]
         public void VerifyTokenTrieNotEnoughBufferLeft()
         {
-            byte[] hello = Encoding.UTF8.GetBytes("hello");
-            byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
+            byte[] hello = "hello"u8.ToArray();
+            byte[] helloBang = "hello!"u8.ToArray();
 
             TokenTrie t = new TokenTrie();
             t.AddToken(hello);
             t.AddToken(helloBang);
 
-            byte[] source1 = Encoding.UTF8.GetBytes("hi");
-            byte[] source2 = Encoding.UTF8.GetBytes(" hello");
+            byte[] source1 = "hi"u8.ToArray();
+            byte[] source2 = " hello"u8.ToArray();
 
             int pos = 0;
             Assert.False(t.GetOperation(source1, source1.Length, ref pos, out int token));
@@ -112,10 +112,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyTokenTrieCombine))]
         public void VerifyTokenTrieCombine()
         {
-            byte[] hello = Encoding.UTF8.GetBytes("hello");
-            byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
-            byte[] hi = Encoding.UTF8.GetBytes("hi");
-            byte[] there = Encoding.UTF8.GetBytes("there!");
+            byte[] hello = "hello"u8.ToArray();
+            byte[] helloBang = "hello!"u8.ToArray();
+            byte[] hi = "hi"u8.ToArray();
+            byte[] there = "there!"u8.ToArray();
 
             TokenTrie t = new TokenTrie();
             t.AddToken(hello);
@@ -129,10 +129,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             combined.Append(t);
             combined.Append(t2);
 
-            byte[] source1 = Encoding.UTF8.GetBytes("hello there");
-            byte[] source2 = Encoding.UTF8.GetBytes("hello! there");
-            byte[] source3 = Encoding.UTF8.GetBytes("hi there");
-            byte[] source4 = Encoding.UTF8.GetBytes("there!");
+            byte[] source1 = "hello there"u8.ToArray();
+            byte[] source2 = "hello! there"u8.ToArray();
+            byte[] source3 = "hi there"u8.ToArray();
+            byte[] source4 = "there!"u8.ToArray();
 
             int pos = 0;
             Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));

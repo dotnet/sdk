@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.TemplateEngine.TestTemplates</PackageId>
     <Authors>Microsoft</Authors>
@@ -10,9 +11,10 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
     <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
+    <IsTestUtilityProject>true</IsTestUtilityProject>
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="**\*" />
     <Content Include="test_templates\**\*" Exclude="test_templates\**\bin\**;test_templates\**\obj\**" />

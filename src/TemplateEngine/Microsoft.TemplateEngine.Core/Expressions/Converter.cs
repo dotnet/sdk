@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Reflection;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Expressions
@@ -56,7 +54,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return handlerResult.Value;
                 }
 
-                if (typeof(T).GetTypeInfo().IsEnum && source is string s)
+                if (typeof(T).IsEnum && source is string s)
                 {
                     try
                     {
@@ -145,7 +143,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             {
                 if (source is string s)
                 {
-                    return ParserExtensions.DoubleTryParseСurrentOrInvariant(s, out result);
+                    return ParserExtensions.DoubleTryParseCurrentOrInvariant(s, out result);
                 }
 
                 result = 0;

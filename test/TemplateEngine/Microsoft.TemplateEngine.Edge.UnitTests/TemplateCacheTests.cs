@@ -73,9 +73,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 IMountPoint mountPoint = A.Fake<IMountPoint>();
                 A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
-                ScanResult result = new ScanResult(mountPoint, new[] { template }, locators, Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+                ScanResult result = new ScanResult(mountPoint, new[] { template }, locators, []);
 
-                TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+                TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
                 Assert.Equal(currentCulture, templateCache.Locale);
                 Assert.Equal("testIdentity", templateCache.TemplateInfo.Single().Identity);
@@ -101,8 +101,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
-            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
@@ -126,8 +126,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
-            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
@@ -170,8 +170,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
-            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
@@ -210,8 +210,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
-            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile));
@@ -245,7 +245,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
                 $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
 
-            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
@@ -275,7 +275,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
                 $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
 
-            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
@@ -300,7 +300,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
             var managedTPC = GetFakedTemplatePackage("testMountC");
 
-            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, [], []);
             _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
@@ -346,8 +346,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
             A.CallTo(() => template.GeneratorId).Returns(new("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3")); // runnable projects generator ID
 
-            ScanResult result = new ScanResult(sourceMountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
+            ScanResult result = new ScanResult(sourceMountPoint, new[] { template }, [], []);
+            TemplateCache templateCache = new TemplateCache([], new[] { result }, new Dictionary<string, DateTime>(), environmentSettings);
 
             Assert.Equal(hostFileLocation, templateCache.TemplateInfo[0].HostConfigPlace);
             Assert.Equal(hostFileFormatted, templateCache.TemplateInfo[0].HostData);
@@ -392,23 +392,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
         {
-            using (var fileStream = fileSystem.OpenRead(path))
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return JObject.Load(jsonReader);
-            }
+            using var fileStream = fileSystem.OpenRead(path);
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return JObject.Load(jsonReader);
         }
 
         private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
         {
-            using (var fileStream = fileSystem.CreateFile(path))
-            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
-            using (var jsonWriter = new JsonTextWriter(textWriter))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(jsonWriter, obj);
-            }
+            using var fileStream = fileSystem.CreateFile(path);
+            using var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            using var jsonWriter = new JsonTextWriter(textWriter);
+            var serializer = new JsonSerializer();
+            serializer.Serialize(jsonWriter, obj);
         }
     }
 }

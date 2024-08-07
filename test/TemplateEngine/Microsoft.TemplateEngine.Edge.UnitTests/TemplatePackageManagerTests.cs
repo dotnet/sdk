@@ -164,14 +164,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             await templatePackageManager2.GetTemplatesAsync(default);
             Assert.Contains(new SettingsFilePaths(engineEnvironmentSettings).TemplateCacheFile, monitoredFileSystem.FilesOpened);
             // No mount points should have been scanned
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+            AssertMountPointsWereOpened([], engineEnvironmentSettings);
 
             // Execute 3rd time with same templatePackageManager to test that TemplateCacheFile is not parsed.
             monitoredFileSystem.Reset();
             await templatePackageManager2.GetTemplatesAsync(default);
             Assert.DoesNotContain(new SettingsFilePaths(engineEnvironmentSettings).TemplateCacheFile, monitoredFileSystem.FilesOpened);
             // No mount points should have been scanned
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+            AssertMountPointsWereOpened([], engineEnvironmentSettings);
         }
 
         [Fact]
@@ -212,7 +212,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             monitoredFileSystem.Reset();
             await templatePackageManager.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+            AssertMountPointsWereOpened([], engineEnvironmentSettings);
 
             monitoredFileSystem.Reset();
             await templatePackageManager.RebuildTemplateCacheAsync(default);
@@ -222,7 +222,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             monitoredFileSystem.Reset();
             await templatePackageManager.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+            AssertMountPointsWereOpened([], engineEnvironmentSettings);
         }
 
         [Fact]
@@ -249,7 +249,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             monitoredFileSystem.Reset();
             await templatePackageManager.GetTemplatesAsync(default);
             // Make sure that we don't rescan with force=false
-            AssertMountPointsWereOpened(Array.Empty<string>(), engineEnvironmentSettings);
+            AssertMountPointsWereOpened([], engineEnvironmentSettings);
         }
 
         [Fact]
@@ -351,7 +351,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             }
         }
 
-        public interface IManagedInstallerMock : IInstaller, ISerializableInstaller { }
+        public interface IManagedInstallerMock : IInstaller, ISerializableInstaller;
 
         internal IManagedInstallerMock GetInstallerMock(IInstallerFactory factory)
         {
@@ -446,17 +446,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 NuPkgs = nupkgs;
                 Folders = folders;
-            }
-
-            public static void TriggerChanged()
-            {
-                foreach (var provider in AllCreatedProviders)
-                {
-                    if (provider.TryGetTarget(out var actualProvider))
-                    {
-                        actualProvider.UpdatePackages(NuPkgs, Folders);
-                    }
-                }
             }
 
             public static int StaticPriority { get; set; }
