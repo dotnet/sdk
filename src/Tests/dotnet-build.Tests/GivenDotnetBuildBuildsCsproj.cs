@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -84,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             string projectDirectory = Path.Combine(testInstance.Path, "MultiTFMTestApp");
 
             new DotnetBuildCommand(Log, projectDirectory)
-                .Execute("--framework", "netcoreapp3.1")
+                .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass();
         }
 
@@ -180,7 +183,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetBuildCommand(Log)
@@ -192,6 +195,27 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .HaveStdOutContaining("NETSDK1179");
         }
 
+        [Fact]
+        public void It_does_not_warn_on_rid_with_self_contained_set_in_project()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            
+            var testInstance = _testAssetsManager.CreateTestProject(testProject);
+
+            new DotnetBuildCommand(Log)
+               .WithWorkingDirectory(Path.Combine(testInstance.Path, testProject.Name))
+               .Execute("-r", "win-x64")
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining("NETSDK1179");
+        }
+
         [WindowsOnlyTheory]
         [InlineData("build")]
         [InlineData("run")]
@@ -199,7 +223,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetCommand(Log)
@@ -306,6 +330,19 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 }
             }
             throw new InvalidDataException("Expected path to be under a NuGet root: " + absoluteNuGetPath);
+        }
+
+        [Theory]
+        [InlineData("build")]
+        [InlineData("run")]
+        public void It_uses_correct_runtime_help_description(string command)
+        {
+            var console = new TestConsole();
+            var parseResult = Parser.Instance.Parse(new string[] { command, "-h" });
+            parseResult.Invoke(console);
+            console.Out.ToString().Should().Contain(command.Equals("build") ?
+                Tools.Build.LocalizableStrings.RuntimeOptionDescription :
+                Tools.Run.LocalizableStrings.RuntimeOptionDescription);
         }
     }
 }

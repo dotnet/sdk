@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tools.Test
 {
@@ -21,11 +21,8 @@ namespace Microsoft.DotNet.Tools.Test
         {
         }
 
-        public static TestCommand FromArgs(string[] args, string[] settings, string msbuildPath = null)
+        public static TestCommand FromParseResult(ParseResult result, string[] settings, string msbuildPath = null)
         {
-            var parser = Parser.Instance;
-            var result = parser.ParseFrom("dotnet test", args);
-
             result.ShowHelpOrErrorIfAppropriate();
 
             var msbuildArgs = new List<string>()
@@ -37,7 +34,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             msbuildArgs.AddRange(result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(result.ValueForArgument<IEnumerable<string>>(TestCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+            msbuildArgs.AddRange(result.GetValueForArgument(TestCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
             if (settings.Any())
             {
@@ -79,9 +76,11 @@ namespace Microsoft.DotNet.Tools.Test
             return testCommand;
         }
 
-        public static int Run(string[] args)
+        public static int Run(ParseResult parseResult)
         {
-            DebugHelper.HandleDebugSwitch(ref args);
+            parseResult.HandleDebugSwitch();
+
+            var args = parseResult.GetArguments();
 
             // settings parameters are after -- (including --), these should not be considered by the parser
             var settings = args.SkipWhile(a => a != "--").ToArray();
@@ -112,7 +111,7 @@ namespace Microsoft.DotNet.Tools.Test
             try
             {
                 Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
-                return FromArgs(args, settings).Execute();
+                return FromParseResult(parseResult, settings).Execute();
             }
             finally
             {
@@ -142,7 +141,7 @@ namespace Microsoft.DotNet.Tools.Test
                 return;
             }
 
-            foreach (var env in parseResult.ValueForOption<IEnumerable<string>>(option))
+            foreach (var env in parseResult.GetValueForOption(option))
             {
                 var name = env;
                 var value = string.Empty;
