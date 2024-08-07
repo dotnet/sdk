@@ -282,6 +282,11 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">La soluzione {0} contiene già {1} di progetto nella cartella della soluzione {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="translated">Il file delle impostazioni dello strumento non esiste per lo strumento {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Aggiorna</target>
