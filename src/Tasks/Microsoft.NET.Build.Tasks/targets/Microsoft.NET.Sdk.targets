@@ -225,8 +225,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
     <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
                                                     and '$(_IsDisjointMSBuildVersion)' == 'true'
-                                                    and '$(Language)' != 'C++'
-                                                    and '$(Language)' != 'F#'">true</BuildWithNetFrameworkHostedCompiler>
+                                                    and ('$(Language)' == 'C#'
+                                                    or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
