@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
-                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(values[0], "empty", StringComparison.OrdinalIgnoreCase))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
                 // Only inject scripts that are destined for a browser page.
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].IsSubsetOf(_applicationJsonMediaType))
+                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(_applicationJsonMediaType))
                 {
                     return true;
                 }
