@@ -188,7 +188,42 @@
     </PublishContainerDependsOn>
   </PropertyGroup>
 
-  <!-- TODO: change this comparison to include $(EnableSdkContainerSupport) == true when console apps Import the Publish SDK -->
+  <Target Name="_CheckContainersPackage" AfterTargets="Build">
+    <PropertyGroup>
+      <!-- facts to base on comparisons on -->
+      <_ContainersPackageIdentity>Microsoft.NET.Build.Containers</_ContainersPackageIdentity>
+      <_WebDefaultSdkVersion>7.0.300</_WebDefaultSdkVersion>
+      <_WorkerDefaultSdkVersion>8.0.100</_WorkerDefaultSdkVersion>
+      <_ConsoleDefaultSdkVersion>8.0.200</_ConsoleDefaultSdkVersion>
+
+      <!-- capability detection for the executing SDK -->
+      <_SdkCanPublishWeb>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WebDefaultSdkVersion)'))</_SdkCanPublishWeb>
+      <_SdkCanPublishWorker>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WorkerDefaultSdkVersion)'))</_SdkCanPublishWorker>
+      <_SdkCanPublishConsole>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_ConsoleDefaultSdkVersion)'))</_SdkCanPublishConsole>
+
+      <!-- capability detection for the executing project -->
+      <_ContainerPackageIsPresent>false</_ContainerPackageIsPresent>
+      <_ContainerPackageIsPresent Condition="@(PackageReference->AnyHaveMetadataValue('Identity', '$(_ContainersPackageIdentity)'))">true</_ContainerPackageIsPresent>
+      <_IsWebProject>false</_IsWebProject>
+      <_IsWebProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWeb'))">true</_IsWebProject>
+      <_IsWorkerProject>false</_IsWorkerProject>
+      <_IsWorkerProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWorker'))">true</_IsWorkerProject>
+    </PropertyGroup>
+
+    <Warning
+      Condition="$(_ContainerPackageIsPresent)
+        and (
+          ($(_SdkCanPublishWeb) and $(_IsWebProject)) or
+          ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
+          ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
+        )"
+      Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
+
+    <PropertyGroup>
+      <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="PublishContainer"
     DependsOnTargets="$(PublishContainerDependsOn)"
     Condition="'$(IsPublishable)' == 'true'">
