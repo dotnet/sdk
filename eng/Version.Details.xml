@@ -51,9 +51,9 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>e92f92efe5854b6fe013787830b59166cb9b4ed9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.11.3">
+    <Dependency Name="Microsoft.Build" Version="17.11.4">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>0c86109772ea0fae22af6a7ad7b582e75d280689</Sha>
+      <Sha>37eb419ad2c986ac5530292e6ee08e962390249e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Localization" Version="17.11.3-preview-24352-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
