@@ -83,18 +83,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.10.0-preview.2.97</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.10.0-preview.2.97</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.10.0-preview.2.97</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.10.0-preview.2.97</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.10.0-preview.2.97</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.10.0-preview.2.97</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.10.0-preview.2.97</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.10.0-preview.2.97</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.10.0-preview.2.97</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.10.0-preview.2.97</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.10.0-preview.2.97</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.10.0-preview.2.97</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.10.2-rc.8</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.10.2-rc.8</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.10.2-rc.8</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.10.2-rc.8</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.10.2-rc.8</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.10.2-rc.8</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.10.2-rc.8</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.10.2-rc.8</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.10.2-rc.8</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.10.2-rc.8</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.10.2-rc.8</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.10.2-rc.8</NuGetVersioningPackageVersion>
     <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
   </PropertyGroup>
