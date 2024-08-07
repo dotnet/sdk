@@ -30,7 +30,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
 
         // Host does not have project reference to A, B:
-        AssertEx.SequenceEqual(["Host", "Lib2"],
+        AssertEx.SequenceEqual(["Lib2"],
             handler.Workspace.CurrentSolution.Projects.Single(p => p.Name == "Host").ProjectReferences
                 .Select(r => handler.Workspace.CurrentSolution.GetProject(r.ProjectId)!.Name));
     }

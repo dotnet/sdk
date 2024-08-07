@@ -97,7 +97,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
                 }
               }
             }
-            """, serialized1);
+            """.Replace("\r\n", "\n"), serialized1.Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
                 }
               }
             }
-            """, File.ReadAllText(outputPath, Encoding.UTF8));
+            """.Replace("\r\n", "\n"), File.ReadAllText(outputPath, Encoding.UTF8).Replace("\r\n", "\n"));
 
         using var stream = File.OpenRead(outputPath);
         var value = await JsonSerializer.DeserializeAsync<MSBuildFileSetResult>(stream, cancellationToken: CancellationToken.None);
