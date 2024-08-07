@@ -9,6 +9,7 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="$(FSharpBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(FSharpBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(FSharpBuildVersion)" />
+    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
   </ItemGroup>
 
    <Target Name="_ResolvePublishNuGetPackagePdbsAndXml"

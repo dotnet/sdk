@@ -95,6 +95,7 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" PrivateAssets="All" ExcludeAssets="Runtime"/>
+    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
   </ItemGroup>
