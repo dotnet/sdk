@@ -8,6 +8,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -31,6 +32,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
         public override int Execute()
         {
+            var globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+            var workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
+
+            // If there's a workload set version specified in the global.json file, we need to make sure the workload set is installed before we try to discover workload ids.
+            if (!string.IsNullOrWhiteSpace(workloadSetVersionFromGlobalJson))
+            {
+                var creationResult = new WorkloadResolverFactory().Create();
+                if (creationResult.WorkloadResolver.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider provider && provider.WouldThrowException())
+                {
+                    new WorkloadUpdateCommand(_result).Execute();
+                }
+            }
+
             var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
             Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
