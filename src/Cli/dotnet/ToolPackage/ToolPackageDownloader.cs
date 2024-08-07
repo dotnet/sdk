@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true, verbosityOptions: verbosity);
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 
@@ -376,6 +376,40 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             lockFileTarget.Libraries.Add(lockFileLib);
             lockFile.Targets.Add(lockFileTarget);
             new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
+        }
+
+        public NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false)
+        {
+            ILogger nugetLogger = new NullLogger();
+
+            if (verbosity.IsDetailedOrDiagnostic())
+            {
+                nugetLogger = new NuGetConsoleLogger();
+            }
+
+            if (versionRange == null)
+            {
+                var versionString = "*";
+                versionRange = VersionRange.Parse(versionString);
+            }
+
+            var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
+                verboseLogger: nugetLogger,
+                shouldUsePackageSourceMapping: true,
+                verbosityOptions: verbosity);
+
+            var packageSourceLocation = new PackageSourceLocation(
+                nugetConfig: packageLocation.NugetConfig,
+                rootConfigDirectory: packageLocation.RootConfigDirectory,
+                additionalSourceFeeds: packageLocation.AdditionalFeeds);
+
+            return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
         }
     }
 }
