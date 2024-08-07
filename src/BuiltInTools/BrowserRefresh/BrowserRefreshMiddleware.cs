@@ -82,12 +82,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     }
                     else
                     {
-                        _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set. The browser refresh feature may not work as expected.");
+                        _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
                     }
                 }
                 else
                 {
-                    _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES header is already set.");
+                    _logger.LogDebug("DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
                 }
 
                 if (!context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"))
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 }
                 else
                 {
-                    _logger.LogDebug("ASPNETCORE_BROWSER_TOOLS header is already set.");
+                    _logger.LogDebug("ASPNETCORE-BROWSER-TOOLS header is already set.");
                 }
 
                 return Task.CompletedTask;
