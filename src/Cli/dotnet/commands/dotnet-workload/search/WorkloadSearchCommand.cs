@@ -1,18 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using System.Linq;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Workloads.Workload.Search
 {
@@ -25,16 +19,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         public WorkloadSearchCommand(
             ParseResult result,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
-            string version = null,
-            string userProfileDir = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter)
+            IWorkloadResolverFactory workloadResolverFactory = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter)
         {
-            _workloadIdStub = result.GetValueForArgument(WorkloadSearchCommandParser.WorkloadIdStubArgument);
-            var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
-            userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(result.GetValueForOption(WorkloadSearchCommandParser.VersionOption), version, dotnetPath, userProfileDir, true);
-            var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, _sdkVersion.ToString(), userProfileDir);
-            _workloadResolver = workloadResolver ?? WorkloadResolver.Create(workloadManifestProvider, dotnetPath, _sdkVersion.ToString(), userProfileDir);
+            _workloadIdStub = result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument);
+
+            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
+
+            if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
+            {
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
+
+            var creationResult = workloadResolverFactory.Create();
+
+            _sdkVersion = creationResult.SdkVersion;
+            _workloadResolver = creationResult.WorkloadResolver;
         }
 
         public override int Execute()

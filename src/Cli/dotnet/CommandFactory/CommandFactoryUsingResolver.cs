@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.CommandFactory
 {
     public static class CommandFactoryUsingResolver
     {
-        private static string[] _knownCommandsAvailableAsDotNetTool = new[] { "dotnet-dev-certs", "dotnet-sql-cache", "dotnet-user-secrets", "dotnet-watch" };
+        private static string[] _knownCommandsAvailableAsDotNetTool = new[] { "dotnet-dev-certs", "dotnet-sql-cache", "dotnet-user-secrets", "dotnet-watch", "dotnet-user-jwts" };
 
         public static Command CreateDotNet(
             string commandName,

@@ -1,17 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -29,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "CopyLocalFalseReferences",
-                TargetFrameworks = "net461",
+                TargetFrameworks = "net462",
                 IsExe = true
             };
 
@@ -69,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
             }
             else
             {
-                outputDirectory.Sub("refs").Should().OnlyHaveFiles(Net461ReferenceOnlyAssemblies);
+                outputDirectory.Sub("refs").Should().OnlyHaveFiles(net462ReferenceOnlyAssemblies);
             }
 
             using (var depsJsonFileStream = File.OpenRead(Path.Combine(outputDirectory.FullName, $"{testProject.Name}.deps.json")))
@@ -81,7 +71,7 @@ namespace Microsoft.NET.Build.Tests
                     .ToList();
 
                 compileLibraryAssemblyNames.Should().BeEquivalentTo(
-                    Net461CompileAssemblies.Concat(new[] { testReference.Name + ".dll" }));
+                    net462CompileAssemblies.Concat(new[] { testReference.Name + ".dll" }));
             }
         }
 
@@ -116,7 +106,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        private static readonly string[] Net461ReferenceOnlyAssemblies = new []
+        private static readonly string[] net462ReferenceOnlyAssemblies = new []
         {
             "Microsoft.Win32.Primitives.dll",
             "netfx.force.conflicts.dll",
@@ -217,7 +207,7 @@ namespace Microsoft.NET.Build.Tests
             "System.Xml.XPath.XDocument.dll",
         };
 
-        private static readonly string[] Net461CompileAssemblies = Net461ReferenceOnlyAssemblies.Concat(new[]
+        private static readonly string[] net462CompileAssemblies = net462ReferenceOnlyAssemblies.Concat(new[]
         {
             "CopyLocalFalseReferences.exe",
             "mscorlib.dll",
