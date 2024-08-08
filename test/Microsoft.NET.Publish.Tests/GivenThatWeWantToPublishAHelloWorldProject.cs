@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Publish.Tests
 {
-
-
-
     public class GivenThatWeWantToPublishAHelloWorldProject : SdkTest
     {
         private const string PublishRelease = nameof(PublishRelease);
@@ -1123,7 +1120,134 @@ public static class Program
                .Should()
                .Pass()
                .And
-               .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks 
+               .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks
+        }
+
+        [Theory]
+        [InlineData("AppRelative", "subdirectory", "AppRelative")]
+        [InlineData("AppRelative", "subdirectory", null)]
+        [InlineData("EnvironmentVariable", null, "EnvironmentVariable")]
+        [InlineData("EnvironmentVariable", null, null)]
+        [InlineData("AppRelative;EnvironmentVariable", "subdirectory", "AppRelative")]
+        [InlineData("AppRelative;EnvironmentVariable", "subdirectory", "EnvironmentVariable")]
+        [InlineData(null, "subdirectory", "AppRelative")]
+        public void It_configures_dotnet_search_options(string searchLocation, string appRelativeDotNet, string expectedLocation)
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "AppHostDotNetSearch",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.SourceFiles["Program.cs"] = $$"""
+            using System;
+            using System.IO;
+            public static class Program
+            {
+                public static void Main()
+                {
+                    Console.WriteLine($"Runtime directory: {Path.GetDirectoryName(typeof(object).Assembly.Location)}");
+                }
+            }
+            """;
+
+            if (searchLocation != null)
+                testProject.AdditionalProperties.Add("AppHostDotNetSearch", searchLocation);
+
+            if (appRelativeDotNet != null)
+                testProject.AdditionalProperties.Add("AppHostRelativeDotNet", appRelativeDotNet);
+
+            // Identifer based on test inputs to create test assets that are unique for each test case
+            string assetIdentifier = $"{searchLocation}{appRelativeDotNet}{expectedLocation}";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: assetIdentifier);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute()
+                .Should().Pass();
+
+            // Published apphost should have .NET search location options changed
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework).FullName;
+            TestCommand runCommand = new RunExeCommand(Log, Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}"));
+
+            string expectedRoot = null;
+            switch (expectedLocation)
+            {
+                case "AppRelative":
+                    // Copy the host and runtime to the expected .NET root
+                    expectedRoot = Path.Combine(publishDirectory, appRelativeDotNet);
+                    CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "host"), Path.Combine(expectedRoot, "host"));
+                    CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "shared", "Microsoft.NETCore.App"), Path.Combine(expectedRoot, "shared", "Microsoft.NETCore.App"));
+                    break;
+                case "EnvironmentVariable":
+                    // Set DOTNET_ROOT environment variable to the expected .NET root
+                    expectedRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", expectedRoot);
+                    break;
+                default:
+                    // Should fail - make sure DOTNET_ROOT is not set
+                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", string.Empty);
+                    break;
+            }
+
+            var result = runCommand.Execute();
+            if (expectedRoot != null)
+            {
+                // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
+                if (OperatingSystem.IsMacOS())
+                {
+                    string tmpPath = "/tmp/";
+                    DirectoryInfo tmp = new DirectoryInfo(tmpPath[..^1]); // No trailing slash in order to properly check the link target
+                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmpPath))
+                    {
+                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmpPath.Length..]);
+                    }
+                }
+
+                result.Should().Pass()
+                    .And.HaveStdOutContaining($"Runtime directory: {expectedRoot}");
+            }
+            else
+            {
+                result.Should().Fail();
+            }
+
+            static void CopyDirectory(string sourceDir, string destinationDir)
+            {
+                Directory.CreateDirectory(destinationDir);
+                foreach (var file in Directory.EnumerateFiles(sourceDir))
+                {
+                    File.Copy(file, Path.Combine(destinationDir, Path.GetFileName(file)));
+                }
+
+                foreach (var directory in Directory.EnumerateDirectories(sourceDir))
+                {
+                    CopyDirectory(directory, Path.Combine(destinationDir, Path.GetFileName(directory)));
+                }
+            }
+        }
+
+        [Fact]
+        public void It_fails_on_invalid_dotnet_search_options()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "AppHostDotNetSearch",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("AppHostDotNetSearch", "Invalid");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("NETSDK1217");
         }
 
         [Fact]
