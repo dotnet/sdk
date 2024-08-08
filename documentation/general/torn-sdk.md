@@ -119,9 +119,10 @@ In box could also employ a light up strategy. Essentially reference older versio
 
 Instead of `<PackageDownload>` the toolset package could be installed via `<PackageReference>`. This is how the existing Microsoft.Net.Compilers.Toolset package works today. This has a number of disadvantages:
 
-1. PackageReferences are not side effect free and have been shown to cause issues in complex builds. For example this package did not work by default in the Visual Studio or Bing builds. Deploying this at scale to all our customers will almost certainly cause issues.
-2. This approach does not solve all scenarios. The mechanics of restore mean that the compiler is not swapped until part way through the build. Build operations that happen earlier, such as [legacy WPF][issue-legacy-wpf], will still use the Visual Studio compiler and hence experience analyzer compatibility issues.
-3. Mixing builds that do and do not restore can lead to different build outcomes as they can end up choosing different compilers. Mixing the version of msbuild / dotnet msbuild can also lead to strange outcomes as they can end up choosing different compilers.
+1. `PackageReference` elements are not side effect free and have been shown to cause issues in complex builds. For example this package did not work by default in the Visual Studio or Bing builds. Deploying this at scale to all our customers will almost certainly cause issues.
+1. This approach does not solve all scenarios. The mechanics of restore mean that the compiler is not swapped until part way through the build. Build operations that happen earlier, such as [legacy WPF][issue-legacy-wpf], will still use the Visual Studio compiler and hence experience analyzer compatibility issues.
+1. Mixing builds that do and do not restore can lead to different build outcomes as they can end up choosing different compilers. Mixing the version of msbuild / dotnet msbuild can also lead to strange outcomes as they can end up choosing different compilers.
+1. `PackageReference` elements, even when implicit, end up showing up in NuGet lock files. That makes it difficult for lock files to be kept in a consistent state as subtly changing the Visual Studio or .NET SDK version would end up impacting the lock file.
 
 ### Install the Framework compiler
 
