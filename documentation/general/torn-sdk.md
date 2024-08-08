@@ -43,7 +43,7 @@ To address this issue we are going to separate Visual Studio and the .NET SDK in
 
 Specifically we will be
 
-1. Changing msbuild to use a compiler from the .NET SDK when msbuild's compiler is older
+1. Changing msbuild to use a compiler at least as new as the .NET SDKs compiler
 2. Changing Visual Studio to use analyzers from Visual Studio
 
 In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
