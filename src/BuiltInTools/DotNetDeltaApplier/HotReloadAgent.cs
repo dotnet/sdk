@@ -82,24 +82,36 @@ namespace Microsoft.Extensions.HotReload
             var handlerActions = new UpdateHandlerActions();
             foreach (var assembly in sortedAssemblies)
             {
-                foreach (var attr in assembly.GetCustomAttributesData())
+                try
                 {
-                    // Look up the attribute by name rather than by type. This would allow netstandard targeting libraries to
-                    // define their own copy without having to cross-compile.
-                    if (attr.AttributeType.FullName != "System.Reflection.Metadata.MetadataUpdateHandlerAttribute")
+                    foreach (var attr in assembly.GetCustomAttributesData())
                     {
-                        continue;
-                    }
+                        // Look up the attribute by name rather than by type. This would allow netstandard targeting libraries to
+                        // define their own copy without having to cross-compile.
+                        if (attr.AttributeType.FullName != "System.Reflection.Metadata.MetadataUpdateHandlerAttribute")
+                        {
+                            continue;
+                        }
 
-                    IList<CustomAttributeTypedArgument> ctorArgs = attr.ConstructorArguments;
-                    if (ctorArgs.Count != 1 ||
-                        ctorArgs[0].Value is not Type handlerType)
-                    {
-                        _log($"'{attr}' found with invalid arguments.");
-                        continue;
-                    }
+                        IList<CustomAttributeTypedArgument> ctorArgs = attr.ConstructorArguments;
+                        if (ctorArgs.Count != 1 ||
+                            ctorArgs[0].Value is not Type handlerType)
+                        {
+                            _log($"'{attr}' found with invalid arguments.");
+                            continue;
+                        }
 
-                    GetHandlerActions(handlerActions, handlerType);
+                        GetHandlerActions(handlerActions, handlerType);
+                    }
+                }
+                catch (Exception e)
+                {
+                    // In cross-platform scenarios, such as debugging in VS through WSL, Roslyn
+                    // runs on Windows, and the agent runs on Linux. Assemblies accessible to Windows
+                    // may not be available or loaded on linux (such as WPF's assemblies).
+                    // In such case, we can ignore the assemblies and continue enumerating handlers for
+                    // the rest of the assemblies of current domain.
+                    _log($"'{assembly.FullName}' is not loaded ({e.Message})");
                 }
             }
 

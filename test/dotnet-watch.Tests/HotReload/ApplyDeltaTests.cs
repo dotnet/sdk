@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.WaitForSessionStarted();
 
-            var newSrc = """
+            var newSrc = /* lang=c#-test */"""
                 class DepSubType : Dep
                 {
                     int F() => 2;
@@ -59,6 +59,57 @@ namespace Microsoft.DotNet.Watcher.Tests
                     }
                 }
                 """;    
+
+            File.WriteAllText(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
+
+            await App.AssertOutputLineStartsWith("Updated types: Printer");
+        }
+
+        // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
+        [CoreMSBuildOnlyFact]
+        public async Task HandleMissingAssemblyFailure()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
+                .WithSource();
+
+            await App.StartWatcherAsync(testAsset, "App");
+
+            await App.WaitForSessionStarted();
+
+            var newSrc = /* lang=c#-test */"""
+                class DepSubType : Dep.DepType
+                {
+                    int F() => 2;
+                }
+
+                class Printer
+                {
+                    public static void Print()
+                    {
+                        Console.WriteLine("Changed!");
+                    }
+                }
+
+                public static class UpdateHandler
+                {
+                    // Lock to avoid the updated Print method executing concurrently with the update handler.
+                    public static object Guard = new object();
+
+                    public static void UpdateApplication(Type[] types)
+                    {
+                        lock (Guard)
+                        {
+                            Console.WriteLine($"Dep Updated types: {(types == null ? "<null>" : types.Length == 0 ? "<empty>" : string.Join(",", types.Select(t => t.Name)))}");
+                        }
+                    }
+                }
+                """;
+
+            // Delete all files in testAsset.Path named Dep.dll
+            foreach (var depDll in Directory.GetFiles(testAsset.Path, "Dep.dll", SearchOption.AllDirectories))
+            {
+                File.Delete(depDll);
+            }
 
             File.WriteAllText(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
 
