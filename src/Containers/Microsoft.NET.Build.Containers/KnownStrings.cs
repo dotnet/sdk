@@ -25,7 +25,6 @@ internal static class KnownStrings
         public static readonly string ContainerEnvironmentVariable = nameof(ContainerEnvironmentVariable);
 
         public static readonly string ComputeContainerBaseImage = nameof(ComputeContainerBaseImage);
-        public static readonly string _ComputeContainerBaseImageTag = nameof(_ComputeContainerBaseImageTag);
         public static readonly string ComputeContainerConfig = nameof(ComputeContainerConfig);
         public static readonly string AssemblyName = nameof(AssemblyName);
         public static readonly string ContainerBaseRegistry = nameof(ContainerBaseRegistry);
@@ -35,6 +34,16 @@ internal static class KnownStrings
         public static readonly string ContainerGenerateLabels = nameof(ContainerGenerateLabels);
 
         public static readonly string ContainerRuntimeIdentifier = nameof(ContainerRuntimeIdentifier);
+        public static readonly string RuntimeIdentifier = nameof(RuntimeIdentifier);
+        public static readonly string PublishAot = nameof(PublishAot);
+        public static readonly string PublishTrimmed = nameof(PublishTrimmed);
+        public static readonly string PublishSelfContained = nameof(PublishSelfContained);
+        public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
+    }
+
+    public static class Items
+    {
+        public static readonly string FrameworkReference = nameof(FrameworkReference);
     }
 
     public static class ErrorCodes
@@ -44,7 +53,7 @@ internal static class KnownStrings
         public static readonly string CONTAINER1011 = nameof(CONTAINER1011);
         public static readonly string CONTAINER1012 = nameof(CONTAINER1012);
         public static readonly string CONTAINER1013 = nameof(CONTAINER1013);
-        
+
         public static readonly string CONTAINER2005 = nameof(CONTAINER2005);
         public static readonly string CONTAINER2007 = nameof(CONTAINER2007);
         public static readonly string CONTAINER2008 = nameof(CONTAINER2008);
