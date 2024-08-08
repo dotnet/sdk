@@ -48,7 +48,14 @@ public class DotNetWatchTests : SdkTests
                     return;
                 }
 
-                OutputHelper.WriteLine(e.Data);
+                try
+                {
+                    OutputHelper.WriteLine(e.Data);
+                }
+                catch 
+                {
+                    // avoid System.InvalidOperationException: There is no currently active test.
+                }
 
                 if (e.Data.Contains(waitingString))
                 {
