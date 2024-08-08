@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             var resolver = _workloadResolverFunc();
             var currentWorkloadVersion = resolver.GetWorkloadVersion();
-            currentWorkloadVersion = currentWorkloadVersion.Contains("manifest") ? string.Empty : currentWorkloadVersion;
+            var versionString = currentWorkloadVersion.WorkloadInstallType == WorkloadVersion.Type.LooseManifest ? string.Empty : currentWorkloadVersion.Version;
             return new WorkloadHistoryState()
             {
                 ManifestVersions = resolver.GetInstalledManifests().ToDictionary(manifest => manifest.Id.ToString(), manifest => $"{manifest.Version}/{manifest.ManifestFeatureBand}"),
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                                                        .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
                                                        .Select(id => id.ToString())
                                                        .ToList(),
-                WorkloadSetVersion = currentWorkloadVersion
+                WorkloadSetVersion = versionString
             };
 
         }
