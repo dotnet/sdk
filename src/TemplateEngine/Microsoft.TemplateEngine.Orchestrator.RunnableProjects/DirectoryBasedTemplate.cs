@@ -142,9 +142,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             string filename = locFile.Name;
             string localeStr = filename.Substring(LocalizationFilePrefix.Length, filename.Length - LocalizationFilePrefix.Length - LocalizationFileExtension.Length);
+            CultureInfo? locale = null;
 
-            CultureInfo? locale = CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(c => c.Name.Equals(localeStr, StringComparison.OrdinalIgnoreCase));
-            if (locale == null)
+            try
+            {
+                // PERF: Avoid calling CultureInfo.GetCultures and searching the results as it heavily allocates on each invocation.
+                locale = CultureInfo.GetCultureInfo(localeStr);
+            }
+            catch (CultureNotFoundException)
             {
                 Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_UnknownLocale, localeStr);
             }
