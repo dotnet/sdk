@@ -221,7 +221,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42612")]
     [CombinatorialData] 
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
