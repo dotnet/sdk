@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord
 {
     internal interface IWorkloadInstallationRecordRepository
     {
+        IEnumerable<WorkloadId> GetInstalledWorkloads();
         IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand);
 
         void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand);

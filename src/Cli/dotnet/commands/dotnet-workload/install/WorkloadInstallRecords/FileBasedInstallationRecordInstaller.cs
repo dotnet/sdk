@@ -30,6 +30,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord
             }
         }
 
+        public IEnumerable<WorkloadId> GetInstalledWorkloads()
+        {
+            if (!Directory.Exists(_workloadMetadataDir))
+            {
+                yield break;
+            }
+
+            foreach (string featureBandDirectory in Directory.EnumerateDirectories(_workloadMetadataDir))
+            {
+                SdkFeatureBand featureBand;
+                try
+                {
+                    featureBand = new(Path.GetFileName(featureBandDirectory));
+                }
+                catch (FormatException)
+                {
+                    // There are directories in the _workloadMetadataDir that are not feature bands. Those directories will throw
+                    // a format exception when we try to parse a feature band out of them, but that is expected.
+                    continue;
+                }
+
+                foreach (WorkloadId id in GetInstalledWorkloads(featureBand))
+                {
+                    yield return id;
+                }
+            }
+        }
+
         public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand featureBand)
         {
             var path = Path.Combine(_workloadMetadataDir, featureBand.ToString(), InstalledWorkloadDir);

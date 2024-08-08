@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Installer.Windows;
+using Microsoft.NET.HostModel.AppHost;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 
@@ -74,6 +75,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord
                    let subkey = key.OpenSubKey(name)
                    where subkey.GetSubKeyNames().Length > 0
                    select new SdkFeatureBand(name)).ToList();
+        }
+
+        public IEnumerable<WorkloadId> GetInstalledWorkloads()
+        {
+            if (!Directory.Exists(BasePath))
+            {
+                yield break;
+            }
+
+            foreach (string featureBandDirectory in Directory.EnumerateDirectories(BasePath))
+            {
+                SdkFeatureBand featureBand;
+                try
+                {
+                    featureBand = new(Path.GetFileName(featureBandDirectory));
+                }
+                catch (FormatException)
+                {
+                    // There are directories in the _workloadMetadataDir that are not feature bands. Those directories will throw
+                    // a format exception when we try to parse a feature band out of them, but that is expected.
+                    continue;
+                }
+
+                foreach (WorkloadId id in GetInstalledWorkloads(featureBand))
+                {
+                    yield return id;
+                }
+            }
         }
 
         public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)

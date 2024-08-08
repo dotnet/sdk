@@ -190,6 +190,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand) =>
                 throw new NotImplementedException();
 
+            public IEnumerable<WorkloadId> GetInstalledWorkloads() => new[] { new WorkloadId("xamarin-android") };
+
             public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
             {
                 SdkFeatureBand featureBand = new(new ReleaseVersion(6, 0, 100));

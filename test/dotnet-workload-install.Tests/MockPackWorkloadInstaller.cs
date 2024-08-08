@@ -262,14 +262,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadInstallRecord.Remove(workloadId);
             WorkloadsToDeleteOnGarbageCollection.Add(workloadId);
         }
-        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
-        {
-            return InstalledWorkloads.Except(WorkloadInstallRecord);
-        }
 
-        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords()
-        {
-            return Enumerable.Empty<SdkFeatureBand>();
-        }
+        public IEnumerable<WorkloadId> GetInstalledWorkloads() => InstalledWorkloads.Except(WorkloadInstallRecord);
+        public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => InstalledWorkloads.Except(WorkloadInstallRecord);
+
+        public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => Enumerable.Empty<SdkFeatureBand>();
     }
 }
