@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Watcher.Tests
         [Fact]
         public async Task AddSourceFile()
         {
+            Logger.WriteLine("AddSourceFile started");
+
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
 

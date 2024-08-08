@@ -45,6 +45,8 @@ namespace Microsoft.DotNet.Watcher.Tests
         /// </summary>
         public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null)
         {
+            Logger.WriteLine($"Test waiting for output: '{expectedPrefix}'");
+
             var line = await Process.GetOutputLineAsync(
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
                 failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
