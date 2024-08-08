@@ -137,7 +137,6 @@ namespace Microsoft.DotNet.Watcher
                     }
 
                     var buildCompletionTime = DateTime.UtcNow;
-
                     await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition

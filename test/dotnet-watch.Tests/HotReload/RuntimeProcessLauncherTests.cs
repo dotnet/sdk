@@ -176,6 +176,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             };
 
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
             UpdateSourceFile(libSource,
                 """
                 using System;
@@ -208,6 +210,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             };
 
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
             // rude edit in A (changing assembly level attribute):
             UpdateSourceFile(serviceSourceA2, """
                 [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
@@ -221,7 +225,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42612")]
+    [Theory]
     [CombinatorialData] 
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -292,6 +296,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             }
         };
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
         // let the host process start:
         await waitingForChanges.WaitAsync();
@@ -425,6 +431,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
             }
         };
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
         // let the host process start:
         await waitingForChanges.WaitAsync();
