@@ -148,10 +148,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="WindowsSDKXamlMissingUseUwpProperty" />
   </Target>
 
-  <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net6.0-windows' or greater -->
+  <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net8.0-windows' or greater -->
   <Target Name="_CheckForInvalidTfmForWindowsSDKXamlDependencies"
           AfterTargets="ResolvePackageAssets"
-          Condition=" !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))
+          Condition=" !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0-windows'))
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
