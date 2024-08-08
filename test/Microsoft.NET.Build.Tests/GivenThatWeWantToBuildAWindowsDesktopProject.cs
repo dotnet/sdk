@@ -471,7 +471,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("NETSDK1218");
+                .HaveStdOutContaining("NETSDK1219");
         }
 
         [WindowsOnlyFact]
@@ -492,7 +492,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1219");
+                .HaveStdOutContaining("NETSDK1220");
         }
 
         [WindowsOnlyFact]
@@ -521,7 +521,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1217");
+                .HaveStdOutContaining("NETSDK1218");
         }
 
         [WindowsOnlyFact]
