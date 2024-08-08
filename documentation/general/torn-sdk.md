@@ -33,7 +33,7 @@ This torn state is a common customer setup:
 | 17.7 | 94.9% | 2.2% | 3% |
 | 17.8 | 96% | 0% | 4% |
 
-To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to the following:
+To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to _logically_ be the following:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ To address this issue we are going to separate Visual Studio and the .NET SDK in
 
 Specifically we will be
 
-1. Changing msbuild to use a compiler from the .NET SDK
+1. Changing msbuild to use a compiler from the .NET SDK when msbuild's compiler is older
 2. Changing Visual Studio to use analyzers from Visual Studio
 
 In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
@@ -65,7 +65,7 @@ This also hits any customer that uses a preview version of .NET SDK. These inher
 
 This design has a number of goals:
 
-1. The `msbuild` and `dotnet build` build experience should be equivalent.
+1. The `msbuild` and `dotnet msbuild` build experience should be equivalent.
 1. The Visual Studio Design time experience is independent of the .NET SDK installed.
 1. To make explicit that it is okay, and even expected, that the design time and command line build experiences can differ when the SDK is in a torn state.
 
@@ -73,7 +73,7 @@ This design has a number of goals:
 
 The .NET SDK will start producing a package named Microsoft.Net.Sdk.Compilers.Toolset. This will contain a .NET Framework version of the Roslyn compiler that matches .NET Core version. This will be published as a part of the .NET SDK release process meaning it's available for all publicly available .NET SDKs.
 
-The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected the matching Microsoft.Net.Sdk.Compilers.Toolset package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
+The .NET SDK has the capability to [detect a torn state][pr-detect-torn-state]. When this is detected and msbuild's compiler is older, the matching Microsoft.Net.Sdk.Compilers.Toolset package for this version of the .NET SDK will be downloaded via `<PackageDownload>`. Then the `$(RoslynTargetsPath)` will be reset to point into the package contents. This will cause MSBuild to load the Roslyn compiler from that location vs. the Visual Studio location.
 
 One downside to this approach is that it is possible to end up with two VBCSCompiler server processes. Consider a solution that has a mix of .NET SDK style projects and non-SDK .NET projects. In a torn state the .NET SDK projects will use the .NET SDK compiler and non-SDK .NET projects will use the Visual Studio compiler. While not a desirable outcome, it is a correct one. Customers who wish to only have one VBCSCompiler should correct the torn state in their build tools.
 
@@ -156,13 +156,22 @@ On the surface it seems like VS Code has the same issues as Visual Studio does t
 
 There is only one version of the DevKit extension. It is released using the latest compilers from roslyn at a very high frequency. That frequency is so high that the chance it has an older compiler than the newest .NET SDK is virtually zero. That means at the moment there is no need to solve the problem here. If DevKit changes its release cadance in the future this may need to be revisited.
 
+### Why not always use Micosoft.Net.Sdk.Compilers.Toolset?
+
+This design puts us in a state where `msbuild` will sometimes use the compiler from the .NET and sometimes use it from the MSBuild install. One may ask it why not simplify this and always load from the .NET SDK? Essentially why have all this complexity around torn state detection instead of just always using Microsoft.Net.Sdk.Compilers.Toolset? Or always use it when the compiler versions are different, not just when the .NET SDK is newer than Visual Studio.
+
+The main reason is performance. The compiler inside MSBuild is NGEN'd while the compiler inside Microosft.Net.Sdk.Compilers.Toolset is not. That means there is a small initial startup penalty when loading the compiler from the package. The VBCSCompiler server process largely amortizes that penalty though. Our expectation is that this difference will be largely unnoticeable to customers.
+
+The second reason is that this introduces a new `PackageDownload` step into the build. Doing that always carries some amount of risk. By scoping to only when the `msbuild` compiler is older we reduce the scope of this potential problem.
+
+We plan to revisit this decision in future releases of the .NET SDK as we get real world experience with this change and the customer feedback that comes from it.
+
 ### Related Issues
 
 - [Roslyn tracking issue for torn state](https://github.com/dotnet/roslyn/issues/72672)
 - [MSBuild property for torn state detection](https://github.com/dotnet/installer/pull/19144)
 - [Long term build-server shutdown issue](https://github.com/dotnet/msbuild/issues/10035)
 
-[microsoft-common-tasks]: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks#L106-L109
 [matrix-of-paine]: https://aka.ms/dotnet/matrixofpaine
 [sdk-lifecycle]: https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#lifecycle
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
