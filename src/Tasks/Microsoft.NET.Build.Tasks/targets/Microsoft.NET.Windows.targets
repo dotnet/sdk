@@ -63,9 +63,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompilerVisibleProperty Include="CsWinRTAotWarningLevel" />
   </ItemGroup>
 
-  <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project -->
+  <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project.
+       Note: we only add this reference if the TFM is .NET 8 or above, as the Windows SDK projections
+       that are used on .NET 6 and below do not have the Windows.UI.Xaml profile, so this wouldn't work. -->
   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Condition=" '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+    <FrameworkReference Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0-windows')) and '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
   </ItemGroup>
 
   <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
