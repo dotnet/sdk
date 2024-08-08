@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
@@ -8,8 +8,6 @@
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
 
-    <!-- Just like mono, arm does not support NativeAot -->
-    <BuildArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildArgs) /p:NativeAotSupported=false</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
 
     <!--
@@ -40,6 +38,7 @@
     <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
+    <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>

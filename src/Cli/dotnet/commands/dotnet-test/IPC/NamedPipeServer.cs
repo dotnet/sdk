@@ -19,6 +19,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
     private readonly MemoryStream _serializationBuffer = new();
     private readonly MemoryStream _messageBuffer = new();
     private readonly byte[] _readBuffer = new byte[250000];
+    private readonly bool _skipUnknownMessages;
     private Task _loopTask;
     private bool _disposed;
 
@@ -44,9 +45,22 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken)
     {
-        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances);
+        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         _callback = callback;
         _cancellationToken = cancellationToken;
+    }
+
+    public NamedPipeServer(
+    PipeNameDescription pipeNameDescription,
+    Func<IRequest, Task<IResponse>> callback,
+    int maxNumberOfServerInstances,
+    CancellationToken cancellationToken,
+    bool skipUnknownMessages)
+    {
+        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        _callback = callback;
+        _cancellationToken = cancellationToken;
+        _skipUnknownMessages = skipUnknownMessages;
     }
 
     public PipeNameDescription PipeName { get; private set; }
@@ -135,7 +149,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
                 int serializerId = BitConverter.ToInt32(_messageBuffer.GetBuffer(), 0);
 
                 // Get the serializer
-                INamedPipeSerializer requestNamedPipeSerializer = GetSerializer(serializerId);
+                INamedPipeSerializer requestNamedPipeSerializer = GetSerializer(serializerId, _skipUnknownMessages);
 
                 // Deserialize the message
                 _messageBuffer.Position += sizeof(int); // Skip the serializer id

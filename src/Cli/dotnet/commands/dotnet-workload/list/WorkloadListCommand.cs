@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 Reporter.WriteLine();
                 var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
                 var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
-                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json")).UseWorkloadSets == true;
+                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).UseWorkloadSets == true;
 
                 if (shouldShowWorkloadSetVersion)
                 {
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                     table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 
-                    table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+                    table.PrintRows(installedWorkloads.AsEnumerable().OrderBy(workload => workload.Key), l => Reporter.WriteLine(l));
                 }
 
                 Reporter.WriteLine();
@@ -147,7 +147,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 {
                     if (installedList.Contains(workloadId))
                     {
-                        yield return new UpdateAvailableEntry(manifestUpdate.ExistingVersion.ToString(),
+                        var existingVersion = _workloadListHelper.WorkloadResolver.GetManifestVersion(manifestUpdate.ManifestId.ToString());
+
+                        yield return new UpdateAvailableEntry(existingVersion,
                             manifestUpdate.NewVersion.ToString(),
                             workloadDefinition.Description, workloadId.ToString());
                     }

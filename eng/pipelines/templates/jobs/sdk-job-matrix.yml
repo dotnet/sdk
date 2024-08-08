@@ -43,10 +43,8 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
-    # The centosStream9 assets are not published. So, we need to use 8 for the time being.
-    # See: https://github.com/dotnet/runtime/issues/102344
-    container: centosStream8
-    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream8-helix
+    container: centosStream9
+    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream9-helix
     osProperties: /p:OSName=linux
     # Skipping all container-based testing for now.
     # See: https://github.com/dotnet/sdk/issues/40935

@@ -27,8 +27,6 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
-# Variables used: dotnetbuilds-internal-container-read-token-base64
-- group: DotNetBuilds storage account read tokens
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
@@ -45,6 +43,9 @@ variables:
 - name: _signArgument
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
+  # The OfficialBuilder property is set to Microsoft for the official build only.
+  # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
+  # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
@@ -65,8 +66,6 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
       cblMariner20Fpm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
-      centosStream8:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian11Amd64:
@@ -108,6 +107,7 @@ extends:
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/8.0.4xx
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -176,6 +176,7 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
@@ -277,6 +278,7 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
             macOSJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -297,6 +299,8 @@ extends:
           platform:
             name: Managed
             container: centosStream9
+            jobProperties:
+              timeoutInMinutes: 30
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:

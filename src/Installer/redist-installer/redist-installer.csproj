@@ -42,15 +42,15 @@
   <Import Project="targets\GenerateBundledVersions.targets" />
   <Import Project="targets\Crossgen.targets" />
   <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\GenerateMSBuildExtensions.targets" />
+  <Import Project="targets\GenerateMSBuildExtensions.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\FileExtensions.targets" />
-  <Import Project="targets\GenerateArchives.targets" />
+  <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />
-  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" />
-  <Import Project="targets\GenerateDebs.targets" />
-  <Import Project="targets\GenerateRPMs.targets" />
-  <Import Project="targets\GeneratePKG.targets" />
-  <Import Project="targets\GenerateInstallers.targets" />
+  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GenerateDebs.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GenerateRPMs.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GeneratePKG.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GenerateInstallers.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\Badge.targets" />
 
 </Project>

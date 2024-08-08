@@ -16,7 +16,7 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 
 export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
-export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/Assets
+export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
