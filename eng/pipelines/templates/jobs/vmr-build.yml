@@ -479,6 +479,12 @@ jobs:
         targetFolder=$(Build.StagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
 
+        # Download rsync if using mariner
+        if grep -q "CBL-Mariner" /etc/os-release; then
+          tdnf install -y rsync
+          tdnf clean all
+        fi
+
         cd "$(sourcesPath)"
         find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
         if [ -d "artifacts/scenario-tests/" ]; then
