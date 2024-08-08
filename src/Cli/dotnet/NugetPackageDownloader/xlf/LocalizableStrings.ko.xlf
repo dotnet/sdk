@@ -28,8 +28,10 @@
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
-        <source>Failed to validate package signing.</source>
-        <target state="translated">패키지 서명의 유효성을 검사하지 못했습니다.</target>
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="new">Failed to validate package signing.
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">

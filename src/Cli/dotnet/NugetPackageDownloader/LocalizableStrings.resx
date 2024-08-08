@@ -136,7 +136,8 @@
     <value>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</value>
   </data>
   <data name="FailedToValidatePackageSigning" xml:space="preserve">
-    <value>Failed to validate package signing.</value>
+    <value>Failed to validate package signing.
+{0}</value>
   </data>
   <data name="FailedToFindSourceUnderPackageSourceMapping" xml:space="preserve">
     <value>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>

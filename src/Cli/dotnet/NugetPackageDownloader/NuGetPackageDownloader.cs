@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Abstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -130,8 +127,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
-
+            await VerifySigning(nupkgPath, repository);
+            
             return nupkgPath;
         }
 
@@ -141,7 +138,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
         }
 
-        private void VerifySigning(string nupkgPath)
+        private async Task VerifySigning(string nupkgPath, SourceRepository repository)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
@@ -157,14 +154,23 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (repository is not null &&
+                await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
+                resource.AllRepositorySigned)
             {
-                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
-                    out string commandOutput))
+                if (!_shouldUsePackageSourceMapping)
                 {
-                    throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                             Environment.NewLine +
-                                                             commandOutput);
+                    if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    }
+                }
+                else
+                {
+                    if (!FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    }
                 }
             }
         }

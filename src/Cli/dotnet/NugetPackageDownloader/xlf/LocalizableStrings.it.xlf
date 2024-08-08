@@ -28,8 +28,10 @@
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
-        <source>Failed to validate package signing.</source>
-        <target state="translated">Impossibile convalidare la firma del pacchetto.</target>
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="new">Failed to validate package signing.
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
