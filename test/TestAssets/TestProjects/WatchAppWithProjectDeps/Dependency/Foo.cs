@@ -3,5 +3,6 @@
 public class Lib
 {
     public static void Print()
-        => System.Console.WriteLine("Hello!");
+    {
+    }
 }
