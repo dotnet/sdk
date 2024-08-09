@@ -1,6 +1,6 @@
 schedules:
-- cron: "0 11 * * 1-5"
-  displayName: Run on weekdays at 11am UTC
+- cron: "0 12 * * 1-5"
+  displayName: Run on weekdays at 12pm UTC
   branches:
     include:
     - main
@@ -46,7 +46,6 @@ jobs:
     targetRid: ${{ variables.centOSStreamX64Rid }}
     architecture: x64
     dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
-    includeArtifactsSize: true
     publishTestResultsPr: true
 
 - template: templates/jobs/sdk-diff-tests.yml

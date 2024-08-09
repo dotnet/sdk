@@ -41,6 +41,11 @@ parameters:
   type: boolean
   default: false
 
+# Overrides the rid that is produced by the build.
+- name: targetRid
+  type: string
+  default: ''
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -154,7 +159,6 @@ jobs:
       path: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
-      condition: always()
       sbomEnabled: true
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -325,6 +329,10 @@ jobs:
           customBuildArgs="$customBuildArgs --dev"
         fi
 
+        if [[ -n "${{ parameters.targetRid }}" ]]; then
+          customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
+        fi
+
         if [[ -n "${{ parameters.crossRootFs }}" ]]; then
           customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
           if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
@@ -399,6 +407,10 @@ jobs:
               customBuildArgs="$customBuildArgs --poison"
             fi
             customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+          fi
+
+          if [[ -n "${{ parameters.targetRid }}" ]]; then
+            customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
           fi
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
@@ -535,7 +547,6 @@ jobs:
         assets/**
       TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
     displayName: Copy artifacts to Artifact Staging Directory
-    condition: succeededOrFailed()
 
   # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
   - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
@@ -544,11 +555,9 @@ jobs:
         SourceFolder: $(sourcesPath)/artifacts/packages
         TargetFolder: $(Build.ArtifactStagingDirectory)/publishing/packages
       displayName: Copy packages to Artifact Staging Directory
-      condition: succeededOrFailed()
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
-      condition: succeededOrFailed()
       continueOnError: true

@@ -23,6 +23,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     {
                         var itemGroup = new XElement("PropertyGroup");
                         var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                         itemGroup.Add(serviceWorkerAssetsManifest);
                         doc.Root.Add(itemGroup);
                     }

@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "--global --tool-path"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42346")]
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");
