@@ -73,6 +73,10 @@ namespace Microsoft.DotNet.Tools.Run
                     {
                         targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
                     }
+                    if (string.IsNullOrEmpty(targetCommand.CommandWorkingDirectory) && launchSettings.WorkingDirectory != null)
+                    {
+                        targetCommand.WorkingDirectory(launchSettings.WorkingDirectory);
+                    }
                 }
 
                 // Ignore Ctrl-C for the remainder of the command's execution
