@@ -2,14 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -54,9 +48,16 @@ namespace Microsoft.DotNet.Cli
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
+            reporter ??= Utils.Reporter.Output;
+            var globalJsonInformation = workloadInfoHelper.ManifestProvider.GetGlobalJsonInformation();
+            if (globalJsonInformation?.WorkloadVersionInstalled == false)
+            {
+                reporter.WriteLine(string.Format(Workloads.Workload.List.LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled, globalJsonInformation.GlobalJsonVersion, globalJsonInformation.GlobalJsonPath));
+                return;
+            }
+
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
-            reporter ??= Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
             
