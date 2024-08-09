@@ -1089,6 +1089,10 @@ namespace ProjectNameWithSpaces
                 Name = "ProjB",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041",
             };
+
+            // Temporary until new projections flow to tests
+            testProjectB.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.39";
+
             testProjectB.SourceFiles.Add("ProjB.cs", @"namespace ProjB
 {
     public class ProjBClass

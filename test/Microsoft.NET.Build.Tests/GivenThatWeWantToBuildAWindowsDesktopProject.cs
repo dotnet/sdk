@@ -545,6 +545,9 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
+            // Temporary until new projections flow to tests
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -576,6 +579,9 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+
+            // Temporary until new projections flow to tests
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
