@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Help
 
             result.ShowHelpOrErrorIfAppropriate();
 
-            if (!string.IsNullOrEmpty(result.GetValue(HelpCommandParser.Argument)))
+            if (result.GetValue(HelpCommandParser.Arguments) is { } args)
             {
                 return new HelpCommand(result).Execute();
             }
@@ -46,75 +46,58 @@ namespace Microsoft.DotNet.Tools.Help
 
         public static Process ConfigureProcess(string docUrl)
         {
-            ProcessStartInfo psInfo;
-            if (OperatingSystem.IsWindows())
+            return new Process() { StartInfo = new ProcessStartInfo()
             {
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
-                    Arguments = $"/c start {docUrl}"
-                };
+                FileName = docUrl,
+                UseShellExecute = true
             }
-            else if (OperatingSystem.IsMacOS())
-            {
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = @"/usr/bin/open",
-                    Arguments = docUrl
-                };
-            }
-            else
-            {
-                var fileName = File.Exists(@"/usr/bin/xdg-open") ? @"/usr/bin/xdg-open" :
-                               File.Exists(@"/usr/sbin/xdg-open") ? @"/usr/sbin/xdg-open" :
-                               File.Exists(@"/sbin/xdg-open") ? @"/sbin/xdg-open" :
-                               "xdg-open";
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = docUrl
-                };
-            }
-
-            return new Process
-            {
-                StartInfo = psInfo
             };
         }
 
+
+        /// <summary>
+        /// Opens the HTML help for one of our <see cref="DocumentedCommand"/>s. If the command requested isn't a
+        /// <see cref="DocumentedCommand"/>, or if it doesn't have a <see cref="DocumentedCommand.DocsLink" /> we'll just call <see cref="CliCommand.ShowHelp"/> on it.
+        /// </summary>
+        /// <returns></returns>
         public int Execute()
         {
-            if (TryGetDocsLink(
-                _parseResult.GetValue(HelpCommandParser.Argument),
-                out var docsLink) &&
-                !string.IsNullOrEmpty(docsLink))
+            var commandAndArgs = _parseResult.GetValue(HelpCommandParser.Arguments);
+            var innerParseResult = Cli.Parser.Instance.Parse(["dotnet", .. commandAndArgs]);
+            if (innerParseResult.CommandResult is { } commandResult)
             {
-                var process = ConfigureProcess(docsLink);
-                process.Start();
-                process.WaitForExit();
-                return 0;
+
+                if (commandResult.Command is DocumentedCommand documentedCommand
+                    && !string.IsNullOrEmpty(documentedCommand.DocsLink))
+                {
+                    var process = ConfigureProcess(documentedCommand.DocsLink);
+                    try
+                    {
+                        process.Start();
+                        process.WaitForExit();
+                        if (process.ExitCode == 0)
+                        {
+                            return process.ExitCode;
+                        }
+                    }
+                    catch { }
+                }
+
+                // if the 'open browser' process fails, we should fallback to
+                // calling `--help` for that command and outputting that
+                return innerParseResult.ShowHelp();
             }
             else
             {
                 Reporter.Error.WriteLine(
                     string.Format(
                         LocalizableStrings.CommandDoesNotExist,
-                        _parseResult.GetValue(HelpCommandParser.Argument)).Red());
+                        String.Join(" ", _parseResult.GetValue(HelpCommandParser.Arguments))
+                        ).Red()
+                    );
                 Reporter.Output.WriteLine(HelpUsageText.UsageText);
                 return 1;
             }
-        }
-
-        private bool TryGetDocsLink(string commandName, out string docsLink)
-        {
-            var command = Cli.Parser.GetBuiltInCommand(commandName);
-            if (command != null && command as DocumentedCommand != null)
-            {
-                docsLink = (command as DocumentedCommand).DocsLink;
-                return true;
-            }
-            docsLink = null;
-            return false;
         }
     }
 }
