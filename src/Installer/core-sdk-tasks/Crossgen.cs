@@ -22,6 +22,8 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string Architecture { get; set; }
 
+        public string ExtraArgs { get; set; }
+
         public string CrossgenPath { get; set; }
 
         public bool CreateSymbols { get; set; }
@@ -110,9 +112,11 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateFullPathToTool() => CrossgenPath ?? "crossgen2";
 
-        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()} {GetExtraArgs()}";
 
         private string GetArchitecture() => $"--targetarch {Architecture}";
+
+        private string GetExtraArgs() => ExtraArgs ?? string.Empty;
 
         private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 

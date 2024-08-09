@@ -12,6 +12,40 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
 
+  <Import Project="fsc_mibc.props" />
+
+  <Target Name="Get MIBC data" AfterTargets="Restore" BeforeTargets="_ResolvePublishNuGetPackagePdbsAndXml" Condition="'$(Configuration)' == 'Release'">
+
+    <PropertyGroup>
+      <MibcOptimizationDataDir>$([System.IO.Path]::Combine($(ArtifactsDir), 'mibc'))</MibcOptimizationDataDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MIBCPackage>
+        <PackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), %(MIBCPackage.Identity), %(MIBCPackage.Version)))</PackagePath>
+      </MIBCPackage>
+
+      <MibcOriginalFiles
+        Include="%(MIBCPackage.PackagePath)/**/DotNet_FSharp.mibc"
+        SubdirectoryName="$([System.IO.Path]::Combine($(TargetOS), $(TargetArchitecture)))" />
+
+      <MibcFiles 
+        Include="@(MibcOriginalFiles->'$(MibcOptimizationDataDir)/%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Error 
+      Condition="'@(MibcOriginalFiles)' == ''"
+      Text="Failed to restore MIBC optimization data" />
+
+    <!-- Copy MIBC files to artifacts -->
+    <Copy
+      SourceFiles="@(MibcOriginalFiles)"
+      DestinationFiles="@(MibcFiles)"
+      SkipUnchangedFiles="true"
+      UseHardlinksIfPossible="true" />
+
+  </Target>
+
    <Target Name="_ResolvePublishNuGetPackagePdbsAndXml"
         AfterTargets="_ResolveCopyLocalAssetsForPublish">
     <PropertyGroup>

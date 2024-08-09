@@ -171,6 +171,7 @@
         Architecture="$(Architecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
+        ExtraArgs="--embed-pgo-data"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
