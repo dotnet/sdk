@@ -29,7 +29,7 @@ internal sealed class StartupHook
         if (Path.ChangeExtension(processPath, ".exe") != s_targetProcessPath &&
             Path.ChangeExtension(processPath, ".dll") != s_targetProcessPath)
         {
-            Log($"Ignoring process {processPath}");
+            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
             return;
         }
 
