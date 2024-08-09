@@ -509,5 +509,9 @@
       <Sha>73f0850939d96131c28cf6ea6ee5aacb4da0083a</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.IO.Redist" Version="6.0.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
