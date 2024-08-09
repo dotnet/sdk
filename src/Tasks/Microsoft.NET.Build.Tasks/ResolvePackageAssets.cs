@@ -1571,7 +1571,7 @@ namespace Microsoft.NET.Build.Tasks
                         return alias == _task.TargetFramework;
                     }
 
-                    void ApplyDiagnosticLevel(string package, LogLevel logLevel, Dictionary<string, LogLevel> diagnosticLevels, Dictionary<string, HashSet<string>> reverseDependencies)
+                    void ApplyDiagnosticLevel(string package, LogLevel messageLevel, Dictionary<string, LogLevel> diagnosticLevels, Dictionary<string, HashSet<string>> reverseDependencies)
                     {
                         if (!reverseDependencies.TryGetValue(package, out HashSet<string> parentPackages))
                         {
@@ -1579,21 +1579,21 @@ namespace Microsoft.NET.Build.Tasks
                             return;
                         }
 
-                        if (diagnosticLevels.TryGetValue(package, out LogLevel currentLevel))
+                        if (diagnosticLevels.TryGetValue(package, out LogLevel cachedLevel))
                         {
                             // Only continue if we need to increase the level
-                            if (currentLevel <= logLevel)
+                            if (cachedLevel >= messageLevel)
                             {
                                 return;
                             }
                         }
 
-                        diagnosticLevels[package] = logLevel;
+                        diagnosticLevels[package] = messageLevel;
 
                         // Flow changes upwards, towards the direct PackageReference
                         foreach (var parentPackage in parentPackages)
                         {
-                            ApplyDiagnosticLevel(parentPackage, logLevel, diagnosticLevels, reverseDependencies);
+                            ApplyDiagnosticLevel(parentPackage, messageLevel, diagnosticLevels, reverseDependencies);
                         }
                     }
                 }
