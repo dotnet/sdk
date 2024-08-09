@@ -17,7 +17,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> DetailOption = new("--detail")
         {
-            Description = LocalizableStrings.DetailDescription
+            Description = LocalizableStrings.DetailDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> SkipOption = new("--skip")
@@ -34,7 +35,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
         {
-            Description = LocalizableStrings.PrereleaseDescription
+            Description = LocalizableStrings.PrereleaseDescription,
+            Arity = ArgumentArity.Zero
         };
 
         private static readonly CliCommand Command = ConstructCommand();
