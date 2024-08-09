@@ -29,8 +29,12 @@ namespace Microsoft.DotNet.Tools.Test
 
             var handshakeInfo = (HandshakeInfo)objectToSerialize;
 
-            WriteShort(stream, (ushort)handshakeInfo.Properties.Count);
+            if (handshakeInfo.Properties is null || handshakeInfo.Properties.Count == 0)
+            {
+                return;
+            }
 
+            WriteShort(stream, (ushort)handshakeInfo.Properties.Count);
             foreach (KeyValuePair<string, string> property in handshakeInfo.Properties)
             {
                 WriteField(stream, property.Key);
