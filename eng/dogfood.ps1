@@ -46,6 +46,10 @@ try {
   $env:PATH = "$TestDotnetRoot;$env:Path"
   $env:DOTNET_ROOT = $TestDotnetRoot
 
+  # Avoid downloading Microsoft.Net.Sdk.Compilers.Toolset from feed
+  # Locally built SDK package version is Major.Minor.0-dev, which won't be available.
+  $env:BuildWithNetFrameworkHostedCompiler = $false
+
   if ($command -eq $null -and $env:DOTNET_SDK_DOGFOOD_SHELL -ne $null) {
     $command = , $env:DOTNET_SDK_DOGFOOD_SHELL
   }
