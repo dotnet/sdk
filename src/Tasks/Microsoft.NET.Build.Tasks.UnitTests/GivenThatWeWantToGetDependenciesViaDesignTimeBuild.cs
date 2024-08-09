@@ -372,7 +372,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var item1 = task.PackageDependenciesDesignTime[0];
             Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
-            Assert.Equal("Warning", item1.GetMetadata("DiagnosticLevel"));
+            Assert.Equal("Error", item1.GetMetadata("DiagnosticLevel"));
 
             var item2 = task.PackageDependenciesDesignTime[1];
             Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
@@ -402,7 +402,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         /// - + dependent.package1<br/>
         /// - - + dependent.package3<br/>
         /// </c>
-        /// dependent.package3 has a warning.
+        /// dependent.package2 has an error message, and dependent.package3 has a warning.
         /// </remarks>
         private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package")
         {
@@ -614,10 +614,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
   },
   "logs": [
     {
-      "code": "NU1903",
+      "code": "NU1001",
+      "level": "Error",
+      "warningLevel": 2,
+      "message": "some warning message",
+      "libraryId": "dependent.package2",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1002",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'dependent.package3' 1.0.0 has a known high severity vulnerability, https://contoso.test/cve/1",
+      "message": "some warning message",
       "libraryId": "dependent.package3",
       "targetGraphs": [
         "net6.0"
