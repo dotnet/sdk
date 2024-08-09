@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Tools.Test
         }
 
         private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) =>
-            (ushort)((string.IsNullOrEmpty(commandLineOptionMessages.ModulePath) ? 0 : 1) +
+            (ushort)((commandLineOptionMessages.ModulePath is null ? 0 : 1) +
             (commandLineOptionMessages is null ? 0 : 1));
 
         private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) =>
