@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     {
-        readonly string WorkloadSetManifestId = "Microsoft.NET.Workloads";
+        public static readonly string WorkloadSetManifestId = "Microsoft.NET.Workloads";
 
         private readonly IReporter _reporter;
         private readonly IWorkloadResolver _workloadResolver;

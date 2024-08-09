@@ -92,9 +92,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
-            SdkFeatureBand workloadSetFeatureBand;
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
-            var workloadSetPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+            var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
             var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
@@ -117,6 +116,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
 
             return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
+        }
+
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => GetWorkloadSetContentsAsync(workloadSetVersion).GetAwaiter().GetResult();
+
+        public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
+        {
+            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(new PackageId(WorkloadManifestUpdater.WorkloadSetManifestId),
+                                new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
+            var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
+            await ExtractManifestAsync(packagePath, tempExtractionDir);
+            return WorkloadSet.FromWorkloadSetFolder(tempExtractionDir, workloadSetVersion, _sdkFeatureBand);
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)

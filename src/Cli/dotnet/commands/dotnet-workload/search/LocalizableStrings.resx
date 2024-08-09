@@ -145,4 +145,10 @@
   <data name="TakeOptionMustBePositive" xml:space="preserve">
     <value>The --take option must be positive.</value>
   </data>
+  <data name="WorkloadVersionArgument" xml:space="preserve">
+    <value>SEARCH_STRING</value>
+  </data>
+  <data name="WorkloadVersionArgumentDescription" xml:space="preserve">
+    <value>Output workload versions associated with the provided workload version.</value>
+  </data>
 </root>
