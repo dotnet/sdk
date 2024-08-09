@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
             _args = args;
         }
 
-        public async Task<int> RunAsync()
+        public async Task<int> RunAsync(bool enableHelp)
         {
             if (!ModulePathExists())
             {
@@ -45,28 +45,7 @@ namespace Microsoft.DotNet.Cli
                 FileName = isDll ?
                 Environment.ProcessPath :
                 _modulePath,
-                Arguments = BuildArgs(isDll),
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            return await StartProcess(processStartInfo);
-        }
-
-        public async Task<int> RunHelpAsync()
-        {
-            if (!ModulePathExists())
-            {
-                return 1;
-            }
-
-            bool isDll = _modulePath.EndsWith(".dll");
-            ProcessStartInfo processStartInfo = new()
-            {
-                FileName = isDll ?
-                Environment.ProcessPath :
-                _modulePath,
-                Arguments = BuildHelpArgs(isDll),
+                Arguments = enableHelp ? BuildHelpArgs(isDll) : BuildArgs(isDll),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
@@ -85,7 +64,7 @@ namespace Microsoft.DotNet.Cli
             StoreOutputAndErrorData(process);
             await process.WaitForExitAsync();
 
-            TestProcessExited.Invoke(this, new TestProcessExitEventArgs { OutputData = _outputData, ErrorData = _errorData, ExitCode = process.ExitCode });
+            TestProcessExited?.Invoke(this, new TestProcessExitEventArgs { OutputData = _outputData, ErrorData = _errorData, ExitCode = process.ExitCode });
 
             return process.ExitCode;
         }

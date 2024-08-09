@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
 
-                    int runHelpResult = await testApp.RunHelpAsync();
+                    int runHelpResult = await testApp.RunAsync(enableHelp: true);
                 });
             }
             else
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
 
-                    int runResult = await testApp.RunAsync();
+                    int runResult = await testApp.RunAsync(enableHelp: false);
                 });
             }
 
@@ -77,7 +77,10 @@ namespace Microsoft.DotNet.Cli
 
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
 
-            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
+            if (VSTestTrace.TraceEnabled)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
+            }
 
             ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             int testsProjectResult = msBuildForwardingApp.Execute();
@@ -211,6 +214,7 @@ namespace Microsoft.DotNet.Cli
 
                 Environment.FailFast(ex.ToString());
             }
+
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 

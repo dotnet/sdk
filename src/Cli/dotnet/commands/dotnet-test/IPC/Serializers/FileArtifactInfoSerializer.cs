@@ -116,13 +116,12 @@ namespace Microsoft.DotNet.Tools.Test
         }
 
         private static ushort GetFieldCount(FileArtifactInfo fileArtifactInfo) =>
-            (ushort)((IsNull(fileArtifactInfo.FullPath) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.DisplayName) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.Description) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.TestUid) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.TestDisplayName) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.SessionUid) ? 0 : 1) +
-            (IsNull(fileArtifactInfo.ModulePath) ? 0 : 1));
+            (ushort)((fileArtifactInfo.FullPath is null ? 0 : 1) +
+            (fileArtifactInfo.DisplayName is null ? 0 : 1) +
+            (fileArtifactInfo.Description is null ? 0 : 1) +
+            (fileArtifactInfo.TestUid is null ? 0 : 1) +
+            (fileArtifactInfo.TestDisplayName is null ? 0 : 1) +
+            (fileArtifactInfo.SessionUid is null ? 0 : 1) +
+            (fileArtifactInfo.ModulePath is null ? 0 : 1));
     }
-
 }

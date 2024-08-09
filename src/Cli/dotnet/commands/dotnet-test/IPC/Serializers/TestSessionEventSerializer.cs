@@ -76,8 +76,8 @@ namespace Microsoft.DotNet.Tools.Test
         }
 
         private static ushort GetFieldCount(TestSessionEvent testSessionEvent) =>
-            (ushort)((IsNull(testSessionEvent.SessionType) ? 0 : 1) +
-            (IsNull(testSessionEvent.SessionUid) ? 0 : 1) +
-            (IsNull(testSessionEvent.ModulePath) ? 0 : 1));
+            (ushort)((testSessionEvent.SessionType is null ? 0 : 1) +
+            (testSessionEvent.SessionUid is null ? 0 : 1) +
+            (testSessionEvent.ModulePath is null ? 0 : 1));
     }
 }

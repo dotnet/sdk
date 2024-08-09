@@ -106,12 +106,12 @@ namespace Microsoft.DotNet.Tools.Test
         }
 
         private static ushort GetFieldCount(SuccessfulTestResultMessage testResultMessage) =>
-            (ushort)((IsNull(testResultMessage.Uid) ? 0 : 1) +
-            (IsNull(testResultMessage.DisplayName) ? 0 : 1) +
-            (IsNull(testResultMessage.State) ? 0 : 1) +
-            (IsNull(testResultMessage.Reason) ? 0 : 1) +
-            (IsNull(testResultMessage.SessionUid) ? 0 : 1) +
-            (IsNull(testResultMessage.ModulePath) ? 0 : 1));
+            (ushort)((testResultMessage.Uid is null ? 0 : 1) +
+            (testResultMessage.DisplayName is null ? 0 : 1) +
+            (testResultMessage.State is null ? 0 : 1) +
+            (testResultMessage.Reason is null ? 0 : 1) +
+            (testResultMessage.SessionUid is null ? 0 : 1) +
+            (testResultMessage.ModulePath is null ? 0 : 1));
     }
 
     /*
@@ -235,13 +235,13 @@ namespace Microsoft.DotNet.Tools.Test
         }
 
         private static ushort GetFieldCount(FailedTestResultMessage testResultMessage) =>
-            (ushort)((IsNull(testResultMessage.Uid) ? 0 : 1) +
-            (IsNull(testResultMessage.DisplayName) ? 0 : 1) +
-            (IsNull(testResultMessage.State) ? 0 : 1) +
-            (IsNull(testResultMessage.Reason) ? 0 : 1) +
-            (IsNull(testResultMessage.ErrorMessage) ? 0 : 1) +
-            (IsNull(testResultMessage.ErrorStackTrace) ? 0 : 1) +
-            (IsNull(testResultMessage.SessionUid) ? 0 : 1) +
-            (IsNull(testResultMessage.ModulePath) ? 0 : 1));
+            (ushort)((testResultMessage.Uid is null ? 0 : 1) +
+            (testResultMessage.DisplayName is null ? 0 : 1) +
+            (testResultMessage.State is null ? 0 : 1) +
+            (testResultMessage.Reason is null ? 0 : 1) +
+            (testResultMessage.ErrorMessage is null ? 0 : 1) +
+            (testResultMessage.ErrorStackTrace is null ? 0 : 1) +
+            (testResultMessage.SessionUid is null ? 0 : 1) +
+            (testResultMessage.ModulePath is null ? 0 : 1));
     }
 }
