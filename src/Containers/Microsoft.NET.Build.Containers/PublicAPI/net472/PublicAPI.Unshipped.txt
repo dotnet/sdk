@@ -80,6 +80,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputFormat.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputFormat.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!
@@ -115,3 +117,6 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string? portNumber, string? portType, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
+Microsoft.NET.Build.Containers.ContainerImageArchiveFormat
+Microsoft.NET.Build.Containers.ContainerImageArchiveFormat.Docker = 0 -> Microsoft.NET.Build.Containers.ContainerImageArchiveFormat
+Microsoft.NET.Build.Containers.ContainerImageArchiveFormat.OpenContainerInitiative = 1 -> Microsoft.NET.Build.Containers.ContainerImageArchiveFormat

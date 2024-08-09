@@ -126,11 +126,79 @@ public class EndToEndTests : IDisposable
         }
     }
 
+
     [DockerAvailableFact]
-    public async Task ApiEndToEndWithArchiveWritingAndLoad()
+
+    public async Task ApiEndToEndWithDockerArchiveWritingAndLoad()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
-        string publishDirectory = BuildLocalApp(tfm: "net8.0");
+        DestinationImageReference destinationReference = await CreateImageArchiveAsync(ContainerImageArchiveFormat.Docker,
+            new[] { "latest", "1.0" });
+
+        // Load the archive
+        ContainerCli.LoadCommand(_testOutput, "--input", ((ArchiveFileRegistry)destinationReference.LocalRegistry!).ArchiveOutputPath)
+            .Execute()
+            .Should().Pass();
+
+        // Run the image
+        foreach (string tag in destinationReference.Tags)
+        {
+            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
+        }
+    }
+
+
+    [DockerAvailableFact]
+
+    public async Task ApiEndToEndWithOciArchiveWritingAndLoad()
+    {
+        DestinationImageReference destinationReference = await CreateImageArchiveAsync(ContainerImageArchiveFormat.OpenContainerInitiative, new[]
+        {
+            "latest"
+        });
+
+        // Docker cannot load OCI archives and we currently also cannot push OCI containers to registries ourselves
+        // so we import the archive with skopeo to the test registry, pull the image from there and run it.
+
+        // org.opencontainers.image.ref.name is not respected by skopeo on pushes, so we use a custom image name
+
+        FileInfo archiveOutput = new(((ArchiveFileRegistry)destinationReference.LocalRegistry!).ArchiveOutputPath);
+        string archiveParent = archiveOutput.DirectoryName!;
+        string archiveMountPath = OperatingSystem.IsWindows()
+            ? "/" + archiveParent.Replace(":", "").Replace("\\", "/")
+            : archiveParent;
+
+        string newImageNameWithTag = NewImageName() + ":latest";
+        string dockerHost = OperatingSystem.IsWindows()
+            ? (ContainerCli.IsPodman ? "host.containers.internal" : "host.docker.internal")
+            // For default networking we can use a static IP
+            // https://stackoverflow.com/questions/48546124/what-is-linux-equivalent-of-host-docker-internal
+            : "172.17.0.1"; 
+            
+        ContainerCli.RunCommand(_testOutput, $"-v", $"{archiveMountPath}:/data", "--rm", "--tty", "quay.io/skopeo/stable:latest",
+                "copy", "--dest-tls-verify=false", "--format", "oci", $"oci-archive:/data/{archiveOutput.Name}", $"docker://{dockerHost}:{DockerRegistryManager.LocalRegistryPort}/{newImageNameWithTag}")
+            .Execute()
+            .Should().Pass();
+
+        // pull it back locally
+        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{newImageNameWithTag}")
+            .Execute()
+            .Should().Pass();
+
+        // Run the image
+        ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{DockerRegistryManager.LocalRegistry}/{newImageNameWithTag}")
+            .Execute()
+            .Should().Pass();
+    }
+
+    private async Task<DestinationImageReference> CreateImageArchiveAsync(
+        ContainerImageArchiveFormat format,
+        string[] tags,
+        [CallerMemberName] string testName = "TestName")
+    {
+        ILogger logger = _loggerFactory.CreateLogger(testName);
+        string publishDirectory = BuildLocalApp(tfm: "net8.0", testName: testName);
 
         // Build the image
 
@@ -153,28 +221,19 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Write the image to disk
-        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
-            nameof(ApiEndToEndWithArchiveWritingAndLoad), "app.tar.gz");
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
-        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), new[] { "latest", "1.0" });
+        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory, testName, "app.tar.gz");
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(
+            KnownLocalRegistryTypes.CreateLocalRegistry(archiveFile, format), NewImageName(testName), tags);
 
-        await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default)
+            .ConfigureAwait(false);
 
         Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
-
-        // Load the archive
-        ContainerCli.LoadCommand(_testOutput, "--input", archiveFile)
-            .Execute()
-            .Should().Pass();
-
-        // Run the image
-        foreach (string tag in destinationReference.Tags)
-        {
-            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
-                .Execute()
-                .Should().Pass();
-        }
+        return destinationReference;
     }
+
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
     {
