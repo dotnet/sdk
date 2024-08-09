@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            string moduleName = string.Empty;
+            string? moduleName = null;
             List<CommandLineOptionMessage>? commandLineOptionMessages = null;
 
             ushort fieldCount = ReadShort(stream);
@@ -83,8 +83,8 @@ namespace Microsoft.DotNet.Tools.Test
             int length = ReadInt(stream);
             for (int i = 0; i < length; i++)
             {
-                string name = string.Empty, description = string.Empty, arity = string.Empty;
-                bool isHidden = false, isBuiltIn = false;
+                string? name = null, description = null;
+                bool? isHidden = null, isBuiltIn = null;
 
                 int fieldCount = ReadShort(stream);
 

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Tools.Test
@@ -39,12 +41,12 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            string uid = string.Empty;
-            string displayName = string.Empty;
-            string state = string.Empty;
-            string reason = string.Empty;
-            string sessionUid = string.Empty;
-            string modulePath = string.Empty;
+            string? uid = null;
+            string? displayName = null;
+            string? state = null;
+            string? reason = null;
+            string? sessionUid = null;
+            string? modulePath = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -156,14 +158,14 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            string uid = string.Empty;
-            string displayName = string.Empty;
-            string state = string.Empty;
-            string reason = string.Empty;
-            string errorMessage = string.Empty;
-            string errorStackTrace = string.Empty;
-            string sessionUid = string.Empty;
-            string modulePath = string.Empty;
+            string? uid = null;
+            string? displayName = null;
+            string? state = null;
+            string? reason = null;
+            string? errorMessage = null;
+            string? errorStackTrace = null;
+            string? sessionUid = null;
+            string? modulePath = null;
 
             ushort fieldCount = ReadShort(stream);
 
