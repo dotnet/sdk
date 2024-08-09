@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -32,11 +31,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("Hello"));
+                "Hello"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
+            byte[] data = "Hello    \r\n    There"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -57,11 +56,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
+            byte[] data = "Hello    \r\n    There"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -82,11 +81,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -107,11 +106,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -132,11 +131,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -165,11 +164,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -194,11 +193,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
+            byte[] data = "Hello    \r\n    There    \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -220,11 +219,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
+            byte[] data = "Hello    \r\n    There     \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -245,11 +244,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
+            byte[] data = "Hello    \r\n    There     \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);
@@ -270,11 +269,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     return 0;
                 },
                 true,
-                Encoding.UTF8.GetBytes("There"));
+                "There"u8.ToArray());
 
             EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
-            byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
+            byte[] data = "Hello    \r\n    There     \r\n    You"u8.ToArray();
             Stream d = new MemoryStream(data);
             MemoryStream result = new MemoryStream();
             bool modified = processor.Run(d, result);

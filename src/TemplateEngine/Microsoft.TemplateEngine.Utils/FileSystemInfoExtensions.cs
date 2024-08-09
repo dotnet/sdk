@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -16,12 +13,10 @@ namespace Microsoft.TemplateEngine.Utils
 
             foreach (IFile file in source.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
             {
-                using (Stream f = source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name)))
-                using (Stream s = file.OpenRead())
-                {
-                    s.CopyTo(f);
-                    f.Flush();
-                }
+                using Stream f = source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name));
+                using Stream s = file.OpenRead();
+                s.CopyTo(f);
+                f.Flush();
             }
 
             foreach (IDirectory dir in source.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))

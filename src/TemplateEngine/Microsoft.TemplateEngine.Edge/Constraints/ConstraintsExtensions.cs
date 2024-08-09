@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -23,7 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
             if (token.Type == JTokenType.String)
             {
-                return new[] { token.Value<string>() ?? throw new ConfigurationException(string.Format(LocalizableStrings.Constaint_Error_ArgumentHasEmptyString, args)) };
+                return new[] { token.Value<string>() ?? throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args)) };
             }
 
             JArray array = token.ToConstraintsJArray(args, true);
@@ -32,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ConfigurationException(string.Format(LocalizableStrings.Constaint_Error_ArgumentHasEmptyString, args));
+                    throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArgumentHasEmptyString, args));
                 }
 
                 return value!;
@@ -43,7 +40,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
         /// Attempts to parse input configuration string (presumably string or json array of strings) into enumeration of JObjects.
         /// </summary>
         /// <param name="args">Input configuration string.</param>
-        /// <returns>Enumeration of parsed Jobject tokens.</returns>
+        /// <returns>Enumeration of parsed JObject tokens.</returns>
         /// <exception cref="ConfigurationException">Thrown on unexpected input - not a valid json array or an empty array.</exception>
         public static IEnumerable<JObject> ParseArrayOfConstraintJObjects(this string? args)
         {
@@ -52,12 +49,12 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
             return array.Select(value =>
             {
-                if (value is not JObject jobj)
+                if (value is not JObject jObj)
                 {
                     throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_InvalidJsonArray_Objects, args));
                 }
 
-                return jobj;
+                return jObj;
             });
         }
 

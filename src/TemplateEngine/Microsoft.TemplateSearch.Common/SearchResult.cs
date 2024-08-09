@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common.Abstractions;
 
@@ -30,7 +28,7 @@ namespace Microsoft.TemplateSearch.Common
             Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             Success = success;
             ErrorMessage = errorMessage;
-            SearchHits = success ? hits! : Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
+            SearchHits = success ? hits! : [];
         }
 
         /// <summary>

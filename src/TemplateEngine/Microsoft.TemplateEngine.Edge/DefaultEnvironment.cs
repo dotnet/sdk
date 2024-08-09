@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge
@@ -59,9 +56,9 @@ namespace Microsoft.TemplateEngine.Edge
             Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             IDictionary env = Environment.GetEnvironmentVariables();
 
-            foreach (string key in env.Keys.OfType<string>())
+            foreach (string key in env.Keys.Cast<string>())
             {
-                variables[key] = (env[key] as string) ?? string.Empty;
+                variables[key] = (string)env[key];
             }
 
             return variables;

@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-#if !NETFULL
+#if NET
 using System.Runtime.Loader;
 #endif
 using Microsoft.Extensions.Logging;
@@ -110,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
         {
-            foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>().ToList())
+            foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>())
             {
                 if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint? mountPoint))
                 {
@@ -253,7 +247,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             //backward compatibility
             var localizationLocators = templates.SelectMany(t => t.Localizations.Values.Where(li => li.IsValid || returnInvalidTemplates)).ToList();
-            return new ScanResult(source.MountPoint, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
+            return new ScanResult(source.MountPoint, templates, localizationLocators, []);
         }
 
         /// <summary>
@@ -279,16 +273,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     Assembly? assembly = null;
 
-#if !NETFULL
-                    if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
+#if NET
+                    if (file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        using (Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file))
-                        {
-                            assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
-                        }
+                        using Stream fileStream = _environmentSettings.Host.FileSystem.OpenRead(file);
+                        assembly = AssemblyLoadContext.Default.LoadFromStream(fileStream);
                     }
 #else
-                    if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
+                    if (file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         byte[] fileBytes = _environmentSettings.Host.FileSystem.ReadAllBytes(file);
                         assembly = Assembly.Load(fileBytes);
@@ -330,8 +322,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             public bool FoundComponents { get; set; }
 
             public bool FoundTemplates { get; set; }
-
-            public bool AnythingFound => FoundTemplates || FoundComponents;
         }
     }
 }

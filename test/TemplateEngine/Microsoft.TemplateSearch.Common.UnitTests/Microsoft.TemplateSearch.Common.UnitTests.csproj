@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,14 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="NuGetTemplateSearchInfoWithInvalidData.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="NuGetTemplateSearchInfo.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="NuGetTemplateSearchInfo_v2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Update="NuGetTemplateSearchInfoWithInvalidData.json;
+                  NuGetTemplateSearchInfo.json;
+                  NuGetTemplateSearchInfo_v2.json"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
 </Project>

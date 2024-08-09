@@ -1,27 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable
     {
         private const string DebugLogCategory = "Installer";
-        private readonly string _globalSettingsFilePath;
-        private readonly string _packagesFolder;
 
-        private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _logger;
         private readonly Dictionary<Guid, IInstaller> _installersByGuid = new Dictionary<Guid, IInstaller>();
         private readonly Dictionary<string, IInstaller> _installersByName = new Dictionary<string, IInstaller>();
@@ -30,17 +20,17 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         public GlobalSettingsTemplatePackageProvider(GlobalSettingsTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
         {
             Factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
+            IEngineEnvironmentSettings environmentSettings = settings ?? throw new ArgumentNullException(nameof(settings));
             _logger = settings.Host.LoggerFactory.CreateLogger<GlobalSettingsTemplatePackageProvider>();
 
-            _packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
-            if (!settings.Host.FileSystem.DirectoryExists(_packagesFolder))
+            string packagesFolder = Path.Combine(settings.Paths.GlobalSettingsDir, "packages");
+            if (!settings.Host.FileSystem.DirectoryExists(packagesFolder))
             {
-                settings.Host.FileSystem.CreateDirectory(_packagesFolder);
+                settings.Host.FileSystem.CreateDirectory(packagesFolder);
             }
             foreach (var installerFactory in settings.Components.OfType<IInstallerFactory>())
             {
-                var installer = installerFactory.CreateInstaller(settings, _packagesFolder);
+                var installer = installerFactory.CreateInstaller(settings, packagesFolder);
 
                 //this provider cannot work with installers that do not implement ISerializableInstaller
                 if (installer is ISerializableInstaller)
@@ -50,8 +40,8 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 }
             }
 
-            _globalSettingsFilePath = Path.Combine(_environmentSettings.Paths.GlobalSettingsDir, "packages.json");
-            _globalSettings = new GlobalSettings(_environmentSettings, _globalSettingsFilePath);
+            string globalSettingsFilePath = Path.Combine(environmentSettings.Paths.GlobalSettingsDir, "packages.json");
+            _globalSettings = new GlobalSettings(environmentSettings, globalSettingsFilePath);
             // We can't just add "SettingsChanged+=TemplatePackagesChanged", because TemplatePackagesChanged is null at this time.
             _globalSettings.SettingsChanged += () => TemplatePackagesChanged?.Invoke();
         }
@@ -147,7 +137,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         installRequest,
                         InstallerErrorCode.UnsupportedRequest,
                         string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled, installRequest.PackageIdentifier),
-                        Array.Empty<VulnerabilityInfo>());
+                        []);
                 }
                 if (installersThatCanInstall.Count > 1)
                 {
@@ -155,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         installRequest,
                         InstallerErrorCode.UnsupportedRequest,
                         string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed, installRequest.PackageIdentifier),
-                        Array.Empty<VulnerabilityInfo>());
+                        []);
                 }
 
                 IInstaller installer = installersThatCanInstall[0];
@@ -230,7 +220,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, updateRequest.TemplatePackage.Identifier, updateRequest.Version, updateRequest.TemplatePackage.Installer, cancellationToken, update: true).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
-                return UpdateResult.CreateFailure(updateRequest, result, message, Array.Empty<VulnerabilityInfo>());
+                return UpdateResult.CreateFailure(updateRequest, result, message, []);
             }
 
             UpdateResult updateResult = await updateRequest.TemplatePackage.Installer.UpdateAsync(updateRequest, provider: this, cancellationToken).ConfigureAwait(false);
@@ -312,7 +302,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 forceUpdate: installRequest.Force).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
-                return InstallResult.CreateFailure(installRequest, result, message, Array.Empty<VulnerabilityInfo>());
+                return InstallResult.CreateFailure(installRequest, result, message, []);
             }
 
             InstallResult installResult = await installer.InstallAsync(installRequest, this, cancellationToken).ConfigureAwait(false);

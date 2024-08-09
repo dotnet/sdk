@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETCoreTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Verify.XUnit" />
@@ -18,7 +18,7 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == $(NETCoreTargetFramework)">
+  <ItemGroup Condition="$(TargetFrameworkIdentifier) == '.NETCoreApp'">
     <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj" />
     <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
   </ItemGroup>
@@ -32,4 +32,5 @@
     <Content Include="Approvals\**\*" />
     <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
+
 </Project>

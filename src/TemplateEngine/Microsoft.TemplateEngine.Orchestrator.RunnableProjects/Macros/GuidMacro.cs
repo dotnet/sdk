@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -41,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
                 // Not breaking any dependencies on exact param names and on the
                 //  case insensitive matching of parameters (https://github.com/dotnet/templating/blob/7e14ef44/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/RunnableProjectGenerator.cs#L726)
-                //  we need to introduce new parameters - with distinc naming for upper- and lower- casing replacements
+                //  we need to introduce new parameters - with distinct naming for upper- and lower- casing replacements
                 string legacyName = config.VariableName + "-" + config.Format[i];
                 string newName = config.VariableName +
                         (isUpperCase ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +

@@ -16,7 +16,7 @@ public class EvaluatedInputParameterData : InputParameterData
     /// Constructor for <see cref="EvaluatedInputParameterData"/> type, that allows specification of results of external evaluation of conditions.
     /// </summary>
     /// <param name="parameterDefinition"></param>
-    /// <param name="value">A stringified value of parameter or null for explicit unset. It's possible to indicate missing of parameter on input via <see cref="InputDataState"/> argument.</param>
+    /// <param name="value">A string converted value of parameter or null for explicit unset. It's possible to indicate missing of parameter on input via <see cref="InputDataState"/> argument.</param>
     /// <param name="dataSource"></param>
     /// <param name="isEnabledConditionResult"></param>
     /// <param name="isRequiredConditionResult"></param>

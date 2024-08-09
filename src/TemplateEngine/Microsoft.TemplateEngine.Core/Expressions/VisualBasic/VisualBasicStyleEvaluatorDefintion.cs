@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Shared;
@@ -85,7 +84,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
             {
                 TokenTrie trie = new TokenTrie();
 
-                //Logic
+                // Logic
                 trie.AddToken(processor.Encoding.GetBytes("And"));
                 trie.AddToken(processor.Encoding.GetBytes("AndAlso"));
                 trie.AddToken(processor.Encoding.GetBytes("Or"));
@@ -99,15 +98,15 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
                 trie.AddToken(processor.Encoding.GetBytes("<>"));
                 trie.AddToken(processor.Encoding.GetBytes("Xor"));
 
-                //Braces
+                // Braces
                 trie.AddToken(processor.Encoding.GetBytes("("));
                 trie.AddToken(processor.Encoding.GetBytes(")"));
 
-                //Whitespace
+                // Whitespace
                 trie.AddToken(processor.Encoding.GetBytes(" "));
                 trie.AddToken(processor.Encoding.GetBytes("\t"));
 
-                //EOLs
+                // EOLs
                 trie.AddToken(processor.Encoding.GetBytes("\r\n"));
                 trie.AddToken(processor.Encoding.GetBytes("\n"));
                 trie.AddToken(processor.Encoding.GetBytes("\r"));
@@ -115,11 +114,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
                 // quotes
                 trie.AddToken(processor.Encoding.GetBytes("'"));
 
-                //Shifts
+                // Shifts
                 trie.AddToken(processor.Encoding.GetBytes("<<"));
                 trie.AddToken(processor.Encoding.GetBytes(">>"));
 
-                //Maths
+                // Math operators
                 trie.AddToken(processor.Encoding.GetBytes("+"));
                 trie.AddToken(processor.Encoding.GetBytes("-"));
                 trie.AddToken(processor.Encoding.GetBytes("*"));

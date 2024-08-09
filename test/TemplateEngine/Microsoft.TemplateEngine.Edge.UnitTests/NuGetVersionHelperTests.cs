@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("*.1", false)]
         [InlineData("a.b", false)]
         [InlineData("a.b.*", false)]
-        public void IsSupportedVersionStringTest(string versionString, bool isSupported)
+        public void IsSupportedVersionStringTest(string? versionString, bool isSupported)
         {
             Assert.Equal(isSupported, NuGetVersionHelper.IsSupportedVersionString(versionString));
         }
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("55.66.77*", true)]
         [InlineData("123.456.789.012", false)]
         [InlineData("1.2", false)]
-        public void TryParseFloatRangeReturnsExpectedBoolFlag(string versionString, bool isFloatingVersion)
+        public void TryParseFloatRangeReturnsExpectedBoolFlag(string? versionString, bool isFloatingVersion)
         {
             Assert.Equal(isFloatingVersion, NuGetVersionHelper.TryParseFloatRangeEx(versionString, out _));
         }
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("1.2.3.4", "1.2.*", true)]
         [InlineData("1.2.3.4", "2.2*", false)]
         [InlineData("1.2.3.4", "1.2.*-*", true)]
-        public void TryParseFloatRangeMatchingTest(string versionString, string pattern, bool isMatch)
+        public void TryParseFloatRangeMatchingTest(string versionString, string? pattern, bool isMatch)
         {
             NuGetVersion version = new NuGetVersion(versionString);
             Assert.True(NuGetVersionHelper.TryParseFloatRangeEx(pattern, out FloatRange floatRange));
