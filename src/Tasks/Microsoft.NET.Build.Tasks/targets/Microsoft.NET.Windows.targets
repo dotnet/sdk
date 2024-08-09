@@ -87,11 +87,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Configure the Windows.UI.Xaml.* projections feature switch for CsWinRT from here. This is
        needed because there's no .targets from CsWinRT that's used when CsWinRT itself is not being
        directly referenced in the project. For instance, in a normal application (not authoring).
-       Note: we only do this on 'net6.0-windows' or greater, as it's not supported otherwise.  -->
+       Note: we only do this on 'net8.0-windows' or greater, as it's not supported otherwise.  -->
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS"
                                     Value="$(CsWinRTUseWindowsUIXamlProjections)"
-                                    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))"
+                                    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0-windows'))"
                                     Trim="true" />
   </ItemGroup>
 
