@@ -243,19 +243,20 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItReportsAGoodErrorWhenProjectHasMultipleFrameworks()
+        public void ItHandlesMultipleFrameworksBySelectingTheFirstFramework()
         {
             var testAppName = "MSBuildAppWithMultipleFrameworks";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
+
+
             // use --no-build so this test can run on all platforms.
             // the test app targets net451, which can't be built on non-Windows
-            new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute("--no-build")
-                .Should().Fail()
-                    .And.HaveStdErrContaining("--framework");
+            var command =
+                Tools.Run.RunCommand.FromArgs(["--project", testInstance.TestRoot, "--no-build"]);
+            var runCommand = command.InitializeAndDiscoverCommand();
+            runCommand.CommandArgs.Should().Contain("net451", "we should choose the first TFM of the project to invoke");
         }
 
         [Fact]
