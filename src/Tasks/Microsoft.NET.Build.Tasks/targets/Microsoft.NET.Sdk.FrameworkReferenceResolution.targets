@@ -26,9 +26,10 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'Windows'">
 
     <!-- Remove Windows SDK KnownFrameworkReference items from BundledVersions.props (they will eventually be removed, but that is in a different repo so
-         we can't do the change atomically -->
+         we can't do the change atomically). Remove both the original one from the previous .NET SDK and the one used starting from .NET 9 ("Windows"). -->
     <ItemGroup>
       <KnownFrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref" />
+      <KnownFrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref.Windows" />
     </ItemGroup>
 
     <!-- Generate KnownFrameworkReference items for the Windows SDK pack -->
