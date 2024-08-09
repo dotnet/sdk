@@ -15,6 +15,18 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
+        public static readonly CliOption<bool> SetVersionsOption = new("version")
+        {
+            Description = LocalizableStrings.PrintSetVersionsDescription
+        };
+
+        public static readonly CliOption<int> TakeOption = new("--take") { Hidden = true };
+
+        public static readonly CliOption<string> FormatOption = new("--format")
+        {
+            Description = LocalizableStrings.FormatOptionDescription
+        };
+
         public static readonly CliOption<string> TempDirOption = new CliOption<string>("--temp-dir")
         {
             Description = Workloads.Workload.Install.LocalizableStrings.TempDirOptionDescription
@@ -36,6 +48,9 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("list", LocalizableStrings.CommandDescription);
             command.Options.Add(MachineReadableOption);
+            command.Options.Add(SetVersionsOption);
+            command.Options.Add(TakeOption);
+            command.Options.Add(FormatOption);
             command.Options.Add(CommonOptions.HiddenVerbosityOption);
             command.Options.Add(VersionOption);
             command.Options.Add(TempDirOption);
