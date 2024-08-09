@@ -22,20 +22,25 @@ namespace Microsoft.DotNet.Tools.Run
             if (parseResult.UsingRunCommandShorthandProjectOption())
             {
                 Reporter.Output.WriteLine(LocalizableStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
-                project = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
+                var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
+                if (Directory.Exists(possibleProject))
+                {
+                    project = FindSingleProjectInDirectory(possibleProject);
+                }
+                else
+                {
+                    project = possibleProject;
+                }
             }
 
             var command = new RunCommand(
-                configuration: parseResult.GetValue(RunCommandParser.ConfigurationOption),
-                framework: parseResult.GetValue(RunCommandParser.FrameworkOption),
-                runtime: parseResult.GetCommandLineRuntimeIdentifier(),
                 noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
-                project: project,
+                projectFileOrDirectory: project,
                 launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption),
                 noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
-                restoreArgs: parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()),
+                restoreArgs: parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToArray(),
                 args: parseResult.GetValue(RunCommandParser.ApplicationArguments)
             );
 
