@@ -13,6 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.IInstaller;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -29,6 +30,12 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Backing field for the install location of .NET
         /// </summary>
         private string _dotNetHome;
+
+        private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Full path to the root directory for storing workload data.
@@ -249,6 +256,45 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadVersion);
                 ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendRecordWorkloadSetInGlobalJsonRequest(sdkFeatureBand, globalJsonPath, workloadSetVersion);
+                ExitOnFailure(response, "Failed to record workload set version in GC Roots file.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).GetGlobalJsonWorkloadSetVersions();
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendGetGlobalJsonWorkloadSetVersionsRequest(sdkFeatureBand);
+                ExitOnFailure(response, "Failed to get global.json GC roots");
+                return response.GlobalJsonWorkloadSetVersions;
             }
             else
             {
