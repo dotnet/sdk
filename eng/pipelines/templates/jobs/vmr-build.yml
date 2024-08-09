@@ -481,8 +481,8 @@ jobs:
 
         # Download rsync if using mariner
         if grep -q "CBL-Mariner" /etc/os-release; then
-          tdnf install -y rsync
-          tdnf clean all
+          sudo tdnf install -y rsync
+          sudo tdnf clean all
         fi
 
         cd "$(sourcesPath)"
