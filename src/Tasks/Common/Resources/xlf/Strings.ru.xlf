@@ -521,6 +521,11 @@
         <target state="translated">NETSDK1163: входная сборка "{0}" не найдена.</target>
         <note>{StrBegin="NETSDK1163: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidAppHostDotNetSearch">
+        <source>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</source>
+        <target state="new">NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</target>
+        <note>{StrBegin="NETSDK1217: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidFrameworkName">
         <source>NETSDK1003: Invalid framework name: '{0}'.</source>
         <target state="translated">NETSDK1003: недопустимое имя платформы: "{0}".</target>
