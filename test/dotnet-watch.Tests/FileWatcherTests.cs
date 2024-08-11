@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Internal;
 
@@ -19,11 +20,23 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly ITestOutputHelper _output;
         private readonly TestAssetsManager _testAssetManager;
 
+        private void Start([CallerMemberName] string name = null)
+        {
+            _output.WriteLine($"Test started: {name}");
+        }
+
+        private void End([CallerMemberName] string name = null)
+        {
+            _output.WriteLine($"Test ended: {name}");
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task NewFile(bool usePolling)
         {
+            Start();
+
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
@@ -44,6 +57,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.Equal(testFileFullPath, filesChanged.Single());
+
+            End();
         }
 
         [Theory]
@@ -51,6 +66,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task ChangeFile(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             var testFileFullPath = Path.Combine(dir, "foo");
@@ -87,6 +103,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.Equal(testFileFullPath, filesChanged.Single());
+
+            End();
         }
 
         [Theory]
@@ -94,6 +112,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MoveFile(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var srcFile = Path.Combine(dir, "foo");
             var dstFile = Path.Combine(dir, "foo2");
@@ -127,11 +146,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.False(filesChanged[srcFile]);
             Assert.True(filesChanged[dstFile]);
+
+            End();
         }
 
         [Fact]
         public async Task FileInSubdirectory()
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory().Path;
 
             var subdir = Path.Combine(dir, "subdir");
@@ -171,6 +193,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.Contains(subdir, filesChanged);
             Assert.Contains(testFileFullPath, filesChanged);
+            End();
         }
 
         [Theory]
@@ -178,6 +201,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task NoNotificationIfDisabled(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
@@ -200,6 +224,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
+            End();
         }
 
         [Theory]
@@ -207,6 +232,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DisposedNoEvents(bool usePolling)
         {
+            Srart();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
@@ -227,6 +253,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
+
+            End();
         }
 
         [Theory]
@@ -234,6 +262,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleFiles(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             File.WriteAllText(Path.Combine(dir, "foo1"), string.Empty);
@@ -271,6 +300,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.Equal(testFileFullPath, filesChanged.Single());
+            End();
         }
 
         [Theory]
@@ -278,6 +308,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleTriggers(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
@@ -290,6 +321,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             watcher.EnableRaisingEvents = false;
+            End();
         }
 
         private async Task AssertFileChangeRaisesEvent(string directory, IFileSystemWatcher watcher)
@@ -338,6 +370,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DeleteSubfolder(bool usePolling)
         {
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
 
             var subdir = Path.Combine(dir, "subdir");
@@ -380,6 +413,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             Assert.Contains(f2, filesChanged);
             Assert.Contains(f3, filesChanged);
             Assert.Contains(subdir, filesChanged);
+
+            End();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Json;
 using System.Text.Json;
 using DotNetWatchTasks;
@@ -13,6 +14,15 @@ public class FileSetSerializerTests(ITestOutputHelper output)
 {
     private readonly TestAssetsManager _testAssetManager = new (output);
 
+    private void Start([CallerMemberName] string name = null)
+    {
+        output.WriteLine($"Test started: {name}");
+    }
+
+    private void End([CallerMemberName] string name = null)
+    {
+        output.WriteLine($"Test ended: {name}");
+    }
     private static string Serialize(MSBuildFileSetResult fileSetResult, Stream stream)
     {
         foreach (var item in fileSetResult.Projects.Values)
@@ -38,6 +48,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
     [Fact]
     public async Task Roundtrip()
     {
+        Start();
         var result1 = new MSBuildFileSetResult()
         {
             Projects = new()
@@ -98,11 +109,13 @@ public class FileSetSerializerTests(ITestOutputHelper output)
               }
             }
             """.Replace("\r\n", "\n"), serialized1.Replace("\r\n", "\n"));
+        End();
     }
 
     [Fact]
     public async Task Task()
     {
+        Start();
         var dir = _testAssetManager.CreateTestDirectory().Path;
         var outputPath = Path.Combine(dir, "output.txt");
 
@@ -178,5 +191,6 @@ public class FileSetSerializerTests(ITestOutputHelper output)
 
         using var stream = File.OpenRead(outputPath);
         var value = await JsonSerializer.DeserializeAsync<MSBuildFileSetResult>(stream, cancellationToken: CancellationToken.None);
+        End();
     }
 }
