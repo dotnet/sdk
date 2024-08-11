@@ -99,7 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           AfterTargets="ResolveAssemblyReferences"
           Condition=" '@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)' != '' ">
     <ItemGroup>
-      <_WindowsSDKUnresolvedRef Include="@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)" Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Windows' " />
+      <_WindowsSDKUnresolvedRef Include="@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)" Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET' " />
     </ItemGroup>
 
     <NETSdkError ResourceName="WindowsSDKVersionConflicts"
