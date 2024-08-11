@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DisposedNoEvents(bool usePolling)
         {
-            Srart();
+            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
