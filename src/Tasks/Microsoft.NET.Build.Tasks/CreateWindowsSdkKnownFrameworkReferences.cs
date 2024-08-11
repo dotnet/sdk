@@ -98,11 +98,13 @@ namespace Microsoft.NET.Build.Tasks
         private static TaskItem[] CreateKnownFrameworkReferences(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
         {
             // Return two items:
+            //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs.
+            //     We still need to return this item here too so that the filtering logic for profiles will work correctly.
             //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.*
             //   - "Xaml": just the Windows.UI.Xaml types
-            //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs
             return
             [
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: null),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Windows"),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Xaml"),
             ];
@@ -110,7 +112,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem CreateKnownFrameworkReference(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion, string profile)
         {
-            var knownFrameworkReference = new TaskItem($"Microsoft.Windows.SDK.NET.Ref.{profile}");
+            string itemSpec = string.IsNullOrEmpty(profile)
+                ? "Microsoft.Windows.SDK.NET.Ref"
+                : $"Microsoft.Windows.SDK.NET.Ref.{profile}";
+
+            var knownFrameworkReference = new TaskItem(itemSpec);
             knownFrameworkReference.SetMetadata("TargetFramework", $"net{targetFrameworkVersion}-windows{targetPlatformVersion}");
             knownFrameworkReference.SetMetadata("RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("DefaultRuntimeFrameworkVersion", windowsSdkPackageVersion);
@@ -121,7 +127,11 @@ namespace Microsoft.NET.Build.Tasks
             knownFrameworkReference.SetMetadata("RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("RuntimePackRuntimeIdentifiers", "any");
             knownFrameworkReference.SetMetadata("IsWindowsOnly", "true");
-            knownFrameworkReference.SetMetadata("Profile", profile);
+            
+            if (!string.IsNullOrEmpty(profile))
+            {
+                knownFrameworkReference.SetMetadata("Profile", profile);
+            }
 
             return knownFrameworkReference;
         }

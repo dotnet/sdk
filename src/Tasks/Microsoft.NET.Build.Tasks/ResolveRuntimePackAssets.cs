@@ -76,7 +76,23 @@ namespace Microsoft.NET.Build.Tasks
                 // matchingRTReference.GetMetadata("Profile") will be "WindowsForms". 'Profile' will be an empty string if no matching RuntimeFramework is found
                 HashSet<string> profiles = matchingRuntimeFrameworks?
                     .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
-                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? []; 
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? [];
+
+                // Special case the Windows SDK projections. These are in a runtime pack, not a runtime framework, but they also
+                // use profiles. Right now there are no other runtime packs using profiles, so we can special case these to keep
+                // the changes to a minimum and reduce risk. This logic can be revisited later to be generalized in some way.
+                if (runtimePack.GetMetadata(MetadataKeys.FrameworkName) == "Microsoft.Windows.SDK.NET.Ref")
+                {
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Windows") == true)
+                    {
+                        profiles.Add("Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml") == true)
+                    {
+                        profiles.Add("Xaml");
+                    }
+                }
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
@@ -139,7 +155,10 @@ namespace Microsoft.NET.Build.Tasks
                 string[] parts = targetFrameworkVersion.Split('.');
                 if (parts.Length > 0 && int.TryParse(parts[0], out int versionNumber))
                 {
-                    if (versionNumber >= 9)
+                    // The Windows SDK projections use profiles and need to be supported on .NET 8 as well.
+                    // No other packages are supported using profiles below .NET 9, so we can special case.
+                    if (versionNumber >= 9 ||
+                        (versionNumber >= 8 && frameworkListDoc.Root.Attribute("FrameworkName")?.Value == "Microsoft.Windows.SDK.NET.Ref"))
                     {
                         profileSupported = true;
                     }
