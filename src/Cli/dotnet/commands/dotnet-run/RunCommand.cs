@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         public RunCommand(
             bool noBuild,
-            string projectFileOrDirectory,
+            string? projectFileOrDirectory,
             string launchProfile,
             bool noLaunchProfile,
             bool noRestore,
@@ -351,7 +351,7 @@ namespace Microsoft.DotNet.Tools.Run
                         project.GetPropertyValue("OutputType")));
         }
 
-        private string DiscoverProjectFilePath(string projectFileOrDirectoryPath)
+        private string DiscoverProjectFilePath(string? projectFileOrDirectoryPath)
         {
             if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
             {
