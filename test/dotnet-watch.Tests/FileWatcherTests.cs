@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ((DotnetFileWatcher)watcher).Logger = m => _output.WriteLine(m);
             }
 
-            var expectedChanges = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+            var expectedChanges = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
                 ? new[]
                 {
                     (srcFile, false),
