@@ -1,23 +1,11 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Linq;
-using System.Xml.Linq;
 using NuGet.Frameworks;
-using Xunit;
-using Xunit.Abstractions;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using System.Collections.Generic;
+using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -32,7 +20,8 @@ namespace Microsoft.NET.Publish.Tests
         private const string ExcludeAlways = "/p:ExcludeAlways=true";
         private const string DontUseAppHost = "/p:UseAppHost=false";
         private const string ReadyToRun = "/p:PublishReadyToRun=true";
-        private const string ReadyToRunComposite = "/p:PublishReadyToRunComposite=true";
+        private const string ReadyToRunCompositeOn = "/p:PublishReadyToRunComposite=true";
+        private const string ReadyToRunCompositeOff = "/p:PublishReadyToRunComposite=false";
         private const string ReadyToRunWithSymbols = "/p:PublishReadyToRunEmitSymbols=true";
         private const string UseAppHost = "/p:UseAppHost=true";
         private const string IncludeDefault = "/p:IncludeSymbolsInSingleFile=false";
@@ -56,11 +45,17 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        private PublishCommand GetPublishCommand(string identifier = null, [CallerMemberName] string callingMethod = "")
+        private PublishCommand GetPublishCommand(string identifier = null, [CallerMemberName] string callingMethod = "", Action<XDocument> projectChanges = null)
         {
+            if (projectChanges == null)
+            {
+                projectChanges = d => { };
+            }
+
             var testAsset = _testAssetsManager
                .CopyTestAsset(TestProjectName, callingMethod, identifier)
-               .WithSource();
+               .WithSource()
+               .WithProjectChanges(projectChanges);
 
             // Create the following content:
             //  <TestRoot>/SmallNameDir/This is a directory with a really long name for one that only contains a small file/.word
@@ -125,17 +120,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void It_errors_when_publishing_single_file_app_without_rid()
-        {
-            GetPublishCommand()
-                .Execute(PublishSingleFile)
-                .Should()
-                .Fail()
-                .And
-                .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutRuntimeIdentifier);
-        }
-
-        [Fact]
         public void It_errors_when_publishing_single_file_without_apphost()
         {
             GetPublishCommand()
@@ -150,7 +134,17 @@ namespace Microsoft.NET.Publish.Tests
         public void It_generates_publishing_single_file_with_win7()
         {
             const string rid = "win7-x86";
-            GetPublishCommand()
+
+            //  Retarget project to net7.0, as net8.0 and up by default use portable runtime graph which doesn't have win7-* RIDs
+            var projectChanges = (XDocument doc) =>
+            {
+                var ns = doc.Root.Name.Namespace;
+                doc.Root.Element(ns + "PropertyGroup")
+                    .Element(ns + "TargetFramework")
+                    .Value = "net7.0";
+            };
+
+            GetPublishCommand(projectChanges: projectChanges)
                 .Execute($"/p:RuntimeIdentifier={rid}", PublishSingleFile)
                 .Should()
                 .Pass();
@@ -294,53 +288,47 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/runtime/issues/60308")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
         {
-            // the test fails once in a while on OSX, but dumps are not very informative,
-            // so enabling this for non-OSX platforms, hoping to get a better crash dump
-            // if you see this failing on Linux, please preserve the dump.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            var projName = "SingleFileTest";
+            if (extractAll)
             {
-                var projName = "SingleFileTest";
-                if (extractAll)
-                {
-                    projName += "Extracted";
-                }
-
-                var testProject = new TestProject()
-                {
-                    Name = projName,
-                    TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                    IsExe = true,
-                };
-
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
-                var publishCommand = new PublishCommand(testAsset);
-                var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier };
-
-                if (extractAll)
-                {
-                    extraArgs.Add(IncludeAllContent);
-                }
-
-                publishCommand
-                    .Execute(extraArgs.ToArray())
-                    .Should()
-                    .Pass();
-
-                var publishDir = GetPublishDirectory(publishCommand, targetFramework: ToolsetInfo.CurrentTargetFramework).FullName;
-                var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
-
-                var command = new RunExeCommand(Log, singleFilePath);
-                command.Execute()
-                    .Should()
-                    .Pass()
-                    .And
-                    .HaveStdOutContaining("Hello World");
+                projName += "Extracted";
             }
+
+            var testProject = new TestProject()
+            {
+                Name = projName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier };
+
+            if (extractAll)
+            {
+                extraArgs.Add(IncludeAllContent);
+            }
+
+            publishCommand
+                .Execute(extraArgs.ToArray())
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework: ToolsetInfo.CurrentTargetFramework).FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
@@ -440,7 +428,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = GetPublishCommand();
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols)
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols, ReadyToRunCompositeOff)
                 .Should()
                 .Pass();
 
@@ -511,7 +499,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var publishCommand = GetPublishCommand();
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun)
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunCompositeOff)
                 .Should()
                 .Pass();
 
@@ -645,6 +633,40 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("(10,13): warning IL3001");
         }
 
+        [RequiresMSBuildVersionTheory("17.8.0")]
+        [InlineData("netstandard2.0", true)]
+        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
+        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
+        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        [InlineData("alias-ns2", true)]
+        [InlineData("alias-n6", false)]
+        [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
+        [InlineData("alias-ns2;alias-n6", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
+        public void EnableSingleFile_warns_when_expected_for_not_correctly_multitargeted_libraries(string targetFrameworks, bool shouldWarn)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "ClassLibTest",
+                TargetFrameworks = targetFrameworks
+            };
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
+                .WithProjectChanges(AddTargetFrameworkAliases);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var resultAssertion = buildCommand.Execute("/bl:my.binlog")
+                .Should().Pass();
+            if (shouldWarn) {
+                // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
+                // the message gets prefixed with a file path by MSBuild.
+                resultAssertion
+                    .And.HaveStdOutContaining($"warning NETSDK1211")
+                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</EnableSingleFileAnalyzer>");
+            } else {
+                resultAssertion.And.NotHaveStdOutContaining($"warning");
+            }
+        }
+
         private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()
@@ -685,12 +707,12 @@ class C
         [InlineData("netcoreapp3.1", true, IncludeDefault)]
         [InlineData("netcoreapp3.1", false, IncludePdb)]
         [InlineData("netcoreapp3.1", true, IncludePdb)]
-        [InlineData("net5.0", false, IncludeDefault)]
-        [InlineData("net5.0", false, IncludeNative)]
-        [InlineData("net5.0", false, IncludeAllContent)]
-        [InlineData("net5.0", true, IncludeDefault)]
-        [InlineData("net5.0", true, IncludeNative)]
-        [InlineData("net5.0", true, IncludeAllContent)]
+        [InlineData("net6.0", false, IncludeDefault)]
+        [InlineData("net6.0", false, IncludeNative)]
+        [InlineData("net6.0", false, IncludeAllContent)]
+        [InlineData("net6.0", true, IncludeDefault)]
+        [InlineData("net6.0", true, IncludeNative)]
+        [InlineData("net6.0", true, IncludeAllContent)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeDefault)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeNative)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeAllContent)]
@@ -810,7 +832,7 @@ class C
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
 
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:EnableCompressionInSingleFile=false")
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:SelfContained=true", "/p:EnableCompressionInSingleFile=false")
                 .Should()
                 .Pass();
             var uncompressedSize = new FileInfo(singleFilePath).Length;
@@ -818,7 +840,7 @@ class C
             WaitForUtcNowToAdvance();
 
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:EnableCompressionInSingleFile=true")
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:SelfContained=true", "/p:EnableCompressionInSingleFile=true")
                 .Should()
                 .Pass();
             var compressedSize = new FileInfo(singleFilePath).Length;
@@ -886,7 +908,7 @@ class C
                 .And
                 .HaveStdOutContaining("Hello World");
 
-            void VerifyPrepareForBundle(XDocument project)
+            static void VerifyPrepareForBundle(XDocument project)
             {
                 var ns = project.Root.Name.Namespace;
                 var targetName = "CheckPrepareForBundleData";
@@ -936,7 +958,7 @@ class C
                 .Should()
                 .Pass();
 
-            void VerifyPrepareForBundle(XDocument project)
+            static void VerifyPrepareForBundle(XDocument project)
             {
                 var ns = project.Root.Name.Namespace;
                 var targetName = "CheckPrepareForBundleData";

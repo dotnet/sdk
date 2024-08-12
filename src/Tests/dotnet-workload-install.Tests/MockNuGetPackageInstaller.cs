@@ -1,12 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -39,7 +36,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null)
+            bool includeUnlisted = false,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
@@ -84,6 +83,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             return Task.FromResult(new NuGetVersion("10.0.0"));
         }
+
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        {
+            return Task.FromResult(new NuGetVersion("10.0.0"));
+        }
+
+
 
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,

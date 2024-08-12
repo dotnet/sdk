@@ -1,23 +1,15 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.ComponentModel;
-using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Installer.Windows.Security;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.NET.TestFramework;
-using Xunit;
 
 namespace Microsoft.DotNet.Tests
 {
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows5.1.2600")]
     public class WindowsInstallerTests
     {
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");
@@ -138,58 +130,38 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("tampered.msi", false, "The digital signature of the object did not verify.")]
-        [InlineData("dual_signed.dll", true, "")]
-        [InlineData("dotnet_realsigned.exe", true, "")]
-        [InlineData("dotnet_fakesigned.exe", false, "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.")]
-        public void AuthentiCodeSignaturesCanBeVerified(string file, bool shouldBeSigned, string expectedError)
+        // This verifies E_TRUST_BAD_DIGEST (file was modified after being signed)
+        [InlineData(@"tampered.msi", -2146869232)]
+        [InlineData(@"dual_signed.dll", 0)]
+        [InlineData(@"dotnet_realsigned.exe", 0)]
+        // Signed by the .NET Foundation, terminates in a DigiCert root, so should be accepted by the Authenticode trust provider.
+        [InlineData(@"BootstrapperCore.dll", 0)]
+        // Old SHA1 certificate, but still a valid signature.
+        [InlineData(@"system.web.mvc.dll", 0)]
+        public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
-            bool isSigned = AuthentiCode.IsSigned(Path.Combine(s_testDataPath, file));
-
-            Assert.Equal(shouldBeSigned, isSigned);
-
-            if (!shouldBeSigned)
-            {
-                Assert.Equal(expectedError, new Win32Exception(Marshal.GetLastWin32Error()).Message);
-            }
+            int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
+            Assert.Equal(expectedStatus, status);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("dotnet_realsigned.exe")]
-        [InlineData("dotnet_fakesigned.exe")]
-        public void IsSignedByTrustedOrganizationOnlyVerifiesTheSubjectOrganization(string file)
+        [InlineData(@"dotnet_realsigned.exe", 0)]
+        // Valid SHA1 signature, but no longer considered a trusted root certificate, should return CERT_E_UNTRUSTEDROOT.
+        [InlineData(@"system.web.mvc.dll", -2146762487)]
+        // The first certificate chain terminates in a non-Microsoft root so it fails the policy. Workloads do not currently support
+        // 3rd party installers. If we change that policy and we sign installers with the Microsoft 3rd Party certificate we will need to extract the nested
+        // signature and verify that at least one chain terminates in a Microsoft root. The WinTrust logic will also need to be updated to verify each
+        // chain.
+        [InlineData(@"dual_signed.dll", -2146762487)]
+        // DigiCert root should fail the policy check because it's not a trusted Microsoft root certificate.
+        [InlineData(@"BootstrapperCore.dll", -2146762487)]
+        // Digest will fail verification, BUT the root certificate in the chain is a trusted root.
+        [InlineData(@"tampered.msi", 0)]
+        public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
         {
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, file), AuthentiCode.TrustedOrganizations));
-        }
+            int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
 
-        [WindowsOnlyFact]
-        public void IsSignedBytTrustedOrganizationVerifiesNestedSignatures()
-        {
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, "dual_signed.dll"),
-                "Foo", "Bar", "Microsoft Corporation")); ;
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, "dual_signed.dll"),
-                "Foo", "Bar", "WiX Toolset (.NET Foundation)"));
-        }
-
-        [WindowsOnlyFact]
-        public void GetCertificatesRetrievesNestedSignatures()
-        {
-            var certificates = AuthentiCode.GetCertificates(Path.Combine(s_testDataPath, "triple_signed.dll")).ToArray();
-
-            Assert.Equal("CN=Microsoft Corporation, OU=MOPR, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[0].Subject);
-            Assert.Equal("sha1RSA", certificates[0].SignatureAlgorithm.FriendlyName);
-            Assert.Equal("CN=Microsoft 3rd Party Application Component, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[1].Subject);
-            Assert.Equal("sha256RSA", certificates[1].SignatureAlgorithm.FriendlyName);
-            Assert.Equal("CN=Microsoft Corporation, OU=MOPR, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[2].Subject);
-            Assert.Equal("sha256RSA", certificates[2].SignatureAlgorithm.FriendlyName);
-        }
-
-        [WindowsOnlyFact]
-        public void GetCertificatesRetrievesNothingForUnsignedFiles()
-        {
-            var certificates = AuthentiCode.GetCertificates(Assembly.GetExecutingAssembly().Location);
-
-            Assert.Empty(certificates);
+            Assert.Equal(expectedResult, result);
         }
 
         private NamedPipeServerStream CreateServerPipe(string name)
