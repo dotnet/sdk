@@ -13,8 +13,9 @@ Loading analyzers with older major version should not be a problem because they 
 
 Targeting an SDK (and hence also loading analyzers) with newer major version in an old VS already results in an error like:
 
-> error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 9.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from
-https://aka.ms/dotnet/download
+> error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.
+> Either target .NET 9.0 or lower, or use a version of the .NET SDK that supports .NET 10.0.
+> Download the .NET SDK from https://aka.ms/dotnet/download
 
 ## Overview
 
