@@ -1072,10 +1072,11 @@ namespace ProjectNameWithSpaces
                 Name = "ProjA",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041"
             };
-            //  Use a previous version of the Microsoft.Windows.SDK.NET.Ref package, to
-            //  simulate the scenario where a project is compiling against a library from NuGet
-            //  which was built with a more recent SDK version.
-            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.6-preview";
+            // We're specifically setting a newer version of the Windows SDK projections package
+            // in 'testProjectA' than the one set for 'testProjectB', to simulate the scenario
+            // where a project is compiling against a library from NuGet which was built with
+            // a more recent SDK version.
+            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.38";
             testProjectA.SourceFiles.Add("ProjA.cs", @"namespace ProjA
 {
     public class ProjAClass
