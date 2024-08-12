@@ -104,6 +104,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ((DotnetFileWatcher)watcher).Logger = m => _output.WriteLine(m);
             }
 
+            var expectedChanges = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                ? new[]
+                {
+                    (srcFile, false),
+                    (srcFile, true),
+                    (dstFile, true),
+                }
+                : new[]
+                {
+                    (srcFile, false),
+                    (dstFile, true),
+                };
+
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new List<(string, bool)>();
 
@@ -111,7 +124,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             handler = (_, f) =>
             {
                 filesChanged.Add(f);
-                if (filesChanged.Count == 2)
+                if (filesChanged.Count == expectedChanges.Length)
                 {
                     watcher.EnableRaisingEvents = false;
                     watcher.OnFileChange -= handler;
@@ -126,11 +139,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.Move(srcFile, dstFile);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            AssertEx.SequenceEqual(
-            [
-                (srcFile, false),
-                (dstFile, true),
-            ], filesChanged.Order());
+            AssertEx.SequenceEqual(expectedChanges, filesChanged.Order());
         }
 
         [Fact]
