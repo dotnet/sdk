@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal class DotnetFileWatcher : IFileSystemWatcher
     {
+        internal Action<string>? Logger { get; set;  }
+
         private volatile bool _disposed;
 
         private readonly Func<string, FileSystemWatcher> _watcherFactory;
@@ -51,7 +53,11 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
+            Logger?.Invoke("Error");
+
             var exception = e.GetException();
+
+            Logger?.Invoke(exception.ToString());
 
             // Win32Exception may be triggered when setting EnableRaisingEvents on a file system type
             // that is not supported, such as a network share. Don't attempt to recreate the watcher
@@ -71,6 +77,8 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 return;
             }
+
+            Logger?.Invoke("Rename");
 
             NotifyChange(e.OldFullPath, newFile: false);
             NotifyChange(e.FullPath, newFile: true);
@@ -94,6 +102,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
+            Logger?.Invoke("Change");
             NotifyChange(e.FullPath, newFile: false);
         }
 
@@ -104,6 +113,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
+            Logger?.Invoke("Added");
             NotifyChange(e.FullPath, newFile: true);
         }
 

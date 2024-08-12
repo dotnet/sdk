@@ -120,6 +120,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(srcFile, string.Empty);
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
+            if (!usePolling)
+            {
+                ((DotnetFileWatcher)watcher).Logger = m => _output.WriteLine(m);
+            }
             _output.WriteLine($"Test MoveFile: watcher created");
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -128,8 +132,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             EventHandler<(string path, bool newFile)> handler = null;
             handler = (_, f) =>
             {
+                _output.WriteLine($"file changed: path='{f.path}' isNew={f.newFile}");
                 filesChanged.Add(f.path, f.newFile);
-
                 if (filesChanged.Count >= 2)
                 {
                     watcher.EnableRaisingEvents = false;
