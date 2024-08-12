@@ -5,6 +5,8 @@
 
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
@@ -320,7 +322,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             static void InvokeRunArgumentsTarget(ProjectInstance project)
             {
-                if (project.Build(["ComputeRunArguments"], loggers: null, remoteLoggers: null, out var _targetOutputs))
+                if (project.Build(["ComputeRunArguments"], loggers: [new BinaryLogger { Parameters = "{}.binlog" }], remoteLoggers: null, out var _targetOutputs))
                 {
 
                 }
