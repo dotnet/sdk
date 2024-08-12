@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            string moduleName = string.Empty;
+            string? moduleName = null;
             List<CommandLineOptionMessage>? commandLineOptionMessages = null;
 
             ushort fieldCount = ReadShort(stream);
@@ -83,8 +83,8 @@ namespace Microsoft.DotNet.Tools.Test
             int length = ReadInt(stream);
             for (int i = 0; i < length; i++)
             {
-                string name = string.Empty, description = string.Empty, arity = string.Empty;
-                bool isHidden = false, isBuiltIn = false;
+                string? name = null, description = null;
+                bool? isHidden = null, isBuiltIn = null;
 
                 int fieldCount = ReadShort(stream);
 
@@ -135,9 +135,9 @@ namespace Microsoft.DotNet.Tools.Test
             WriteCommandLineOptionMessagesPayload(stream, commandLineOptionMessages.CommandLineOptionMessageList);
         }
 
-        private static void WriteCommandLineOptionMessagesPayload(Stream stream, CommandLineOptionMessage[] commandLineOptionMessageList)
+        private static void WriteCommandLineOptionMessagesPayload(Stream stream, CommandLineOptionMessage[]? commandLineOptionMessageList)
         {
-            if (IsNull(commandLineOptionMessageList))
+            if (commandLineOptionMessageList is null || commandLineOptionMessageList.Length == 0)
             {
                 return;
             }
@@ -165,13 +165,13 @@ namespace Microsoft.DotNet.Tools.Test
             WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
         }
 
-        private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessages.ModulePath) ? 0 : 1) +
-               (commandLineOptionMessages is null ? 0 : 1));
+        private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) =>
+            (ushort)((commandLineOptionMessages.ModulePath is null ? 0 : 1) +
+            (commandLineOptionMessages is null ? 0 : 1));
 
-        private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) => (ushort)((string.IsNullOrEmpty(commandLineOptionMessage.Name) ? 0 : 1) +
-                (string.IsNullOrEmpty(commandLineOptionMessage.Description) ? 0 : 1) +
-                2);
-
-        private static bool IsNull<T>(T[] items) => items is null || items.Length == 0;
+        private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) =>
+            (ushort)((commandLineOptionMessage.Name is null ? 0 : 1) +
+            (commandLineOptionMessage.Description is null ? 0 : 1) +
+            2);
     }
 }
