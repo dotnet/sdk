@@ -36,7 +36,7 @@ internal class DefaultBlobOperations : IBlobOperations
         {
             HttpStatusCode.OK => true,
             HttpStatusCode.NotFound => false,
-            HttpStatusCode.Unauthorized => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
             _ => await LogAndThrowContainerHttpException<bool>(response, cancellationToken).ConfigureAwait(false)
         };
     }
@@ -68,7 +68,7 @@ internal class DefaultBlobOperations : IBlobOperations
         return response.StatusCode switch
         {
             HttpStatusCode.OK => response,
-            HttpStatusCode.Unauthorized => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
             _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
         };
     }

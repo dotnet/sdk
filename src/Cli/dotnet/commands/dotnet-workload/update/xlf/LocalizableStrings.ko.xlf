@@ -22,6 +22,11 @@
         <target state="translated">지정된 롤백 정의 파일을 기반으로 워크로드를 업데이트합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">이 기능 밴드에 대해 설치된 워크로드가 없습니다. 이전 SDK 버전으로 설치된 워크로드를 업데이트하려면 --from-previous-sdk 옵션을 포함합니다.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">다음으로 인해 워크로드 '{0}'을(를) 업데이트하지 못했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">롤백 파일로 업데이트하는 것은 워크로드 집합과 호환되지 않습니다. 이제 설치 및 업데이트에서 느슨한 매니페스트를 사용합니다. 특정 워크로드 버전으로 업데이트하려면 --version을 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

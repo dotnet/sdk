@@ -12,6 +12,21 @@
         <target state="translated">使用`dotnet workload search`查找要安装的其他工作负载。</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
+        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
+        <target state="translated">在 {1} 处找到固定在 global.json 文件中的工作负载版本 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
+        <target state="translated">在 {1} 处找到固定在 global.json 文件中的工作负载版本 {0}，但未安装它。运行 `dotnet workload install`、`dotnet workload update` 或 `dotnet workload restore` 可能会解决此问题。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload version: {0}</source>
+        <target state="translated">工作负载版本：{0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">以下工作负载有可用的更新: {0}。请运行 `dotnet workload update` 以获取最新版本。</target>
