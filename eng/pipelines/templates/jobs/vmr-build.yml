@@ -480,7 +480,7 @@ jobs:
         mkdir -p ${targetFolder}
 
         # Download rsync if using mariner
-        if grep -q "CBL-Mariner" /etc/os-release; then
+        if grep -qE "CBL-Mariner|Azure Linux" /etc/os-release; then
           sudo tdnf install -y rsync
           sudo tdnf clean all
         fi
