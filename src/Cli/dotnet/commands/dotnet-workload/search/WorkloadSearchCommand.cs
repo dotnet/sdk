@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Workloads.Workload.Search
 {
@@ -15,6 +18,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _workloadIdStub;
+        private readonly bool _listWorkloadSetVersions;
+        private readonly int _numberOfWorkloadSetsToTake;
+        private readonly string _workloadSetOutputFormat;
+        private readonly IWorkloadManifestInstaller _installer;
 
         public WorkloadSearchCommand(
             ParseResult result,
@@ -34,10 +41,48 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
             _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;
+
+            _listWorkloadSetVersions = result.GetValue(WorkloadSearchCommandParser.SetVersionsOption);
+            _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchCommandParser.TakeOption);
+            if (_numberOfWorkloadSetsToTake < 1)
+            {
+                // default value
+                _numberOfWorkloadSetsToTake = 5;
+            }
+
+            _workloadSetOutputFormat = result.GetValue(WorkloadSearchCommandParser.FormatOption);
+
+            _installer = WorkloadInstallerFactory.GetWorkloadInstaller(
+                reporter,
+                new SdkFeatureBand(_sdkVersion),
+                _workloadResolver,
+                Verbosity,
+                creationResult.UserProfileDir,
+                !SignCheck.IsDotNetSigned(),
+                restoreActionConfig: new RestoreActionConfig(result.HasOption(SharedOptions.InteractiveOption)),
+                elevationRequired: false,
+                shouldLog: false);
         }
 
         public override int Execute()
         {
+            if (_listWorkloadSetVersions)
+            {
+                var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(_sdkVersion));
+                var versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
+                    .GetAwaiter().GetResult();
+                if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    Reporter.WriteLine(JsonSerializer.Serialize(versions));
+                }
+                else
+                {
+                    Reporter.WriteLine(string.Join(',', versions));
+                }
+
+                return 0;
+            }
+
             IEnumerable<WorkloadResolver.WorkloadInfo> availableWorkloads = _workloadResolver.GetAvailableWorkloads()
                 .OrderBy(workload => workload.Id);
 

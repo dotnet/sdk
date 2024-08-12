@@ -21,9 +21,6 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly bool _machineReadableOption;
         private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
         private readonly WorkloadInfoHelper _workloadListHelper;
-        private readonly bool _listWorkloadSetVersions;
-        private readonly int _numberOfWorkloadSetsToTake;
-        private readonly string _workloadSetOutputFormat;
 
         public WorkloadListCommand(
             ParseResult parseResult,
@@ -54,15 +51,6 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadResolver
             );
 
-            _listWorkloadSetVersions = parseResult.GetValue(WorkloadListCommandParser.SetVersionsOption);
-            _numberOfWorkloadSetsToTake = parseResult.GetValue(WorkloadListCommandParser.TakeOption);
-            if (_numberOfWorkloadSetsToTake < 1)
-            {
-                // default value
-                _numberOfWorkloadSetsToTake = 5;
-            }
-
-            _workloadSetOutputFormat = parseResult.GetValue(WorkloadListCommandParser.FormatOption);
             _includePreviews = parseResult.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
             string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
@@ -83,20 +71,6 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 ListOutput listOutput = new(installed, updateAvailable.ToArray());
 
                 Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-            }
-            else if (_listWorkloadSetVersions)
-            {
-                var packageId = _workloadListHelper.Installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), _workloadListHelper._currentSdkFeatureBand);
-                var versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: _includePreviews)
-                    .GetAwaiter().GetResult();
-                if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    Reporter.WriteLine(JsonSerializer.Serialize(versions));
-                }
-                else
-                {
-                    Reporter.WriteLine(string.Join(',', versions));
-                }
             }
             else
             {
