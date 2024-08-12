@@ -10,7 +10,6 @@ using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -36,15 +35,12 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(12016);
-            _args = [.. parseResult.UnmatchedTokens];
-
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
 
-            if (ContainsHelpOption(_args))
+            if (ContainsHelpOption(parseResult.GetArguments()))
             {
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
@@ -71,6 +67,7 @@ namespace Microsoft.DotNet.Cli
                 });
             }
 
+            _args = [.. parseResult.UnmatchedTokens];
             VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
 
@@ -79,14 +76,17 @@ namespace Microsoft.DotNet.Cli
                 // If the module path pattern(s) was provided, we will use that to filter the test modules
                 string testModules = parseResult.GetValue(TestCommandParser.TestModules);
 
-                var testModulePaths = GetMatchedModulePaths(testModules);
+                // If the root directory was provided, we will use that to search for the test modules
+                // Otherwise, we will use the current directory
+                string searchDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory) ?? Directory.GetCurrentDirectory();
+                var testModulePaths = GetMatchedModulePaths(testModules, searchDirectory);
 
+                // If no matches were found, we simply return
                 if (!testModulePaths.Any())
                 {
                     VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules}");
                     return 1;
                 }
-
 
                 foreach (string testModule in testModulePaths)
                 {
@@ -116,26 +116,18 @@ namespace Microsoft.DotNet.Cli
             return 0;
         }
 
-        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
-        {
-            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
-            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
-        }
-
-        private IEnumerable<string> GetMatchedModulePaths(string testModules)
+        private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
         {
             var testModulePatterns = testModules.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
             Matcher matcher = new();
             matcher.AddIncludePatterns(testModulePatterns);
 
-            string searchDirectory = Directory.GetCurrentDirectory();
-
             PatternMatchingResult result = matcher.Execute(
                 new DirectoryInfoWrapper(
-                    new DirectoryInfo(searchDirectory)));
+                    new DirectoryInfo(rootDirectory)));
 
-            return result.Files.Select(file => $"{searchDirectory}\\{file.Path.Replace("/", "\\")}");
+            return result.Files.Select(file => $"{rootDirectory}\\{file.Path.Replace("/", "\\")}");
         }
 
         private int RunMSBuildTask(ParseResult parseResult)
@@ -154,6 +146,12 @@ namespace Microsoft.DotNet.Cli
 
             ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
             return msBuildForwardingApp.Execute();
+        }
+
+        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        {
+            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)

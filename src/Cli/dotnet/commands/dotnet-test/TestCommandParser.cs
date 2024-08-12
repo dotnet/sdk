@@ -26,6 +26,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdTestModulesDescription
         };
 
+        public static readonly CliOption<string> TestModulesRootDirectory = new ForwardedOption<string>("--root-directory")
+        {
+            Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -208,9 +213,10 @@ namespace Microsoft.DotNet.Cli
             command.SetAction((parseResult) => command.Run(parseResult));
             command.Options.Add(MaxParallelTestModules);
             command.Options.Add(AdditionalMSBuildParameters);
-			command.Options.Add(TestModules);
+            command.Options.Add(TestModules);
+            command.Options.Add(TestModulesRootDirectory);
 
-			return command;
+            return command;
         }
 
         private static CliCommand GetVSTestCliCommand()

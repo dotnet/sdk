@@ -216,8 +216,13 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
-        <source>Run tests from the specified test modules</source>
-        <target state="new">Run tests from the specified test modules</target>
+        <source>Run tests from the specified test modules.</source>
+        <target state="new">Run tests from the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules has the specified root directory.</source>
+        <target state="new">The test modules has the specified root directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
