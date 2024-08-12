@@ -1064,7 +1064,7 @@ namespace ProjectNameWithSpaces
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()
