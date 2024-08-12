@@ -16,14 +16,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// </summary>
         private readonly HashSet<Guid> _frozenModules = new();
 
-        public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
         {
             _frozenModules.Clear();
         }
 
-        public async Task<IReadOnlyList<WatchHotReloadService.Update>> FilterApplicableUpdatesAsync(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<WatchHotReloadService.Update>> FilterApplicableUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
-            var availableCapabilities = await GetApplyUpdateCapabilitiesAsync(context, cancellationToken);
+            var availableCapabilities = await GetApplyUpdateCapabilitiesAsync(cancellationToken);
             var applicableUpdates = new List<WatchHotReloadService.Update>();
 
             foreach (var update in updates)
