@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-rc.1.24411.1">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-rc.1.24412.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>132e11254461a85f392767a7779d4817c9438de2</Sha>
+      <Sha>2aad6193928e85f0ecffa0590d55baa4b2f84323</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-rc.1.24411.1">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-rc.1.24412.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>132e11254461a85f392767a7779d4817c9438de2</Sha>
+      <Sha>2aad6193928e85f0ecffa0590d55baa4b2f84323</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-rc.1.24411.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-rc.1.24412.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>132e11254461a85f392767a7779d4817c9438de2</Sha>
+      <Sha>2aad6193928e85f0ecffa0590d55baa4b2f84323</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.1.24410.5">
@@ -208,22 +208,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>4b906a9bd9dde24da0caaecbaf43c747b17f2668</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.12.0-preview-24405-02">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.12.0-preview-24412-03">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>b1e15e51243982a3396d0136f4fd889a707e1d0e</Sha>
+      <Sha>c5c8ee586c6bd58eee6e845aee32e88f789c127d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.12.0-preview-24405-02">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.12.0-preview-24412-03">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>b1e15e51243982a3396d0136f4fd889a707e1d0e</Sha>
+      <Sha>c5c8ee586c6bd58eee6e845aee32e88f789c127d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.12.0-preview-24405-02">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.12.0-preview-24412-03">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>b1e15e51243982a3396d0136f4fd889a707e1d0e</Sha>
+      <Sha>c5c8ee586c6bd58eee6e845aee32e88f789c127d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.12.0-preview-24405-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.12.0-preview-24412-03">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>b1e15e51243982a3396d0136f4fd889a707e1d0e</Sha>
+      <Sha>c5c8ee586c6bd58eee6e845aee32e88f789c127d</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-rc.1.24410.5">
@@ -448,9 +448,9 @@
       <Sha>0d066e61a30c2599d0ced871ea45acf0e10571af</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24373.3">
+    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24406.1">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>22e58912805b6e31f11a6f6753635c007829cc07</Sha>
+      <Sha>7871ee378dce87b64d930d4f33dca9c888f4034d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24407.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
@@ -483,9 +483,9 @@
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.24373.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.24406.1">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>22e58912805b6e31f11a6f6753635c007829cc07</Sha>
+      <Sha>7871ee378dce87b64d930d4f33dca9c888f4034d</Sha>
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->

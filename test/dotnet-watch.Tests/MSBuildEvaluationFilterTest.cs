@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class MSBuildEvaluationFilterTest
     {
-        private static readonly FileSet s_emptyFileSet = new([]);
+        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>());
 
         [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
@@ -15,12 +15,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental
+                Options = new(),
+                RootProjectOptions = TestOptions.ProjectOptions,
+                EnvironmentOptions = TestOptions.GetEnvironmentOptions()
             };
 
-            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => (null, s_emptyFileSet) };
+            var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => s_emptyEvaluationResult };
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
@@ -38,13 +38,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental
+                Options = new(),
+                RootProjectOptions = TestOptions.ProjectOptions,
+                EnvironmentOptions = TestOptions.GetEnvironmentOptions()
             };
 
             var counter = 0;
-            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => { counter++; return (null, s_emptyFileSet); } };
+            var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
@@ -63,13 +63,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true }
+                Options = new(),
+                RootProjectOptions = TestOptions.ProjectOptions,
+                EnvironmentOptions = TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true }
             };
 
             var counter = 0;
-            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => { counter++; return (null, s_emptyFileSet); } };
+            var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
 
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
@@ -89,15 +89,20 @@ namespace Microsoft.DotNet.Watcher.Tools
             // There's a chance that the watcher does not correctly report edits to msbuild files on
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
-            var fileSet = new FileSet([new FileItem { FilePath = "Controlller.cs" }, new FileItem { FilePath = "Proj.csproj" }]);
-            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => (null, fileSet) };
+            var result = new EvaluationResult(new Dictionary<string, FileItem>()
+            {
+                { "Controlller.cs", new FileItem { FilePath = "Controlller.cs" } },
+                { "Proj.csproj", new FileItem { FilePath = "Proj.csproj" } },
+            });
+
+            var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => result };
 
             var context = new DotNetWatchContext
             {
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
+                Options = new(),
+                RootProjectOptions = TestOptions.ProjectOptions,
+                EnvironmentOptions = TestOptions.GetEnvironmentOptions(),
             };
 
             var evaluator = new TestableBuildEvaluator(context, fileSetFactory)
@@ -118,7 +123,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Assert.True(evaluator.RequiresRevaluation);
         }
 
-        private class TestableBuildEvaluator(DotNetWatchContext context, FileSetFactory factory)
+        private class TestableBuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory factory)
             : BuildEvaluator(context, factory)
         {
             public Dictionary<string, DateTime> Timestamps { get; } = [];
