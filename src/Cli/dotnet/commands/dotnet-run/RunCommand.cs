@@ -50,9 +50,9 @@ namespace Microsoft.DotNet.Tools.Run
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
             Args = args;
-            RestoreArgs = GetRestoreArguments(restoreArgs);
-            NoRestore = noRestore;
             Interactive = interactive;
+            NoRestore = noRestore;
+            RestoreArgs = GetRestoreArguments(restoreArgs);
         }
 
         public int Execute()
