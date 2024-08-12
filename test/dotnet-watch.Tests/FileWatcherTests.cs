@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         [Theory]
         [InlineData(true)]
-        [InlineData(false, Skip = "macOS: mlibc++abi: terminating due to uncaught exception of type PAL_SEHException")]
+        [InlineData(false)]
         public async Task MoveFile(bool usePolling)
         {
             Start();
@@ -120,6 +120,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(srcFile, string.Empty);
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
+            _output.WriteLine($"Test MoveFile: watcher created");
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new Dictionary<string, bool>();
@@ -138,11 +139,15 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
+            _output.WriteLine($"Test MoveFile: initialized");
+
             watcher.OnFileChange += handler;
             watcher.EnableRaisingEvents = true;
 
+            _output.WriteLine($"Test MoveFile: File.Move");
             File.Move(srcFile, dstFile);
 
+            _output.WriteLine($"Test MoveFile: Waiting");
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
             Assert.False(filesChanged[srcFile]);
             Assert.True(filesChanged[dstFile]);
