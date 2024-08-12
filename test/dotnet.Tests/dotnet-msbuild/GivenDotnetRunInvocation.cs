@@ -17,25 +17,27 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Theory]
-        [InlineData(new string[] { "-p:prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "--property:prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "--property", "prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "-p", "prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "-p:prop1=true", "-p:prop2=false" })]
-        [InlineData(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "-p:prop1=true;prop2=false" })]
-        [InlineData(new string[] { "-p", "MyProject.csproj", "-p:prop1=true" }, new string[] { "-p:prop1=true" })]
+        [InlineData(new string[] { "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "--property:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "--property", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "-p", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [InlineData(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [InlineData(new string[] { "-p", "MyProject.csproj", "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
         // The longhand --property option should never be treated as a project
-        [InlineData(new string[] { "--property", "MyProject.csproj", "-p:prop1=true" }, new string[] { "-p:MyProject.csproj", "-p:prop1=true" })]
-        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "-p:UseRazorBuildServer=false", "-p:UseSharedCompilation=false", "/nodeReuse:false" })]
+        [InlineData(new string[] { "--property", "MyProject.csproj", "-p:prop1=true" }, new string[] { "-p:MyProject.csproj", "--property:prop1=true" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedArgs)
         {
 
+            string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
+            string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var command = RunCommand.FromArgs(args);
                 command.RestoreArgs
                     .Should()
-                    .BeEquivalentTo(expectedArgs);
+                    .BeEquivalentTo(fullExpectedArgs);
             });
         }
     }
