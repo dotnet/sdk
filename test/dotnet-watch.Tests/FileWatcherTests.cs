@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         [Theory]
         [InlineData(true)]
-        [InlineData(false)]
+        [InlineData(false, Skip = "macOS: mlibc++abi: terminating due to uncaught exception of type PAL_SEHException")]
         public async Task NewFile(bool usePolling)
         {
             Start();
