@@ -18,24 +18,15 @@ namespace Microsoft.DotNet.Tools.Run
 
         public static RunCommand FromParseResult(ParseResult parseResult)
         {
-            var project = parseResult.GetValue(RunCommandParser.ProjectOption);
             if (parseResult.UsingRunCommandShorthandProjectOption())
             {
                 Reporter.Output.WriteLine(LocalizableStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
-                var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault();
-                if (Directory.Exists(possibleProject))
-                {
-                    project = FindSingleProjectInDirectory(possibleProject);
-                }
-                else
-                {
-                    project = possibleProject;
-                }
+                parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
             }
 
             var command = new RunCommand(
                 noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
-                projectFileOrDirectory: project,
+                projectFileOrDirectory: parseResult.GetValue(RunCommandParser.ProjectOption),
                 launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption),
                 noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
@@ -52,6 +43,55 @@ namespace Microsoft.DotNet.Tools.Run
             parseResult.HandleDebugSwitch();
 
             return FromParseResult(parseResult).Execute();
+        }
+
+        public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)
+        {
+            // we know the project is going to be one of the following forms:
+            //   -p:project
+            //   -p project
+            // so try to find those and filter them out of the arguments array
+            var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault()!;
+            var tokensMinusProject = new List<string>();
+            var nextTokenMayBeProject = false;
+            foreach (var token in parseResult.Tokens)
+            {
+                if (token.Value == "-p")
+                {
+                    // skip this token, if the next token _is_ the project then we'll skip that too
+                    // if the next token _isn't_ the project then we'll backfill
+                    nextTokenMayBeProject = true;
+                    continue;
+                }
+                else if (token.Value == possibleProject && nextTokenMayBeProject)
+                {
+                    // skip, we've successfully stripped this option and value entirely
+                    nextTokenMayBeProject = false;
+                    continue;
+                }
+                else if (token.Value.StartsWith("-p") && token.Value.EndsWith(possibleProject))
+                {
+                    // both option and value in the same token, skip and carry on
+                }
+                else
+                {
+                    if (nextTokenMayBeProject)
+                    {
+                        //we skipped a -p, so backfill it
+                        tokensMinusProject.Add("-p");
+                    }
+                    nextTokenMayBeProject = false;
+                }
+
+                tokensMinusProject.Add(token.Value);
+            }
+
+            tokensMinusProject.Add("--project");
+            tokensMinusProject.Add(possibleProject);
+
+            var tokensToParse = tokensMinusProject.ToArray();
+            var newParseResult = Parser.Instance.Parse(tokensToParse);
+            return newParseResult;
         }
     }
 }
