@@ -20,34 +20,21 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly ITestOutputHelper _output;
         private readonly TestAssetsManager _testAssetManager;
 
-        private void Start([CallerMemberName] string name = null)
-        {
-            _output.WriteLine($"Test started: {name}");
-        }
-
-        private void End([CallerMemberName] string name = null)
-        {
-            _output.WriteLine($"Test ended: {name}");
-        }
-
         [Theory]
         [InlineData(true)]
-        [InlineData(false, Skip = "macOS: mlibc++abi: terminating due to uncaught exception of type PAL_SEHException")]
+        [InlineData(false)]
         public async Task NewFile(bool usePolling)
         {
-            Start();
-
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new List<(string, bool)>();
 
             watcher.OnFileChange += (_, f) =>
             {
-                Assert.True(f.newFile);
-                filesChanged.Add(f.filePath);
+                filesChanged.Add(f);
                 changedEv.TrySetResult();
             };
             watcher.EnableRaisingEvents = true;
@@ -56,9 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.Equal(testFileFullPath, filesChanged.Single());
-
-            End();
+            AssertEx.SequenceEqual([(testFileFullPath, true)], filesChanged);
         }
 
         [Theory]
@@ -66,7 +51,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task ChangeFile(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             var testFileFullPath = Path.Combine(dir, "foo");
@@ -75,17 +59,15 @@ namespace Microsoft.DotNet.Watcher.Tools
             var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new List<(string, bool)>();
 
             EventHandler<(string path, bool newFile)> handler = null;
             handler = (_, f) =>
             {
-                Assert.False(f.newFile);
-
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
 
-                filesChanged.Add(f.path);
+                filesChanged.Add(f);
                 changedEv.TrySetResult();
             };
 
@@ -102,9 +84,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.Equal(testFileFullPath, filesChanged.Single());
-
-            End();
+            AssertEx.SequenceEqual([(testFileFullPath, false)], filesChanged);
         }
 
         [Theory]
@@ -112,7 +92,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MoveFile(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var srcFile = Path.Combine(dir, "foo");
             var dstFile = Path.Combine(dir, "foo2");
@@ -124,17 +103,15 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 ((DotnetFileWatcher)watcher).Logger = m => _output.WriteLine(m);
             }
-            _output.WriteLine($"Test MoveFile: watcher created");
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new Dictionary<string, bool>();
+            var filesChanged = new List<(string, bool)>();
 
             EventHandler<(string path, bool newFile)> handler = null;
             handler = (_, f) =>
             {
-                _output.WriteLine($"file changed: path='{f.path}' isNew={f.newFile}");
-                filesChanged.Add(f.path, f.newFile);
-                if (filesChanged.Count >= 2)
+                filesChanged.Add(f);
+                if (filesChanged.Count == 2)
                 {
                     watcher.EnableRaisingEvents = false;
                     watcher.OnFileChange -= handler;
@@ -143,26 +120,22 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            _output.WriteLine($"Test MoveFile: initialized");
-
             watcher.OnFileChange += handler;
             watcher.EnableRaisingEvents = true;
 
-            _output.WriteLine($"Test MoveFile: File.Move");
             File.Move(srcFile, dstFile);
 
-            _output.WriteLine($"Test MoveFile: Waiting");
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.False(filesChanged[srcFile]);
-            Assert.True(filesChanged[dstFile]);
-
-            End();
+            AssertEx.SequenceEqual(
+            [
+                (srcFile, false),
+                (dstFile, true),
+            ], filesChanged.Order());
         }
 
         [Fact]
         public async Task FileInSubdirectory()
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory().Path;
 
             var subdir = Path.Combine(dir, "subdir");
@@ -174,14 +147,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePollingWatcher: true);
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new List<(string, bool)>();
 
             EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f.Item1);
+                filesChanged.Add(f);
 
-                if (filesChanged.Count >= 2)
+                if (filesChanged.Count == 2)
                 {
                     watcher.EnableRaisingEvents = false;
                     watcher.OnFileChange -= handler;
@@ -200,9 +173,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.Contains(subdir, filesChanged);
-            Assert.Contains(testFileFullPath, filesChanged);
-            End();
+            AssertEx.SequenceEqual(
+            [
+                (subdir, false),
+                (testFileFullPath, false)
+            ], filesChanged.Order());
         }
 
         [Theory]
@@ -210,7 +185,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task NoNotificationIfDisabled(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
@@ -233,7 +207,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
-            End();
         }
 
         [Theory]
@@ -241,7 +214,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DisposedNoEvents(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
@@ -262,8 +234,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
-
-            End();
         }
 
         [Theory]
@@ -271,7 +241,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleFiles(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             File.WriteAllText(Path.Combine(dir, "foo1"), string.Empty);
@@ -291,14 +260,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new List<(string, bool)>();
 
             EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
-                filesChanged.Add(f.Item1);
+                filesChanged.Add(f);
                 changedEv.TrySetResult(0);
             };
 
@@ -308,8 +277,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             File.WriteAllText(testFileFullPath, string.Empty);
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            Assert.Equal(testFileFullPath, filesChanged.Single());
-            End();
+            AssertEx.SequenceEqual([(testFileFullPath, false)], filesChanged);
         }
 
         [Theory]
@@ -317,7 +285,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleTriggers(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
@@ -330,7 +297,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             watcher.EnableRaisingEvents = false;
-            End();
         }
 
         private async Task AssertFileChangeRaisesEvent(string directory, IFileSystemWatcher watcher)
@@ -379,7 +345,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DeleteSubfolder(bool usePolling)
         {
-            Start();
             var dir = _testAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
 
             var subdir = Path.Combine(dir, "subdir");
@@ -396,12 +361,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<string>();
+            var filesChanged = new List<(string, bool)>();
 
             EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f.Item1);
+                filesChanged.Add(f);
 
                 if (filesChanged.Count >= 4)
                 {
@@ -418,12 +383,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
 
-            Assert.Contains(f1, filesChanged);
-            Assert.Contains(f2, filesChanged);
-            Assert.Contains(f3, filesChanged);
-            Assert.Contains(subdir, filesChanged);
-
-            End();
+            AssertEx.SequenceEqual(
+            [
+                (subdir, false),
+                (f1, false),
+                (f2, false),
+                (f3, false),
+            ], filesChanged.Order());
         }
     }
 }
