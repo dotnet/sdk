@@ -10,7 +10,7 @@ them to a file.
   <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)DotNetWatchTasks.dll" TaskName="FileSetSerializer" />
 
   <Target Name="GenerateWatchList"
-          DependsOnTargets="_CollectWatchItems;ComputeRunArguments">
+          DependsOnTargets="_CollectWatchItems;">
 
     <PropertyGroup>
       <_IsNetCoreApp Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNetCoreApp>
@@ -43,6 +43,7 @@ Returns: @(Watch)
     </_CollectWatchItemsDependsOn>
     <_CollectWatchItemsDependsOn Condition=" '$(TargetFramework)' != '' ">
       _CoreCollectWatchItems;
+      ComputeRunArguments;
       $(CustomCollectWatchItems);
     </_CollectWatchItemsDependsOn>
   </PropertyGroup>
