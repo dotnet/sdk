@@ -97,11 +97,12 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem[] CreateKnownFrameworkReferences(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
         {
-            // Return two items:
-            //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs.
-            //     We still need to return this item here too so that the filtering logic for profiles will work correctly.
-            //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.*
+            // Return three items:
+            //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs
+            //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.* .dll
             //   - "Xaml": just the Windows.UI.Xaml types
+            //
+            // Note: we still need to return the item with no profile even if unused, so that the filtering logic for profiles will work correctly.
             return
             [
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: null),
