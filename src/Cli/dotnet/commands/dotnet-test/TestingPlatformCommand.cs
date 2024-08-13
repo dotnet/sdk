@@ -72,32 +72,29 @@ namespace Microsoft.DotNet.Cli
 
             if (parseResult.HasOption(TestCommandParser.TestModules))
             {
-                var result = RunWithTestModulesFilter(parseResult);
-                if (!result)
+                if (!RunWithTestModulesFilter(parseResult))
                 {
-                    return 1;
+                    return ExitCodes.GenericFailure;
                 }
             }
             else
             {
                 // If no filter was provided, MSBuild will get the test project paths
-                var result = RunWithMSBuild(parseResult);
-                if (result != 0)
+                if (RunWithMSBuild(parseResult) != 0)
                 {
                     VSTestTrace.SafeWriteTrace(() => "MSBuild task _GetTestsProject didn't execute properly.");
-                    return result;
+                    return ExitCodes.GenericFailure;
                 }
             }
 
             _actionQueue.EnqueueCompleted();
-
             _actionQueue.WaitAllActions();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             _cancellationToken.Cancel();
             _namedPipeConnectionLoop.Wait();
 
-            return 0;
+            return ExitCodes.Success;
         }
 
         private bool RunWithTestModulesFilter(ParseResult parseResult)
@@ -150,21 +147,21 @@ namespace Microsoft.DotNet.Cli
         private int RunWithMSBuild(ParseResult parseResult)
         {
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            List<string> msbuildCommandlineArgs =
+            List<string> msbuildCommandLineArgs =
                 [
                     $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
                 ];
 
-            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
+            AddAdditionalMSBuildParameters(parseResult, msbuildCommandLineArgs);
 
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandlineArgs)}");
+                VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {string.Join(" ", msbuildCommandLineArgs)}");
             }
 
-            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
+            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandLineArgs);
             return msBuildForwardingApp.Execute();
         }
 
