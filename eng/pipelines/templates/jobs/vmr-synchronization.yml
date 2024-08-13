@@ -1,0 +1,89 @@
+### This job synchronizes code from product repositories into the VMR (https://github.com/dotnet/dotnet)
+### It synchronizes the content of the VMR to this new commit and pushes the changes
+
+parameters:
+- name: targetRef
+  displayName: Target revision of dotnet/sdk to synchronize
+  type: string
+  default: $(Build.SourceVersion)
+
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+  default: $(Build.SourceBranch)
+
+- name: noPush
+  displayName: Don't push changes to dotnet/dotnet
+  type: boolean
+  default: false
+
+jobs:
+- job: Synchronize_VMR
+  displayName: Synchronize VMR's ${{ parameters.vmrBranch }}
+  timeoutInMinutes: 120
+  variables:
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - template: /eng/common/templates/variables/pool-providers.yml
+  - ${{ else }}:
+    - template: /eng/common/templates-official/variables/pool-providers.yml
+  - name: vmrPath
+    value: $(Agent.BuildDirectory)/vmr
+  - ${{ if not(parameters.noPush) }}:
+    - ${{ if and( eq(variables['System.TeamProject'], 'internal'), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+      - group: DotNetBot-GitHub
+      - group: DotNetBot-GitHub-No-Scopes
+      - name: vmrPublicUrl
+        value: https://github.com/dotnet/dotnet
+    - ${{ if and( eq(variables['System.TeamProject'], 'internal'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/')) }}:
+      # https://dev.azure.com/dnceng/internal/_library?itemType=VariableGroups&view=VariableGroupView&variableGroupId=172&path=DotNetBot-AzDO-PAT
+      - group: DotNetBot-AzDO-PAT
+      - name: vmrInternalUrl
+        value: https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-dotnet
+
+  pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: $(DncEngPublicBuildPool)
+      image: 1es-ubuntu-2004-open
+      os: linux
+    ${{ else }}:
+      name: $(DncEngInternalBuildPool)
+      demands: ImageOverride -equals 1es-ubuntu-2004
+      os: linux
+
+  steps:
+  - template: ../steps/vmr-prepare.yml
+    parameters:
+      vmrBranch: ${{ parameters.vmrBranch }}
+
+  - template: ../steps/vmr-pull-updates.yml
+    parameters:
+      vmrPath: $(vmrPath)
+      vmrBranch: ${{ parameters.vmrBranch }}
+      targetRef: ${{ parameters.targetRef }}
+
+  - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
+    # Push main and release branches to the public VMR
+    - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
+      - script: >
+          ./.dotnet/dotnet darc vmr push
+          --vmr '$(vmrPath)'
+          --commit-verification-pat '$(BotAccount-dotnet-maestro-bot-no-scopes-PAT)'
+          --branch '${{ parameters.vmrBranch }}'
+          --remote-url '$(vmrPublicUrl)'
+          --github-pat '$(BotAccount-dotnet-bot-repo-PAT)'
+          --verbose
+        displayName: Push changes to dotnet/dotnet (public)
+        workingDirectory: $(Agent.BuildDirectory)/sdk
+
+    # Push internal/release branches to the internal VMR
+    - ${{ if startsWith(parameters.vmrBranch, 'internal/release/') }}:
+      - script: >
+          ./.dotnet/dotnet darc vmr push
+          --vmr '$(vmrPath)'
+          --skip-commit-verification
+          --branch '${{ parameters.vmrBranch }}'
+          --remote-url '$(vmrInternalUrl)'
+          --azdev-pat '$(dn-bot-dnceng-build-rw-code-rw)'
+          --verbose
+        displayName: Push changes to dotnet-dotnet (internal)
+        workingDirectory: $(Agent.BuildDirectory)/sdk
