@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli
                 var result = RunWithMSBuild(parseResult);
                 if (result != 0)
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
+                    VSTestTrace.SafeWriteTrace(() => "MSBuild task _GetTestsProject didn't execute properly.");
                     return result;
                 }
             }
