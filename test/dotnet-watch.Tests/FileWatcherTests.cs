@@ -1,24 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    public class FileWatcherTests
+    public class FileWatcherTests(ITestOutputHelper output)
     {
-        public FileWatcherTests(ITestOutputHelper output)
-        {
-            _output = output;
-            _testAssetManager = new TestAssetsManager(output);
-        }
-
         private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
         private readonly TimeSpan NegativeTimeout = TimeSpan.FromSeconds(5);
-        private readonly ITestOutputHelper _output;
-        private readonly TestAssetsManager _testAssetManager;
+        private readonly TestAssetsManager _testAssetManager = new TestAssetsManager(output);
 
         private async Task TestOperation(
             string dir,
@@ -36,7 +28,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
             if (watcher is DotnetFileWatcher dotnetWatcher)
             {
-                dotnetWatcher.Logger = m => _output.WriteLine(m);
+                dotnetWatcher.Logger = m => output.WriteLine(m);
             }
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -97,6 +89,38 @@ namespace Microsoft.DotNet.Watcher.Tools
                 },
                 usePolling,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task NewFileInNewDirectory(bool usePolling)
+        {
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+
+            var newDir = Path.Combine(dir, "Dir");
+            var newFile = Path.Combine(newDir, "foo");
+
+            await TestOperation(
+                dir,
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
+                ? new[]
+                {
+                    (newDir, true),
+                    (newFile, false),
+                    (newFile, true),
+                }
+                : new[]
+                {
+                    (newDir, true),
+                    (newFile, true),
+                },
+                usePolling,
+                () =>
+                {
+                    Directory.CreateDirectory(newDir);
+                    File.WriteAllText(newFile, string.Empty);
+                });
         }
 
         [Theory]
@@ -276,7 +300,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
             EventHandler<(string, bool)> handler = (_, f) =>
             {
-                _output.WriteLine("File changed: " + f);
+                output.WriteLine("File changed: " + f);
                 try
                 {
                     if (string.Equals(f.Item1, expectedPath, StringComparison.OrdinalIgnoreCase))

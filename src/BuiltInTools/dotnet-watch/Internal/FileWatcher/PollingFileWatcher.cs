@@ -158,16 +158,13 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             _changes.Add(fileInfo.FullName, isNewFile);
 
-            if (fileInfo.FullName != _watchedDirectory.FullName)
+            if (fileInfo is FileInfo { Directory: { } directory })
             {
-                if (fileInfo is FileInfo { Directory: { } directory })
-                {
-                    RecordChange(directory, isNewFile: false);
-                }
-                else if (fileInfo is DirectoryInfo { Parent: { } parent })
-                {
-                    RecordChange(parent, isNewFile: false);
-                }
+                RecordChange(directory, isNewFile: false);
+            }
+            else if (fileInfo is DirectoryInfo { Parent: { } parent })
+            {
+                RecordChange(parent, isNewFile: false);
             }
         }
 
