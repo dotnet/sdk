@@ -11,8 +11,6 @@ namespace Microsoft.DotNet.Cli
         private readonly List<Task> _readers = [];
         private bool _hasFailed = false;
 
-        private readonly object _lock = new();
-
         public TestApplicationActionQueue(int dop, Func<TestApplication, Task<int>> action)
         {
             // Add readers to the channel, to read the test applications
@@ -40,7 +38,6 @@ namespace Microsoft.DotNet.Cli
             _channel.Writer.Complete();
         }
 
-
         private async Task Read(Func<TestApplication, Task<int>> action)
         {
             while (await _channel.Reader.WaitToReadAsync())
@@ -48,9 +45,10 @@ namespace Microsoft.DotNet.Cli
                 if (_channel.Reader.TryRead(out TestApplication testApp))
                 {
                     int result = await action(testApp);
-                    lock (_lock)
+
+                    if (result != ExitCodes.Success)
                     {
-                        _hasFailed |= result != ExitCodes.Success;
+                        _hasFailed = true;
                     }
                 }
             }

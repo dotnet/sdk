@@ -80,9 +80,10 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 // If no filter was provided, MSBuild will get the test project paths
-                if (RunWithMSBuild(parseResult) != 0)
+                var msbuildResult = RunWithMSBuild(parseResult);
+                if (msbuildResult != 0)
                 {
-                    VSTestTrace.SafeWriteTrace(() => "MSBuild task _GetTestsProject didn't execute properly.");
+                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
                     return ExitCodes.GenericFailure;
                 }
             }
