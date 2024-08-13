@@ -218,13 +218,13 @@ Si no existe, se creará el directorio especificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
-        <source>Run tests from the specified test modules.</source>
-        <target state="new">Run tests from the specified test modules.</target>
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesRootDirectoryDescription">
-        <source>The test modules has the specified root directory.</source>
-        <target state="new">The test modules has the specified root directory.</target>
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
