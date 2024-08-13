@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
             var assetsFile = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "project.assets.json");
 
             File.WriteAllText(assetsFile, "{ corrupt_file: ");
-            build.ExecuteWithoutRestore().Should().Fail().And.HaveStdOutMatching($"{Regex.Escape(assetsFile)}.*corrupt_file");
+            build.ExecuteWithoutRestore().Should().Fail().And.HaveStdOutContaining("NETSDK1060");
         }
     }
 }
