@@ -108,7 +108,18 @@ namespace Microsoft.DotNet.Cli
 
             // If the root directory was provided, we will use that to search for the test modules
             // Otherwise, we will use the current directory
-            string rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory) ?? Directory.GetCurrentDirectory();
+            string rootDirectory = Directory.GetCurrentDirectory();
+            if (parseResult.HasOption(TestCommandParser.TestModulesRootDirectory))
+            {
+                rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory);
+
+                if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
+                {
+                    VSTestTrace.SafeWriteTrace(() => $"The provided root directory does not exist: {rootDirectory}");
+                    return false;
+                }
+            }
+
             var testModulePaths = GetMatchedModulePaths(testModules, rootDirectory);
 
             // If no matches were found, we simply return
