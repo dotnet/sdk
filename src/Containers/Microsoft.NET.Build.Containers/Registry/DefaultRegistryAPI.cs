@@ -22,12 +22,12 @@ internal class DefaultRegistryAPI : IRegistryAPI
     // Making this a round 30 for convenience.
     private static TimeSpan LongRequestTimeout = TimeSpan.FromMinutes(30);
 
-    internal DefaultRegistryAPI(string registryName, Uri baseUri, ILogger logger)
+    internal DefaultRegistryAPI(string registryName, Uri baseUri, ILogger logger, RegistryMode mode)
     {
         bool isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
         _baseUri = baseUri;
         _logger = logger;
-        _client = CreateClient(registryName, baseUri, logger, isAmazonECRRegistry);
+        _client = CreateClient(registryName, baseUri, logger, isAmazonECRRegistry, mode);
         Manifest = new DefaultManifestOperations(_baseUri, registryName, _client, _logger);
         Blob = new DefaultBlobOperations(_baseUri, registryName, _client, _logger);
     }
@@ -36,7 +36,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     public IManifestOperations Manifest { get; }
 
-    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry = false)
+    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry, RegistryMode mode)
     {
         var innerHandler = new SocketsHttpHandler()
         {
@@ -55,7 +55,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
             };
         }
 
-        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger);
+        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger, mode);
 
         if (isAmazonECRRegistry)
         {
