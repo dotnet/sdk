@@ -6,16 +6,13 @@ using Microsoft.DotNet.Tools.Run;
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [Collection(TestConstants.UsesStaticTelemetryState)]
-    public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>, IDisposable
+    public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private string WorkingDirectory { get; init; }
-        private string OldDir { get; init; }
+        public ITestOutputHelper Log { get; }
+
         public GivenDotnetRunInvocation(ITestOutputHelper log)
         {
-            var tam = new TestAssetsManager(log);
-            WorkingDirectory = tam.CopyTestAsset("HelloWorld").WithSource().Path;
-            OldDir = Directory.GetCurrentDirectory();
-            Directory.SetCurrentDirectory(WorkingDirectory);
+            Log = log;
         }
 
         [Theory]
@@ -34,19 +31,25 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
             string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
-
-            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            var tam = new TestAssetsManager(Log);
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+            var newWorkingDir = tam.CopyTestAsset("HelloWorld").WithSource().Path;
+            try
             {
-                var command = RunCommand.FromArgs(args);
-                command.RestoreArgs
-                    .Should()
-                    .BeEquivalentTo(fullExpectedArgs);
-            });
-        }
+                Directory.SetCurrentDirectory(newWorkingDir);
 
-        public void Dispose()
-        {
-            Directory.SetCurrentDirectory(OldDir);
+                CommandDirectoryContext.PerformActionWithBasePath(newWorkingDir, () =>
+                {
+                    var command = RunCommand.FromArgs(args);
+                    command.RestoreArgs
+                        .Should()
+                        .BeEquivalentTo(fullExpectedArgs);
+                });
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
+            }
         }
     }
 }
