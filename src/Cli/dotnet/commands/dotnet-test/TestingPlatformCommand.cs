@@ -73,25 +73,10 @@ namespace Microsoft.DotNet.Cli
 
             if (parseResult.HasOption(TestCommandParser.TestModules))
             {
-                // If the module path pattern(s) was provided, we will use that to filter the test modules
-                string testModules = parseResult.GetValue(TestCommandParser.TestModules);
-
-                // If the root directory was provided, we will use that to search for the test modules
-                // Otherwise, we will use the current directory
-                string rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory) ?? Directory.GetCurrentDirectory();
-                var testModulePaths = GetMatchedModulePaths(testModules, rootDirectory);
-
-                // If no matches were found, we simply return
-                if (!testModulePaths.Any())
+                var result = RunWithTestModulesFilter(parseResult);
+                if (!result)
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
                     return 1;
-                }
-
-                foreach (string testModule in testModulePaths)
-                {
-                    _testApplications[testModule] = new TestApplication(testModule, _pipeNameDescription.Name, _args);
-                    _actionQueue.Enqueue(_testApplications[testModule]);
                 }
             }
             else
@@ -114,6 +99,32 @@ namespace Microsoft.DotNet.Cli
             _namedPipeConnectionLoop.Wait();
 
             return 0;
+        }
+
+        private bool RunWithTestModulesFilter(ParseResult parseResult)
+        {
+            // If the module path pattern(s) was provided, we will use that to filter the test modules
+            string testModules = parseResult.GetValue(TestCommandParser.TestModules);
+
+            // If the root directory was provided, we will use that to search for the test modules
+            // Otherwise, we will use the current directory
+            string rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory) ?? Directory.GetCurrentDirectory();
+            var testModulePaths = GetMatchedModulePaths(testModules, rootDirectory);
+
+            // If no matches were found, we simply return
+            if (!testModulePaths.Any())
+            {
+                VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
+                return false;
+            }
+
+            foreach (string testModule in testModulePaths)
+            {
+                _testApplications[testModule] = new TestApplication(testModule, _pipeNameDescription.Name, _args);
+                _actionQueue.Enqueue(_testApplications[testModule]);
+            }
+
+            return true;
         }
 
         private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
