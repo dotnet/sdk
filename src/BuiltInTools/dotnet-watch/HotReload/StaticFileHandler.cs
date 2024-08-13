@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis.StackTraceExplorer;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -18,13 +19,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<FileItem> files, CancellationToken cancellationToken)
+        public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
             var allFilesHandled = true;
             var refreshRequests = new Dictionary<BrowserRefreshServer, List<string>>();
             for (int i = 0; i < files.Count; i++)
             {
-                var file = files[i];
+                var file = files[i].Item;
 
                 if (file.StaticWebAssetPath is null)
                 {
