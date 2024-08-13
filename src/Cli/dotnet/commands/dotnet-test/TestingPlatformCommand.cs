@@ -8,7 +8,6 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli
@@ -145,11 +144,7 @@ namespace Microsoft.DotNet.Cli
             Matcher matcher = new();
             matcher.AddIncludePatterns(testModulePatterns);
 
-            PatternMatchingResult result = matcher.Execute(
-                new DirectoryInfoWrapper(
-                    new DirectoryInfo(rootDirectory)));
-
-            return result.Files.Select(file => $"{rootDirectory}\\{file.Path.Replace("/", "\\")}");
+            return MatcherExtensions.GetResultsInFullPath(matcher, rootDirectory);
         }
 
         private int RunWithMSBuild(ParseResult parseResult)
