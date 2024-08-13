@@ -6,14 +6,16 @@ using Microsoft.DotNet.Tools.Run;
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [Collection(TestConstants.UsesStaticTelemetryState)]
-    public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
+    public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>, IDisposable
     {
         private string WorkingDirectory { get; init; }
-
+        private string OldDir { get; init; }
         public GivenDotnetRunInvocation(ITestOutputHelper log)
         {
             var tam = new TestAssetsManager(log);
             WorkingDirectory = tam.CopyTestAsset("HelloWorld").WithSource().Path;
+            OldDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(WorkingDirectory);
         }
 
         [Theory]
@@ -32,6 +34,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
             string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
+
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var command = RunCommand.FromArgs(args);
@@ -39,6 +42,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .Should()
                     .BeEquivalentTo(fullExpectedArgs);
             });
+        }
+
+        public void Dispose()
+        {
+            Directory.SetCurrentDirectory(OldDir);
         }
     }
 }

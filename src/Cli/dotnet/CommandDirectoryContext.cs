@@ -32,9 +32,7 @@ namespace Microsoft.DotNet.Cli
                 throw new InvalidOperationException(
                     $"Calls to {nameof(CommandDirectoryContext)}.{nameof(PerformActionWithBasePath)} cannot be nested.");
             }
-            var oldPath = Directory.GetCurrentDirectory();
             _basePath = basePath;
-            Directory.SetCurrentDirectory(_basePath);
             Telemetry.Telemetry.CurrentSessionId = null;
             try
             {
@@ -42,7 +40,6 @@ namespace Microsoft.DotNet.Cli
             }
             finally
             {
-                Directory.SetCurrentDirectory(oldPath);
                 _basePath = null;
             }
         }
