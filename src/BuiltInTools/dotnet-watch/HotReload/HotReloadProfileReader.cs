@@ -10,9 +10,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal static class HotReloadProfileReader
     {
-        public static HotReloadProfile InferHotReloadProfile(ProjectGraph projectGraph, IReporter reporter)
+        public static HotReloadProfile InferHotReloadProfile(ProjectGraphNode projectNode, IReporter reporter)
         {
-            var queue = new Queue<ProjectGraphNode>(projectGraph.EntryPointNodes);
+            var queue = new Queue<ProjectGraphNode>();
+            queue.Enqueue(projectNode);
 
             ProjectInstance? aspnetCoreProject = null;
 

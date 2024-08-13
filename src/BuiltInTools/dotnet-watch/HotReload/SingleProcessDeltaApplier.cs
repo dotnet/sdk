@@ -5,21 +5,17 @@
 using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal abstract class SingleProcessDeltaApplier : DeltaApplier
+    internal abstract class SingleProcessDeltaApplier(IReporter reporter) : DeltaApplier(reporter)
     {
         /// <summary>
         /// List of modules that can't receive changes anymore.
         /// A module is added when a change is requested for it that is not supported by the runtime.
         /// </summary>
-        private readonly HashSet<Guid> _frozenModules = new();
-
-        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
-        {
-            _frozenModules.Clear();
-        }
+        private readonly HashSet<Guid> _frozenModules = [];
 
         public async Task<IReadOnlyList<WatchHotReloadService.Update>> FilterApplicableUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
