@@ -243,19 +243,31 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public string? GetWorkloadVersion()
+        public (string? version, string? error) GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
             {
-                return _globalJsonWorkloadSetVersion;
+                // _exceptionToThrow is set to null here if and only if the workload set is not installed.
+                // If this came from --info or workload --version, the error won't be thrown, but we should still
+                // suggest running `dotnet workload restore` to the user.
+                return (_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return _workloadSet?.Version!;
+                // This not only means workload sets were enabled but also that we found a workload set. We should still
+                // notify the user if the only workload set we could find was the baseline manifest.
+                string? baselineMessage = _workloadSet.IsBaselineWorkloadSet ? string.Format(Strings.OnlyBaselineManifestFound, _workloadSet.Version) : null;
+                return (_workloadSet.Version, baselineMessage);
             }
+
+            var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
+            var installState = InstallStateContents.FromPath(installStateFilePath)!;
+            string? shouldRestoreMessage = installState.UseWorkloadSets == true ?
+                Strings.ShouldInstallAWorkloadSet :
+                null;
 
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -271,7 +283,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return $"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}";
+                return ($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", shouldRestoreMessage);
             }
         }
 

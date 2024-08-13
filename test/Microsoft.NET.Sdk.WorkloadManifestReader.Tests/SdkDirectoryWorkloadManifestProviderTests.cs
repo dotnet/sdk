@@ -93,14 +93,14 @@ namespace ManifestReaderTests
 
             if (useWorkloadSet)
             {
-                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200");
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().version.Should().Be("8.0.200");
             }
             else
             {
                 string[] manifests = sdkDirectoryWorkloadManifestProvider.GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray();
                 manifests.Length.Should().Be(1);
                 manifests.Should().Contain("android.8.0.200.33.0.2-rc.1");
-                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200-manifests.4ba11739");
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().version.Should().Be("8.0.200-manifests.4ba11739");
             }
 
             Directory.Delete(Path.Combine(_manifestRoot, "8.0.100"), recursive: true);

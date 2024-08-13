@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                                                        .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
                                                        .Select(id => id.ToString())
                                                        .ToList(),
-                WorkloadSetVersion = resolver.GetWorkloadVersion()
+                WorkloadSetVersion = resolver.GetWorkloadVersion().version
             };
 
         }

@@ -112,9 +112,19 @@
         <target state="translated">Falta la versión del paquete de carga de trabajo "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="OnlyBaselineManifestFound">
+        <source>Workload version {0} was found. This is the baseline version. If you recently switched to using workload versions, consider running "dotnet workload update" to install the latest version.</source>
+        <target state="new">Workload version {0} was found. This is the baseline version. If you recently switched to using workload versions, consider running "dotnet workload update" to install the latest version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RedirectWorkloadHasOtherKeys">
         <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
         <target state="translated">La carga de trabajo de redireccionamiento '{0}' tiene claves distintas que las de 'redirect-to'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
