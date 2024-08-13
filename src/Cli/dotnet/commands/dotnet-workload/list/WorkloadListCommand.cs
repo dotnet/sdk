@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                     }
                     else
                     {
-                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().version ?? "unknown"));
                     }
 
                     Reporter.WriteLine();

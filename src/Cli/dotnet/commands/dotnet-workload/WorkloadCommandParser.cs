@@ -45,7 +45,13 @@ namespace Microsoft.DotNet.Cli
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
-            return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+            (string version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+            if (error is not null)
+            {
+                Reporter.Output.WriteLine(error);
+            }
+
+            return version;
         }
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
@@ -58,7 +64,13 @@ namespace Microsoft.DotNet.Cli
 
             if (showVersion)
             {
-                reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
+                (string version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+                if (error is not null)
+                {
+                    reporter.WriteLine(error);
+                }
+
+                reporter.WriteLine($" Workload version: {version}");
             }
 
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets;
