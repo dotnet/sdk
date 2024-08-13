@@ -133,9 +133,12 @@ namespace Microsoft.DotNet.Cli
         private int RunMSBuildTask(ParseResult parseResult)
         {
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"];
+            List<string> msbuildCommandlineArgs =  
+                [
+                    $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                    $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
+                    "-verbosity:q"
+                ];
 
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
 
