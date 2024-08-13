@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 // If no filter was provided, MSBuild will get the test project paths
-                var result = RunMSBuildTask(parseResult);
+                var result = RunWithMSBuild(parseResult);
                 if (result != 0)
                 {
                     VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
@@ -141,10 +141,10 @@ namespace Microsoft.DotNet.Cli
             return result.Files.Select(file => $"{rootDirectory}\\{file.Path.Replace("/", "\\")}");
         }
 
-        private int RunMSBuildTask(ParseResult parseResult)
+        private int RunWithMSBuild(ParseResult parseResult)
         {
             bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            List<string> msbuildCommandlineArgs =  
+            List<string> msbuildCommandlineArgs =
                 [
                     $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
