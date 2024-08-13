@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
             var tam = new TestAssetsManager(Log);
             var oldWorkingDirectory = Directory.GetCurrentDirectory();
-            var newWorkingDir = tam.CopyTestAsset("HelloWorld").WithSource().Path;
+            var newWorkingDir = tam.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
             try
             {
                 Directory.SetCurrentDirectory(newWorkingDir);
