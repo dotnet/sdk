@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
 
-                    int runHelpResult = await testApp.RunAsync(enableHelp: true);
+                    return await testApp.RunAsync(enableHelp: true);
                 });
             }
             else
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
 
-                    int runResult = await testApp.RunAsync(enableHelp: false);
+                    return await testApp.RunAsync(enableHelp: false);
                 });
             }
 
@@ -88,13 +88,13 @@ namespace Microsoft.DotNet.Cli
             }
 
             _actionQueue.EnqueueCompleted();
-            _actionQueue.WaitAllActions();
+            var result = _actionQueue.WaitAllActions();
 
             // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             _cancellationToken.Cancel();
             _namedPipeConnectionLoop.Wait();
 
-            return ExitCodes.Success;
+            return result ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
         private bool RunWithTestModulesFilter(ParseResult parseResult)
@@ -109,6 +109,7 @@ namespace Microsoft.DotNet.Cli
             {
                 rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory);
 
+                // If the root directory is not valid, we simply return
                 if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
                 {
                     VSTestTrace.SafeWriteTrace(() => $"The provided root directory does not exist: {rootDirectory}");
