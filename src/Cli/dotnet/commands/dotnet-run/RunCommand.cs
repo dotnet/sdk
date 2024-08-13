@@ -227,6 +227,7 @@ namespace Microsoft.DotNet.Tools.Run
         {
             // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
             var project = EvaluateProject(ProjectFileFullPath, RestoreArgs);
+            ValidatePreconditions(project);
             InvokeRunArgumentsTarget(project);
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
@@ -252,6 +253,14 @@ namespace Microsoft.DotNet.Tools.Run
                 }
                 var project = new ProjectInstance(projectFilePath, globalProperties, null);
                 return project;
+            }
+
+            static void ValidatePreconditions(ProjectInstance project)
+            {
+                if (string.IsNullOrWhiteSpace(project.GetPropertyValue("TargetFramework")))
+                {
+                    ThrowUnableToRunError(project);
+                }
             }
 
             static Dictionary<string, List<string>>? DeriveUserPassedProperties(string[] args)
