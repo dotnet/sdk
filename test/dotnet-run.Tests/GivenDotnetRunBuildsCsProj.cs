@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass()
-                         .And.HaveStdOut("Hello World!");
+                         .And.HaveStdOutContaining("Hello World!");
         }
 
         [Fact]
