@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             CreateFileSystemWatcher();
         }
 
-        public event EventHandler<(string filePath, bool newFile)>? OnFileChange;
+        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
 
         public event EventHandler<Exception>? OnError;
 
@@ -80,8 +80,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             Logger?.Invoke("Rename");
 
-            NotifyChange(e.OldFullPath, newFile: false);
-            NotifyChange(e.FullPath, newFile: true);
+            NotifyChange(e.OldFullPath, ChangeKind.Delete);
+            NotifyChange(e.FullPath, ChangeKind.Add);
 
             if (Directory.Exists(e.FullPath))
             {
@@ -89,8 +89,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                 {
                     // Calculated previous path of this moved item.
                     var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
-                    NotifyChange(oldLocation, newFile: false);
-                    NotifyChange(newLocation, newFile: true);
+                    NotifyChange(oldLocation, ChangeKind.Delete);
+                    NotifyChange(newLocation, ChangeKind.Add);
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             Logger?.Invoke("Change");
-            NotifyChange(e.FullPath, newFile: false);
+            NotifyChange(e.FullPath, ChangeKind.Update);
         }
 
         private void WatcherAddedHandler(object sender, FileSystemEventArgs e)
@@ -114,13 +114,13 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             Logger?.Invoke("Added");
-            NotifyChange(e.FullPath, newFile: true);
+            NotifyChange(e.FullPath, ChangeKind.Add);
         }
 
-        private void NotifyChange(string fullPath, bool newFile)
+        private void NotifyChange(string fullPath, ChangeKind kind)
         {
             // Only report file changes
-            OnFileChange?.Invoke(this, (fullPath, newFile));
+            OnFileChange?.Invoke(this, (fullPath, kind));
         }
 
         private void CreateFileSystemWatcher()

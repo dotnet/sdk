@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private async Task TestOperation(
             string dir,
-            (string, bool)[] expectedChanges,
+            (string path, ChangeKind kind)[] expectedChanges,
             bool usePolling,
             Action operation)
         {
@@ -32,11 +32,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<(string, bool)>();
+            var filesChanged = new HashSet<(string path, ChangeKind kind)>();
 
             var testFileFullPath = Path.Combine(dir, "foo");
 
-            EventHandler<(string path, bool newFile)> handler = null;
+            EventHandler<(string path, ChangeKind kind)> handler = null;
             handler = (_, f) =>
             {
                 filesChanged.Add(f);
@@ -80,12 +80,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
                 ? new[]
                 {
-                    (testFileFullPath, false),
-                    (testFileFullPath, true),
+                    (testFileFullPath, ChangeKind.Update),
+                    (testFileFullPath, ChangeKind.Add),
                 }
                 : new[]
                 {
-                    (testFileFullPath, true),
+                    (testFileFullPath, ChangeKind.Add),
                 },
                 usePolling,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
@@ -106,14 +106,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                 expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
                 ? new[]
                 {
-                    (newDir, true),
-                    (newFile, false),
-                    (newFile, true),
+                    (newDir, ChangeKind.Add),
+                    (newFile, ChangeKind.Update),
+                    (newFile, ChangeKind.Add),
                 }
                 : new[]
                 {
-                    (newDir, true),
-                    (newFile, true),
+                    (newDir, ChangeKind.Add),
+                    (newFile, ChangeKind.Add),
                 },
                 usePolling,
                 () =>
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [(testFileFullPath, false)],
+                expectedChanges: [(testFileFullPath, ChangeKind.Update)],
                 usePolling,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
@@ -156,14 +156,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                 expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
                 ? new[]
                 {
-                    (srcFile, false),
-                    (srcFile, true),
-                    (dstFile, true),
+                    (srcFile, ChangeKind.Update),
+                    (srcFile, ChangeKind.Delete),
+                    (dstFile, ChangeKind.Add),
                 }
                 : new[]
                 {
-                    (srcFile, false),
-                    (dstFile, true),
+                    (srcFile, ChangeKind.Delete),
+                    (dstFile, ChangeKind.Add),
                 },
                 usePolling,
                 () => File.Move(srcFile, dstFile));
@@ -184,8 +184,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             await TestOperation(
                 dir,
                 expectedChanges: [
-                    (subdir, false),
-                    (testFileFullPath, false)
+                    (subdir, ChangeKind.Update),
+                    (testFileFullPath, ChangeKind.Update)
                 ],
                 usePolling: true,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
@@ -270,7 +270,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [(testFileFullPath, false)],
+                expectedChanges: [(testFileFullPath, ChangeKind.Update)],
                 usePolling: true,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
@@ -298,7 +298,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
-            EventHandler<(string, bool)> handler = (_, f) =>
+            EventHandler<(string, ChangeKind)> handler = (_, f) =>
             {
                 output.WriteLine("File changed: " + f);
                 try
@@ -356,10 +356,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             await TestOperation(
                 dir,
                 expectedChanges: [
-                    (subdir, false),
-                    (f1, false),
-                    (f2, false),
-                    (f3, false),
+                    (subdir, ChangeKind.Delete),
+                    (f1, ChangeKind.Delete),
+                    (f2, ChangeKind.Delete),
+                    (f3, ChangeKind.Delete),
                 ],
                 usePolling: true,
                 () => Directory.Delete(subdir, recursive: true));
