@@ -43,12 +43,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             _workloadResolver = creationResult.WorkloadResolver;
 
             _numberOfWorkloadSetsToTake = result.GetValue(SearchWorkloadSetsParser.TakeOption);
-            if (_numberOfWorkloadSetsToTake < 1)
-            {
-                // default value
-                _numberOfWorkloadSetsToTake = 5;
-            }
-
             _workloadSetOutputFormat = result.GetValue(SearchWorkloadSetsParser.FormatOption);
 
             _installer = WorkloadInstallerFactory.GetWorkloadInstaller(
