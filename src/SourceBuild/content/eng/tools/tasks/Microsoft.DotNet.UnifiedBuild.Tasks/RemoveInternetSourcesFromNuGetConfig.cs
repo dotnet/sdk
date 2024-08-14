@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             string xml = File.ReadAllText(NuGetConfigFile);
             string newLineChars = FileUtilities.DetectNewLineChars(xml);
             XDocument d = XDocument.Parse(xml);
-            XElement disabledPackageSourcesElement = d.Root.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
+            XElement? disabledPackageSourcesElement = d.Root?.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
 
             foreach (string sectionName in Sections)
             {
@@ -62,9 +62,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             return true;
         }
 
-        private void ProcessSection(XDocument d, string sectionName)
+        static void ProcessSection(XDocument d, string sectionName)
         {
-            XElement sectionElement = d.Root.Descendants().FirstOrDefault(e => e.Name == sectionName);
+            XElement? sectionElement = d.Root?.Descendants().FirstOrDefault(e => e.Name == sectionName);
             if (sectionElement == null)
             {
                 return;
@@ -74,23 +74,27 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             {
                 if (e.Name == "add")
                 {
-                    string feedName = e.Attribute("key").Value;
-                    if (KeepFeedPrefixes
+                    string? feedName = e.Attribute("key")?.Value;
+                    if (feedName != null &&
+                        KeepFeedPrefixes
                         ?.Any(prefix => feedName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                         == true)
                     {
                         return true;
                     }
 
-                    string feedUrl = e.Attribute("value").Value;
-                    if (BuildWithOnlineFeeds)
+                    string? feedUrl = e.Attribute("value")?.Value;
+                    if (feedUrl != null)
                     {
-                        return !( feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/_packaging", StringComparison.OrdinalIgnoreCase) ||
-                            feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/internal/_packaging", StringComparison.OrdinalIgnoreCase) );
-                    }
-                    else
-                    {
-                        return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+                        if (BuildWithOnlineFeeds)
+                        {
+                            return !(feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/_packaging", StringComparison.OrdinalIgnoreCase) ||
+                                feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/internal/_packaging", StringComparison.OrdinalIgnoreCase));
+                        }
+                        else
+                        {
+                            return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+                        }
                     }
                 }
 
