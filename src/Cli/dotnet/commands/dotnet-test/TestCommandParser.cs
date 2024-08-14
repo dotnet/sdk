@@ -221,6 +221,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(AdditionalMSBuildParameters);
             command.Options.Add(TestModules);
             command.Options.Add(TestModulesRootDirectory);
+            command.Options.Add(NoBuild);
 
             return command;
         }
