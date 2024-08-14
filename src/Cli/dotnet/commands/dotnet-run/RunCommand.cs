@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            if (Verbosity?.IsMinimal() != true)
+            if (Verbosity?.IsQuiet() != true)
             {
                 Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
             }
