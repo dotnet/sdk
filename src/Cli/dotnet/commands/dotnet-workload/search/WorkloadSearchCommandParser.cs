@@ -10,18 +10,6 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchCommandParser
     {
-        public static readonly CliOption<bool> SetVersionsOption = new("version")
-        {
-            Description = LocalizableStrings.PrintSetVersionsDescription
-        };
-
-        public static readonly CliOption<int> TakeOption = new("--take") { Hidden = true };
-
-        public static readonly CliOption<string> FormatOption = new("--format")
-        {
-            Description = LocalizableStrings.FormatOptionDescription
-        };
-
         public static readonly CliArgument<string> WorkloadIdStubArgument =
             new(LocalizableStrings.WorkloadIdStubArgumentName)
             {
@@ -41,10 +29,8 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             var command = new CliCommand("search", LocalizableStrings.CommandDescription);
+            command.Subcommands.Add(SearchWorkloadSetsParser.GetCommand());
             command.Arguments.Add(WorkloadIdStubArgument);
-            command.Options.Add(SetVersionsOption);
-            command.Options.Add(TakeOption);
-            command.Options.Add(FormatOption);
             command.Options.Add(CommonOptions.HiddenVerbosityOption);
             command.Options.Add(VersionOption);
 

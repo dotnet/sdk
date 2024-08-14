@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _workloadIdStub;
-        private readonly bool _listWorkloadSetVersions;
         private readonly int _numberOfWorkloadSetsToTake;
         private readonly string _workloadSetOutputFormat;
         private readonly IWorkloadManifestInstaller _installer;
+        internal bool ListWorkloadSetVersions { get; set; } = false;
 
         public WorkloadSearchCommand(
             ParseResult result,
@@ -42,15 +42,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;
 
-            _listWorkloadSetVersions = result.GetValue(WorkloadSearchCommandParser.SetVersionsOption);
-            _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchCommandParser.TakeOption);
+            _numberOfWorkloadSetsToTake = result.GetValue(SearchWorkloadSetsParser.TakeOption);
             if (_numberOfWorkloadSetsToTake < 1)
             {
                 // default value
                 _numberOfWorkloadSetsToTake = 5;
             }
 
-            _workloadSetOutputFormat = result.GetValue(WorkloadSearchCommandParser.FormatOption);
+            _workloadSetOutputFormat = result.GetValue(SearchWorkloadSetsParser.FormatOption);
 
             _installer = WorkloadInstallerFactory.GetWorkloadInstaller(
                 reporter,
@@ -66,11 +65,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
         public override int Execute()
         {
-            if (_listWorkloadSetVersions)
+            if (ListWorkloadSetVersions)
             {
-                var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(_sdkVersion));
+                var featureBand = new SdkFeatureBand(_sdkVersion);
+                var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
                 var versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
-                    .GetAwaiter().GetResult();
+                    .GetAwaiter().GetResult()
+                    .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.Version.ToString()));
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     Reporter.WriteLine(JsonSerializer.Serialize(versions));
