@@ -3,6 +3,8 @@ From: Eric StJohn <ericstj@microsoft.com>
 Date: Wed, 14 Aug 2024 10:38:31 -0700
 Subject: [PATCH] Add references needed by Formatters.Nrbf
 
+Backport: https://github.com/dotnet/wpf/pull/9547
+
 ---
  .../src/PresentationCore/PresentationCore.csproj                | 2 ++
  1 file changed, 2 insertions(+)
