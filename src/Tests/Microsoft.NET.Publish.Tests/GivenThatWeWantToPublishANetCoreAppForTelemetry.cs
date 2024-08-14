@@ -1,15 +1,8 @@
-﻿using System;
-using System.IO;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Reflection;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.NET.Build.Tests;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -21,11 +14,12 @@ namespace Microsoft.NET.Publish.Tests
 
         [CoreMSBuildOnlyTheory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_collects_empty_Trimmer_SingleFile_ReadyToRun_publishing_properties(string targetFramework)
+        public void It_collects_empty_Trimmer_SingleFile_ReadyToRun_Aot_publishing_properties(string targetFramework)
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
                 {
+                    "--property:SelfContained=true",
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
 
@@ -33,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
-                "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\"}");
+                "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
         }
 
         [CoreMSBuildOnlyTheory]
@@ -43,6 +37,7 @@ namespace Microsoft.NET.Publish.Tests
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
                 {
+                    "--property:SelfContained=true",
                     $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
                 };
 
@@ -51,7 +46,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testProjectInstance);
             string s = publishCommand.Execute(TelemetryTestLogger).StdOut;//.Should()
             s.Should().Contain(
-                "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"True\",\"PublishSingleFile\":\"True\"}");
+                "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"True\",\"PublishSingleFile\":\"True\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
             s.Should().Contain(
                 "{\"EventName\":\"ReadyToRun\",\"Properties\":{\"PublishReadyToRunUseCrossgen2\":\"true\",")
                 .And.MatchRegex(
@@ -83,7 +78,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should()
                 .Contain(
-                    "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\"}")
+                    "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}")
                 .And.Contain(
                     "{\"EventName\":\"ReadyToRun\",\"Properties\":{\"PublishReadyToRunUseCrossgen2\":\"true\",")
                 .And.MatchRegex(
@@ -92,7 +87,33 @@ namespace Microsoft.NET.Publish.Tests
                     "\"CompileListCount\":\"1\",\"FailedCount\":\"0\"");
         }
 
-        private TestProject CreateTestProject(string targetFramework, string projectName, bool trimmer = false, bool r2r = false, bool singleFile = false)
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_collects_Aot_publishing_properties(string targetFramework)
+        {
+            // NativeAOT is only supported on Linux/Windows x64 scenarios for now
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64)
+                return;
+
+            Type loggerType = typeof(LogTelemetryToStdOutForTest);
+            var TelemetryTestLogger = new[]
+                {
+                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
+                };
+
+            // NativeAOT compilation requires PublishTrimmed and will be set to true if not set by the user
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testProject = CreateTestProject(targetFramework, "AotProject", aot: true);
+            testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testProjectInstance);
+            publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
+                "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"true\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"True\",\"PublishProtocol\":\"null\"}");
+        }
+
+
+        private TestProject CreateTestProject(string targetFramework, string projectName, bool trimmer = false, bool r2r = false, bool singleFile = false, bool aot = false)
         {
             var testProject = new TestProject()
             {
@@ -112,6 +133,10 @@ namespace Microsoft.NET.Publish.Tests
             if (singleFile)
             {
                 testProject.AdditionalProperties["PublishSingleFile"] = "True";
+            }
+            if (aot)
+            {
+                testProject.AdditionalProperties["PublishAot"] = "True";
             }
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"

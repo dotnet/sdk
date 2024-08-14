@@ -1,15 +1,16 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using System.Collections.Generic;
-using Xunit;
+using Microsoft.DotNet.ApiCompatibility.Tests;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests
+namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class MembersMustExistTests
     {
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new MembersMustExist(settings, context));
+
         [Fact]
         public static void MissingMembersAreReported()
         {
@@ -29,7 +30,6 @@ namespace CompatTests
   public delegate void EventHandler(object sender, System.EventArgs e);
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -40,20 +40,20 @@ namespace CompatTests
   public delegate void EventHandler(object sender, System.EventArgs e);
 }
 ";
-
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
             CompatDifference[] expected = new[]
             {
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.ShouldReportMethod(System.String,System.String)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_ShouldReportMissingProperty"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_Item(System.Int32)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.add_ShouldReportMissingEvent(CompatTests.EventHandler)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.remove_ShouldReportMissingEvent(CompatTests.EventHandler)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.ReportMissingField"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.ShouldReportMethod(System.String,System.String)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_ShouldReportMissingProperty"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_Item(System.Int32)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.add_ShouldReportMissingEvent(CompatTests.EventHandler)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.remove_ShouldReportMissingEvent(CompatTests.EventHandler)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.ReportMissingField"),
             };
 
             Assert.Equal(expected, differences);
@@ -81,7 +81,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -95,43 +94,12 @@ namespace CompatTests
   public class Second : FirstBase { }
 }
 ";
-
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
+            ApiComparer differ = new(s_ruleFactory);
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
-            Assert.Empty(differences);
-        }
 
-        [Fact]
-        public static void NoDifferencesWithNoWarn()
-        {
-            string leftSyntax = @"
-namespace CompatTests
-{
-  public class First
-  {
-    public void MissingMember() { }
-    public int MissingProperty { get; }
-    public int MissingField;
-  }
-}
-";
-
-            string rightSyntax = @"
-namespace CompatTests
-{
-  public class First
-  {
-  }
-}
-";
-
-            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
-            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
-            differ.NoWarn = DiagnosticIds.MemberMustExist;
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
             Assert.Empty(differences);
         }
 
@@ -151,7 +119,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -163,16 +130,16 @@ namespace CompatTests
   }
 }
 ";
-
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
+            ApiComparer differ = new(s_ruleFactory);
 
-            CompatDifference[] expected = new[]
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            CompatDifference[] expected =
             {
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.String)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.Int32,System.String)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.String)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.Int32,System.String)"),
             };
 
             Assert.Equal(expected, differences);
@@ -197,7 +164,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -211,19 +177,18 @@ namespace CompatTests
   }
 }
 ";
-
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
-            differ.IncludeInternalSymbols = includeInternals;
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(includeInternalSymbols: includeInternals));
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
             if (includeInternals)
             {
-                CompatDifference[] expected = new[]
+                CompatDifference[] expected =
                 {
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.Int32,System.Int32)"),
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.set_InternalProperty(System.Int32)"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.Int32,System.Int32)"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.set_InternalProperty(System.Int32)"),
                 };
 
                 Assert.Equal(expected, differences);
@@ -246,7 +211,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -258,7 +222,8 @@ namespace CompatTests
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax, enableNullable: true);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
+            ApiComparer differ = new(s_ruleFactory);
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
             Assert.Empty(differences);
@@ -277,7 +242,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -290,7 +254,8 @@ namespace CompatTests
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
+            ApiComparer differ = new(s_ruleFactory);
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
             Assert.Empty(differences);
@@ -310,7 +275,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -322,14 +286,15 @@ namespace CompatTests
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax, enableNullable: true);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
+            ApiComparer differ = new(s_ruleFactory);
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            CompatDifference[] expected = new[]
+            CompatDifference[] expected =
             {
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyMethod(System.String)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyOutMethod(System.String@)"),
-                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyRefMethod(System.String@)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyMethod(System.String)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyOutMethod(System.String@)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyRefMethod(System.String@)"),
             };
 
             Assert.Equal(expected, differences);
@@ -358,7 +323,6 @@ namespace CompatTests
   }
 }
 ";
-
             string[] rightSyntaxes = new[]
             { @"
 namespace CompatTests
@@ -416,34 +380,21 @@ namespace CompatTests
   }
 }
 "};
+            ApiComparer differ = new(s_ruleFactory);
+            ElementContainer<IAssemblySymbol> left = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax), new MetadataInformation(string.Empty, "ref"));
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
 
-            ApiComparer differ = new();
-            ElementContainer<IAssemblySymbol> left =
-                new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax), new MetadataInformation(string.Empty, string.Empty, "ref"));
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            IList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
-
-            IEnumerable<(MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)> differences =
-                differ.GetDifferences(left, right);
-
-            CompatDifference[][] expectedDiffs =
+            CompatDifference[] expectedDiffs =
             {
-                new[]
-                {
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.FirstNested.SecondNested.ThirdNested.MyField"),
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.SecondNested.MyMethod"),
-                },
-                new[]
-                {
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.get_MyProperty"),
-                },
-                new[]
-                {
-                    new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.SecondNested.MyMethod"),
-                },
+                new CompatDifference(left.MetadataInformation, right.ElementAt(0).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.FirstNested.SecondNested.ThirdNested.MyField"),
+                new CompatDifference(left.MetadataInformation, right.ElementAt(0).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.SecondNested.MyMethod"),
+                new CompatDifference(left.MetadataInformation, right.ElementAt(1).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.get_MyProperty"),
+                new CompatDifference(left.MetadataInformation, right.ElementAt(2).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.SecondNested.MyMethod"),
             };
 
-            AssertExtensions.MultiRightResult(left.MetadataInformation, expectedDiffs, differences);
+            Assert.Equal(expectedDiffs, differences);
         }
 
         [Fact]
@@ -469,22 +420,16 @@ namespace CompatTests
   }
 }
 ";
-
+            ElementContainer<IAssemblySymbol> left = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
+                new MetadataInformation(string.Empty, "ref"));
             string[] rightSyntaxes = new[] { leftSyntax, leftSyntax, leftSyntax, leftSyntax };
-            MetadataInformation expectedLeftMetadata = new(string.Empty, string.Empty, "ref");
-            ApiComparer differ = new();
-            ElementContainer<IAssemblySymbol> left =
-                new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax), expectedLeftMetadata);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
+            ApiComparer differ = new(s_ruleFactory);
 
-            IList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            IEnumerable<(MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)> differences =
-                differ.GetDifferences(left, right);
-
-            AssertExtensions.MultiRightEmptyDifferences(expectedLeftMetadata, rightSyntaxes.Length, differences);
+            Assert.Empty(differences);
         }
-
-
 
         [Fact]
         public void ParameterlessConstructorRemovalIsReported()
@@ -497,7 +442,6 @@ namespace CompatTests
   }
 }
 ";
-
             string rightSyntax = @"
 namespace CompatTests
 {
@@ -507,19 +451,136 @@ namespace CompatTests
   }
 }
 ";
-
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
 
-            ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            CompatDifference[] expected = new[]
+            CompatDifference[] expected =
             {
-            new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.#ctor")
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.#ctor")
             };
-
             Assert.Equal(expected, differences);
+        }
+
+        [Fact]
+        public void NumericPtrNotFlagged()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  using System;
+
+  public class First
+  {
+    public void F(IntPtr p) {}
+    public void G(UIntPtr p) {}
+  }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public class First
+  {
+    public void F(nint p) {}
+    public void G(nuint p) {}
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Empty(differences);
+        }
+
+        [Fact]
+        public void ThisExtensionMethodModifierRemovalFlagged()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public static class First
+  {
+    public static void F(this string s) {}
+  }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public static class First
+  {
+    public static void F(string s) {}
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Equal(new[]
+            {
+                // The call to GetDocumentationCommentId doesn't return a string that includes the "this" keyword.
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.F(System.String)")
+            }, differences);
+        }
+
+        [Fact]
+        public void MemberTypesChangeFlagged()
+        {
+            string leftSyntax = @"
+using System;
+
+namespace CompatTests
+{
+  public class First
+  {
+    public string S;
+    public bool Prop { get; set; }
+    public string M() => null;
+    public delegate void SampleEventHandler(object sender, EventArgs e);
+    public event SampleEventHandler E;
+  }
+}
+";
+            string rightSyntax = @"
+using System;
+
+namespace CompatTests
+{
+  public class First
+  {
+    public delegate void SampleEventHandler(object sender, EventArgs e);
+
+    public int S;
+    public string Prop { get; set; }
+    public bool M() => false;
+    public delegate void SampleEventHandler1(object sender, EventArgs e);
+    public event SampleEventHandler1 E;
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Equal(new[]
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.S"),
+                // CompatTests.First.Prop.set isn't reported as the return types match: 'void'.
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_Prop"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.M")
+                // CompatTests.First.E_add and CompatTests.First.E_remove aren't reported as the symbol's DisplayString doesn't include the parameter type.
+            }, differences);
         }
     }
 }

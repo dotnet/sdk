@@ -1,11 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -43,7 +37,6 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private ITaskItem _runtimePack;
-        private ITaskItem _crossgen2Pack;
         private string _targetRuntimeIdentifier;
         private string _targetPlatform;
         private string _hostRuntimeIdentifier;
@@ -57,7 +50,6 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             _runtimePack = GetNETCoreAppRuntimePack();
-            _crossgen2Pack = Crossgen2Packs?.FirstOrDefault();
             _targetRuntimeIdentifier = _runtimePack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
 
             // Get the list of runtime identifiers that we support and can target
@@ -133,9 +125,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool ValidateCrossgen2Support()
         {
-            _crossgen2Tool.PackagePath = _crossgen2Pack?.GetMetadata(MetadataKeys.PackageDirectory);
-            if (_crossgen2Tool.PackagePath == null ||
-                !NuGetVersion.TryParse(_crossgen2Pack.GetMetadata(MetadataKeys.NuGetPackageVersion), out NuGetVersion crossgen2PackVersion))
+            ITaskItem crossgen2Pack = Crossgen2Packs?.FirstOrDefault();
+            _crossgen2Tool.PackagePath = crossgen2Pack?.GetMetadata(MetadataKeys.PackageDirectory);
+
+            if (string.IsNullOrEmpty(_crossgen2Tool.PackagePath) ||
+                !NuGetVersion.TryParse(crossgen2Pack.GetMetadata(MetadataKeys.NuGetPackageVersion), out NuGetVersion crossgen2PackVersion))
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                 return false;
@@ -191,7 +185,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win" },
+                    new[] { "linux", "linux-musl", "osx", "win", "freebsd" },
                     out _);
 
             // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
@@ -217,6 +211,7 @@ namespace Microsoft.NET.Build.Tasks
                 "linux-musl" => "linux",
                 "osx" => "osx",
                 "win" => "windows",
+                "freebsd" => "freebsd",
                 _ => null
             };
 
@@ -387,11 +382,6 @@ namespace Microsoft.NET.Build.Tasks
                 toolFileName = "crossgen2.exe";
                 v5_clrJitFileNamePattern = "clrjit-{0}.dll";
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                toolFileName = "crossgen2";
-                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
-            }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 toolFileName = "crossgen2";
@@ -399,8 +389,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Unknown platform
-                return false;
+                // Generic Unix-like: linux, freebsd, and others.
+                toolFileName = "crossgen2";
+                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
             }
 
             if (version5)
