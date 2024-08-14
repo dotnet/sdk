@@ -11,24 +11,30 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
+        public static readonly CliOption<string> MaxParallelTestModules = new("--max-parallel-test-modules", "-mptm")
         {
             Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
         };
 
-        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new("--additional-msbuild-parameters")
         {
             Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
         };
 
-        public static readonly CliOption<string> TestModules = new ForwardedOption<string>("--test-modules")
+        public static readonly CliOption<string> TestModules = new("--test-modules")
         {
             Description = LocalizableStrings.CmdTestModulesDescription
         };
 
-        public static readonly CliOption<string> TestModulesRootDirectory = new ForwardedOption<string>("--root-directory")
+        public static readonly CliOption<string> TestModulesRootDirectory = new("--root-directory")
         {
             Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription
+        };
+
+        public static readonly CliOption<string> NoBuild = new("--no-build")
+        {
+            Description = LocalizableStrings.CmdNoBuildDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
