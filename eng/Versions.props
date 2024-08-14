@@ -171,18 +171,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.12.0-preview.1.64</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.12.0-preview.1.64</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.12.0-preview.1.64</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.12.0-preview.1.64</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.12.0-preview.1.64</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.12.0-preview.1.64</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-preview.1.64</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.12.0-preview.1.64</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.12.0-preview.1.64</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.12.0-preview.1.64</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.12.0-preview.1.64</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.12.0-preview.1.64</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.12.0-preview.1.67</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.12.0-preview.1.67</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.12.0-preview.1.67</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.12.0-preview.1.67</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.12.0-preview.1.67</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.12.0-preview.1.67</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-preview.1.67</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.12.0-preview.1.67</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.12.0-preview.1.67</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.12.0-preview.1.67</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.12.0-preview.1.67</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.12.0-preview.1.67</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
@@ -216,13 +216,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.100-rc.1.24412.1</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.100-rc.1.24413.1</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineEdgePackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>9.0.100-rc.1.24412.1</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>9.0.100-rc.1.24413.1</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
@@ -260,9 +260,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24412.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24412.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24412.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24413.4</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24413.4</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24413.4</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
@@ -318,12 +318,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
-    <MicrosoftBuildTasksGitVersion>9.0.0-beta.24407.2</MicrosoftBuildTasksGitVersion>
-    <MicrosoftSourceLinkCommonVersion>9.0.0-beta.24407.2</MicrosoftSourceLinkCommonVersion>
-    <MicrosoftSourceLinkAzureReposGitVersion>9.0.0-beta.24407.2</MicrosoftSourceLinkAzureReposGitVersion>
-    <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24407.2</MicrosoftSourceLinkGitHubVersion>
-    <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24407.2</MicrosoftSourceLinkGitLabVersion>
-    <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24407.2</MicrosoftSourceLinkBitbucketGitVersion>
+    <MicrosoftBuildTasksGitVersion>9.0.0-beta.24412.2</MicrosoftBuildTasksGitVersion>
+    <MicrosoftSourceLinkCommonVersion>9.0.0-beta.24412.2</MicrosoftSourceLinkCommonVersion>
+    <MicrosoftSourceLinkAzureReposGitVersion>9.0.0-beta.24412.2</MicrosoftSourceLinkAzureReposGitVersion>
+    <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24412.2</MicrosoftSourceLinkGitHubVersion>
+    <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24412.2</MicrosoftSourceLinkGitLabVersion>
+    <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24412.2</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>

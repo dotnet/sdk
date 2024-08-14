@@ -373,6 +373,8 @@
         @(Net80ILCompilerSupportedRids);
         linux-arm;
         linux-musl-arm;
+        linux-loongarch64;
+        linux-musl-loongarch64;
         win-x86;
         " />
 
