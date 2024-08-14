@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class SearchWorkloadSetsParser
     {
-        public static readonly CliOption<int> TakeOption = new("--take") { Hidden = true };
+        public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
         public static readonly CliOption<string> FormatOption = new("--format")
         {
@@ -26,8 +26,16 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             var command = new CliCommand("version", LocalizableStrings.PrintSetVersionsDescription);
-            command.Options.Add(TakeOption);
             command.Options.Add(FormatOption);
+            command.Options.Add(TakeOption);
+
+            TakeOption.Validators.Add(optionResult =>
+            {
+                if (optionResult.GetValueOrDefault<int>() <= 0)
+                {
+                    throw new ArgumentException("The --take option must be positive.");
+                }
+            });
 
             command.SetAction(parseResult => new WorkloadSearchCommand(parseResult)
             {
