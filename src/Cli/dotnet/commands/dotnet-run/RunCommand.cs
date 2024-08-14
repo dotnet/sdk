@@ -3,7 +3,7 @@
 
 #nullable enable
 
-using System.Windows.Markup;
+using System.Reflection;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -333,7 +333,7 @@ namespace Microsoft.DotNet.Tools.Run
             {
                 // if the restoreArgs contain a `-bl` then let's probe it
                 List<ILogger> loggersForBuild = [
-                    new ConsoleLogger(verbosity: ToLoggerVerbosity(verbosity))
+                    MakeTerminalLogger(verbosity)
                 ];
                 if (restoreArgs.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)) is string blArg)
                 {
@@ -355,6 +355,13 @@ namespace Microsoft.DotNet.Tools.Run
                     throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
                 }
             }
+        }
+
+        static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+        {
+            var msbuildVerbosity = ToLoggerVerbosity(verbosity);
+            var thing = Assembly.Load("MSBuild").GetType("Microsoft.Build.Logging.TerminalLogger.TerminalLogger")!.GetConstructor([typeof(LoggerVerbosity)])!.Invoke([msbuildVerbosity]) as ILogger;
+            return thing!;
         }
 
         static string ComputeRunArgumentsTarget = "ComputeRunArguments";
