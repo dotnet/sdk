@@ -48,6 +48,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        if (!Enum.TryParse(ArchiveOutputFormat, true, out ContainerImageArchiveFormat format))
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageArchiveFormat), nameof(ArchiveOutputFormat),
+                string.Join(", ", Enum.GetNames< ContainerImageArchiveFormat>()));
+            return !Log.HasLoggedErrors;
+        }
+
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
 
@@ -56,6 +63,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             ImageTags,
             msbuildLoggerFactory,
             ArchiveOutputPath,
+            format,
             OutputRegistry,
             LocalRegistry);
 

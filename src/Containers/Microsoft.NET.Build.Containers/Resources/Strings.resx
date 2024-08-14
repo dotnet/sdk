@@ -327,6 +327,10 @@
     <value>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</value>
     <comment>{StrBegin="CONTAINER2029: "}</comment>
   </data>
+  <data name="InvalidContainerImageArchiveFormat" xml:space="preserve">
+    <value>CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</value>
+    <comment>{StrBegin="CONTAINER2030: "}</comment>
+  </data>
   <data name="_Test" xml:space="preserve">
     <value>CONTAINER0000: Value for unit test {0}</value>
     <comment>Used only for unit tests</comment>
@@ -402,8 +406,8 @@
     <comment>{StrBegin="CONTAINER2005: "}</comment>
   </data>
   <data name="ArchiveRegistry_PushInfo" xml:space="preserve">
-    <value>local archive at '{0}'</value>
-    <comment>{0} is the path to the file written</comment>
+    <value>local archive at '{0}' as {1} </value>
+    <comment>{0} is the path to the file written, {1} is the format type written</comment>
   </data>
   <data name="DockerCli_PushInfo" xml:space="preserve">
     <value>local registry via '{0}'</value>

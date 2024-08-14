@@ -111,6 +111,11 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
         }
+        if (!string.IsNullOrWhiteSpace(ArchiveOutputPath))
+        {
+            builder.AppendSwitchIfNotNull("--archiveoutputpath ", ArchiveOutputPath);
+            builder.AppendSwitchIfNotNull("--archiveoutputformat ", ArchiveOutputFormat.ToString());
+        }
         if (!string.IsNullOrWhiteSpace(LocalRegistry))
         {
             builder.AppendSwitchIfNotNull("--localregistry ", LocalRegistry);

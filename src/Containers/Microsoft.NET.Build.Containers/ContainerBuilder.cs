@@ -31,6 +31,7 @@ public static class ContainerBuilder
         string localRegistry,
         string? containerUser,
         string? archiveOutputPath,
+        ContainerImageArchiveFormat archiveOutputFormat,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -51,6 +52,7 @@ public static class ContainerBuilder
             imageTags,
             loggerFactory,
             archiveOutputPath,
+            archiveOutputFormat,
             outputRegistry,
             localRegistry);
 
