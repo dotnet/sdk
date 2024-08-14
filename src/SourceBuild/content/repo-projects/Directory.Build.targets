@@ -94,6 +94,7 @@
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddSourceToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveInternetSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveSectionsFromNugetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateNuGetConfig"
           DependsOnTargets="CopyNuGetConfig;GetRepositoryReferenceInfo"
@@ -138,7 +139,13 @@
       <_BuildSources Include="@(_CommonBuildSources)" />
       <_BuildSources Include="$(NetSdkSupportingFeedName)"
                      Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+      <_OfflineBuildSectionsToRemove Include="auditSources" />
     </ItemGroup>
+
+    <RemoveSectionsFromNugetConfig
+      NuGetConfigFile="$(NuGetConfigFile)"
+      SectionsToRemove="@(_OfflineBuildSectionsToRemove)"
+      Condition="'$(DotNetBuildWithOnlineFeeds)' != 'true'" />
 
     <RemoveInternetSourcesFromNuGetConfig
       NuGetConfigFile="$(NuGetConfigFile)"
