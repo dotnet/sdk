@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Windows.Markup;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -22,14 +23,11 @@ namespace Microsoft.DotNet.Tools.Run
         public string ProjectFileFullPath { get; private set; }
         public string[] Args { get; set; }
         public bool NoRestore { get; private set; }
+        public VerbosityOptions? Verbosity { get; }
         public bool Interactive { get; private set; }
         public string[] RestoreArgs { get; private set; }
 
         private bool ShouldBuild => !NoBuild;
-        private bool HasQuietVerbosity =>
-            RestoreArgs.All(arg => !arg.StartsWith("-verbosity:", StringComparison.Ordinal) ||
-                                    arg.Equals("-verbosity:q", StringComparison.Ordinal) ||
-                                    arg.Equals("-verbosity:quiet", StringComparison.Ordinal));
 
         public string LaunchProfile { get; private set; }
         public bool NoLaunchProfile { get; private set; }
@@ -42,6 +40,7 @@ namespace Microsoft.DotNet.Tools.Run
             bool noLaunchProfile,
             bool noRestore,
             bool interactive,
+            VerbosityOptions? verbosity,
             string[] restoreArgs,
             string[] args)
         {
@@ -52,6 +51,7 @@ namespace Microsoft.DotNet.Tools.Run
             Args = args;
             Interactive = interactive;
             NoRestore = noRestore;
+            Verbosity = verbosity;
             RestoreArgs = GetRestoreArguments(restoreArgs);
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Tools.Run
             catch (InvalidProjectFileException e)
             {
                 throw new GracefulException(
-                    string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, ProjectFileFullPath),
+                    string.Format(LocalizableStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                     e);
             }
         }
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            if (!HasQuietVerbosity)
+            if (Verbosity?.IsMinimal() != true)
             {
                 Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
             }
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             // --interactive need to output guide for auth. It cannot be
             // completely "quiet"
-            if (!cliRestoreArgs.Any(a => a.StartsWith("-verbosity:")))
+            if (Verbosity is null)
             {
                 var defaultVerbosity = Interactive ? "minimal" : "quiet";
                 args.Add($"-verbosity:{defaultVerbosity}");
@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Tools.Run
             // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
             var project = EvaluateProject(ProjectFileFullPath, RestoreArgs);
             ValidatePreconditions(project);
-            InvokeRunArgumentsTarget(project);
+            InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity);
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
@@ -329,17 +329,48 @@ namespace Microsoft.DotNet.Tools.Run
                 return command;
             }
 
-            static void InvokeRunArgumentsTarget(ProjectInstance project)
+            static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, VerbosityOptions? verbosity)
             {
-                if (project.Build(["ComputeRunArguments"], loggers: [new BinaryLogger { Parameters = "{}.binlog" }], remoteLoggers: null, out var _targetOutputs))
+                // if the restoreArgs contain a `-bl` then let's probe it
+                List<ILogger> loggersForBuild = [
+                    new ConsoleLogger(verbosity: ToLoggerVerbosity(verbosity))
+                ];
+                if (restoreArgs.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)) is string blArg)
                 {
+                    if (blArg.Contains(':'))
+                    {
+                        // split and forward args
+                        var split = blArg.Split(':', 2);
+                        loggersForBuild.Add(new BinaryLogger { Parameters = split[1] });
+                    }
+                    else
+                    {
+                        // just the defaults
+                        loggersForBuild.Add(new BinaryLogger { Parameters = "{}.binlog" });
+                    }
+                };
 
-                }
-                else
+                if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
                 {
-                    throw new GracefulException("boom");
+                    throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
                 }
             }
+        }
+
+        static string ComputeRunArgumentsTarget = "ComputeRunArguments";
+
+        private static LoggerVerbosity ToLoggerVerbosity(VerbosityOptions? verbosity)
+        {
+            // map all cases of VerbosityOptions enum to the matching LoggerVerbosity enum
+            return verbosity switch
+            {
+                VerbosityOptions.quiet | VerbosityOptions.q => LoggerVerbosity.Quiet,
+                VerbosityOptions.minimal | VerbosityOptions.m => LoggerVerbosity.Minimal,
+                VerbosityOptions.normal | VerbosityOptions.n => LoggerVerbosity.Normal,
+                VerbosityOptions.detailed | VerbosityOptions.d => LoggerVerbosity.Detailed,
+                VerbosityOptions.diagnostic | VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
+                _ => LoggerVerbosity.Quiet // default to quiet because run should be invisible if possible
+            };
         }
 
         private static void ThrowUnableToRunError(ProjectInstance project)
