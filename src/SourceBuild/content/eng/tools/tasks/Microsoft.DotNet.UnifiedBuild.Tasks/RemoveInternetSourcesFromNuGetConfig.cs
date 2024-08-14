@@ -35,15 +35,40 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// </summary>
         public string[] KeepFeedPrefixes { get; set; }
 
+        private readonly string[] Sections = [ "packageSources", "auditSources" ];
+
         public override bool Execute()
         {
             string xml = File.ReadAllText(NuGetConfigFile);
             string newLineChars = FileUtilities.DetectNewLineChars(xml);
             XDocument d = XDocument.Parse(xml);
-            XElement packageSourcesElement = d.Root.Descendants().First(e => e.Name == "packageSources");
             XElement disabledPackageSourcesElement = d.Root.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
 
-            IEnumerable<XElement> local = packageSourcesElement.Descendants().Where(e =>
+            foreach (string sectionName in Sections)
+            {
+                ProcessSection(d, sectionName);
+            }
+
+            // Remove disabledPackageSources element so if any internal packages remain, they are used in source-build
+            disabledPackageSourcesElement?.ReplaceNodes(new XElement("clear"));
+
+            using (var w = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
+            {
+                d.Save(w);
+            }
+
+            return true;
+        }
+
+        private void ProcessSection(XDocument d, string sectionName)
+        {
+            XElement sectionElement = d.Root.Descendants().FirstOrDefault(e => e.Name == sectionName);
+            if (sectionElement == null)
+            {
+                return;
+            }
+
+            IEnumerable<XElement> local = sectionElement.Descendants().Where(e =>
             {
                 if (e.Name == "add")
                 {
@@ -70,17 +95,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 return true;
             });
 
-            packageSourcesElement.ReplaceNodes(local.ToArray());
-
-            // Remove disabledPackageSources element so if any internal packages remain, they are used in source-build
-            disabledPackageSourcesElement?.ReplaceNodes(new XElement("clear"));
-
-            using (var w = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
-            {
-                d.Save(w);
-            }
-
-            return true;
+            sectionElement.ReplaceNodes(local.ToArray());
         }
     }
 }
