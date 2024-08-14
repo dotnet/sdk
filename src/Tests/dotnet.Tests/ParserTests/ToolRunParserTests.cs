@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
@@ -24,7 +25,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool run dotnetsay");
 
-            var packageId = result.ValueForArgument<string>(ToolRunCommandParser.CommandNameArgument);
+            var packageId = result.GetValueForArgument<string>(ToolRunCommandParser.CommandNameArgument);
 
             packageId.Should().Be("dotnetsay");
         }

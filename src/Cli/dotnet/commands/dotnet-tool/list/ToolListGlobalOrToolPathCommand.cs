@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var toolPathOption = _parseResult.ValueForOption<string>(ToolListCommandParser.ToolPathOption);
+            var toolPathOption = _parseResult.GetValueForOption(ToolListCommandParser.ToolPathOption);
 
             DirectoryPath? toolPath = null;
             if (!string.IsNullOrWhiteSpace(toolPathOption))
