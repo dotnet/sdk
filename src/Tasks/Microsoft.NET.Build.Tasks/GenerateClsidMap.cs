@@ -8,7 +8,7 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateClsidMap : TaskWithAssemblyResolveHooks
+    public class GenerateClsidMap : TaskBase
     {
         [Required]
         public string IntermediateAssembly { get; set; }
@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 try
                 {
-                    using (PEReader peReader = new PEReader(assemblyStream))
+                    using (PEReader peReader = new(assemblyStream))
                     {
                         if (peReader.HasMetadata)
                         {

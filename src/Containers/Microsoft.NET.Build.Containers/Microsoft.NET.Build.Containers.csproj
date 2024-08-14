@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
     <ImplicitUsings Condition="'$(TargetFramework)' != 'net472'">enable</ImplicitUsings>
 
     <TargetsForTfmSpecificBuildOutput>
@@ -21,22 +20,44 @@
     <NoWarn>$(NoWarn);CS8002</NoWarn>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj"
+                      Condition="'$(TargetFramework)' != 'net472'">
+      <!-- This is referenced by the core CLI as well so it doesn't need to be redistributed
+           in the containers task folder. -->
+      <IncludeAssets>build</IncludeAssets>
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Nuget.Packaging" />
+    <PackageReference Include="Nuget.Packaging">
+      <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
+      <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
+      <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
+           so it doesn't have to be redistributed. -->
+      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.3</VersionOverride>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+
+    <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
+    <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <!-- net472 builds manually import files to compile -->
@@ -45,7 +66,6 @@
     <Compile Include="ReferenceParser.cs" />
     <Compile Include="KnownStrings.cs" />
     <Compile Include="DockerLoadException.cs" />
-    <Compile Include="LocalDaemons/DockerCli.cs" />
     <Compile Include="Registry/RegistryConstants.cs" />
     <Compile Include="Tasks/ParseContainerProperties.cs" />
     <Compile Include="Tasks/CreateNewImage.Interface.cs" />

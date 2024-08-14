@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 13 Aug 2024 18:57:27 +0000
+Subject: [PATCH] Remove auditSources section
+
+Tracking: https://github.com/dotnet/source-build/issues/4548
+---
+ NuGet.Config | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/NuGet.Config b/NuGet.Config
+index ca0754e53..b9ab3662d 100644
+--- a/NuGet.Config
++++ b/NuGet.Config
+@@ -9,10 +9,6 @@
+     <add key="nuget-build" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json" />
+     <add key="vside" value="https://pkgs.dev.azure.com/azure-public/vside/_packaging/msft_consumption%40Local/nuget/v3/index.json" />
+   </packageSources>
+-  <auditSources>
+-    <clear />
+-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+-  </auditSources>
+   <packageSourceMapping>
+     <clear />
+     <packageSource key = "dotnet-public">
