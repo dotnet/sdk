@@ -45,6 +45,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
   </PropertyGroup>
 
+  <!-- Used by analyzers in the Microsoft.Windows.SDK.NET.Ref package. -->
+  <PropertyGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'">
+    <CsWinRTAotOptimizerEnabled Condition="'$(CsWinRTAotOptimizerEnabled)' == '' and $([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) >= 6">true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotExportsEnabled Condition="'$(CsWinRTAotExportsEnabled)' == '' and '$(CsWinRTAotOptimizerEnabled)' == 'true' and '$(PublishAot)' == 'true'">true</CsWinRTAotExportsEnabled>
+    <CsWinRTCcwLookupTableGeneratorEnabled Condition="'$(CsWinRTCcwLookupTableGeneratorEnabled)' == '' and '$(CsWinRTGenerateProjection)' != 'true'">true</CsWinRTCcwLookupTableGeneratorEnabled>
+    <CsWinRTAotWarningLevel Condition="'$(CsWinRTAotWarningLevel)' == '' and '$(CsWinRTGenerateProjection)' != 'true' and ('$(PublishAot)' == 'true' or '$(IsAotCompatible)' == 'true')">1</CsWinRTAotWarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'">
+    <CompilerVisibleProperty Include="CsWinRTAotOptimizerEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTAotExportsEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTRcwFactoryFallbackGeneratorForceOptIn" />
+    <CompilerVisibleProperty Include="CsWinRTRcwFactoryFallbackGeneratorForceOptOut" />
+    <CompilerVisibleProperty Include="CsWinRTCcwLookupTableGeneratorEnabled" />
+    <CompilerVisibleProperty Include="CsWinRTMergeReferencedActivationFactories" />
+    <CompilerVisibleProperty Include="CsWinRTAotWarningLevel" />
+  </ItemGroup>
+
   <Target Name="_ErrorOnUnresolvedWindowsSDKAssemblyConflict"
           AfterTargets="ResolveAssemblyReferences"
           Condition=" '@(ResolveAssemblyReferenceUnresolvedAssemblyConflicts)' != '' ">
