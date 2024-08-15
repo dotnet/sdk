@@ -77,8 +77,8 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) : this(
-        ContainerHelpers.TryExpandRegistryToUri(registryName), logger, new RegistryApiFactory(mode), settings)
+    internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) : this(
@@ -105,8 +105,8 @@ internal sealed class Registry
         BaseUri = baseUri;
 
         _logger = logger;
-        _settings = settings ?? new RegistrySettings();
-        _registryAPI = factory.Create(RegistryName, BaseUri, logger);
+        _settings = settings ?? new RegistrySettings(RegistryName);
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, _settings.IsInsecure, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -139,7 +139,12 @@ internal sealed class Registry
     /// <summary>
     /// Check to see if the registry is GitHub Packages, which always uses ghcr.io.
     /// </summary>
-    public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
+    public bool IsGithubPackageRegistry => RegistryName.StartsWith(RegistryConstants.GitHubPackageRegistryDomain, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Is this registry the public Microsoft Container Registry.
+    /// </summary>
+    public bool IsMcr => RegistryName.Equals(RegistryConstants.MicrosoftContainerRegistryDomain, StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
@@ -158,6 +163,8 @@ internal sealed class Registry
     {
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
+
+    public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
