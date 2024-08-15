@@ -118,9 +118,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         internal static string CalculateTargetPath(string relativePath, string extension)
         {
             // RelativePath can be long and if used as-is to write the output, might result in long path issues on Windows.
-            // Instead we'll calculate a fixed length path by hashing the input file name. This uses SHA1 similar to the Hash task in MSBuild
+            // Instead we'll calculate a fixed length path by hashing the input file name. This uses SHA256 similar to the Hash task in MSBuild
             // since it has no crytographic significance.
-            using var hash = SHA1.Create();
+            using var hash = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(relativePath);
             var hashString = Convert.ToBase64String(hash.ComputeHash(bytes));
 

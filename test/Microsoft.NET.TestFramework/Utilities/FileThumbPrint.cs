@@ -25,10 +25,10 @@ namespace Microsoft.NET.TestFramework.Utilities
         public static FileThumbPrint Create(string path)
         {
             byte[] hashBytes;
-            using (var sha1 = SHA1.Create())
+            using (var sha256 = SHA256.Create())
             using (var fileStream = File.OpenRead(path))
             {
-                hashBytes = sha1.ComputeHash(fileStream);
+                hashBytes = sha256.ComputeHash(fileStream);
             }
 
             var hash = Convert.ToBase64String(hashBytes);

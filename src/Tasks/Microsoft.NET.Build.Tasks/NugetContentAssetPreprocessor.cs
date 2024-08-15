@@ -73,9 +73,9 @@ namespace Microsoft.NET.Build.Tasks
 
                 stream.Position = 0;
 
-                using (var sha1 = SHA1.Create())
+                using (var sha256 = SHA256.Create())
                 {
-                    return BitConverter.ToString(sha1.ComputeHash(stream)).Replace("-", "");
+                    return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", "");
                 }
             }
         }

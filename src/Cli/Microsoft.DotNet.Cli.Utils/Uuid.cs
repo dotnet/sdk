@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.Utils
     public class Uuid
     {
         /// <summary>
-        /// Generate a Version 5 (SHA1 Name Based) Guid from a name.
+        /// Generate a Version 5 (SHA256 Name Based) Guid from a name.
         /// </summary>
         /// <param name="name">The name to use for generating the GUID.</param>
         /// <returns>A generated <see cref="GUID"/>.</returns>
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Utils
             // Any fixed GUID will do for a namespace.
             Guid namespaceId = new("28F1468D-672B-489A-8E0C-7C5B3030630C");
 
-            using (SHA1 hasher = SHA1.Create())
+            using (SHA256 hasher = SHA256.Create())
             {
                 var nameBytes = Encoding.UTF8.GetBytes(name ?? string.Empty);
                 var namespaceBytes = namespaceId.ToByteArray();
