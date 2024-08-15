@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 .Returns(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
 
             repoMock
-                .Setup(r => r.GetInstalledWorkloads(It.IsAny<SdkFeatureBand>()))
+                .Setup(r => r.GetInstalledWorkloads())
                 .Returns((IEnumerable<WorkloadId>)new List<WorkloadId>() { new WorkloadId("A"), new WorkloadId("B") });
 
             resolverMock
