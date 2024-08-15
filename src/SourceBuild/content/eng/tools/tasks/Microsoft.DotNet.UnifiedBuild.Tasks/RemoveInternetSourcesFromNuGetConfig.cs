@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             return true;
         }
 
-        static void ProcessSection(XDocument d, string sectionName)
+        private void ProcessSection(XDocument d, string sectionName)
         {
             XElement? sectionElement = d.Root?.Descendants().FirstOrDefault(e => e.Name == sectionName);
             if (sectionElement == null)
