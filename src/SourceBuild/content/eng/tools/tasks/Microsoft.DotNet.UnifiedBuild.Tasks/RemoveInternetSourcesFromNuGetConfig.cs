@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
     public class RemoveInternetSourcesFromNuGetConfig : Task
     {
         [Required]
-        public string NuGetConfigFile { get; set; }
+        public required string NuGetConfigFile { get; set; }
 
         /// <summary>
         /// Whether to work in offline mode (remove all internet sources) or online mode (remove only authenticated sources)
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// example, a source named 'darc-pub-dotnet-aspnetcore-e81033e' will be kept if the prefix
         /// 'darc-pub-dotnet-aspnetcore-' is in this list.
         /// </summary>
-        public string[] KeepFeedPrefixes { get; set; }
+        public string[] KeepFeedPrefixes { get; set; } = [];
 
         private readonly string[] Sections = [ "packageSources", "auditSources" ];
 
