@@ -7,177 +7,115 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class NoRestoreTests
     {
-        private readonly string[] _arguments = new[] { "run" };
-
-        [Fact]
-        public void ProcessAsync_LeavesArgumentsUnchangedOnFirstRun()
-        {
-            var context = new DotNetWatchContext
+        private static DotNetWatchContext CreateContext(string[] args = null, EnvironmentOptions environmentOptions = null)
+            => new()
             {
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
+                Options = new(),
+                RootProjectOptions = TestOptions.GetProjectOptions(args),
+                EnvironmentOptions = environmentOptions ?? TestOptions.GetEnvironmentOptions(),
             };
 
+        [Fact]
+        public void LeavesArgumentsUnchangedOnFirstRun()
+        {
+            var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = _arguments,
-            };
-
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-
-            Assert.Same(_arguments, processSpec.Arguments);
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
         }
 
         [Fact]
-        public void ProcessAsync_LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
+        public void LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
-            };
-
+            var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = _arguments,
-            };
-
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
 
             evaluator.RequiresRevaluation = true;
 
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
-
-            Assert.Same(_arguments, processSpec.Arguments);
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
-        public void ProcessAsync_LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
+        public void LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true },
-            };
-
+            var context = CreateContext([], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = _arguments,
-            };
-
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
-            Assert.Same(_arguments, processSpec.Arguments);
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
-        public void ProcessAsync_AddsNoRestoreSwitch()
+        public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
-            };
-
-            var processSpec = new ProcessSpec
-            {
-                Arguments = _arguments,
-            };
-
+            var context = CreateContext(["--no-restore"], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
-
-            Assert.Equal(new[] { "run", "--no-restore" }, processSpec.Arguments);
+            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
-        public void ProcessAsync_AddsNoRestoreSwitch_WithAdditionalArguments()
+        public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash1()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
-            };
-
+            var context = CreateContext(["--", "--no-restore"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = ["run", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"],
-            };
-
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
-
-            Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], processSpec.Arguments);
+            AssertEx.SequenceEqual(["run", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
-        public void ProcessAsync_AddsNoRestoreSwitch_ForTestCommand()
+        public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash2()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
-            };
-
+            var context = CreateContext(["--", "--", "--no-restore"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = ["test", "--filter SomeFilter"],
-            };
-
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
-
-            Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], processSpec.Arguments);
+            AssertEx.SequenceEqual(["run", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
-        public void ProcessAsync_DoesNotModifyArgumentsForUnknownCommands()
+        public void AddsNoRestoreSwitch()
         {
-            var arguments = new[] { "ef", "database", "update" };
-
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new(),
-                Options = TestOptions.CommandLine,
-                EnvironmentOptions = TestOptions.Environmental,
-            };
-
+            var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var processSpec = new ProcessSpec
-            {
-                Arguments = arguments,
-            };
+            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+        }
 
-            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
-            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
+        [Fact]
+        public void AddsNoRestoreSwitch_WithAdditionalArguments()
+        {
+            var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            Assert.Same(arguments, processSpec.Arguments);
+            AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
+        }
+
+        [Fact]
+        public void AddsNoRestoreSwitch_ForTestCommand()
+        {
+            var context = CreateContext(["test", "--filter SomeFilter"]);
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+
+            AssertEx.SequenceEqual(["test", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
+        }
+
+        [Fact]
+        public void DoesNotModifyArgumentsForUnknownCommands()
+        {
+            var context = CreateContext(["pack"]);
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+
+            AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 1));
         }
     }
 }

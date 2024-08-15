@@ -1,6 +1,6 @@
 schedules:
-- cron: "0 11 * * 1-5"
-  displayName: Run on weekdays at 11am UTC
+- cron: "0 12 * * 1-5"
+  displayName: Run on weekdays at 12pm UTC
   branches:
     include:
     - main
