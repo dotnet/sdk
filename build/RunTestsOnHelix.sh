@@ -16,7 +16,7 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 
 export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
-export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/Assets
+export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
@@ -36,11 +36,3 @@ dotnet nuget remove source dotnet-tools-transport --configfile $TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-eng --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
-
-cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
-export TestPackagesRoot=$(pwd)/Assets/TestPackages
-dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-mkdir $TestExecutionDirectory/Testpackages
-cp -v $TestPackagesRoot/TestPackages/* $TestExecutionDirectory/Testpackages/.
-dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
-

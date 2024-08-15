@@ -12,6 +12,11 @@
         <target state="translated">.NET Platformunun Test Sürücüsü</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Hem beklenen hem de beklenmeyen test ana bilgisayarı çıkışında kilitlenme bilgi dökümünün toplanmasını sağlar.</target>
@@ -96,6 +101,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">AD="DEĞER"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -205,6 +215,16 @@ Belirtilen dizin yoksa oluşturulur.</target>
         <target state="translated">RESULTS_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
         <target state="translated">DÖKÜM_TÜRÜ</target>
@@ -223,6 +243,16 @@ Belirtilen dizin yoksa oluşturulur.</target>
       <trans-unit id="IgnoredArgumentsMessage">
         <source>The following arguments have been ignored : "{0}"</source>
         <target state="translated">Şu bağımsız değişkenler yoksayıldı: "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="new">No serializer registered with ID '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="new">No serializer registered with type '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

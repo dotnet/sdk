@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <!-- This is a wrapper project that doesn't build anything. -->
+    <IsUtilityProject>true</IsUtilityProject>
+  </PropertyGroup>
+
+  <!-- This project file serves a couple of purpose.
+       - We conditionally include repos based on what works on different platforms/configurations.
+       - We need an "empty" build after the last real repo for prebuilt detection to work - this is that file.
+       - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
+
+  <ItemGroup>
+    <RepositoryReference Include="sdk" />
+    <RepositoryReference Include="scenario-tests" />
+  </ItemGroup>
+
+</Project>
