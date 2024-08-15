@@ -731,10 +731,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             // filter down to autocomplete endpoints (not all sources support this)
             var validAutoCompletes = autoCompletes.SelectMany(x => x);
             // get versions valid for this source
-            var versionTasks = validAutoCompletes.Select(autocomplete => GetPackageIdsForSource(autocomplete, packageId, allowPrerelease, cancellationToken)).ToArray();
-            var versions = await Task.WhenAll(versionTasks).ConfigureAwait(false);
+            var packageIdTasks = validAutoCompletes.Select(autocomplete => GetPackageIdsForSource(autocomplete, packageId, allowPrerelease, cancellationToken)).ToArray();
+            var packageIdLists = await Task.WhenAll(packageIdTasks).ConfigureAwait(false);
             // sources may have the same versions, so we have to dedupe.
-            return versions.SelectMany(v => v).Distinct().OrderDescending();
+            return packageIdLists.SelectMany(v => v).Distinct().OrderDescending();
         }
 
         public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(PackageId packageId, string versionPrefix = null, bool allowPrerelease = false, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
@@ -761,6 +761,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             else return Enumerable.Empty<AutoCompleteResource>();
         }
 
+        // only exposed for testing
+        internal static TimeSpan CliCompletionsTimeout
+        {
+            get => _cliCompletionsTimeout;
+            set => _cliCompletionsTimeout = value;
+        }
         private static TimeSpan _cliCompletionsTimeout = TimeSpan.FromMilliseconds(500);
         private async Task<IEnumerable<NuGetVersion>> GetPackageVersionsForSource(AutoCompleteResource autocomplete, PackageId packageId, string versionPrefix, bool allowPrerelease, CancellationToken cancellationToken)
         {
@@ -771,8 +777,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
                 return await autocomplete.VersionStartsWith(packageId.ToString(), versionPrefix: versionPrefix ?? "", includePrerelease: allowPrerelease, sourceCacheContext: _cacheSettings, log: NullLogger.Instance, token: linkedCts.Token);
             }
-            // any errors (i.e. auth) should just be ignored for completions
-            catch (Exception)
+            catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
+            {
+                return Enumerable.Empty<NuGetVersion>();
+            }
+            catch (Exception) // any errors (i.e. auth) should just be ignored for completions
             {
                 return Enumerable.Empty<NuGetVersion>();
             }
@@ -787,8 +796,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
                 return await autocomplete.IdStartsWith(packageId.ToString(), includePrerelease: allowPrerelease, log: NullLogger.Instance, token: linkedCts.Token);
             }
-            // any errors (i.e. auth) should just be ignored for completions
-            catch (Exception)
+            catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
+            {
+                return Enumerable.Empty<string>();
+            }
+            catch (Exception) // any errors (i.e. auth) should just be ignored for completions
             {
                 return Enumerable.Empty<string>();
             }
