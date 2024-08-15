@@ -207,14 +207,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectUser);
             string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectPass);
-
             if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
             {
                 // Fallback to the old environment variables
                 return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
                         Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
             }
-
             return (credU, credP);
         }
         else if (mode == RegistryMode.Pull)
@@ -226,14 +224,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser);
             string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass);
-
             if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
             {
                 // Fallback to the old environment variables
                 return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
                         Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
             }
-
             return (credU, credP);
         }
         else
