@@ -88,13 +88,22 @@ namespace Microsoft.DotNet.Build.Tasks
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
+                                    string destinationPath = Path.Combine(loc, entry.FullName);
+                                    string destinationFileName = Path.GetFullPath(destinationPath);
+                                    string fullDestDirPath = Path.GetFullPath(loc + Path.DirectorySeparatorChar);
+
+                                    if (!destinationFileName.StartsWith(fullDestDirPath)) {
+                                        throw new System.InvalidOperationException("Entry is outside the target dir: " +
+                                                                                                            destinationFileName);
+                                    }
+
                                     if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
                                     {
                                         Directory.CreateDirectory(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName)));
                                     }
 
                                     Log.LogMessage(Path.GetDirectoryName(entry.FullName));
-                                    entry.ExtractToFile(Path.Combine(loc, entry.FullName));
+                                    entry.ExtractToFile(destinationPath);
                                 }
                             }
                         }
@@ -121,8 +130,17 @@ namespace Microsoft.DotNet.Build.Tasks
                                     entryName = entryName.StartsWith("./") ? entryName[2..] : entryName;
                                     if (ShouldExtractItem(entryName))
                                     {
-                                        Log.LogMessage(entryName);
                                         string destinationPath = Path.Combine(DestinationDirectory, entryName);
+                                        string destinationFileName = Path.GetFullPath(destinationPath);
+                                        string fullDestDirPath = Path.GetFullPath(DestinationDirectory + Path.DirectorySeparatorChar);
+
+                                        if (!destinationFileName.StartsWith(fullDestDirPath)) {
+                                            throw new System.InvalidOperationException("Entry is outside the target dir: " +
+                                                                                                                destinationFileName);
+                                        }
+
+                                        Log.LogMessage(entryName);
+
                                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                                         tarEntry.ExtractToFile(destinationPath, overwrite: true);
                                     }
