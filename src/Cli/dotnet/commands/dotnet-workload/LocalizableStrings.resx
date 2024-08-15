@@ -132,4 +132,35 @@
   <data name="SkipSignCheckInvalidOption" xml:space="preserve">
     <value>Unable to bypass signature verification. The specified option conflicts with a global policy.</value>
   </data>
+  <data name="WorkloadIdColumn" xml:space="preserve">
+    <value>Installed Workload Id</value>
+  </data>
+  <data name="WorkloadInstallTypeColumn" xml:space="preserve">
+    <value>Install Type</value>
+  </data>
+  <data name="WorkloadManfiestVersionColumn" xml:space="preserve">
+    <value>Manifest Version</value>
+  </data>
+  <data name="WorkloadManifestPathColumn" xml:space="preserve">
+    <value>Manifest Path</value>
+  </data>
+  <data name="WorkloadSourceColumn" xml:space="preserve">
+    <value>Installation Source</value>
+  </data>
+  <data name="NoWorkloadsInstalledInfoWarning" xml:space="preserve">
+    <value>There are no installed workloads to display.</value>
+  </data>
+  <data name="WorkloadInfoDescription" xml:space="preserve">
+    <value>Display information about installed workloads.</value>
+  </data>
+  <data name="WorkloadIntegrityCheck" xml:space="preserve">
+    <value>Checking the state of installed workloads...</value>
+  </data>
+  <data name="WorkloadIntegrityCheckError" xml:space="preserve">
+    <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
+    <comment>{Locked="dotnet workload update"}</comment>
+  </data>
+  <data name="WorkloadVersionDescription" xml:space="preserve">
+    <value>Display the currently installed workload version.</value>
+  </data>
 </root>

@@ -1,25 +1,12 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -135,7 +122,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckVersionsInDepsFile(depsFilePath);
         }
 
-        [Fact(Skip = "Host deps.json doesn't have runtime file version info yet: https://github.com/dotnet/sdk/issues/2124")]
+        [Fact]
         public void Inbox_version_of_assembly_is_loaded_over_applocal_version()
         {
             var (coreDir, publishDir, immutableDir) = TestConflictResult();
@@ -145,7 +132,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
         {
-            void testProjectChanges(TestProject testProject)
+            static void testProjectChanges(TestProject testProject)
             {
                 testProject.AdditionalProperties["IncludeFileVersionsInDependencyFile"] = "false";
             }
@@ -157,7 +144,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
         {
-            void publishFolderChanges(string publishFolder)
+            static void publishFolderChanges(string publishFolder)
             {
                 var depsJsonPath = Path.Combine(publishFolder, "DepsJsonVersions.deps.json");
                 var depsJson = JObject.Parse(File.ReadAllText(depsJsonPath));

@@ -1,17 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -32,9 +20,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var command = new GetValuesCommand(
-                Log,
-                testAsset.TestRoot,
-                targetFramework,
+                testAsset,
                 "BuiltProjectOutputGroupOutput",
                 GetValuesCommand.ValueType.Item)
             {
@@ -65,17 +51,20 @@ namespace Microsoft.NET.Build.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            new BuildCommand(testAsset)
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
                 .Execute("/property:Configuration=Release")
                 .Should()
                 .Pass();
 
-            var configFile = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Release", testProject.TargetFrameworks, testProject.RuntimeIdentifier, testProject.Name + ".runtimeconfig.json");
+            var configFile = Path.Combine(buildCommand.GetOutputDirectory(configuration: "Release", runtimeIdentifier: testProject.RuntimeIdentifier).FullName, testProject.Name + ".runtimeconfig.json");
 
             File.Exists(configFile).Should().BeTrue();
             File.ReadAllText(configFile).Should().NotContain("\"System.Runtime.TieredCompilation\"");
             File.ReadAllText(configFile).Should().NotContain("\"System.GC.Concurrent\"");
             File.ReadAllText(configFile).Should().NotContain("\"System.Threading.ThreadPool.MinThreads\"");
+            File.ReadAllText(configFile).Should().NotContain("\"System.Runtime.Loader.UseRidGraph\"");
 
             testAsset = testAsset.WithProjectChanges(project =>
             {
@@ -85,6 +74,7 @@ namespace Microsoft.NET.Build.Tests
                 propertyGroup.Add(new XElement(ns + "TieredCompilation", "false"));
                 propertyGroup.Add(new XElement(ns + "ConcurrentGarbageCollection", "false"));
                 propertyGroup.Add(new XElement(ns + "ThreadPoolMinThreads", "2"));
+                propertyGroup.Add(new XElement(ns + "UseRidGraph", "true"));
             });
 
             new BuildCommand(testAsset)
@@ -96,6 +86,7 @@ namespace Microsoft.NET.Build.Tests
             File.ReadAllText(configFile).Should().Contain("\"System.Runtime.TieredCompilation\": false");
             File.ReadAllText(configFile).Should().Contain("\"System.GC.Concurrent\": false");
             File.ReadAllText(configFile).Should().Contain("\"System.Threading.ThreadPool.MinThreads\": 2");
+            File.ReadAllText(configFile).Should().Contain("\"System.Runtime.Loader.UseRidGraph\": true");
         }
 
         [Fact]
@@ -118,19 +109,23 @@ namespace Microsoft.NET.Build.Tests
                 propertyGroup.Add(new XElement(ns + "TieredCompilation", "true"));
                 propertyGroup.Add(new XElement(ns + "ConcurrentGarbageCollection", "true"));
                 propertyGroup.Add(new XElement(ns + "ThreadPoolMinThreads", "3"));
+                propertyGroup.Add(new XElement(ns + "UseRidGraph", "false"));
             });
 
-            new BuildCommand(testAsset)
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
                 .Execute("/property:Configuration=Release")
                 .Should()
                 .Pass();
 
-            var configFile = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Release", testProject.TargetFrameworks, testProject.RuntimeIdentifier, testProject.Name + ".runtimeconfig.json");
+            var configFile = Path.Combine(buildCommand.GetOutputDirectory(configuration: "Release", runtimeIdentifier: testProject.RuntimeIdentifier).FullName, testProject.Name + ".runtimeconfig.json");
 
             File.Exists(configFile).Should().BeTrue();
             File.ReadAllText(configFile).Should().Contain("\"System.Runtime.TieredCompilation\": true");
             File.ReadAllText(configFile).Should().Contain("\"System.GC.Concurrent\": true");
             File.ReadAllText(configFile).Should().Contain("\"System.Threading.ThreadPool.MinThreads\": 3");
+            File.ReadAllText(configFile).Should().Contain("\"System.Runtime.Loader.UseRidGraph\": false");
 
             testAsset = testAsset.WithProjectChanges(project =>
             {
@@ -140,6 +135,7 @@ namespace Microsoft.NET.Build.Tests
                 propertyGroup.Add(new XElement(ns + "TieredCompilation", "false"));
                 propertyGroup.Add(new XElement(ns + "ConcurrentGarbageCollection", "false"));
                 propertyGroup.Add(new XElement(ns + "ThreadPoolMinThreads", "2"));
+                propertyGroup.Add(new XElement(ns + "UseRidGraph", "true"));
             });
 
             new BuildCommand(testAsset)
@@ -151,6 +147,7 @@ namespace Microsoft.NET.Build.Tests
             File.ReadAllText(configFile).Should().Contain("\"System.Runtime.TieredCompilation\": false");
             File.ReadAllText(configFile).Should().Contain("\"System.GC.Concurrent\": false");
             File.ReadAllText(configFile).Should().Contain("\"System.Threading.ThreadPool.MinThreads\": 2");
+            File.ReadAllText(configFile).Should().Contain("\"System.Runtime.Loader.UseRidGraph\": true");
         }
     }
 }

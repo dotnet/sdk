@@ -1,11 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -22,7 +19,12 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static string GetDefaultProjectTypeGuid(this ProjectInstance projectInstance)
         {
-            return projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
+            string projectTypeGuid = projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
+            if (string.IsNullOrEmpty(projectTypeGuid) && projectInstance.FullPath.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
+            {
+                projectTypeGuid = ProjectTypeGuids.SharedProjectGuid;
+            }
+            return projectTypeGuid;
         }
 
         public static IEnumerable<string> GetPlatforms(this ProjectInstance projectInstance)
@@ -37,7 +39,13 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static IEnumerable<string> GetConfigurations(this ProjectInstance projectInstance)
         {
-            return (projectInstance.GetPropertyValue("Configurations") ?? "Debug;Release")
+            string foundConfig = projectInstance.GetPropertyValue("Configurations") ?? "Debug;Release";
+            if (string.IsNullOrWhiteSpace(foundConfig))
+            {
+                foundConfig = "Debug;Release";
+            }
+
+            return foundConfig
                 .Split(
                     new char[] { ';' },
                     StringSplitOptions.RemoveEmptyEntries)

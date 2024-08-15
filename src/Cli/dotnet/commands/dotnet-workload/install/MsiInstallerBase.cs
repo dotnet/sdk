@@ -1,12 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
@@ -101,7 +96,7 @@ namespace Microsoft.DotNet.Installer.Windows
             bool verifySignatures, IReporter reporter = null) : base(elevationContext, logger, verifySignatures)
         {
             Cache = new MsiPackageCache(elevationContext, logger, verifySignatures);
-            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, VerifySignatures);
+            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
             UpdateAgent = new WindowsUpdateAgent(logger);
             Reporter = reporter;
         }
@@ -116,7 +111,7 @@ namespace Microsoft.DotNet.Installer.Windows
             List<WorkloadPackRecord> workloadPackRecords = new();
             using RegistryKey installedPacksKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledPacks\{HostArchitecture}");
 
-            void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)
+            static void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)
             {
                 record.ProviderKeyName = (string)key.GetValue("DependencyProviderKey");
                 record.ProductCode = (string)key.GetValue("ProductCode");
@@ -195,7 +190,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Determines the per-machine install location for .NET. This is similar to the logic in the standalone installers.
         /// </summary>
         /// <returns>The path where .NET is installed based on the host architecture and operating system bitness.</returns>
-        private string GetDotNetHome()
+        internal static string GetDotNetHome()
         {
             // Configure the default location, e.g., if the registry key is absent. Technically that would be suggesting
             // that the install is corrupt or we're being asked to run as an admin install in a non-admin deployment.
@@ -418,7 +413,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Get a list of all MSI based SDK installations that match the current host architecture.
         /// </summary>
         /// <returns>A collection of all the installed SDKs. The collection may be empty if no installed versions are found.</returns>
-        protected IEnumerable<string> GetInstalledSdkVersions()
+        internal static IEnumerable<string> GetInstalledSdkVersions()
         {
             // The SDK, regardless of the installer's platform, writes detection keys to the 32-bit hive.
             using RegistryKey hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
