@@ -167,8 +167,8 @@
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
     <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24414.1</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
     <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-rc.1.24414.1</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24415.2</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24415.2</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24415.3</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24415.3</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
