@@ -48,5 +48,6 @@ namespace ManifestReaderTests
             }
 
         public string GetSdkFeatureBand() => SdkFeatureBand.ToString();
+        public string GetWorkloadVersion() => SdkFeatureBand.ToString() + ".2";
     }
 }

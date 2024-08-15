@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="translated">Permitir downgrade de pacote ao instalar um pacote de ferramentas do .NET.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
         <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
         <target state="translated">Crie um manifesto de ferramenta se nenhum for encontrado durante a instalação da ferramenta. Para obter informações sobre como os manifestos estão localizados, consulte https://aka.ms/dotnet/tools/create-manifest-if-needed</target>
@@ -81,6 +86,11 @@ Se quiser criar um manifesto, use `dotnet new tool-manifest`, normalmente no dir
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">Não há suporte para as opções --prerelease e --version no mesmo comando.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">Permitir que uma ferramenta .NET seja revertida para versões mais recentes do runtime do .NET se o runtime ao qual ela se destina não estiver instalado.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
