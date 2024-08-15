@@ -234,9 +234,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7cb32e193a55a95c74fc3bd56501b951b48b700f</Sha>
     </Dependency>
-    <Dependency Name="System.Formats.Asn1" Version="8.0.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>2aade6beb02ea367fd97c4070a4198802fe61c03</Sha>
+    <Dependency Name="System.Formats.Asn1" Version="9.0.0-rc.1.24410.5">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>7cb32e193a55a95c74fc3bd56501b951b48b700f</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.ProtectedData" Version="9.0.0-rc.1.24410.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
