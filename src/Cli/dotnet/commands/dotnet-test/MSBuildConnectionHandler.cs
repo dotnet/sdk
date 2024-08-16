@@ -57,20 +57,15 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         {
             try
             {
-                switch (request)
+                if (request is not Module module)
                 {
-                    case Module module:
-                        string modulePath = module.DLLPath;
-                        var testApp = new TestApplication(modulePath, _args);
-                        _actionQueue.Enqueue(testApp);
-                        // Write the test application to the channel
-                        testApp.OnCreated();
-                        break;
-
-                    default:
-                        // If it doesn't match any of the above, throw an exception
-                        throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+                    throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
+
+                var testApp = new TestApplication(module.DLLPath, _args);
+                // Write the test application to the channel
+                _actionQueue.Enqueue(testApp);
+                testApp.OnCreated();
             }
             catch (Exception ex)
             {
@@ -93,7 +88,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
                     $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
-                ];
+            ];
 
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandLineArgs);
 
