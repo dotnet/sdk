@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Theory]
         [InlineData(new string[] { "dotnet", "build" }, new string[] { })]
         [InlineData(new string[] { "build" }, new string[] { })]
-        [InlineData(new string[] { "dotnet", "test", "-d" }, new string[] { })]
+        [InlineData(new string[] { "dotnet", "test", "-d" }, new string[] { "-d" })]
         [InlineData(new string[] { "dotnet", "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
         [InlineData(new string[] { "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
         [InlineData(new string[] { "dotnet", "add", "package", "-h" }, new string[] { "package", "-h" })]
