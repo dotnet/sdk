@@ -55,7 +55,6 @@ namespace Microsoft.DotNet.Cli
                 RedirectStandardError = true
             };
 
-            //
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
             var result = await StartProcess(processStartInfo);
 
