@@ -124,6 +124,7 @@ namespace Microsoft.DotNet.Cli
                             VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                         }
                         return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+
                     default:
                         // If it doesn't match any of the above, throw an exception
                         throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
