@@ -136,8 +136,10 @@ namespace Microsoft.DotNet.Cli
 
             foreach (string testModule in testModulePaths)
             {
-                _testApplications[testModule] = new TestApplication(testModule, _args);
-                _actionQueue.Enqueue(_testApplications[testModule]);
+                var testApp = new TestApplication(testModule, _args);
+                // Write the test application to the channel
+                _actionQueue.Enqueue(testApp);
+                testApp.OnCreated();
             }
 
             return true;
