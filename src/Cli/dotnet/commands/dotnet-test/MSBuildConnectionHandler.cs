@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
         public async Task WaitConnectionAsync(CancellationToken token)
         {
-            VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
+            VSTestTrace.SafeWriteTrace(() => $"Waiting for connection(s) on pipe = {_pipeNameDescription.Name}");
 
             try
             {
