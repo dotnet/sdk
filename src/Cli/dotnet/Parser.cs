@@ -26,6 +26,16 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
+        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
+
+        public static readonly CliCommand VersionCommand = new("--version");
+
+        public static readonly CliCommand InfoCommand = new("--info");
+
+        public static readonly CliCommand ListSdksCommand = new("--list-sdks");
+
+        public static readonly CliCommand ListRuntimesCommand = new("--list-runtimes");
+
         // Subcommands
         public static readonly CliCommand[] Subcommands = new CliCommand[]
         {
@@ -55,21 +65,15 @@ namespace Microsoft.DotNet.Cli
             HelpCommandParser.GetCommand(),
             SdkCommandParser.GetCommand(),
             InstallSuccessCommand,
-            WorkloadCommandParser.GetCommand()
+            WorkloadCommandParser.GetCommand(),
+            VersionCommand,
+            InfoCommand,
+            ListSdksCommand,
+            ListRuntimesCommand
         };
 
-        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
-
-        public static readonly CliOption<bool> VersionOption = new("--version");
-
-        public static readonly CliOption<bool> InfoOption = new("--info");
-
-        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks");
-
-        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
-
-        // Argument
-        public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+        // This argument captures all of the tokens that didn't bind to another command. This is used for the dotnet tools scenario mostly to pass the arguments to the tool if it exists
+        public static readonly CliArgument<string[]> UnboundArguments = new("unknown-args") { Arity = ArgumentArity.ZeroOrMore, Hidden = true };
 
         private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
         {
@@ -92,6 +96,18 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
+            VersionCommand.SetAction((pr) =>
+            {
+                CommandLineInfo.PrintVersion();
+                return 0;
+            });
+
+            InfoCommand.SetAction((pr) =>
+            {
+                CommandLineInfo.PrintInfo();
+                return 0;
+            });
+
             // Add subcommands
             foreach (var subcommand in Subcommands)
             {
@@ -100,13 +116,9 @@ namespace Microsoft.DotNet.Cli
 
             // Add options
             rootCommand.Options.Add(DiagOption);
-            rootCommand.Options.Add(VersionOption);
-            rootCommand.Options.Add(InfoOption);
-            rootCommand.Options.Add(ListSdksOption);
-            rootCommand.Options.Add(ListRuntimesOption);
 
             // Add argument
-            rootCommand.Arguments.Add(DotnetSubCommand);
+            rootCommand.Arguments.Add(UnboundArguments);
 
             rootCommand.SetAction(parseResult =>
             {

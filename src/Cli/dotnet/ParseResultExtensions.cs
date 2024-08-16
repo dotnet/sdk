@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
             static string[] DistinctFormatStringParts(string formatString)
             {
                 return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
@@ -81,30 +81,21 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
+        // get the name of the first top-level command under the dotnet root command
         public static string RootSubCommandResult(this ParseResult parseResult)
         {
-            return parseResult.RootCommandResult.Children?
-                .Select(child => GetSymbolResultValue(parseResult, child))
-                .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
+            var targetCommandResult = parseResult.CommandResult;
+            while (targetCommandResult.Parent != null && targetCommandResult.Parent is CommandResult parentResult && parentResult.Command != RootCommand)
+            {
+                targetCommandResult = parentResult;
+            }
+            return targetCommandResult.Command.Name;
         }
 
-        public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
-        {
-            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-                GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-        }
+        public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) => parseResult.CommandResult.Command.Equals(RootCommand);
+        public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) => parseResult.IsTopLevelDotnetCommand();
 
-        public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
-        {
-            return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
-        }
-
-        public static bool CanBeInvoked(this ParseResult parseResult)
-        {
-            return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
-                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
-        }
+        public static bool CanBeInvoked(this ParseResult parseResult) => !parseResult.IsTopLevelDotnetCommand();
 
         public static int HandleMissingCommand(this ParseResult parseResult)
         {
@@ -163,7 +154,7 @@ namespace Microsoft.DotNet.Cli
         {
             CommandResult commandResult => commandResult.Command.Name,
             ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
-            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+            _ => (parseResult.GetResult(UnboundArguments)?.GetValueOrDefault<string[]>() ?? Array.Empty<string>()).FirstOrDefault() ?? string.Empty
         };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>

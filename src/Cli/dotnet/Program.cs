@@ -152,16 +152,6 @@ namespace Microsoft.DotNet.Cli
                         Reporter.Reset();
                     }
                 }
-                if (parseResult.HasOption(Parser.VersionOption) && parseResult.IsTopLevelDotnetCommand())
-                {
-                    CommandLineInfo.PrintVersion();
-                    return 0;
-                }
-                else if (parseResult.HasOption(Parser.InfoOption) && parseResult.IsTopLevelDotnetCommand())
-                {
-                    CommandLineInfo.PrintInfo();
-                    return 0;
-                }
                 else
                 {
                     PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
@@ -242,12 +232,14 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
+                // didn't match any known dotnet command, so the UnboundArguments arg contains all the tokens we didn't handle
+                var subcommandArgs = parseResult.GetValue(Parser.UnboundArguments);
                 PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
                 try
                 {
                     var resolvedCommand = CommandFactoryUsingResolver.Create(
-                            "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                            args.GetSubArguments(),
+                            "dotnet-" + subcommandArgs[0],
+                            subcommandArgs.Length > 1 ? subcommandArgs[1..] : [],
                             FrameworkConstants.CommonFrameworks.NetStandardApp15);
                     PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
