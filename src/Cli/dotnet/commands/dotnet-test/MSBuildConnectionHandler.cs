@@ -8,7 +8,7 @@ using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli.commands.dotnet_test
 {
-    internal class MSBuildConnectionHandler : IDisposable
+    internal sealed class MSBuildConnectionHandler : IDisposable
     {
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
@@ -24,11 +24,11 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
         public async Task WaitConnectionAsync(CancellationToken token)
         {
-            VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
+            VSTestTrace.SafeWriteTrace(() => $"Waiting for connection(s) on pipe = {_pipeNameDescription.Name}");
 
             try
             {
-                while (true)
+                while (!token.IsCancellationRequested )
                 {
                     NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                     pipeConnection.RegisterAllSerializers();
