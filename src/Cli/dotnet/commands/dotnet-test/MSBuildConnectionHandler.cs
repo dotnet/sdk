@@ -104,7 +104,10 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
         {
             string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
-            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
+            if (!string.IsNullOrEmpty(msBuildParameters))
+            {
+                parameters.AddRange(msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries));
+            }
         }
 
         private static string GetMSBuildExePath()
