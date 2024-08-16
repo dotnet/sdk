@@ -83,19 +83,15 @@ namespace Microsoft.DotNet.Build.Tasks
                         if (isZipArchive)
                         {
                             using var zip = new ZipArchive(File.OpenRead(SourceArchive));
-                            string loc = DestinationDirectory;
                             foreach (var entry in zip.Entries)
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
-                                    string destinationPath = Path.Combine(loc, entry.FullName);
-                                    string destinationFileName = Path.GetFullPath(destinationPath);
-                                    string fullDestDirPath = Path.GetFullPath(loc + Path.DirectorySeparatorChar);
+                                    string destinationPath = Path.Combine(DestinationDirectory, entry.FullName);
+                                    string destinationFileName = GetFullDirectoryPathWithSeperator(destinationPath);
+                                    string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
 
-                                    if (!destinationFileName.StartsWith(fullDestDirPath)) {
-                                        throw new System.InvalidOperationException("Entry is outside the target dir: " +
-                                                                                                            destinationFileName);
-                                    }
+                                    CheckDestinationPath(destinationFileName, fullDestDirPath);
 
                                     if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
                                     {
@@ -131,13 +127,10 @@ namespace Microsoft.DotNet.Build.Tasks
                                     if (ShouldExtractItem(entryName))
                                     {
                                         string destinationPath = Path.Combine(DestinationDirectory, entryName);
-                                        string destinationFileName = Path.GetFullPath(destinationPath);
-                                        string fullDestDirPath = Path.GetFullPath(DestinationDirectory + Path.DirectorySeparatorChar);
+                                        string destinationFileName = GetFullDirectoryPathWithSeperator(destinationPath);
+                                        string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
 
-                                        if (!destinationFileName.StartsWith(fullDestDirPath)) {
-                                            throw new System.InvalidOperationException("Entry is outside the target dir: " +
-                                                                                                                destinationFileName);
-                                        }
+                                        CheckDestinationPath(destinationFileName, fullDestDirPath);
 
                                         Log.LogMessage(entryName);
 
@@ -186,6 +179,26 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             return retVal;
+        }
+
+        private string GetFullDirectoryPathWithSeperator(string directory)
+        {
+            string fullDirectoryPath = Path.GetFullPath(directory);
+
+            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                fullDirectoryPath = string.Concat(fullDirectoryPath, Path.DirectorySeparatorChar);
+            }
+
+            return fullDirectoryPath;
+        }
+
+        private void CheckDestinationPath(string destinationFileName, string fullDestDirPath)
+        {
+            if (!destinationFileName.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new System.InvalidOperationException("Entry is outside the target dir: " + destinationFileName);
+            }
         }
 
         private bool ShouldExtractItem(string path) => DirectoriesToCopy?.Any(p => path.StartsWith(p.ItemSpec)) ?? false;
