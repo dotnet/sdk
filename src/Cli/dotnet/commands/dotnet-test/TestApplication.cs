@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal class TestApplication : IDisposable
+    internal sealed class TestApplication : IDisposable
     {
         private readonly string _modulePath;
         private readonly string[] _args;
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli
                 RedirectStandardError = true
             };
 
-            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
+            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);
 
             _namedPipeConnectionLoop.Wait();
