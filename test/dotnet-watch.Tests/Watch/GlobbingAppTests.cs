@@ -14,20 +14,42 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
+        [ConditionalTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ChangeCompiledFile(bool usePollingWatcher)
+        {
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: usePollingWatcher.ToString())
+               .WithSource();
+
+            App.UsePollingWatcher = usePollingWatcher;
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            await AssertCompiledAppDefinedTypes(expected: 2);
+
+            var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
+            var programCs = File.ReadAllText(fileToChange);
+            File.WriteAllText(fileToChange, programCs);
+
+            await App.AssertFileChanged();
+            await App.AssertStarted();
+            await AssertCompiledAppDefinedTypes(expected: 2);
+        }
+
         [Fact]
         public async Task DeleteCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
             File.Delete(fileToChange);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
@@ -37,14 +59,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var folderToDelete = Path.Combine(testAsset.Path, "include");
             Directory.Delete(folderToDelete, recursive: true);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
@@ -54,13 +76,15 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            await App.AssertStarted();
 
             var oldFile = Path.Combine(testAsset.Path, "include", "Foo.cs");
             var newFile = Path.Combine(testAsset.Path, "include", "Foo_new.cs");
             File.Move(oldFile, newFile);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
         }
 
         [Fact]
@@ -69,7 +93,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            await App.AssertStarted();
 
             var changedFile = Path.Combine(testAsset.Path, "exclude", "Baz.cs");
             File.WriteAllText(changedFile, "");
@@ -86,7 +112,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.DotnetWatchArgs.Clear();
-            App.Start(testAsset, new[] { "--list" });
+            App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
             var files = lines.Where(l => !l.StartsWith("watch :"));
 

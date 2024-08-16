@@ -956,5 +956,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded but it is needed because your MSBuild and SDK versions are mismatched. Ensure version {0} of the package is available in your NuGet source feeds and then run NuGet package restore from Visual Studio or MSBuild.</value>
     <comment>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"} {0} is a NuGet package version and should not be translated.</comment>
   </data>
-  <!-- The latest message added is MicrosoftNetSdkCompilersToolsetNotFound. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="InvalidAppHostDotNetSearch" xml:space="preserve">
+    <value>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</value>
+    <comment>{StrBegin="NETSDK1217: "}</comment>
+  </data>
+  <!-- The latest message added is InvalidAppHostDotNetSearch. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

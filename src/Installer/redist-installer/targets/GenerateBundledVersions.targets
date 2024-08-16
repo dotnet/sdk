@@ -373,6 +373,8 @@
         @(Net80ILCompilerSupportedRids);
         linux-arm;
         linux-musl-arm;
+        linux-loongarch64;
+        linux-musl-loongarch64;
         win-x86;
         " />
 
@@ -1247,7 +1249,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
-      <BundledMSBuildVersion>$(MSBuildVersion)</BundledMSBuildVersion>
+      <_ShippingMSBuildVersion>$(MicrosoftBuildVersion)</_ShippingMSBuildVersion>
+      <_ShippingMSBuildVersion Condition="$(_ShippingMSBuildVersion.Contains('-'))">$(MicrosoftBuildVersion.Split('-')[0])</_ShippingMSBuildVersion>
+      <BundledMSBuildVersion>$(_ShippingMSBuildVersion)</BundledMSBuildVersion>
     </PropertyGroup>
 
     <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />

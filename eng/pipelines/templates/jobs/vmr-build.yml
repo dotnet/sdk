@@ -159,7 +159,6 @@ jobs:
       path: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
-      condition: always()
       sbomEnabled: true
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -480,6 +479,12 @@ jobs:
         targetFolder=$(Build.StagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
 
+        # Download rsync if using mariner
+        if grep -qE "CBL-Mariner|Azure Linux" /etc/os-release; then
+          sudo tdnf install -y rsync
+          sudo tdnf clean all
+        fi
+
         cd "$(sourcesPath)"
         find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
         if [ -d "artifacts/scenario-tests/" ]; then
@@ -548,7 +553,6 @@ jobs:
         assets/**
       TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
     displayName: Copy artifacts to Artifact Staging Directory
-    condition: succeededOrFailed()
 
   # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
   - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
@@ -557,11 +561,9 @@ jobs:
         SourceFolder: $(sourcesPath)/artifacts/packages
         TargetFolder: $(Build.ArtifactStagingDirectory)/publishing/packages
       displayName: Copy packages to Artifact Staging Directory
-      condition: succeededOrFailed()
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
-      condition: succeededOrFailed()
       continueOnError: true

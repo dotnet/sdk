@@ -8,6 +8,7 @@ class DepSubType : Dep
 class Printer
 {
     public static void Print()
-        => Console.WriteLine("Hello!");
+    {
+    }
 }
 
