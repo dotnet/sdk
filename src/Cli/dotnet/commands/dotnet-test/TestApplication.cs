@@ -71,6 +71,10 @@ namespace Microsoft.DotNet.Cli
 
                 await _pipeConnection.WaitConnectionAsync(token);
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+            {
+                // We are exiting
+            }
             catch (Exception ex)
             {
                 if (VSTestTrace.TraceEnabled)
