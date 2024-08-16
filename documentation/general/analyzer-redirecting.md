@@ -1,6 +1,6 @@
 # Redirecting analyzers in SDK to VS
 
-We will redirect analyzers from the SDK to ones deployed in the VS to avoid the [torn SDK][torn-sdk] issue.
+We will redirect analyzers from the SDK to ones deployed in the VS to avoid the [torn SDK][torn-sdk] issue at design time.
 Only major versions will be redirected because different major versions of the same analyzer cannot be assumed to be compatible.
 So this applies to a situation like:
 - Having an analyzer in SDK 9.0.1 referencing Roslyn 4.12. That gets deployed to VS 17.12.
@@ -19,112 +19,48 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 
 ## Overview
 
-- The SDK will contain [a mapping file][file-format] listing the analyzers that want to [dual-insert][dual-insert] into VS.
+- The SDK will contain a VSIX with the analyzer DLLs and an MEF-exported implementation of `IAnalyzerAssemblyResolver`.
+  Implementations of this interface are imported by Roslyn and can intercept analyzer DLL loading.
 
-- Those analyzers will be deployed with VS in some `{VS-analyzers}` folder
-  (to be determined, could be something like `C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\IDE\DotNetAnalyzers`).
+- Our `IAnalyzerAssemblyResolver` will redirect any analyzer DLL matching some pattern
+  to the corresponding DLL installed from the VSIX.
+  Details of this process are described below.
 
-  - This will happen as part of the SDK being inserted into VS.
-  
-  - The mapping file [will be used][vs-insertions] to automatically gather all the analyzers.
+## Details
 
-  - The mapping file will be deployed there as well (at `{VS-analyzers}\mapping.txt`) so Roslyn can read it.
-
-    - If multiple SDKs are inserted into VS, the most recent version wins.
-      The mapping file should be backwards-compatible (we should not remove patterns from it).
-
-- Roslyn [will use][roslyn-redirecting] the mapping file to redirect analyzer loads from SDK to VS.
-
-  - If the file is not found at `{VS-analyzers}\mapping.txt`, analyzer loading continues normally from SDK.
-
-  - If a DLL load is requested which matches a mapping, it is redirected via the [IAnalyzerAssemblyResolver][analyzer-assembly-resolver] infrastructure.
-
-## Mapping file format
-[file-format]: #mapping-file-format
-
-The mapping file v1 is a simple list of directory "patterns". For example:
+The VSIX contains some analyzers, for example:
 
 ```
-packs/Microsoft.NETCore.App.Ref/*/analyzers/dotnet/cs
-sdk/*/Sdks/Microsoft.NET.Sdk/analyzers
-sdk/*/Sdks/Microsoft.NET.Sdk.Web/analyzers/cs
+AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
+NetCoreAnalyzers\9.0.0-preview.5.24306.7\analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll
+WindowsDesktopAnalyzers\9.0.0-preview.5.24306.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+WebSDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
 ```
 
-Each pattern can contain a single asterisk `*` where a version is expected.
+Given an analyzer assembly load going through our `IAnalyzerAssemblyResolver`,
+we will redirect it if the original path of the assembly being loaded
+matches the path of a VSIX-deployed analyzer - only segments of these paths starting after the version segment are compared,
+plus the major component of the versions must match.
 
-Lines starting with `#` are ignored (can be used as comments).
-
-### Inserting analyzers into VS
-[vs-insertions]: #inserting-analyzers-into-vs
-
-The file is used to copy analyzers into VS.
-The paths start at the dotnet root.
-Only the major version from the `*` part is preserved.
-Rest of the path is preserved in the destination.
-So for example given the following pattern
+For example, analyzer
 
 ```
-packs/Microsoft.NETCore.App.Ref/*/analyzers
+C:\Program Files\dotnet\sdk\9.0.100-preview.5.24307.3\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
-we copy
+will be redirected to
 
 ```
-{dotnet-root}\packs\Microsoft.NETCore.App.Ref\8.0.7\analyzers\**
+{VSIX}\SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
-into
-
-```
-{VS-analyzers}\packs\Microsoft.NETCore.App.Ref\8\analyzers\**
-```
-
-If multiple SDKs are inserted into VS,
-they should have different major versions,
-but if there are two SDKs trying to copy the same pattern with the same major version,
-an error will be reported (can be changed later to have only the more recent SDK win if needed).
-
-### Redirecting analyzer loads in Roslyn
-[roslyn-redirecting]: #redirecting-analyzer-loads-in-roslyn
-
-The file is used to redirect DLL loads in Roslyn.
-We do not rely on knowledge of `{dotnet-root}`, we simply try to match any path containing the pattern.
-For example the following pattern
-
-```
-packs/Microsoft.NETCore.App.Ref/*/analyzers
-```
-
-matches
-
-```
-C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\8.0.7\analyzers\dotnet\cs\Microsoft.Interop.ComInterfaceGenerator.dll
-```
-
-and redirects load of that DLL into load of
-
-```
-{VS-analyzers}\packs\Microsoft.NETCore.App.Ref\8\analyzers\dotnet\cs\Microsoft.Interop.ComInterfaceGenerator.dll
-```
+because
+1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
+2. the version `9.0.100-preview.5.24307.3` has the same major component (`9`) as the version `9.0.100-dev`.
 
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than the VS).
 
-### Future extensibility
-
-If needed, the format can be extended/changed in the future together with the Roslyn redirecting implementation.
-Since Roslyn and SDK (which contains the file) are inserted into VS approximately together,
-there should be no problems with the file and the implementation that reads it being incompatible.
-We could add a version into the file name (like `mapping.v2.txt`) so it is simply ignored
-in the short transition period when a different SDK is inserted into VS than Roslyn
-(relevant only to internal preview VS builds).
-
-## Alternatives
-
-- The file could live in the Roslyn repo, deployed together with Roslyn into VS.
-  That would make updating the format and the implementation easier if needed.
-  The SDK would have to extract it from a Roslyn transport package to use it for inserting the analyzer DLLs.
-
 [torn-sdk]: https://github.com/dotnet/sdk/issues/42087
 [dual-insert]: https://github.com/dotnet/sdk/blob/8a2a7d01c3d3f060d5812424a9de8a00d70b3061/documentation/general/torn-sdk.md#net-sdk-in-box-analyzers-dual-insert
-[analyzer-assembly-resolver]: https://github.com/dotnet/roslyn/blob/dabd07189684b5cda34b3072326a12b18301a012/src/Compilers/Core/Portable/DiagnosticAnalyzer/IAnalyzerAssemblyResolver.cs#L12
