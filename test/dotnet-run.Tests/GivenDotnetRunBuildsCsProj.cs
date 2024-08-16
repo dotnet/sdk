@@ -562,7 +562,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItUsesTheValueOfWorkingDirectoryIfTheProjectRunWorkingDirectoryIsNotSet()
+        public void ItUsesTheValueOfWorkingDirectoryIfSet()
         {
             var testAppName = "AppWithWorkingDirectoryInLaunchSettings";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -583,7 +583,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItPrefersTheValueOfProjectRunWorkingDirectoryIfSet()
+        public void ItPrefersTheValueOfWorkingDirectoryFromLaunchSettingsOverProjectRunWorkingDirectory()
         {
             var testAppName = "AppWithWorkingDirectoryInLaunchSettings";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -591,19 +591,19 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithProjectChanges(p => {
                                 var ns = p.Root.Name.Namespace;
                                 var propertyGroup = p.Root.Elements(ns + "PropertyGroup").First();
-                                propertyGroup.Add(new XElement(ns + "RunWorkingDirectory", "runSubfolder"));
+                                propertyGroup.Add(new XElement(ns + "RunWorkingDirectory", "expectThisSubfolderIsOverridden"));
                             });
 
             var testProjectDirectory = testInstance.Path;
 
-            Directory.CreateDirectory(Path.Combine(testProjectDirectory, "runSubfolder"));
+            Directory.CreateDirectory(Path.Combine(testProjectDirectory, "launchSubfolder"));
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "Second");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining("runSubfolder");
+                .And.HaveStdOutContaining("launchSubfolder");
 
             cmd.StdErr.Should().BeEmpty();
         }

@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tools.Run
                 {
                     targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
                 }
-                if (string.IsNullOrEmpty(targetCommand.CommandWorkingDirectory) && launchSettings.WorkingDirectory != null)
+                if (launchSettings.WorkingDirectory != null)
                 {
                     targetCommand.WorkingDirectory(launchSettings.WorkingDirectory);
                 }
