@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
             try
             {
-                while (true)
+                while (!token.IsCancellationRequested )
                 {
                     NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                     pipeConnection.RegisterAllSerializers();
