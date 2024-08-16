@@ -2,17 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.IO.Pipes;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal class TestApplication
+    internal class TestApplication : IDisposable
     {
         private readonly string _modulePath;
-        private readonly string _pipeName;
         private readonly string[] _args;
         private readonly List<string> _outputData = [];
         private readonly List<string> _errorData = [];
+        private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        private readonly CancellationTokenSource _cancellationToken = new();
+
+        private NamedPipeServer _pipeConnection;
+        private Task _namedPipeConnectionLoop;
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -22,13 +27,13 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
+        public event EventHandler<EventArgs> Created;
 
         public string ModulePath => _modulePath;
 
-        public TestApplication(string modulePath, string pipeName, string[] args)
+        public TestApplication(string modulePath, string[] args)
         {
             _modulePath = modulePath;
-            _pipeName = pipeName;
             _args = args;
         }
 
@@ -50,8 +55,103 @@ namespace Microsoft.DotNet.Cli
                 RedirectStandardError = true
             };
 
-            return await StartProcess(processStartInfo);
+            //
+            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
+            var result = await StartProcess(processStartInfo);
+
+            _namedPipeConnectionLoop.Wait();
+            return result;
         }
+
+        private async Task WaitConnectionAsync(CancellationToken token)
+        {
+            try
+            {
+                _pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                _pipeConnection.RegisterAllSerializers();
+
+                await _pipeConnection.WaitConnectionAsync(token);
+            }
+            catch (Exception ex)
+            {
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+
+                Environment.FailFast(ex.ToString());
+            }
+        }
+
+        private Task<IResponse> OnRequest(IRequest request)
+        {
+            try
+            {
+                switch (request)
+                {
+                    case HandshakeInfo handshakeInfo:
+                        if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ModulePath, out string value))
+                        {
+                            OnHandshakeInfo(handshakeInfo);
+
+                            return Task.FromResult((IResponse)CreateHandshakeInfo());
+                        }
+                        break;
+
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
+
+                    case SuccessfulTestResultMessage successfulTestResultMessage:
+                        OnSuccessfulTestResultMessage(successfulTestResultMessage);
+                        break;
+
+                    case FailedTestResultMessage failedTestResultMessage:
+                        OnFailedTestResultMessage(failedTestResultMessage);
+                        break;
+
+                    case FileArtifactInfo fileArtifactInfo:
+                        OnFileArtifactInfo(fileArtifactInfo);
+                        break;
+
+                    case TestSessionEvent sessionEvent:
+                        OnSessionEvent(sessionEvent);
+                        break;
+
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        if (VSTestTrace.TraceEnabled)
+                        {
+                            VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        }
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+
+                Environment.FailFast(ex.ToString());
+            }
+
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+        }
+
+        private static HandshakeInfo CreateHandshakeInfo() =>
+            new(new Dictionary<string, string>
+            {
+                { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+                { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
+                { HandshakeInfoPropertyNames.Framework, RuntimeInformation.FrameworkDescription },
+                { HandshakeInfoPropertyNames.OS, RuntimeInformation.OSDescription },
+                { HandshakeInfoPropertyNames.ProtocolVersion, ProtocolConstants.Version }
+            });
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
         {
@@ -114,7 +214,7 @@ namespace Microsoft.DotNet.Cli
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
 
             return builder.ToString();
         }
@@ -128,7 +228,7 @@ namespace Microsoft.DotNet.Cli
                 builder.Append($"exec {_modulePath} ");
             }
 
-            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
+            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
 
             return builder.ToString();
         }
@@ -161,6 +261,16 @@ namespace Microsoft.DotNet.Cli
         internal void OnSessionEvent(TestSessionEvent sessionEvent)
         {
             SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = sessionEvent });
+        }
+
+        internal void OnCreated()
+        {
+            Created?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Dispose()
+        {
+            _pipeConnection?.Dispose();
         }
     }
 }
