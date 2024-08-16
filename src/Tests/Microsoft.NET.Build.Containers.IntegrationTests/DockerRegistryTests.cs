@@ -54,6 +54,7 @@ public class DockerRegistryTests
             var registryCertFile = Path.Combine(registryCertsDir.FullName, "domain.crt");
 
             // export dev cert, using --no-password also generates a matching key file
+            new DotnetCommand(_testOutput, $"dev-certs", "https", "--trust").Execute().Should().Pass();
             new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
             ContainerCli.RunCommand(_testOutput,
