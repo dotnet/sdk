@@ -8,7 +8,7 @@ using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli.commands.dotnet_test
 {
-    internal class MSBuildConnectionHandler : IDisposable
+    internal sealed class MSBuildConnectionHandler : IDisposable
     {
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
