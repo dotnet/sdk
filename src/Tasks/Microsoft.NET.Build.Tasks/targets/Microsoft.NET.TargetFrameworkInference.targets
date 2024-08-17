@@ -249,7 +249,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CheckForInvalidTargetPlatformVersion"
       BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
       DependsOnTargets="_NormalizeTargetPlatformVersion"
-      Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
+      Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and '$(Language)' != 'C++'">
     <PropertyGroup>
       <TargetPlatformVersionSupported Condition="'$(TargetPlatformVersionSupported)' == '' and '@(_ValidTargetPlatformVersion)' != ''" >true</TargetPlatformVersionSupported>
       <_ValidTargetPlatformVersions Condition="'@(_ApplicableTargetPlatformVersion)' != ''" >@(_ApplicableTargetPlatformVersion, '%0a')</_ValidTargetPlatformVersions>
