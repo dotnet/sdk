@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -14,11 +16,15 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int GetManifestPackageDownloadsCallCount = 0;
         private readonly IEnumerable<ManifestUpdateWithWorkloads> _manifestUpdates;
         private bool _fromWorkloadSet;
+        private IWorkloadResolver _resolver;
+        private string _workloadSetVersion;
 
-        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, bool fromWorkloadSet = false)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, IWorkloadResolver resolver = null, bool fromWorkloadSet = false, string workloadSetVersion = null)
         {
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
             _fromWorkloadSet = fromWorkloadSet;
+            _workloadSetVersion = workloadSetVersion;
+            _resolver = resolver;
         }
 
         public Task UpdateAdvertisingManifestsAsync(bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
@@ -33,6 +39,22 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates;
         }
 
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state)
+        {
+            var currentManifests = _resolver?.GetInstalledManifests() ??
+                _manifestUpdates?.Select(mu => new WorkloadManifestInfo(
+                    mu.ManifestUpdate.ManifestId.ToString(),
+                    mu.ManifestUpdate.NewVersion.ToString(),
+                    "manifestDir",
+                    mu.ManifestUpdate.NewFeatureBand));
+
+            foreach (var manifest in state.ManifestVersions)
+            {
+                var featureBandAndVersion = manifest.Value.Split('/');
+                yield return new ManifestVersionUpdate(new ManifestId(manifest.Key), new ManifestVersion(featureBandAndVersion[0]), featureBandAndVersion[1]);
+            }
+        }
+
         public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
         {
             GetManifestPackageDownloadsCallCount++;
@@ -42,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder = null)
         {
             if (_fromWorkloadSet && !rollbackDefinitionFilePath.EndsWith("installed.workloadset.json"))
             {
@@ -55,8 +77,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
+        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files, WorkloadHistoryRecorder recorder = null) => _manifestUpdates.Select(t => t.ManifestUpdate);
 
-        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
-        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files) => _manifestUpdates.Select(t => t.ManifestUpdate);
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet) => _manifestUpdates.Select(t => t.ManifestUpdate);
+
+        public string GetAdvertisedWorkloadSetVersion() => _workloadSetVersion;
+        
     }
 }

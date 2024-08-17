@@ -11,6 +11,32 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
+        public static readonly CliOption<string> MaxParallelTestModules = new("--max-parallel-test-modules", "-mptm")
+        {
+            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
+        };
+
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new("--additional-msbuild-parameters")
+        {
+            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
+        };
+
+        public static readonly CliOption<string> TestModules = new("--test-modules")
+        {
+            Description = LocalizableStrings.CmdTestModulesDescription
+        };
+
+        public static readonly CliOption<string> TestModulesRootDirectory = new("--root-directory")
+        {
+            Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription
+        };
+
+        public static readonly CliOption<string> NoBuild = new("--no-build")
+        {
+            Description = LocalizableStrings.CmdNoBuildDescription,
+            Arity = ArgumentArity.Zero
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -152,6 +178,8 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
+
+
         public static CliCommand GetCommand()
         {
             return Command;
@@ -189,6 +217,11 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new TestingPlatformCommand("test");
             command.SetAction((parseResult) => command.Run(parseResult));
+            command.Options.Add(MaxParallelTestModules);
+            command.Options.Add(AdditionalMSBuildParameters);
+            command.Options.Add(TestModules);
+            command.Options.Add(TestModulesRootDirectory);
+            command.Options.Add(NoBuild);
 
             return command;
         }

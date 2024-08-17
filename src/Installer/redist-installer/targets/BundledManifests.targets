@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <NetFeatureBand>8.0.100</NetFeatureBand>
-  </PropertyGroup>
-
   <ItemGroup>
     <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
@@ -110,7 +106,8 @@
     <PropertyGroup>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
-      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(NetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
+      <WorkloadSetFeatureBand>$(VersionPrefix.Substring(0, $([MSBuild]::Subtract($(VersionPrefix.Length), 2))))00$([System.Text.RegularExpressions.Regex]::Match($(WorkloadSetVersion), `-[A-z]*[\.]*\d*`))</WorkloadSetFeatureBand>
+      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
     </PropertyGroup>
 
     <ItemGroup>

@@ -24,6 +24,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -72,6 +76,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -120,6 +128,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -168,6 +180,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act

@@ -68,9 +68,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
             VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
                 .WithDescription($"Install SDK {SdkInstallerVersion}")
-                .Execute()
-                .Should()
-                .Pass();
+                .Execute().Should().Pass();
+
+            
 
             if (deployStage2)
             {
@@ -92,6 +92,27 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             if (!VM.VMTestSettings.ShouldTestStage2)
             {
                 return;
+            }
+
+
+            //  Install any runtimes that are in the c:\SdkTesting directory, to support using older baseline SDK versions with a newer stage 2
+            var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+            List<string> runtimeInstallers = new List<string>();
+            string installerPrefix = "dotnet-runtime-";
+            string installerSuffix = "-win-x64.exe";
+            foreach (var file in sdkTestingDir.Files.Select(Path.GetFileName))
+            {
+                if (file.StartsWith(installerPrefix) && file.EndsWith(installerSuffix))
+                {
+                    runtimeInstallers.Add(file);
+                }
+            }
+
+            if (runtimeInstallers.Any())
+            {
+                VM.CreateActionGroup($"Install .NET runtime(s)",
+                        runtimeInstallers.Select(i => VM.CreateRunCommand($@"c:\SdkTesting\{i}", "/quiet")).ToArray())
+                    .Execute().Should().Pass();
             }
 
             var result = VM.CreateRunCommand("dotnet", "--version")
@@ -157,9 +178,15 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             return result.StdOut;
         }
 
-        protected CommandResult InstallWorkload(string workloadName)
+        protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
-            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
+            string [] args = { "dotnet", "workload", "install", workloadName};
+            if (skipManifestUpdate)
+            {
+                args = [.. args, "--skip-manifest-update"];
+            }
+
+            var result = VM.CreateRunCommand(args)
                     .WithDescription($"Install {workloadName} workload")
                     .Execute();
 

@@ -20,10 +20,17 @@ internal abstract class NamedPipeBase
         _idSerializer.Add(namedPipeSerializer.Id, namedPipeSerializer);
     }
 
-    protected INamedPipeSerializer GetSerializer(int id)
-        => _idSerializer.TryGetValue(id, out object serializer)
-            ? (INamedPipeSerializer)serializer
-            : throw new ArgumentException((string.Format(
+    protected INamedPipeSerializer GetSerializer(int id, bool skipUnknownMessages = false)
+    {
+        if (_idSerializer.TryGetValue(id, out object serializer))
+        {
+            return (INamedPipeSerializer)serializer;
+        }
+        else
+        {
+            return skipUnknownMessages
+                ? new UnknownMessageSerializer(id)
+                : throw new ArgumentException((string.Format(
                 CultureInfo.InvariantCulture,
 #if dotnet
                  LocalizableStrings.NoSerializerRegisteredWithIdErrorMessage,
@@ -31,6 +38,9 @@ internal abstract class NamedPipeBase
                 "No serializer registered with ID '{0}'",
 #endif
                 id)));
+        }
+    }
+
 
     protected INamedPipeSerializer GetSerializer(Type type)
         => _typeSerializer.TryGetValue(type, out object serializer)

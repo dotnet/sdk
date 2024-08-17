@@ -12,6 +12,11 @@
         <target state="translated">Testtreiber für die .NET-Plattform</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="new">The additional msbuild parameters to pass.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Aktiviert die Erfassung von Absturzabbildern bei einer erwarteten und einer unerwarteten Beendigung des Testhosts.</target>
@@ -96,6 +101,11 @@ Beispiele:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="WERT"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="new">The max number of test modules that can run in parallel.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -203,6 +213,16 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       <trans-unit id="CmdPathToResultsDirectory">
         <source>RESULTS_DIR</source>
         <target state="translated">RESULTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">

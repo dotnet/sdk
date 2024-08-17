@@ -373,6 +373,8 @@
         @(Net80ILCompilerSupportedRids);
         linux-arm;
         linux-musl-arm;
+        linux-loongarch64;
+        linux-musl-loongarch64;
         win-x86;
         " />
 
@@ -576,7 +578,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net9.0"
                      ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    
+
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net9.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
@@ -1177,19 +1179,20 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <!-- Supported Windows versions -->
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_20348PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)" MinimumNETVersion="6.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)" MinimumNETVersion="6.0" />
-    
+
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="10.0.22000.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="10.0.20348.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="10.0.19041.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="10.0.18362.26" MinimumNETVersion="5.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="10.0.17763.26" MinimumNETVersion="5.0" />
-    
+
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
@@ -1246,7 +1249,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
-      <BundledMSBuildVersion>$(MSBuildVersion)</BundledMSBuildVersion>
+      <_ShippingMSBuildVersion>$(MicrosoftBuildVersion)</_ShippingMSBuildVersion>
+      <_ShippingMSBuildVersion Condition="$(_ShippingMSBuildVersion.Contains('-'))">$(MicrosoftBuildVersion.Split('-')[0])</_ShippingMSBuildVersion>
+      <BundledMSBuildVersion>$(_ShippingMSBuildVersion)</BundledMSBuildVersion>
     </PropertyGroup>
 
     <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
@@ -1276,7 +1281,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MinimumMSBuildVersion>$(MinimumMSBuildVersion)</MinimumMSBuildVersion>
     <BundledMSBuildVersion>$(BundledMSBuildVersion)</BundledMSBuildVersion>
     <_MSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(MSBuildVersion)').ToString(2))</_MSBuildVersionMajorMinor>
-    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionGreaterThan('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
+    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionLessThan('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
   </PropertyGroup>
 </Project>
 ]]>
@@ -1294,14 +1299,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="LayoutRuntimeGraph"
           DependsOnTargets="GenerateBundledVersionsProps">
-
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
-          DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
-          SkipUnchangedFiles="true" />
-
-    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
-          DestinationFolder="$(SdkOutputDirectory)"
-          SkipUnchangedFiles="true"/>
 
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"

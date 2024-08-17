@@ -216,8 +216,7 @@ internal class DotNetHelper
 
     public void ExecuteRunWeb(string projectName, DotNetTemplate template)
     {
-        // 'dotnet run' exit code differs between CoreCLR and Mono (https://github.com/dotnet/sdk/issues/30095).
-        int expectedExitCode = IsMonoRuntime ? 143 : 0;
+        int expectedExitCode = 0;
 
         ExecuteWeb(
             projectName,

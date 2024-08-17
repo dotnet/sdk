@@ -187,6 +187,7 @@ $darcArgs = (
     "--component-template", $componentTemplate,
     "--tpn-template", $tpnTemplate,
     "--discard-patches",
+    "--generate-credscansuppressions",
     $repository
 )  
 

@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
-
-    <BuildArgs>$(BuildArgs) /p:SemanticVersioningV1=true</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
