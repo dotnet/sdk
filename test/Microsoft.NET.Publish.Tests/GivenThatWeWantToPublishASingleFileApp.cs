@@ -670,7 +670,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["PublishSingleFile"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            testProject.AdditionalProperties["NoWarn"] = "NETSDK1138";  // Silence warning about targeting EOL TFMs
+            testProject.AdditionalProperties["NoWarn"] = "NETSDK1138;NU3003";  // Silence warning about targeting EOL TFMs, and old runtime package signatures
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
