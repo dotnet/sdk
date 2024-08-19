@@ -67,7 +67,6 @@ namespace Microsoft.NET.Restore.Tests
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
                 .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
-)
                 .Execute().Should().Pass();
 
             var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
