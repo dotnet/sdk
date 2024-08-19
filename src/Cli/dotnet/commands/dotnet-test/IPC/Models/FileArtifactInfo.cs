@@ -5,5 +5,5 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed record FileArtifactInfo(string? FullPath, string? DisplayName, string? Description, string? TestUid, string? TestDisplayName, string? SessionUid, string? ModulePath) : IRequest;
+    internal sealed record FileArtifactInfo(string? FullPath, string? DisplayName, string? Description, string? TestUid, string? TestDisplayName, string? SessionUid, string? ModulePath, string? ExecutionId) : IRequest;
 }

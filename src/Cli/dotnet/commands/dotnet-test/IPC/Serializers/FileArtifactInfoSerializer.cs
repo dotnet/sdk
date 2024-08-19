@@ -37,6 +37,10 @@ namespace Microsoft.DotNet.Tools.Test
         |---File ModulePath Id---| 1 (2 bytes)
         |---File ModulePath Size---| (4 bytes)
         |---File ModulePath Value---| (n bytes)
+
+        |---File ExecutionId Id---| 1 (2 bytes)
+        |---File ExecutionId Size---| (4 bytes)
+        |---File ExecutionId Value---| (n bytes)
     */
 
     internal sealed class FileArtifactInfoSerializer : BaseSerializer, INamedPipeSerializer
@@ -52,6 +56,7 @@ namespace Microsoft.DotNet.Tools.Test
             string? testDisplayName = null;
             string? sessionUid = null;
             string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -90,6 +95,10 @@ namespace Microsoft.DotNet.Tools.Test
                         modulePath = ReadString(stream);
                         break;
 
+                    case FileArtifactInfoFieldsId.ExecutionId:
+                        executionId = ReadString(stream);
+                        break;
+
                     default:
                         // If we don't recognize the field id, skip the payload corresponding to that field
                         SetPosition(stream, stream.Position + fieldSize);
@@ -97,7 +106,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, modulePath);
+            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, modulePath, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -115,6 +124,8 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, FileArtifactInfoFieldsId.TestDisplayName, fileArtifactInfo.TestDisplayName);
             WriteField(stream, FileArtifactInfoFieldsId.SessionUid, fileArtifactInfo.SessionUid);
             WriteField(stream, FileArtifactInfoFieldsId.ModulePath, fileArtifactInfo.ModulePath);
+            WriteField(stream, FileArtifactInfoFieldsId.ExecutionId, fileArtifactInfo.ExecutionId);
+
         }
 
         private static ushort GetFieldCount(FileArtifactInfo fileArtifactInfo) =>
@@ -124,6 +135,7 @@ namespace Microsoft.DotNet.Tools.Test
             (fileArtifactInfo.TestUid is null ? 0 : 1) +
             (fileArtifactInfo.TestDisplayName is null ? 0 : 1) +
             (fileArtifactInfo.SessionUid is null ? 0 : 1) +
-            (fileArtifactInfo.ModulePath is null ? 0 : 1));
+            (fileArtifactInfo.ModulePath is null ? 0 : 1) +
+            (fileArtifactInfo.ExecutionId is null ? 0 : 1));
     }
 }

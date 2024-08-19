@@ -33,6 +33,10 @@ namespace Microsoft.DotNet.Tools.Test
     |---Test ModulePath Id---| 1 (2 bytes)
     |---Test ModulePath Size---| (4 bytes)
     |---Test ModulePath Value---| (n bytes)
+
+    |---Test ExecutionId Id---| 1 (2 bytes)
+    |---Test ExecutionId Size---| (4 bytes)
+    |---Test ExecutionId Value---| (n bytes)
     */
 
     internal sealed class SuccessfulTestResultMessageSerializer : BaseSerializer, INamedPipeSerializer
@@ -47,6 +51,7 @@ namespace Microsoft.DotNet.Tools.Test
             string? reason = null;
             string? sessionUid = null;
             string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -81,6 +86,10 @@ namespace Microsoft.DotNet.Tools.Test
                         modulePath = ReadString(stream);
                         break;
 
+                    case SuccessfulTestResultMessageFieldsId.ExecutionId:
+                        executionId = ReadString(stream);
+                        break;
+
                     default:
                         // If we don't recognize the field id, skip the payload corresponding to that field
                         SetPosition(stream, stream.Position + fieldSize);
@@ -88,7 +97,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new SuccessfulTestResultMessage(uid, displayName, state, reason, sessionUid, modulePath);
+            return new SuccessfulTestResultMessage(uid, displayName, state, reason, sessionUid, modulePath, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -105,6 +114,7 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, SuccessfulTestResultMessageFieldsId.Reason, testResultMessage.Reason);
             WriteField(stream, SuccessfulTestResultMessageFieldsId.SessionUid, testResultMessage.SessionUid);
             WriteField(stream, SuccessfulTestResultMessageFieldsId.ModulePath, testResultMessage.ModulePath);
+            WriteField(stream, SuccessfulTestResultMessageFieldsId.ExecutionId, testResultMessage.ExecutionId);
         }
 
         private static ushort GetFieldCount(SuccessfulTestResultMessage testResultMessage) =>
@@ -113,7 +123,8 @@ namespace Microsoft.DotNet.Tools.Test
             (testResultMessage.State is null ? 0 : 1) +
             (testResultMessage.Reason is null ? 0 : 1) +
             (testResultMessage.SessionUid is null ? 0 : 1) +
-            (testResultMessage.ModulePath is null ? 0 : 1));
+            (testResultMessage.ModulePath is null ? 0 : 1) +
+            (testResultMessage.ExecutionId is null ? 0 : 1));
     }
 
     /*
@@ -150,6 +161,10 @@ namespace Microsoft.DotNet.Tools.Test
     |---Test ModulePath Id---| 1 (2 bytes)
     |---Test ModulePath Size---| (4 bytes)
     |---Test ModulePath Value---| (n bytes)
+
+    |---Test ExecutionId Id---| 1 (2 bytes)
+    |---Test ExecutionId Size---| (4 bytes)
+    |---Test ExecutionId Value---| (n bytes)
     */
 
     internal sealed class FailedTestResultMessageSerializer : BaseSerializer, INamedPipeSerializer
@@ -166,6 +181,7 @@ namespace Microsoft.DotNet.Tools.Test
             string? errorStackTrace = null;
             string? sessionUid = null;
             string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -208,6 +224,10 @@ namespace Microsoft.DotNet.Tools.Test
                         modulePath = ReadString(stream);
                         break;
 
+                    case FailedTestResultMessageFieldsId.ExecutionId:
+                        executionId = ReadString(stream);
+                        break;
+
                     default:
                         // If we don't recognize the field id, skip the payload corresponding to that field
                         SetPosition(stream, stream.Position + fieldSize);
@@ -215,7 +235,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new FailedTestResultMessage(uid, displayName, state, reason, errorMessage, errorStackTrace, sessionUid, modulePath);
+            return new FailedTestResultMessage(uid, displayName, state, reason, errorMessage, errorStackTrace, sessionUid, modulePath, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -234,6 +254,7 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, FailedTestResultMessageFieldsId.ErrorStackTrace, testResultMessage.ErrorStackTrace);
             WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, testResultMessage.SessionUid);
             WriteField(stream, FailedTestResultMessageFieldsId.ModulePath, testResultMessage.ModulePath);
+            WriteField(stream, FailedTestResultMessageFieldsId.ExecutionId, testResultMessage.ExecutionId);
         }
 
         private static ushort GetFieldCount(FailedTestResultMessage testResultMessage) =>
@@ -244,6 +265,7 @@ namespace Microsoft.DotNet.Tools.Test
             (testResultMessage.ErrorMessage is null ? 0 : 1) +
             (testResultMessage.ErrorStackTrace is null ? 0 : 1) +
             (testResultMessage.SessionUid is null ? 0 : 1) +
-            (testResultMessage.ModulePath is null ? 0 : 1));
+            (testResultMessage.ModulePath is null ? 0 : 1) +
+            (testResultMessage.ExecutionId is null ? 0 : 1));
     }
 }

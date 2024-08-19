@@ -48,6 +48,7 @@ namespace Microsoft.DotNet.Cli
         internal const string ProtocolVersion = "ProtocolVersion";
         internal const string HostType = "HostType";
         internal const string ModulePath = "ModulePath";
+        internal const string ExecutionId = "ExecutionId";
     }
 
     internal static class ProtocolConstants

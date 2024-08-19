@@ -21,6 +21,10 @@ namespace Microsoft.DotNet.Tools.Test
         |---ModulePath Id---| 1 (2 bytes)
         |---ModulePath Size---| (4 bytes)
         |---ModulePath Value---| (n bytes)
+
+        |---ExecutionId Id---| 1 (2 bytes)
+        |---ExecutionId Size---| (4 bytes)
+        |---ExecutionId Value---| (n bytes)
     */
 
     internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSerializer
@@ -32,6 +36,7 @@ namespace Microsoft.DotNet.Tools.Test
             string? type = null;
             string? sessionUid = null;
             string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -54,6 +59,10 @@ namespace Microsoft.DotNet.Tools.Test
                         modulePath = ReadString(stream);
                         break;
 
+                    case TestSessionEventFieldsId.ExecutionId:
+                        executionId = ReadString(stream);
+                        break;
+
                     default:
                         // If we don't recognize the field id, skip the payload corresponding to that field
                         SetPosition(stream, stream.Position + fieldSize);
@@ -61,7 +70,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new TestSessionEvent(type, sessionUid, modulePath);
+            return new TestSessionEvent(type, sessionUid, modulePath, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -75,11 +84,13 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, TestSessionEventFieldsId.SessionType, testSessionEvent.SessionType);
             WriteField(stream, TestSessionEventFieldsId.SessionUid, testSessionEvent.SessionUid);
             WriteField(stream, TestSessionEventFieldsId.ModulePath, testSessionEvent.ModulePath);
+            WriteField(stream, TestSessionEventFieldsId.ExecutionId, testSessionEvent.ExecutionId);
         }
 
         private static ushort GetFieldCount(TestSessionEvent testSessionEvent) =>
             (ushort)((testSessionEvent.SessionType is null ? 0 : 1) +
             (testSessionEvent.SessionUid is null ? 0 : 1) +
-            (testSessionEvent.ModulePath is null ? 0 : 1));
+            (testSessionEvent.ModulePath is null ? 0 : 1) +
+            (testSessionEvent.ExecutionId is null ? 0 : 1));
     }
 }

@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Cli
 
         private NamedPipeServer _pipeConnection;
         private Task _namedPipeConnectionLoop;
+        private HashSet<string> _executionIds = new();
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -239,6 +240,10 @@ namespace Microsoft.DotNet.Cli
 
         public void OnHandshakeInfo(HandshakeInfo handshakeInfo)
         {
+            if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ExecutionId, out string executionId))
+            {
+                _executionIds.Add(executionId);
+            }
             HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
         }
 
