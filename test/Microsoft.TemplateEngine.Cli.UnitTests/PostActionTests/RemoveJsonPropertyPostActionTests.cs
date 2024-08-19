@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         }
 
         [Theory]
-        [MemberData(nameof(RemoveJsonPropertyPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<Mock<IReporter>>))]
+        [MemberData(nameof(RemoveJsonPropertyPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), MemberType = typeof(RemoveJsonPropertyPostActionTestCase<Mock<IReporter>>))]
         public void FailsWhenMandatoryArgumentsNotConfigured(ModifyJsonPostActionTestCase<Mock<IReporter>> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -132,7 +132,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         }
 
         [Theory]
-        [MemberData(nameof(RemoveJsonPropertyPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
+        [MemberData(nameof(RemoveJsonPropertyPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), MemberType = typeof(RemoveJsonPropertyPostActionTestCase<(JsonNode, bool)>))]
         public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase<(JsonNode, bool)> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
