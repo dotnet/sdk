@@ -329,7 +329,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
-            // filter package patterns if enabled            
+            // filter package patterns if enabled
             if (_shouldUsePackageSourceMapping && packageSourceMapping?.IsEnabled == true)
             {
                 IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
@@ -720,6 +720,90 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 includePreview, cancellationToken).ConfigureAwait(false);
 
             return packageMetadata.Identity.Version;
+        }
+
+        public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
+        {
+            // grab allowed sources for the package in question
+            PackageId packageId = new(idStem);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            var autoCompletes = await Task.WhenAll(packagesSources.Select(async (source) => await GetAutocompleteAsync(source, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+            // filter down to autocomplete endpoints (not all sources support this)
+            var validAutoCompletes = autoCompletes.SelectMany(x => x);
+            // get versions valid for this source
+            var packageIdTasks = validAutoCompletes.Select(autocomplete => GetPackageIdsForSource(autocomplete, packageId, allowPrerelease, cancellationToken)).ToArray();
+            var packageIdLists = await Task.WhenAll(packageIdTasks).ConfigureAwait(false);
+            // sources may have the same versions, so we have to dedupe.
+            return packageIdLists.SelectMany(v => v).Distinct().OrderDescending();
+        }
+
+        public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(PackageId packageId, string versionPrefix = null, bool allowPrerelease = false, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
+        {
+            // grab allowed sources for the package in question
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            var autoCompletes = await Task.WhenAll(packagesSources.Select(async (source) => await GetAutocompleteAsync(source, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+            // filter down to autocomplete endpoints (not all sources support this)
+            var validAutoCompletes = autoCompletes.SelectMany(x => x);
+            // get versions valid for this source
+            var versionTasks = validAutoCompletes.Select(autocomplete => GetPackageVersionsForSource(autocomplete, packageId, versionPrefix, allowPrerelease, cancellationToken)).ToArray();
+            var versions = await Task.WhenAll(versionTasks).ConfigureAwait(false);
+            // sources may have the same versions, so we have to dedupe.
+            return versions.SelectMany(v => v).Distinct().OrderDescending();
+        }
+
+        private async Task<IEnumerable<AutoCompleteResource>> GetAutocompleteAsync(PackageSource source, CancellationToken cancellationToken)
+        {
+            SourceRepository repository = GetSourceRepository(source);
+            if (await repository.GetResourceAsync<AutoCompleteResource>(cancellationToken).ConfigureAwait(false) is var resource)
+            {
+                return [resource];
+            }
+            else return Enumerable.Empty<AutoCompleteResource>();
+        }
+
+        // only exposed for testing
+        internal static TimeSpan CliCompletionsTimeout
+        {
+            get => _cliCompletionsTimeout;
+            set => _cliCompletionsTimeout = value;
+        }
+        private static TimeSpan _cliCompletionsTimeout = TimeSpan.FromMilliseconds(500);
+        private async Task<IEnumerable<NuGetVersion>> GetPackageVersionsForSource(AutoCompleteResource autocomplete, PackageId packageId, string versionPrefix, bool allowPrerelease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(_cliCompletionsTimeout);
+                var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+                // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
+                return await autocomplete.VersionStartsWith(packageId.ToString(), versionPrefix: versionPrefix ?? "", includePrerelease: allowPrerelease, sourceCacheContext: _cacheSettings, log: NullLogger.Instance, token: linkedCts.Token);
+            }
+            catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
+            {
+                return Enumerable.Empty<NuGetVersion>();
+            }
+            catch (Exception) // any errors (i.e. auth) should just be ignored for completions
+            {
+                return Enumerable.Empty<NuGetVersion>();
+            }
+        }
+
+        private async Task<IEnumerable<string>> GetPackageIdsForSource(AutoCompleteResource autocomplete, PackageId packageId, bool allowPrerelease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(_cliCompletionsTimeout);
+                var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+                // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
+                return await autocomplete.IdStartsWith(packageId.ToString(), includePrerelease: allowPrerelease, log: NullLogger.Instance, token: linkedCts.Token);
+            }
+            catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
+            {
+                return Enumerable.Empty<string>();
+            }
+            catch (Exception) // any errors (i.e. auth) should just be ignored for completions
+            {
+                return Enumerable.Empty<string>();
+            }
         }
 
         private SourceRepository GetSourceRepository(PackageSource source)
