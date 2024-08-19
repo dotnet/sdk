@@ -228,11 +228,26 @@ internal abstract class BaseSerializer
         WriteString(stream, value);
     }
 
-    protected static void WriteField(Stream stream, ushort id, bool value)
+    protected static void WriteField(Stream stream, string? value)
     {
+        if (value is null)
+        {
+            return;
+        }
+
+        WriteString(stream, value);
+    }
+
+    protected static void WriteField(Stream stream, ushort id, bool? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
         WriteShort(stream, id);
         WriteSize<bool>(stream);
-        WriteBool(stream, value);
+        WriteBool(stream, value.Value);
     }
 
     protected static void SetPosition(Stream stream, long position) => stream.Position = position;
