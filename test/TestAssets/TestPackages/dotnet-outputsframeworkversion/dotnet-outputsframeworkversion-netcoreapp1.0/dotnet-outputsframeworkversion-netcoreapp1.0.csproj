@@ -2,10 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>dotnet-outputsframeworkversion-net9.0</AssemblyName>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>dotnet-outputsframeworkversion-netcoreapp1.0</AssemblyName>
     <OutputType>Exe</OutputType>
-    <RuntimeFrameworkVersion>9.0.0-preview.6.24327.7</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <RollForward>LatestMajor</RollForward>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
    

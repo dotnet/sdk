@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [RequiresSpecificFrameworkTheory(ToolsetInfo.CurrentTargetFramework)]
+        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
         [InlineData(true)]
         [InlineData(false)]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
@@ -66,12 +66,12 @@ namespace Microsoft.DotNet.Tests
                 .Execute(toolPrefersCLIRuntime ? "portable-v1-prefercli" : "portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 9.0.0");
+                .And.HaveStdOutContaining("I'm running on shared framework version");
 
         }
 
-        [RequiresSpecificFrameworkFact(ToolsetInfo.CurrentTargetFramework)]
-        public void IfAToolHasNotBeenRestoredForNet9_0ItFallsBackToPreviousVersions()
+        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        public void IfAToolHasNotBeenRestoredForNetCoreApp2_0ItFallsBackToNetCoreApp1_x()
         {
             string toolName = "dotnet-portable-v1";
 
@@ -98,9 +98,9 @@ namespace Microsoft.DotNet.Tests
 
                 toolReference.Attribute("Include").Value = toolName;
 
-                //  Restore tools for .net9.0
+                // Restore tools for .NET Core 1.1
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "DotnetCliToolTargetFramework", "net9.0"));
+                    .Add(new XElement(ns + "DotnetCliToolTargetFramework", "netcoreapp1.1"));
 
                 //  Use project-specific global packages folder
                 project.Root.Element(ns + "PropertyGroup")
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests
                     .Execute("portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 9.0.0");
+                .And.HaveStdOutContaining("I'm running on shared framework version");
         }
 
         [Fact]

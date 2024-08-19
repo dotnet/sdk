@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-outputsframeworkversion-net9.0" Version="1.0.0" />
+    <DotNetCliToolReference Include="dotnet-outputsframeworkversion-netcoreapp1.0" Version="1.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Net.Security" Version="4.3.1" />
   </ItemGroup>

@@ -5,7 +5,7 @@ dotnet-dependency-context-test.dll
 dotnet-desktop-binding-redirects.exe
 dotnet-fallbackfoldertool.dll
 dotnet-hello*.dll
-dotnet-outputsframeworkversion-net9.0*.dll
+dotnet-outputsframeworkversion-netcoreapp1.0*.dll
 dotnet-portable-v1-prefercli*.dll
 dotnet-portable-v1*.dll
 dotnet-portable*.dll

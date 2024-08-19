@@ -75,11 +75,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("outputsframeworkversion-net9.0")
+                .Execute("outputsframeworkversion-netcoreapp1.0")
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("net9.0");
+                .HaveStdOutContaining("netcoreapp1.0");
         }
 
         void ChangeProjectTargetFramework(string projectFile, string target)
