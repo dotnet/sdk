@@ -388,7 +388,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             using IMountPoint mountPoint = environment.MountPath(sourceBasePath);
-            object resolvedNameValue = variables["name"];
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,

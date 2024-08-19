@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
@@ -157,7 +152,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     _environmentSettings.Host.FileSystem.CreateDirectory(targetDir);
                 }
-                IComponentManager componentManager = _environmentSettings.Components;
 
                 // setup separate sets of parameters to be used for GetCreationEffects() and by CreateAsync().
                 if (!TryCreateParameterSet(template, realName!, inputParameters, out IParameterSetData? effectParams, out TemplateCreationResult? resultIfParameterCreationFailed))
@@ -359,7 +353,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         {
             if (!inputParameters.HasConditions())
             {
-                paramsWithInvalidValues = Array.Empty<string>();
+                paramsWithInvalidValues = [];
                 isExternalEvaluationInvalid = false;
                 return parametersBuilder.Build(false, template.Generator, _logger);
             }
@@ -377,7 +371,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         template.Generator, _logger, !inputParameters.ContinueOnMismatchedConditionsEvaluation, out paramsWithInvalidValues))
                 {
                     _logger.LogInformation(
-                        "Parameters conditions ('IsEnbaled', 'IsRequired') evaluation supplied by host didn't match validation against internal evaluation for following parameters: [{0}]. Host requested to continue in such case: {1}",
+                        "Parameters conditions ('IsEnabled', 'IsRequired') evaluation supplied by host didn't match validation against internal evaluation for following parameters: [{0}]. Host requested to continue in such case: {1}",
                         paramsWithInvalidValues.ToCsvString(),
                         inputParameters.ContinueOnMismatchedConditionsEvaluation);
 

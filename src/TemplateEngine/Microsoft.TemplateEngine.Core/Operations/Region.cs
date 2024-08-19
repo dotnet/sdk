@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -17,7 +16,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly bool _toggle;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public Region(ITokenConfig start, ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string? id, bool initialState)
@@ -28,29 +26,28 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _end = end;
             _include = include;
             _toggle = _start.Equals(_end);
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             IToken startToken = _start.ToToken(encoding);
             IToken endToken = _end.ToToken(encoding);
-            return new Impl(this, startToken, endToken, _include, _toggle, _id, _initialState);
+            return new Implementation(this, startToken, endToken, _include, _toggle, Id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly IToken _endToken;
             private readonly bool _includeRegion;
             private readonly bool _startAndEndAreSame;
             private readonly Region _definition;
-            private readonly string? _id;
             private bool _waitingForEnd;
 
-            public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string? id, bool initialState)
+            public Implementation(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string? id, bool initialState)
             {
                 _definition = owner;
                 _endToken = endToken;
@@ -58,13 +55,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _startAndEndAreSame = toggle;
 
                 Tokens = toggle ? new[] { startToken } : new[] { startToken, endToken };
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 

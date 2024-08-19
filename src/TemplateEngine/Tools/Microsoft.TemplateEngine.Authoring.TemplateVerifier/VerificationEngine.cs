@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     verifySettings.AddScrubber(options.CustomScrubbers.GeneralScrubber);
                 }
 
-                foreach (var pair in options.CustomScrubbers.ScrubersByExtension)
+                foreach (var pair in options.CustomScrubbers.ScrubbersByExtension)
                 {
                     verifySettings.AddScrubber(pair.Key, pair.Value);
                 }
@@ -405,7 +405,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                         scrubbers.ByPathScrubbers.ForEach(scrubberByPath => scrubberByPath(relativePath, sb));
                     }
 
-                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
+                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubbersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
                     {
                         sb ??= new StringBuilder(content);
                         scrubber(sb);
@@ -429,7 +429,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
         private async Task VerifyResult(TemplateVerifierOptions args, IInstantiationResult commandResultData, CallerInfo callerInfo)
         {
-            UsesVerifyAttribute a = new UsesVerifyAttribute();
+            UseVerifyAttribute a = new UseVerifyAttribute();
+
             // https://github.com/VerifyTests/Verify/blob/d8cbe38f527d6788ecadd6205c82803bec3cdfa6/src/Verify.Xunit/Verifier.cs#L10
             //  need to simulate execution from tests
             var v = DummyMethod;

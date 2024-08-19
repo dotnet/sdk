@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Include="Resources\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Resources\**\*" CopyToOutputDirectory="Always" />
     <Compile Remove="Resources\**\*" />
   </ItemGroup>
 
@@ -15,10 +14,6 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <Exec Command="dotnet pack $(SolutionDir)tools\Microsoft.TemplateEngine.Authoring.Tasks" />
-  </Target>
-  
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
@@ -26,4 +21,5 @@
   <ItemGroup>
     <Compile Include="..\..\tools\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
 </Project>

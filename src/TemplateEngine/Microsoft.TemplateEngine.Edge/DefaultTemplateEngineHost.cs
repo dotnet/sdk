@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -13,11 +11,9 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = Array.Empty<(Type, IIdentifiedComponent)>();
+        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = [];
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger _logger;
 
         public DefaultTemplateEngineHost(
             string hostIdentifier,
@@ -35,13 +31,17 @@ namespace Microsoft.TemplateEngine.Edge
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
 
             loggerFactory ??= NullLoggerFactory.Instance;
-            _loggerFactory = loggerFactory;
-            _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
+            LoggerFactory = loggerFactory;
+            Logger = LoggerFactory.CreateLogger("Template Engine");
+
+            WorkingDirectory = Environment.CurrentDirectory;
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }
 
         public string HostIdentifier { get; }
+
+        public string WorkingDirectory { get; }
 
         public IReadOnlyList<string> FallbackHostTemplateConfigNames { get; }
 
@@ -49,9 +49,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public virtual IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> BuiltInComponents => _hostBuiltInComponents;
 
-        public ILogger Logger => _logger;
+        public ILogger Logger { get; }
 
-        public ILoggerFactory LoggerFactory => _loggerFactory;
+        public ILoggerFactory LoggerFactory { get; }
 
         // stub that will be built out soon.
         public virtual bool TryGetHostParamDefault(string paramName, out string? value)
@@ -60,6 +60,9 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 case "HostIdentifier":
                     value = HostIdentifier;
+                    return true;
+                case "WorkingDirectory":
+                    value = WorkingDirectory;
                     return true;
             }
 
@@ -73,7 +76,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public void Dispose()
         {
-            _loggerFactory?.Dispose();
+            LoggerFactory?.Dispose();
         }
 
         #region Obsoleted

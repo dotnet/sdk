@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_GuidsMacroProcessingCaseSensitivity()
+        public async Task CreateAsyncTest_GuidsMacroProcessingCaseSensitivity()
         {
             //
             // Template content preparation
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         [Theory]
         [InlineData(TemplateConfigQuotelessLiteralsNotEnabled, "UNKNOWN")]
         [InlineData(TemplateConfigQuotelessLiteralsEnabled, "SECOND")]
-        public async void CreateAsyncTest_ConditionWithUnquotedChoiceLiteral(string templateConfig, string expectedResult)
+        public async Task CreateAsyncTest_ConditionWithUnquotedChoiceLiteral(string templateConfig, string expectedResult)
         {
             //
             // Template content preparation
@@ -224,7 +224,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_MultiChoiceParamReplacingAndCondition()
+        public async Task CreateAsyncTest_MultiChoiceParamReplacingAndCondition()
         {
             //
             // Template content preparation
@@ -324,7 +324,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_MultiChoiceParamAndConditionMacro()
+        public async Task CreateAsyncTest_MultiChoiceParamAndConditionMacro()
         {
             //
             // Template content preparation
@@ -471,7 +471,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_MultiChoiceParamJoining()
+        public async Task CreateAsyncTest_MultiChoiceParamJoining()
         {
             //
             // Template content preparation
@@ -584,7 +584,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void Test_CoaleseWithInvalidSetup()
+        public async Task Test_CoaleseWithInvalidSetup()
         {
             //
             // Template content preparation
@@ -659,7 +659,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public async void XMLConditionFailure()
+        public async Task XMLConditionFailure()
         {
             //
             // Template content preparation
@@ -745,7 +745,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public async void HashConditionFailure()
+        public async Task HashConditionFailure()
         {
             //
             // Template content preparation

@@ -252,6 +252,50 @@ Includes a reference to `SomeDependency` into `MyProjectFile`. The referenced pr
 }]
 ```
 
+## Adding references to existing projects
+
+It is possible to add references to existing projects in your working directory. Since the name of the existing project is likely not a constant value for all template instantiations, a symbol can be used to pass the name of the existing project.
+
+The example below demonstrates how to add the existing project ```src/AlreadyExisting/AlreadyExisting.csproj``` as a reference to the template source project ```Project1/Project1.csproj```.
+
+```
+{
+  "symbols": {
+    "existingProject": {
+      ...
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "ExistingProject/ExistingProject.csproj",
+      "fileRename": "ExistingProjectPath" // Must be same as targetFile
+    }
+  },
+  "postActions": [
+    {
+      "Description": "Add ProjectReference to ExistingProject/ExistingProject.csproj",
+      "applyFileRenamesToArgs": [
+        "targetFiles" // Must be specified
+      ],
+      "args": {
+        "targetFiles": [
+          "ExistingProjectPath" // Must be same as fileRename
+        ],
+        "referenceType": "project",
+        "reference": "Project1/Project1.csproj"
+      }
+    }]
+}
+```
+
+The template above:
+- Configures the ```existingProject``` parameter *symbol* with a ```fileRename``` configuration. 
+- Instructs the *'add reference to a project file'* post action to apply ```fileRename``` to the ```targetFiles``` argument.
+- Uses the value passed to the ```existingProject``` *symbol* to replace the value of the matching  ```targetFiles```.
+
+This template can be instantiated using:
+
+```dotnet new [templateName] --existingProject src/AlreadyExisting/AlreadyExisting.csproj```
+
+
 # Add project(s) to a solution file
 
  - **Action ID** : `D396686C-DE0E-4DE6-906D-291CD29FC5DE`

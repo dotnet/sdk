@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -429,11 +426,9 @@ namespace Microsoft.TemplateEngine.Utils
                 throw new IOException($"File already exists {targetPath}");
             }
 
-            using (Stream s = OpenRead(sourcePath))
-            using (Stream t = CreateFile(targetPath))
-            {
-                s.CopyTo(t);
-            }
+            using Stream s = OpenRead(sourcePath);
+            using Stream t = CreateFile(targetPath);
+            s.CopyTo(t);
         }
 
         public void FileDelete(string path)
@@ -526,11 +521,9 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string ReadAllText(string path)
         {
-            using (Stream s = OpenRead(path))
-            using (StreamReader r = new(s, Encoding.UTF8, true, 8192, true))
-            {
-                return r.ReadToEnd();
-            }
+            using Stream s = OpenRead(path);
+            using StreamReader r = new(s, Encoding.UTF8, true, 8192, true);
+            return r.ReadToEnd();
         }
 
         public byte[] ReadAllBytes(string path)
@@ -539,22 +532,18 @@ namespace Microsoft.TemplateEngine.Utils
             using Stream s = OpenRead(path);
             if (s is not MemoryStream ms)
             {
-                using (MemoryStream stream = new())
-                {
-                    s.CopyTo(stream);
-                    return stream.ToArray();
-                }
+                using MemoryStream stream = new();
+                s.CopyTo(stream);
+                return stream.ToArray();
             }
             return ms.ToArray();
         }
 
         public void WriteAllText(string path, string value)
         {
-            using (Stream s = CreateFile(path))
-            using (StreamWriter r = new(s, Encoding.UTF8, 8192, true))
-            {
-                r.Write(value);
-            }
+            using Stream s = CreateFile(path);
+            using StreamWriter r = new(s, Encoding.UTF8, 8192, true);
+            r.Write(value);
         }
 
         public FileAttributes GetFileAttributes(string file)
@@ -700,7 +689,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// Currently not implemented in <see cref="InMemoryFileSystem"/>.
         /// Just returns <see cref="IDisposable"/> object, but never calls callback.
         /// </summary>
-        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        public IDisposable WatchFileChanges(string filePath, FileSystemEventHandler fileChanged)
         {
             return new MemoryStream(); //Just some disposable dummy
         }
@@ -791,7 +780,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 Name = name;
                 FullPath = fullPath;
-                _data = Array.Empty<byte>();
+                _data = [];
             }
 
             public string Name { get; }

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Newtonsoft.Json.Linq;
 
@@ -18,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         public IReadOnlyList<string> GlobalForms { get; }
 
-        internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Array.Empty<string>());
+        internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel([]);
 
         // by default, symbols get the "identity" value form, for a direct replacement
         internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new[] { IdentityValueFormFactory.FormIdentifier });

@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -62,7 +59,7 @@ namespace Microsoft.TemplateEngine.Utils
                 return null;
             }
 
-            if (!literal.Contains("\""))
+            if (!literal.Contains('"'))
             {
                 if (TryResolveBooleanValue(literal, out bool parsedBool))
                 {
@@ -231,7 +228,7 @@ namespace Microsoft.TemplateEngine.Utils
             return false;
         }
 
-        private static bool TryResolveFloatValue(string? literal, out double parsed) => ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out parsed);
+        private static bool TryResolveFloatValue(string? literal, out double parsed) => ParserExtensions.DoubleTryParseCurrentOrInvariant(literal, out parsed);
 
         private static bool TryResolveIntegerValue(string? literal, out long parsed) => long.TryParse(literal, out parsed);
 

@@ -187,7 +187,7 @@ Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.Rea
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.ReadAllText(string! path) -> string!
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
-Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WatchFileChanges(string! filePath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo
 Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo.AddMatchDisposition(Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo! newDisposition) -> void
@@ -232,7 +232,7 @@ const Microsoft.TemplateEngine.Abstractions.Installer.InstallerConstants.NuGetSo
 const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.DisplayName.get -> string!
-Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.GetBoundValueAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings, string! bindname, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string?>!
+Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.GetBoundValueAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings, string! bindName, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string?>!
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.RequiresPrefixMatch.get -> bool
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.SourcePrefix.get -> string?
 Microsoft.TemplateEngine.Abstractions.Components.ISdkInfoProvider

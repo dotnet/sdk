@@ -1,3 +1,6 @@
+# templating-search-cache-updater
+# https://dev.azure.com/dnceng/internal/_build?definitionId=1025
+
 # Don't trigger for CI events: push, PR created etc.
 trigger: none
 # Trigger periodically instead.
@@ -15,160 +18,151 @@ parameters:
   type: boolean
   default: true
 
-pool:
-  name: NetCore1ESPool-Internal
-  demands: ImageOverride -equals Build.Ubuntu.2004.Amd64
+variables:
+# Variables used: DncEngInternalBuildPool
+- template: /eng/common/templates-official/variables/pool-providers.yml
 
-steps:
-- checkout: self
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-- script: '$(Build.SourcesDirectory)/build.sh'
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+    stages:
+    - stage: Build
+      jobs:
+      - job: Create
+        pool:
+          name: $(DncEngInternalBuildPool)
+          image: 1es-ubuntu-2204
+          os: linux
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(Build.ArtifactStagingDirectory)
+            artifactName: Test_LogResults
+          - output: pipelineArtifact
+            targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
+            artifactName: ArtifactsToPublish
 
-- task: CopyFiles@2
-  displayName: Gather Test Log and Results
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/artifacts'
-    Contents: |
-     log/**/*
-     TestResults/**/*
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  continueOnError: true
-  condition: always()
+        steps:
+        - script: $(Build.SourcesDirectory)/build.sh
+          displayName: Build
 
-- task: PublishBuildArtifacts@1
-  displayName: Publish Test Log and Results
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: Test_LogResults
-    publishLocation: Container
-  continueOnError: true
-  condition: always()
+        - task: CopyFiles@2
+          displayName: Gather Test Log and Results
+          inputs:
+            SourceFolder: $(Build.SourcesDirectory)/artifacts
+            Contents: |
+              log/**/*
+              TestResults/**/*
+            TargetFolder: $(Build.ArtifactStagingDirectory)
+          continueOnError: true
+          condition: always()
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 3.1'
-  inputs:
-    packageType: sdk
-    version: 3.1.x
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 6.0.100
+          inputs:
+            packageType: sdk
+            version: 6.0.100
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 5.0.100'
-  inputs:
-    packageType: sdk
-    version: 5.0.100
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 6.0.300
+          inputs:
+            packageType: sdk
+            version: 6.0.300
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 5.0.400'
-  inputs:
-    packageType: sdk
-    version: 5.0.400
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 6.0.400
+          inputs:
+            packageType: sdk
+            version: 6.0.400
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 6.0.100'
-  inputs:
-    packageType: sdk
-    version: 6.0.100
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 7.0.100
+          inputs:
+            packageType: sdk
+            version: 7.0.100
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 6.0.300'
-  inputs:
-    packageType: sdk
-    version: 6.0.300
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 7.0.200
+          inputs:
+            packageType: sdk
+            version: 7.0.200
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 6.0.400'
-  inputs:
-    packageType: sdk
-    version: 6.0.400
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - task: UseDotNet@2
+          displayName: Use .NET 8.0.200
+          inputs:
+            packageType: sdk
+            version: 8.0.200
+            installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 7.0.100'
-  inputs:
-    packageType: sdk
-    version: 7.0.100
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - bash: >
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+            -Channel 7.0.3xx
+            -Quality daily
+            -InstallDir $(Build.SourcesDirectory)/.dotnet
+            -SkipNonVersionedFiles
+          displayName: Install daily .NET 7.0.3xx
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 7.0.200'
-  inputs:
-    packageType: sdk
-    version: 7.0.200
-    installationPath: $(Build.SourcesDirectory)/.dotnet
+        - bash: >
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+            -Channel 8.0.1xx
+            -Quality daily
+            -InstallDir $(Build.SourcesDirectory)/.dotnet
+            -SkipNonVersionedFiles
+          displayName: Install latest daily .NET version
 
-- bash: >
-    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-    -Channel 7.0.3xx
-    -Quality daily
-    -InstallDir $(Build.SourcesDirectory)/.dotnet
-    -SkipNonVersionedFiles
-  displayName: Install daily .NET 7.0.3xx
+        - bash: >
+            $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net9.0/Microsoft.TemplateSearch.TemplateDiscovery.dll --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
+          displayName: Run Cache Updater
 
-- bash: >
-    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-    -Channel 8.0.1xx
-    -Quality daily
-    -InstallDir $(Build.SourcesDirectory)/.dotnet
-    -SkipNonVersionedFiles
-  displayName: Install latest daily .NET version 
+        - task: CopyFiles@2
+          displayName: Copy artifacts to publish
+          inputs:
+            SourceFolder: $(System.DefaultWorkingDirectory)/NugetDownloadDirectory/SearchCache/
+            Contents: |
+              NuGetTemplateSearchInfo*.json
+              nonTemplatePacks.json
+            TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
 
-- bash: >
-    $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net8.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
-    --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
-  displayName: Run Cache Updater
+      - ${{ if eq(parameters.publishToBlob, true) }}:
+        # An entirely separate job is required to run AzureFileCopy@6, which is a Windows-only task.
+        # If the Create job was rewritten to use PowerShell instead of Bash, Create and Publish could be combined into a single Windows job.
+        - job: Publish
+          dependsOn: Create
+          pool:
+            name: $(DncEngInternalBuildPool)
+            image: 1es-windows-2022
+            os: windows
+          templateContext:
+            inputs:
+            - input: pipelineArtifact
+              targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
+              artifactName: ArtifactsToPublish
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: $(System.DefaultWorkingDirectory)/NugetDownloadDirectory/SearchCache/
-    Contents: | 
-      NuGetTemplateSearchInfo*.json
-      nonTemplatePacks.json
-    TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
-
-- publish: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
-  artifact: outputs
-  displayName: Publish Artifacts
-
-- ${{ if eq(parameters.publishToBlob, true) }}:
-  - script: '$(Build.SourcesDirectory)/eng/SearchCache/InstallAzureCLI.sh'
-    displayName: Install Azure CLI
-
-  - bash: az config set extension.use_dynamic_install=yes_without_prompt
-    displayName: Disable Azure CLI prompts
-
-  - bash: >
-      az storage azcopy blob upload 
-      -c $(CacheFileStorageContainer)
-      --account-name $(CacheFileStorageAccount) 
-      -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfoVer2.json' 
-      --sas-token "$(CacheFileStorageSasToken)"
-      -d NuGetTemplateSearchInfoVer2.json
-      | tee upload.log
-      && grep ".*Number of Transfers Completed: 1" upload.log || (echo ; echo "Cache file upload failed"; false)
-    displayName: Upload to blob storage
-
-  - bash: >
-      az storage azcopy blob upload 
-      -c $(LegacyCacheFileStorageContainer)
-      --account-name $(LegacyCacheFileStorageAccount) 
-      -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfo.json' 
-      --sas-token "$(LegacyCacheFileStorageSasToken)"
-      -d NuGetTemplateSearchInfo.json
-      | tee upload-legacy.log
-      && grep ".*Number of Transfers Completed: 1" upload-legacy.log || (echo ; echo "Legacy cache file upload failed"; false)
-    displayName: Upload legacy file to blob storage
-
-  - bash: >
-      az storage azcopy blob upload 
-      -c $(NonTemplatePacksFileStorageContainer)
-      --account-name $(NonTemplatePacksFileStorageAccount) 
-      -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/nonTemplatePacks.json' 
-      --sas-token "$(NonTemplatePacksFileStorageSasToken)"
-      -d nonTemplatePacks.json
-      | tee upload-non-template-packs.log
-      && grep ".*Number of Transfers Completed: 1" upload-non-template-packs.log || (echo ; echo "Legacy cache file upload failed"; false)
-    displayName: Upload non template packages file to blob storage
+          steps:
+          - task: AzureFileCopy@6
+            displayName: Upload to blob storage
+            inputs:
+              SourcePath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/*.json
+              # Service connection: https://dnceng.visualstudio.com/internal/_settings/adminservices?resourceId=010b0bdc-9487-484f-af2d-ca3ae3235b84
+              azureSubscription: DOTNET-Templating - PME
+              Destination: AzureBlob
+              # These variables are defined in the pipeline's Variables UI.
+              storage: $(CacheFileStorageAccount)
+              ContainerName: $(CacheFileStorageContainer)

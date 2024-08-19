@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.Common
@@ -10,10 +8,10 @@ namespace Microsoft.TemplateSearch.Common
     [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data.")]
     internal class PackToTemplateEntry
     {
-        internal PackToTemplateEntry(string version, List<TemplateIdentificationEntry> templateinfo)
+        internal PackToTemplateEntry(string version, List<TemplateIdentificationEntry> templateIdentificationEntry)
         {
             Version = version;
-            TemplateIdentificationEntry = templateinfo;
+            TemplateIdentificationEntry = templateIdentificationEntry;
         }
 
         [JsonProperty]
@@ -23,7 +21,7 @@ namespace Microsoft.TemplateSearch.Common
         internal long TotalDownloads { get; set; }
 
         [JsonProperty]
-        internal IReadOnlyList<string> Owners { get; set; } = Array.Empty<string>();
+        internal IReadOnlyList<string> Owners { get; set; } = [];
 
         [JsonProperty]
         internal bool Reserved { get; set; }
