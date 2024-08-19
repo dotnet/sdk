@@ -39,6 +39,11 @@
         <target state="needs-review-translation">{0} não foi encontrado no NuGet feeds {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Ignorando a verificação de assinatura do pacote NuGet.</target>
@@ -72,6 +77,11 @@
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
         <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
         <target state="translated">Ignorar a validação da assinatura do pacote NuGet. A validação da assinatura do NuGet não está disponível no Linux ou macOS https://aka.ms/workloadskippackagevalidation .</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
         <note />
       </trans-unit>
     </body>

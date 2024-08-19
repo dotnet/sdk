@@ -132,17 +132,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return nupkgPath;
         }
 
-        private bool verbosityGreaterThanMinimal()
-        {
-            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
-                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
-        }
+        private bool VerbosityGreaterThanMinimal() =>
+            _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
+            _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+
+        private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
 
         private async Task VerifySigning(string nupkgPath, SourceRepository repository)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (verbosityGreaterThanMinimal())
+                if (VerbosityGreaterThanMinimal())
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
@@ -158,20 +158,21 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
                 resource.AllRepositorySigned)
             {
-                if (!_shouldUsePackageSourceMapping)
+                string commandOutput;
+                if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
+                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput)))
                 {
-                    if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out string commandOutput))
-                    {
-                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
-                    }
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
-                else
+
+                if (DiagnosticVerbosity())
                 {
-                    if (!FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
-                    {
-                        throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
-                    }
+                    _reporter.WriteLine(LocalizableStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
                 }
+            }
+            else if (DiagnosticVerbosity())
+            {
+                _reporter.WriteLine(LocalizableStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
             }
         }
 
