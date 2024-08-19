@@ -779,6 +779,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
             public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public bool WouldThrowException() => false;
         }
     }
 

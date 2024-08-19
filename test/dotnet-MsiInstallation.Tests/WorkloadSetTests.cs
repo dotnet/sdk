@@ -274,24 +274,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
             AddNuGetSource(@"C:\SdkTesting\workloadsets", SdkTestingDirectory);
         }
 
-        [Fact]
-        public void UpdateWorkloadSetViaGlobalJson()
+        [Theory]
+        [InlineData("restore")]
+        [InlineData("update")]
+        [InlineData("install")]
+        public void UseGlobalJsonToSpecifyWorkloadSet(string command)
         {
             SetupWorkloadSetInGlobalJson(out var originalRollback);
 
-            VM.CreateRunCommand("dotnet", "workload", "update").WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
-            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
-        }
-
-        [Fact]
-        public void InstallWorkloadSetViaGlobalJson()
-        {
-            SetupWorkloadSetInGlobalJson(out var originalRollback);
-
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
-                .WithWorkingDirectory(SdkTestingDirectory)
-                .Execute().Should().Pass();
-
+            string[] args = command.Equals("install") ? ["dotnet", "workload", "install", "aspire"] : ["dotnet", "workload", command];
+            VM.CreateRunCommand(args).WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
             GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
         }
 

@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
                 // If there's a workload set version specified in the global.json file, we need to make sure the workload set is installed before we try to discover workload ids.
                 if (!string.IsNullOrWhiteSpace(workloadSetVersionFromGlobalJson))
                 {
-                    if (creationResult.WorkloadResolver.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider provider && provider.WouldThrowException())
+                    if (creationResult.WorkloadResolver.GetWorkloadManifestProvider().WouldThrowException())
                     {
                         new WorkloadUpdateCommand(_result).Execute();
                     }
