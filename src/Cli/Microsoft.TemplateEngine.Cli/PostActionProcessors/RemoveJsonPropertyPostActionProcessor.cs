@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return null;
             }
 
-            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator, createPath);
+            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator);
 
             if (parentProperty is not null && parentProperty[propertyName] is not null)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return jsonContent;
         }
 
-        private static JsonNode? FindJsonNode(JsonNode content, string? nodePath, string pathSeparator, bool createPath)
+        private static JsonNode? FindJsonNode(JsonNode content, string? nodePath, string pathSeparator)
         {
             if (nodePath is null)
             {
@@ -123,13 +123,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return null;
                 }
 
-                JsonNode? childNode = node[property];
-                if (childNode is null && createPath)
-                {
-                    node[property] = childNode = new JsonObject();
-                }
-
-                node = childNode;
+                node = node[property];
             }
 
             return node;
