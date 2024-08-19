@@ -402,7 +402,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "AppWithLaunchSettings";
