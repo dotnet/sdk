@@ -65,7 +65,7 @@ namespace Microsoft.NET.Restore.Tests
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
-                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .WithEnvironmentVariable("NUGET_PACKAGES", "")
                 .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
                 .Execute().Should().Pass();
 
