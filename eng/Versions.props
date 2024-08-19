@@ -166,7 +166,6 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
     <VSRedistCommonWindowsDesktopSharedFrameworkx6410PackageVersion>10.0.0-alpha.1.24415.4</VSRedistCommonWindowsDesktopSharedFrameworkx6410PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6410PackageVersion>10.0.0-alpha.1.24415.4</VSRedistCommonWindowsDesktopTargetingPackx6410PackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24415.4</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24415.4</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
