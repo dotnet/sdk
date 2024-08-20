@@ -225,9 +225,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
-    [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: sharedOutput.ToString())
