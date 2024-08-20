@@ -153,7 +153,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net8.0-windows' or greater -->
   <Target Name="_CheckForInvalidTfmForWindowsSDKXamlDependencies"
           AfterTargets="ResolvePackageAssets"
-          Condition=" !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0-windows'))
+          Condition=" !('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows')
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
