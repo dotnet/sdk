@@ -1,0 +1,81 @@
+# This YAML is used by these PR pipelines:
+#
+# - sdk-source-build
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=286
+# - sdk-unified-build
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=287
+# - sdk-unified-build-full
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=288
+# - dotnet-sdk-source-build-internal
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1378
+
+trigger: none
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    exclude:
+    - release/*.0.2xx
+    - release/*.0.3xx
+    - release/*.0.4xx
+
+parameters:
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to push to
+  type: string
+  default: ' '
+
+- name: disableBuild
+  displayName: Skip the VMR Build stage
+  type: boolean
+  default: false
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+
+- ${{ if ne(parameters.vmrBranch, ' ') }}:
+  - name: VmrBranch
+    value: ${{ replace(parameters.vmrBranch, ' ', '') }}
+- ${{ else }}:
+  - name: VmrBranch
+    value: ${{ replace(replace(variables['System.PullRequest.TargetBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
+
+# enable source-only build for pipelines with the -source-build suffix
+- name: isSourceOnlyBuild
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
+
+resources:
+  repositories:
+  - repository: vmr
+    type: github
+    name: dotnet/dotnet
+    endpoint: dotnet
+    ref: ${{ variables.VmrBranch }}
+
+stages:
+# You can temporarily disable the VMR Build stage by setting the disableBuild variable
+- ${{ if not(parameters.disableBuild) }}:
+  - template: templates/stages/vmr-build.yml
+    parameters:
+      vmrBranch: ${{ variables.VmrBranch }}
+      isBuiltFromVmr: false
+      isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+      ${{ if contains(variables['Build.DefinitionName'], '-full') }}:
+        scope: full
+      ${{ elseif eq(variables.isSourceOnlyBuild, 'true') }}:
+        scope: ultralite
+      ${{ else }}:
+        scope: lite
+
+# In case the VMR Build stage is temporarily disabled, the VMR synchronization step is run to validate
+# that the PR can be merged and later synchronized into the VMR without problems.
+- ${{ else }}:
+  - stage: Synchronize_VMR
+    displayName: Synchronize VMR
+    dependsOn: []
+    jobs:
+    - template: templates/jobs/vmr-synchronization.yml
+      parameters:
+        vmrBranch: ${{ variables.VmrBranch }}
+        noPush: true

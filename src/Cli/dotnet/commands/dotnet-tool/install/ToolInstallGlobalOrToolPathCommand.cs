@@ -19,6 +19,7 @@ using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Tool.List;
 using static System.Formats.Asn1.AsnWriter;
 using System.CommandLine.Parsing;
+using static System.Threading.Lock;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
             var restoreAction = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
             nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity);
@@ -157,6 +158,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             IToolPackage oldPackageNullable = GetOldPackage(toolPackageStoreQuery, packageId);
 
+            if (oldPackageNullable != null)
+            {
+                NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+
+                if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
+                {
+                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId, oldPackageNullable.Version.ToNormalizedString()).Green());
+                    return 0;
+                }   
+            }
+
             using (var scope = new TransactionScope(
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
@@ -224,6 +236,22 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             }
             return 0;
+        }
+
+        private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange versionRange, IToolPackageDownloader toolPackageDownloader)
+        {
+            return toolPackageDownloader.GetNuGetVersion(
+                packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                packageId: packageId,
+                versionRange: versionRange,
+                verbosity: _verbosity,
+                isGlobalTool: true
+            );
+        }
+
+        private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
+        {
+            return oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version);
         }
 
         private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)
