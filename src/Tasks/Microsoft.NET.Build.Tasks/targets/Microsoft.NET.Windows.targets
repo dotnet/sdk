@@ -91,7 +91,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS"
                                     Value="$(CsWinRTUseWindowsUIXamlProjections)"
-                                    Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0-windows'))"
+                                    Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows'"
                                     Trim="true" />
   </ItemGroup>
 
