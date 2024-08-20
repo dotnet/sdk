@@ -91,9 +91,9 @@ namespace Microsoft.DotNet.Tools.Tool.List
         {
             try
             {
-                // Attempt to read the commands collection
+                // Attempt to read the command
                 // If it fails, print a warning and treat as no commands
-                return package.Commands.Count >= 0;
+                return package.Command is not null;
             }
             catch (Exception ex) when (ex is ToolConfigurationException)
             {
