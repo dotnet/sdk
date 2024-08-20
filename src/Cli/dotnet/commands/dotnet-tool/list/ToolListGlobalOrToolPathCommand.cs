@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 p => p.Version.ToNormalizedString());
             table.AddColumn(
                 LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
+                p => p.Command.Name.ToString());
 
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
         }
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 {
                     PackageId = p.Id.ToString(),
                     Version = p.Version.ToNormalizedString(),
-                    Commands = p.Commands.Select(c => c.Name.Value).ToArray()
+                    Commands = [p.Command.Name.Value]
                 }).ToArray()
             };
             var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
