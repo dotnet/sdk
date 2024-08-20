@@ -253,50 +253,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     }
 
     /// <summary>
-    /// Gets docker credentials from the environment variables based on registry mode.
-    /// </summary>
-    internal static (string? credU, string? credP) GetDockerCredentialsFromEnvironment(RegistryMode mode)
-    {
-        if (mode == RegistryMode.Push)
-        {
-            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectUser);
-            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PushHostObjectPass);
-
-            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
-            {
-                // Fallback to the old environment variables
-                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
-                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
-            }
-
-            return (credU, credP);
-        }
-        else if (mode == RegistryMode.Pull)
-        {
-            return (Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser),
-                    Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass));
-        }
-        else if (mode == RegistryMode.PullFromOutput)
-        {
-            string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectUser);
-            string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.PullHostObjectPass);
-
-            if (string.IsNullOrEmpty(credU) || string.IsNullOrEmpty(credP))
-            {
-                // Fallback to the old environment variables
-                return (Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser),
-                        Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass));
-            }
-
-            return (credU, credP);
-        }
-        else
-        {
-            throw new InvalidEnumArgumentException(nameof(mode), (int)mode, typeof(RegistryMode));
-        }
-    }
-
-    /// <summary>
     /// Implements the Docker OAuth2 Authentication flow as documented at <see href="https://docs.docker.com/registry/spec/auth/oauth/"/>.
     /// </summary
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryOAuthPostAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, CancellationToken cancellationToken)
