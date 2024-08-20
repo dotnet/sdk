@@ -61,6 +61,43 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("{}");
         }
 
+        [Fact]
+        public void AppFailsDueToMissingCache()
+        {
+            var testAppName = "NuGetConfigDependentProject";
+            var profileProjectName = "NuGetConfigProfile";
+            var targetManifestFileName = "NuGetConfigFilterProfile.xml";
+
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var profileProjectPath = _testAssetsManager.CopyTestAsset(profileProjectName).WithSource().Path;
+            var profileFilter = Path.Combine(profileProjectPath, targetManifestFileName);
+
+            new DotnetRestoreCommand(Log)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? _defaultConfiguration;
+
+            new DotnetPublishCommand(Log,
+                    "-f", _tfm,
+                    "--manifest", profileFilter)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, _tfm, "publish", $"{testAppName}.dll");
+
+            new DotnetCommand(Log)
+                .Execute(outputDll)
+                .Should().Fail()
+                .And.HaveStdErrContaining($"Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'NuGet.Configuration, Version=4.3.0.5, Culture=neutral, PublicKeyToken=31bf3856ad364e35'. The system cannot find the file specified.{Environment.NewLine}" +
+                    $"File name: 'NuGet.Configuration, Version=4.3.0.5, Culture=neutral, PublicKeyToken=31bf3856ad364e35'");
+        }
+
         //  Windows only for now due to https://github.com/dotnet/cli/issues/7501
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/cli/issues/12482")]
         public void ItPublishesAnAppWithMultipleProfiles()

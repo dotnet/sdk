@@ -33,6 +33,34 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining(expectOutput);
         }
 
+        [Fact]
+        public void WhenDotnetRootIsSetItShouldSetDotnetRootToDirectoryOfMuxer()
+        {
+            string expectDotnetRoot = "OVERRIDE VALUE";
+
+            var projectRoot = SetupDotnetRootEchoProject();
+            var processArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToUpperInvariant();
+            var runCommand = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(projectRoot);
+
+            if (Environment.Is64BitProcess)
+            {
+                runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", expectDotnetRoot);
+                runCommand.EnvironmentToRemove.Add("DOTNET_ROOT(x86)");
+            }
+            else
+            {
+                runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT(x86)", expectDotnetRoot);
+                runCommand.EnvironmentToRemove.Add("DOTNET_ROOT");
+            }
+
+            runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
+            runCommand
+                .Execute("--no-build")
+                .Should().Pass()
+                .And.HaveStdOutContaining(GetExpectOutput(expectDotnetRoot));
+        }
+
         private string SetupDotnetRootEchoProject([CallerMemberName] string callingMethod = null, string targetFramework = null)
         {
             var testAsset = _testAssetsManager

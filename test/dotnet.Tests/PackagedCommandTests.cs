@@ -128,6 +128,26 @@ namespace Microsoft.DotNet.Tests
         }
 
         [Fact]
+        public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
+                .WithSource();
+
+            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("tool-with-output-name")
+                .Should().HaveStdOutContaining("Tool with output name!")
+                     .And.NotHaveStdErr()
+                     .And.Pass();
+        }
+
+        [Fact]
         public void ItShowsErrorWhenToolIsNotRestored()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithNonExistingToolDependency", testAssetSubdirectory: "NonRestoredTestProjects")
