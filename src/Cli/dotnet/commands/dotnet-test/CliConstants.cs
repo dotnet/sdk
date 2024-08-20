@@ -20,35 +20,30 @@ namespace Microsoft.DotNet.Cli
 
     internal static class TestStates
     {
-        internal const string Passed = "Passed";
-
-        internal const string Skipped = "Skipped";
-
-        internal const string Failed = "Failed";
-
-        internal const string Error = "Error";
-
-        internal const string Timeout = "Timeout";
-
-        internal const string Cancelled = "Cancelled";
+        internal const byte Passed = 0;
+        internal const byte Skipped = 1;
+        internal const byte Failed = 2;
+        internal const byte Error = 3;
+        internal const byte Timeout = 4;
+        internal const byte Cancelled = 5;
     }
 
     internal static class SessionEventTypes
     {
-        internal const string TestSessionStart = "TestSessionStart";
-        internal const string TestSessionEnd = "TestSessionEnd";
+        internal const byte TestSessionStart = 0;
+        internal const byte TestSessionEnd = 1;
     }
 
     internal static class HandshakeInfoPropertyNames
     {
-        internal const string PID = "PID";
-        internal const string Architecture = "Architecture";
-        internal const string Framework = "Framework";
-        internal const string OS = "OS";
-        internal const string ProtocolVersion = "ProtocolVersion";
-        internal const string HostType = "HostType";
-        internal const string ModulePath = "ModulePath";
-        internal const string ExecutionId = "ExecutionId";
+        internal const byte PID = 0;
+        internal const byte Architecture = 1;
+        internal const byte Framework = 2;
+        internal const byte OS = 3;
+        internal const byte ProtocolVersion = 4;
+        internal const byte HostType = 5;
+        internal const byte ModulePath = 6;
+        internal const byte ExecutionId = 7;
     }
 
     internal static class ProtocolConstants

@@ -181,14 +181,14 @@ namespace Microsoft.DotNet.Cli
             {
                 var successfulTestResultMessage = successfulTestResultEventArgs.SuccessfulTestResultMessage;
                 VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, " +
-                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}, {successfulTestResultMessage.ModulePath}");
+                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}");
             }
             else if (args is FailedTestResultEventArgs failedTestResultEventArgs)
             {
                 var failedTestResultMessage = failedTestResultEventArgs.FailedTestResultMessage;
                 VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {failedTestResultMessage.Uid}, {failedTestResultMessage.DisplayName}, " +
                 $"{failedTestResultMessage.State}, {failedTestResultMessage.Reason}, {failedTestResultMessage.ErrorMessage}," +
-                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}, {failedTestResultMessage.ModulePath}");
+                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}");
             }
         }
 
@@ -202,7 +202,7 @@ namespace Microsoft.DotNet.Cli
             var fileArtifactInfo = args.FileArtifactInfo;
             VSTestTrace.SafeWriteTrace(() => $"FileArtifactInfo: {fileArtifactInfo.FullPath}, {fileArtifactInfo.DisplayName}, " +
                 $"{fileArtifactInfo.Description}, {fileArtifactInfo.TestUid}, {fileArtifactInfo.TestDisplayName}, " +
-                $"{fileArtifactInfo.SessionUid}, {fileArtifactInfo.ModulePath}");
+                $"{fileArtifactInfo.SessionUid}");
         }
 
         private void OnSessionEventReceived(object sender, SessionEventArgs args)
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             var sessionEvent = args.SessionEvent;
-            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
+            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}");
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)

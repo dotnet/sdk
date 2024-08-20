@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Tools.Test
 
         public object Deserialize(Stream stream)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<byte, string> properties = new();
 
             ushort fieldCount = ReadShort(stream);
 
             for (int i = 0; i < fieldCount; i++)
             {
-                properties.Add(ReadString(stream), ReadString(stream));
+                properties.Add(ReadByte(stream), ReadString(stream));
             }
 
             return new HandshakeInfo(properties);
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Test
             }
 
             WriteShort(stream, (ushort)handshakeInfo.Properties.Count);
-            foreach (KeyValuePair<string, string> property in handshakeInfo.Properties)
+            foreach (KeyValuePair<byte, string> property in handshakeInfo.Properties)
             {
                 WriteField(stream, property.Key);
                 WriteField(stream, property.Value);

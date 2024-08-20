@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static HandshakeInfo CreateHandshakeInfo() =>
-            new(new Dictionary<string, string>
+            new(new Dictionary<byte, string>
             {
                 { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
                 { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },

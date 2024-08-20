@@ -34,10 +34,6 @@ namespace Microsoft.DotNet.Tools.Test
         |---File SessionUid Size---| (4 bytes)
         |---File SessionUid Value---| (n bytes)
 
-        |---File ModulePath Id---| 1 (2 bytes)
-        |---File ModulePath Size---| (4 bytes)
-        |---File ModulePath Value---| (n bytes)
-
         |---File ExecutionId Id---| 1 (2 bytes)
         |---File ExecutionId Size---| (4 bytes)
         |---File ExecutionId Value---| (n bytes)
@@ -55,7 +51,6 @@ namespace Microsoft.DotNet.Tools.Test
             string? testUid = null;
             string? testDisplayName = null;
             string? sessionUid = null;
-            string? modulePath = null;
             string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
@@ -91,10 +86,6 @@ namespace Microsoft.DotNet.Tools.Test
                         sessionUid = ReadString(stream);
                         break;
 
-                    case FileArtifactInfoFieldsId.ModulePath:
-                        modulePath = ReadString(stream);
-                        break;
-
                     case FileArtifactInfoFieldsId.ExecutionId:
                         executionId = ReadString(stream);
                         break;
@@ -106,7 +97,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, modulePath, executionId);
+            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -123,7 +114,6 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, FileArtifactInfoFieldsId.TestUid, fileArtifactInfo.TestUid);
             WriteField(stream, FileArtifactInfoFieldsId.TestDisplayName, fileArtifactInfo.TestDisplayName);
             WriteField(stream, FileArtifactInfoFieldsId.SessionUid, fileArtifactInfo.SessionUid);
-            WriteField(stream, FileArtifactInfoFieldsId.ModulePath, fileArtifactInfo.ModulePath);
             WriteField(stream, FileArtifactInfoFieldsId.ExecutionId, fileArtifactInfo.ExecutionId);
 
         }
@@ -135,7 +125,6 @@ namespace Microsoft.DotNet.Tools.Test
             (fileArtifactInfo.TestUid is null ? 0 : 1) +
             (fileArtifactInfo.TestDisplayName is null ? 0 : 1) +
             (fileArtifactInfo.SessionUid is null ? 0 : 1) +
-            (fileArtifactInfo.ModulePath is null ? 0 : 1) +
             (fileArtifactInfo.ExecutionId is null ? 0 : 1));
     }
 }
