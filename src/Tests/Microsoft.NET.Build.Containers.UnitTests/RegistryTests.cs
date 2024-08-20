@@ -456,7 +456,7 @@ public class RegistryTests : IDisposable
         {
             IsInsecure = isInsecureRegistry
         };
-        Registry registry = new(registryUri, logger, settings: settings);
+        Registry registry = new(registryUri, logger, RegistryMode.Pull, settings: settings);
 
         // Make a request.
         Task getManifest = registry.GetImageManifestAsync(repositoryName: "dotnet/runtime", reference: "latest", runtimeIdentifier: "linux-x64", manifestPicker: null!, cancellationToken: default!);

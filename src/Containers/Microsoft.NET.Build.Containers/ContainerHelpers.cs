@@ -22,11 +22,11 @@ public static class ContainerHelpers
     internal const string HostObjectPass = "DOTNET_CONTAINER_REGISTRY_PWORD";
     internal const string HostObjectPassLegacy = "SDK_CONTAINER_REGISTRY_PWORD";
 
-    internal const string PushHostObjectUser = "SDK_CONTAINER_PUSH_REGISTRY_UNAME";
-    internal const string PushHostObjectPass = "SDK_CONTAINER_PUSH_REGISTRY_PWORD";
+    internal const string PushHostObjectUser = "DOTNET_CONTAINER_PUSH_REGISTRY_UNAME";
+    internal const string PushHostObjectPass = "DOTNET_CONTAINER_PUSH_REGISTRY_PWORD";
 
-    internal const string PullHostObjectUser = "SDK_CONTAINER_PULL_REGISTRY_UNAME";
-    internal const string PullHostObjectPass = "SDK_CONTAINER_PULL_REGISTRY_PWORD";
+    internal const string PullHostObjectUser = "DOTNET_CONTAINER_PULL_REGISTRY_UNAME";
+    internal const string PullHostObjectPass = "DOTNET_CONTAINER_PULL_REGISTRY_PWORD";
 
     internal const string DockerRegistryAlias = "docker.io";
     
