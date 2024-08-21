@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
-            var command = new DotnetCommand(Log, "run")
+            var command = new DotnetCommand(Log, "run", "-v:q")
                 .WithWorkingDirectory(asset.Path);
 
             bool killed = false;
@@ -45,7 +45,15 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
                 // too complex for a simple unit test.
                 NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
-                NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                try
+                {
+                    NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine($"Error while sending SIGINT to child process: {e}");
+                    Assert.Fail($"Failed to send SIGINT to child process: {line}");
+                }
 
                 killed = true;
             };
