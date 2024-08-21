@@ -23,11 +23,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         }
 
         [Fact]
-        public void FailsWhenParentPropertyPathIsInvalid()
+        public void SucceedsAndLeavesUnmodifiedWhenParentPropertyPathIsInvalid()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
+            string originalJsonContent = @"{""property1"":{""property2"":{""property3"":""foo""}}}";
+
+            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", originalJsonContent);
 
             string parentPropertyPath = "property1:propertyX:property2";
 
@@ -42,13 +44,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 }
             };
 
-            Mock<IReporter> mockReporter = new();
-
-            mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
-                .Verifiable();
-
-            Reporter.SetError(mockReporter.Object);
-
             RemoveJsonPropertyPostActionProcessor processor = new();
 
             bool result = processor.Process(
@@ -58,12 +53,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.False(result);
-            mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid, parentPropertyPath)), Times.Once);
+            Assert.True(result);
+
+            Assert.Equal(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
         [Fact]
-        public void FailsWhenPropertyPathCasingIsNotCorrect()
+        public void SucceedsAndLeavesUnmodifiedWhenPropertyPathCasingIsNotCorrect()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
@@ -91,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.False(result);
+            Assert.True(result);
 
             Assert.Equal(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
@@ -252,7 +248,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 },
                 (Mock<IReporter> errorReporter) =>
                 {
-                    errorReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "newJsonPropertyName")), Times.Once);
+                    errorReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "jsonPropertyName")), Times.Once);
                 }),
         };
 

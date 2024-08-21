@@ -74,14 +74,11 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 jsonElementProperties.JsonPropertyName,
                 action);
 
-            if (newJsonContent is null)
+            if (newJsonContent is not null)
             {
-                return false;
+                environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString(SerializerOptions));
+                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Succeeded, jsonFileName));
             }
-
-            environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString(SerializerOptions));
-
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Succeeded, jsonFileName));
 
             return true;
         }
