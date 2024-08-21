@@ -10,15 +10,15 @@ namespace Microsoft.DotNet.Tools.Test
     /*
         |---FieldCount---| 2 bytes
 
-        |---Type Id---| 1 (2 bytes)
+        |---Type Id---| (2 bytes)
         |---Type Size---| (4 bytes)
         |---Type Value---| (n bytes)
 
-        |---SessionUid Id---| 1 (2 bytes)
+        |---SessionUid Id---| (2 bytes)
         |---SessionUid Size---| (4 bytes)
         |---SessionUid Value---| (n bytes)
 
-        |---ExecutionId Id---| 1 (2 bytes)
+        |---ExecutionId Id---| (2 bytes)
         |---ExecutionId Size---| (4 bytes)
         |---ExecutionId Value---| (n bytes)
     */

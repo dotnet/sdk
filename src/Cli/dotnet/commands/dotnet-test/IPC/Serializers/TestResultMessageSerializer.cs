@@ -10,27 +10,27 @@ namespace Microsoft.DotNet.Tools.Test
     /*
     |---FieldCount---| 2 bytes
 
-    |---Test Uid Id---| 1 (2 bytes)
+    |---Test Uid Id---| (2 bytes)
     |---Test Uid Size---| (4 bytes)
     |---Test Uid Value---| (n bytes)
 
-    |---Test DisplayName Id---| 1 (2 bytes)
+    |---Test DisplayName Id---| (2 bytes)
     |---Test DisplayName Size---| (4 bytes)
     |---Test DisplayName Value---| (n bytes)
 
-    |---Test State Id---| 1 (2 bytes)
+    |---Test State Id---| (2 bytes)
     |---Test State Size---| (4 bytes)
     |---Test State Value---| (n bytes)
 
-    |---Test Reason Id---| 1 (2 bytes)
+    |---Test Reason Id---| (2 bytes)
     |---Test Reason Size---| (4 bytes)
     |---Test Reason Value---| (n bytes)
 
-    |---Test SessionUid Id---| 1 (2 bytes)
+    |---Test SessionUid Id---| (2 bytes)
     |---Test SessionUid Size---| (4 bytes)
     |---Test SessionUid Value---| (n bytes)
 
-    |---Test ExecutionId Id---| 1 (2 bytes)
+    |---Test ExecutionId Id---| (2 bytes)
     |---Test ExecutionId Size---| (4 bytes)
     |---Test ExecutionId Value---| (n bytes)
     */
@@ -119,35 +119,35 @@ namespace Microsoft.DotNet.Tools.Test
     /*
     |---FieldCount---| 2 bytes
 
-    |---Test Uid Id---| 1 (2 bytes)
+    |---Test Uid Id---| (2 bytes)
     |---Test Uid Size---| (4 bytes)
     |---Test Uid Value---| (n bytes)
 
-    |---Test DisplayName Id---| 1 (2 bytes)
+    |---Test DisplayName Id---| (2 bytes)
     |---Test DisplayName Size---| (4 bytes)
     |---Test DisplayName Value---| (n bytes)
 
-    |---Test State Id---| 1 (2 bytes)
+    |---Test State Id---| (2 bytes)
     |---Test State Size---| (4 bytes)
     |---Test State Value---| (n bytes)
 
-    |---Test Reason Id---| 1 (2 bytes)
+    |---Test Reason Id---| (2 bytes)
     |---Test Reason Size---| (4 bytes)
     |---Test Reason Value---| (n bytes)
 
-    |---Test ErrorMessage Id---| 1 (2 bytes)
+    |---Test ErrorMessage Id---| (2 bytes)
     |---Test ErrorMessage Size---| (4 bytes)
     |---Test ErrorMessage Value---| (n bytes)
 
-    |---Test ErrorStackTrace Id---| 1 (2 bytes)
+    |---Test ErrorStackTrace Id---| (2 bytes)
     |---Test ErrorStackTrace Size---| (4 bytes)
     |---Test ErrorStackTrace Value---| (n bytes)
 
-    |---Test SessionUid Id---| 1 (2 bytes)
+    |---Test SessionUid Id---| (2 bytes)
     |---Test SessionUid Size---| (4 bytes)
     |---Test SessionUid Value---| (n bytes)
 
-    |---Test ExecutionId Id---| 1 (2 bytes)
+    |---Test ExecutionId Id---| (2 bytes)
     |---Test ExecutionId Size---| (4 bytes)
     |---Test ExecutionId Value---| (n bytes)
     */

@@ -10,31 +10,31 @@ namespace Microsoft.DotNet.Tools.Test
     /*
         |---FieldCount---| 2 bytes
 
-        |---File FullPath Id---| 1 (2 bytes)
+        |---File FullPath Id---| (2 bytes)
         |---File FullPath Size---| (4 bytes)
         |---File FullPath Value---| (n bytes)
 
-        |---File DisplayName Id---| 1 (2 bytes)
+        |---File DisplayName Id---| (2 bytes)
         |---File DisplayName Size---| (4 bytes)
         |---File DisplayName Value---| (n bytes)
 
-        |---File Description Id---| 1 (2 bytes)
+        |---File Description Id---| (2 bytes)
         |---File Description Size---| (4 bytes)
         |---File Description Value---| (n bytes)
 
-        |---File TestUid Id---| 1 (2 bytes)
+        |---File TestUid Id---| (2 bytes)
         |---File TestUid Size---| (4 bytes)
         |---File TestUid Value---| (n bytes)
 
-        |---File TestDisplayName Id---| 1 (2 bytes)
+        |---File TestDisplayName Id---| (2 bytes)
         |---File TestDisplayName Size---| (4 bytes)
         |---File TestDisplayName Value---| (n bytes)
 
-        |---File SessionUid Id---| 1 (2 bytes)
+        |---File SessionUid Id---| (2 bytes)
         |---File SessionUid Size---| (4 bytes)
         |---File SessionUid Value---| (n bytes)
 
-        |---File ExecutionId Id---| 1 (2 bytes)
+        |---File ExecutionId Id---| (2 bytes)
         |---File ExecutionId Size---| (4 bytes)
         |---File ExecutionId Value---| (n bytes)
     */
