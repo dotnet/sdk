@@ -8,8 +8,6 @@ using System.Diagnostics.Contracts;
 #nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.NativeWrapper
 {
     public static class NETCoreSdkResolverNativeWrapper
