@@ -64,6 +64,10 @@ namespace Microsoft.DotNet.Workloads.Workload
                 {
                     return null;
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    return null;
+                }
             }
 
             using (var fileStream = OpenFile())
