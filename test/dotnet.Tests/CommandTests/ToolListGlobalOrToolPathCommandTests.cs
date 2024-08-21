@@ -164,16 +164,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     )
                 });
 
