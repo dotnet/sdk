@@ -345,8 +345,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
 
-            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
-                getResolverForWorkloadSet, globalJsonWorkloadSetVersions, Reporter.Verbose);
+            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir,
+                _sdkFeatureBand,
+                _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
+                getResolverForWorkloadSet,
+                globalJsonWorkloadSetVersions,
+                Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -363,7 +367,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> workloadSetInstallRecords = GetAllWorkloadSetInstallRecords();
             foreach ((string workloadSetVersion, _) in installedWorkloadSets)
             {
+                //  Get the feature band of the workload set
                 WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+
                 List<SdkFeatureBand> referencingFeatureBands;
                 if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))
                 {
@@ -543,6 +549,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
         }
+
         public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
         {
             return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).GetGlobalJsonWorkloadSetVersions();

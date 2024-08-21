@@ -188,9 +188,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 RemoveWorkloadSets(workloadSetsToRemove, offlineCache);
 
-
                 List<WorkloadManifestRecord> manifestsToRemove = new();
-
                 var installedWorkloadManifests = GetWorkloadManifestRecords();
                 foreach (var manifestRecord in installedWorkloadManifests)
                 {

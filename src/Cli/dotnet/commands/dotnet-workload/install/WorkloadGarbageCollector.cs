@@ -40,9 +40,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         enum GCAction
         {
-            Collect,
-            KeepWithoutPacks,
-            Keep,
+            Collect = 0,
+            KeepWithoutPacks = 1,
+            Keep = 2,
         }
 
         Dictionary<string, GCAction> _workloadSets = new();
@@ -50,8 +50,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
         //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
-        //  file by removing any outdated entries in it (where ie the global.json file doesn't exist or no longer specifies the same worlkload set
-        //  version).
+        //  file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
+        //  set version).
         public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
             Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
         {
@@ -96,17 +96,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadSets = installedWorkloadSets.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.IsBaselineWorkloadSet ? GCAction.KeepWithoutPacks : GCAction.Collect);
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            if (File.Exists(installStateFilePath))
+            var installState = InstallStateContents.FromPath(installStateFilePath);
+            //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
+            if (!string.IsNullOrEmpty(installState.WorkloadVersion))
             {
-                //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
-                var installState = InstallStateContents.FromPath(installStateFilePath);
-                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
+                if (installedWorkloadSets.ContainsKey(installState.WorkloadVersion))
                 {
-                    if (installedWorkloadSets.ContainsKey(installState.WorkloadVersion))
-                    {
-                        _workloadSets[installState.WorkloadVersion] = GCAction.Keep;
-                        _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadVersion} because it is specified in the install state file {installStateFilePath}");
-                    }
+                    _workloadSets[installState.WorkloadVersion] = GCAction.Keep;
+                    _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadVersion} because it is specified in the install state file {installStateFilePath}");
+                }
+                else
+                {
+                    _verboseReporter.WriteLine($"GC: Error: Workload set version {installState.WorkloadVersion} which was specified in {installStateFilePath} was not found.  This is likely an invalid state.");
                 }
             }
             else
@@ -169,7 +170,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         existingAction = GCAction.Collect;
                     }
 
-                    //  Take the "greater" action, ie if a manifest would be KeepWithoutPacks with one resolver and Keep with another one, then it should be kept
+                    //  We should keep a manifest if it's referenced by any workload set we're planning to keep.  If there are multiple resolvers that end up referencing
+                    //  a workload manifest, we should take the "greater" action.  IE if a manifest would be KeepWithoutPacks with one resolver and Keep with another one,
+                    //  then it (and its packs) should be kept.
+                    //  The scenario where there would be a mismatch is if there's a baseline workload set that's not active referring to the same manifest as an active
+                    //  workload set.  The manifest would be marked KeepWithoutPacks via the baseline manifest, and Keep via the active workload set.
                     if (gcAction > existingAction)
                     {
                         _manifests[manifestKey] = gcAction;
