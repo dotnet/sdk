@@ -220,10 +220,11 @@ class Program
                 Arguments = dotnetArgs
             };
             TestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
+            toolCommandSpec.Environment.Add("DOTNET_ROLL_FORWARD","LatestMajor");
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 
-            var toolResult = toolCommand.WithEnvironmentVariable("DOTNET_ROLL_FORWARD","LatestMajor").Execute();
+            var toolResult = toolCommand.Execute();
 
             return toolResult;
         }
