@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Tools.Test;
@@ -18,7 +19,7 @@ namespace Microsoft.DotNet.Cli
 
         private NamedPipeServer _pipeConnection;
         private Task _namedPipeConnectionLoop;
-        private HashSet<string> _executionIds = [];
+        private ConcurrentBag<string> _executionIds = [];
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
