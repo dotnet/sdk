@@ -16,7 +16,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         WaitingForChanges,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
