@@ -162,6 +162,7 @@
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
     <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24414.5</SystemWindowsExtensionsPackageVersion>
+    <SystemIOHashingPackageVersion>9.0.0-rc.1.24414.5</SystemIOHashingPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->

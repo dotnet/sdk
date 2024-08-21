@@ -16,6 +16,7 @@
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataLoadContextVersion)" />
+    <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

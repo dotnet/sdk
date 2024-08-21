@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.IO.Hashing;
 
 namespace Microsoft.NET.TestFramework.Utilities
 {
@@ -25,10 +25,9 @@ namespace Microsoft.NET.TestFramework.Utilities
         public static FileThumbPrint Create(string path)
         {
             byte[] hashBytes;
-            using (var sha256 = SHA256.Create())
             using (var fileStream = File.OpenRead(path))
             {
-                hashBytes = sha256.ComputeHash(fileStream);
+                hashBytes = XxHash3.Hash(File.ReadAllBytes(fileStream.Name));
             }
 
             var hash = Convert.ToBase64String(hashBytes);
