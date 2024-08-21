@@ -127,14 +127,10 @@ namespace Microsoft.DotNet.Tests
                 .And.HaveStdOutContaining("I'm running on shared framework version");
         }
 
-        [Fact]
+        // Old .net tool test that doesn't work off Windows
+        [WindowsOnlyFact]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return;
-            }
-
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
                 .WithSource();
 
