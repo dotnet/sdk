@@ -5,6 +5,7 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <RestoreAdditionalProjectSources Condition="'$(TEST_PACKAGES)' != ''">$(RestoreAdditionalProjectSources);$(TEST_PACKAGES)</RestoreAdditionalProjectSources>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
   <ItemGroup>

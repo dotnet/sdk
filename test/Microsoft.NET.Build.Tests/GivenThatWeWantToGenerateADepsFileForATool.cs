@@ -105,6 +105,8 @@ class Program
                 TargetFrameworks = "netcoreapp2.0"
             };
 
+            toolReferencer.AdditionalProperties.Add("RollForward", "LatestMajor");
+
             var toolReferencerInstance = _testAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
                 .WithProjectChanges(project =>
                 {

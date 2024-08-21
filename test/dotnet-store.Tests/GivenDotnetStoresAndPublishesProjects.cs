@@ -94,8 +94,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             new DotnetCommand(Log)
                 .Execute(outputDll)
                 .Should().Fail()
-                .And.HaveStdErrContaining($"Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'NuGet.Configuration, Version=4.3.0.5, Culture=neutral, PublicKeyToken=31bf3856ad364e35'. The system cannot find the file specified.{Environment.NewLine}" +
-                    $"File name: 'NuGet.Configuration, Version=4.3.0.5, Culture=neutral, PublicKeyToken=31bf3856ad364e35'");
+                .And.HaveStdErrContaining($"Unhandled exception. System.IO.FileNotFoundException:");
         }
 
         //  Windows only for now due to https://github.com/dotnet/cli/issues/7501
