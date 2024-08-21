@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
+
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
         [UnixOnlyFact]
@@ -99,11 +100,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 {
                     return;
                 }
-
-                child = Process.GetProcessById(Convert.ToInt32(line));
-                NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
-
-                killed = true;
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while  getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             command
@@ -143,10 +161,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     return;
                 }
 
-                child = Process.GetProcessById(Convert.ToInt32(line));
-                testProcess.Kill();
-
-                killed = true;
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while  getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                    testProcess.Kill();
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             //  As of porting these tests to dotnet/sdk, it's unclear if the below is still needed
