@@ -10,7 +10,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             var testAsset = "VanillaWasm";
             var targetFramework = "net8.0";
-            var testInstance = CreateAspNetSdkTestAsset(testAsset);
+            var testInstance = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
             var build = CreateBuildCommand(testInstance);
             ExecuteCommand(build)
