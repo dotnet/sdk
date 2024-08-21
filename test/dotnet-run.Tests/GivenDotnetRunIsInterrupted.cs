@@ -39,23 +39,30 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     return;
                 }
 
-                // Simulate a SIGINT sent to a process group (i.e. both `dotnet run` and `TestAppThatWaits`).
-                // Ideally we would send SIGINT to an actual process group, but the new child process (i.e. `dotnet run`)
-                // will inherit the current process group from the `dotnet test` process that is running this test.
-                // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
-                // too complex for a simple unit test.
-                NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
-                try
+                if (int.TryParse(line, out int pid))
                 {
-                    NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
-                }
-                catch (Exception e)
-                {
-                    Log.WriteLine($"Error while sending SIGINT to child process: {e}");
-                    Assert.Fail($"Failed to send SIGINT to child process: {line}");
-                }
+                    // Simulate a SIGINT sent to a process group (i.e. both `dotnet run` and `TestAppThatWaits`).
+                    // Ideally we would send SIGINT to an actual process group, but the new child process (i.e. `dotnet run`)
+                    // will inherit the current process group from the `dotnet test` process that is running this test.
+                    // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
+                    // too complex for a simple unit test.
+                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
+                    try
+                    {
+                        NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while sending SIGINT to child process: {e}");
+                        Assert.Fail($"Failed to send SIGINT to child process: {line}");
+                    }
 
-                killed = true;
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             command
