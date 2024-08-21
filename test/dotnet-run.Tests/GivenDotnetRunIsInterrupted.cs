@@ -38,7 +38,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 {
                     return;
                 }
-
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
                 if (int.TryParse(line, out int pid))
                 {
                     // Simulate a SIGINT sent to a process group (i.e. both `dotnet run` and `TestAppThatWaits`).

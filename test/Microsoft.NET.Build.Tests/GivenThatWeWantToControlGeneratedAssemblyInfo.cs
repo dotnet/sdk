@@ -862,17 +862,4 @@ class Program
             result.StdOut.StripTerminalLoggerProgressIndicators().Should().BeEquivalentTo(expectedFrameworkDisplayName);
         }
     }
-
-    public static class TerminalLoggerExtensions
-    {
-        /// <summary>
-        /// Strip out progress markers that TerminalLogger writes to stdout (at least on Windows OS's).
-        /// This is non-visible, but impacts string comparison.
-        public static string StripTerminalLoggerProgressIndicators(this string stdout)
-        {
-            return stdout
-                .Replace("\x1b]9;4;3;\x1b\\", "") // indeterminate progress start
-                .Replace("\x1b]9;4;0;\x1b\\", ""); // indeterminate progress end
-        }
-    }
 }
