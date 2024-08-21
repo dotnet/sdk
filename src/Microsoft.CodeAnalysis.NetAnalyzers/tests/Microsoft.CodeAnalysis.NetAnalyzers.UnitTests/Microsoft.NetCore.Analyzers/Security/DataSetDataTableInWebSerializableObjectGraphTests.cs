@@ -90,7 +90,9 @@ public class MyClass
         private static async Task VerifyServiceModelCSharpAsync(string source, params DiagnosticResult[] expected)
         {
 #pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
+#pragma warning disable SYSLIB0014 // ServicePointManager is obsolete
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+#pragma warning restore SYSLIB0014 // ServicePointManager is obsolete
 #pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
             var csharpTest = new VerifyCS.Test
             {
@@ -110,7 +112,9 @@ public class MyClass
         private static async Task VerifyWebServicesCSharpAsync(string source, params DiagnosticResult[] expected)
         {
 #pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
+#pragma warning disable SYSLIB0014 // ServicePointManager is obsolete
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+#pragma warning restore SYSLIB0014 // ServicePointManager is obsolete
 #pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
             var csharpTest = new VerifyCS.Test
             {
