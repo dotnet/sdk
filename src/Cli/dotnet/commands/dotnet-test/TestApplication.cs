@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli
 
         private NamedPipeServer _pipeConnection;
         private Task _namedPipeConnectionLoop;
-        private ConcurrentBag<string> _executionIds = [];
+        private ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
 
         public void AddExecutionId(string executionId)
         {
-            _executionIds.Add(executionId);
+            _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
         public async Task<int> RunAsync(bool enableHelp)
