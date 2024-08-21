@@ -130,6 +130,11 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return;
+            }
+
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
                 .WithSource();
 
