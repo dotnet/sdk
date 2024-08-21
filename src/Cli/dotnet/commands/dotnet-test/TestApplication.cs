@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli
 
         private NamedPipeServer _pipeConnection;
         private Task _namedPipeConnectionLoop;
-        private HashSet<string> _executionIds = new();
+        private HashSet<string> _executionIds = [];
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
         public event EventHandler<EventArgs> Created;
+        public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
         public string ModulePath => _modulePath;
 
@@ -36,6 +37,11 @@ namespace Microsoft.DotNet.Cli
         {
             _modulePath = modulePath;
             _args = args;
+        }
+
+        public void AddExecutionId(string executionId)
+        {
+            _executionIds.Add(executionId);
         }
 
         public async Task<int> RunAsync(bool enableHelp)
@@ -242,7 +248,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ExecutionId, out string executionId))
             {
-                _executionIds.Add(executionId);
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _modulePath, ExecutionId = executionId });
             }
             HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
         }

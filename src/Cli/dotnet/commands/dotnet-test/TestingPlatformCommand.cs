@@ -14,9 +14,9 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly CancellationTokenSource _cancellationToken = new();
+
         private MSBuildConnectionHandler _msBuildHelper;
         private TestApplicationActionQueue _actionQueue;
-
         private Task _namedPipeConnectionLoop;
         private string[] _args;
 
@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
                     testApp.Created += OnTestApplicationCreated;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(enableHelp: true);
                 });
@@ -56,6 +57,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
                     testApp.Created += OnTestApplicationCreated;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(enableHelp: false);
                 });
@@ -253,6 +255,14 @@ namespace Microsoft.DotNet.Cli
         {
             TestApplication testApp = sender as TestApplication;
             _testApplications[testApp.ModulePath] = testApp;
+        }
+
+        private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
+        {
+            if (_testApplications.TryGetValue(args.ModulePath, out var testApp))
+            {
+                testApp.AddExecutionId(args.ExecutionId);
+            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
