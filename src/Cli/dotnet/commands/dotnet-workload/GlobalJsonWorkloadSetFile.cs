@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Workloads.Workload
     {
         string _path;
 
+        public string Path { get { return _path; } }
+
         private static JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
@@ -24,13 +26,13 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
-            _path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
+            _path = System.IO.Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
         }
 
         public void RecordWorkloadSetInGlobalJson(string globalJsonPath, string workloadSetVersion)
         {
             //  Create install state folder if needed
-            Directory.CreateDirectory(Path.GetDirectoryName(_path));
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_path));
 
             using (var fileStream = File.Open(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
@@ -269,7 +270,10 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
-                new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                workloadSetsFile.RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+                SecurityUtils.SecureFile(workloadSetsFile.Path);
             }
             else if (IsClient)
             {
@@ -288,7 +292,11 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
-                return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome).GetGlobalJsonWorkloadSetVersions();
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                var versions = workloadSetsFile.GetGlobalJsonWorkloadSetVersions();
+                SecurityUtils.SecureFile(workloadSetsFile.Path);
+                return versions;
             }
             else if (IsClient)
             {
