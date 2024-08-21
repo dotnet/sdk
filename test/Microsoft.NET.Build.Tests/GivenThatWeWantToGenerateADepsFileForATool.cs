@@ -228,7 +228,7 @@ class Program
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 
-            var toolResult = toolCommand.Execute().WithEnvironmentVariable("DOTNET_ROLL_FORWARD","LatestMajor");
+            var toolResult = toolCommand.WithEnvironmentVariable("DOTNET_ROLL_FORWARD","LatestMajor").Execute();
 
             return toolResult;
         }
