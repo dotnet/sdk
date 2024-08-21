@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -44,6 +43,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             return 0;
         }
 
+        private static string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
+
         private List<WorkloadId> RunTargetToGetWorkloadIds(IEnumerable<string> allProjects)
         {
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -55,12 +56,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             foreach (string projectFile in allProjects)
             {
                 var project = new ProjectInstance(projectFile, globalProperties, null);
+                if (!project.Targets.ContainsKey(GetRequiredWorkloadsTargetName))
+                {
+                    continue;
+                }
 
-                bool buildResult = project.Build(new[] { "_GetRequiredWorkloads" },
-                    loggers: new ILogger[]
-                    {
+                bool buildResult = project.Build([GetRequiredWorkloadsTargetName],
+                    loggers: [
                         new ConsoleLogger(Verbosity.ToLoggerVerbosity())
-                    },
+                    ],
                     remoteLoggers: Enumerable.Empty<ForwardingLoggerRecord>(),
                     targetOutputs: out var targetOutputs);
 
@@ -73,7 +77,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
                         isUserError: false);
                 }
 
-                var targetResult = targetOutputs["_GetRequiredWorkloads"];
+                var targetResult = targetOutputs[GetRequiredWorkloadsTargetName];
                 allWorkloadId.AddRange(targetResult.Items.Select(item => new WorkloadId(item.ItemSpec)));
             }
 

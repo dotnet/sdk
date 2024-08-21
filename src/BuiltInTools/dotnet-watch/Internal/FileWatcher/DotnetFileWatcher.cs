@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal class DotnetFileWatcher : IFileSystemWatcher
     {
+        internal Action<string>? Logger { get; set;  }
+
         private volatile bool _disposed;
 
         private readonly Func<string, FileSystemWatcher> _watcherFactory;
@@ -31,7 +33,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             CreateFileSystemWatcher();
         }
 
-        public event EventHandler<(string, bool)>? OnFileChange;
+        public event EventHandler<(string filePath, bool newFile)>? OnFileChange;
 
         public event EventHandler<Exception>? OnError;
 
@@ -51,7 +53,11 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
+            Logger?.Invoke("Error");
+
             var exception = e.GetException();
+
+            Logger?.Invoke(exception.ToString());
 
             // Win32Exception may be triggered when setting EnableRaisingEvents on a file system type
             // that is not supported, such as a network share. Don't attempt to recreate the watcher
@@ -72,8 +78,10 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            NotifyChange(e.OldFullPath);
-            NotifyChange(e.FullPath);
+            Logger?.Invoke("Rename");
+
+            NotifyChange(e.OldFullPath, newFile: false);
+            NotifyChange(e.FullPath, newFile: true);
 
             if (Directory.Exists(e.FullPath))
             {
@@ -81,8 +89,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                 {
                     // Calculated previous path of this moved item.
                     var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
-                    NotifyChange(oldLocation);
-                    NotifyChange(newLocation);
+                    NotifyChange(oldLocation, newFile: false);
+                    NotifyChange(newLocation, newFile: true);
                 }
             }
         }
@@ -94,7 +102,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            NotifyChange(e.FullPath);
+            Logger?.Invoke("Change");
+            NotifyChange(e.FullPath, newFile: false);
         }
 
         private void WatcherAddedHandler(object sender, FileSystemEventArgs e)
@@ -104,10 +113,11 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
+            Logger?.Invoke("Added");
             NotifyChange(e.FullPath, newFile: true);
         }
 
-        private void NotifyChange(string fullPath, bool newFile = false)
+        private void NotifyChange(string fullPath, bool newFile)
         {
             // Only report file changes
             OnFileChange?.Invoke(this, (fullPath, newFile));

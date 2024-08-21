@@ -904,6 +904,77 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().BeFalse();
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_accepts_option_to_show_all_warnings(string targetFramework)
+        {
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testAssetName = "TrimmedAppWithReferences";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
+                .WithSource();
+
+            var publishCommand = new PublishCommand(testAsset, "App");
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:TrimmerSingleWarn=false", "/p:PublishAot=true")
+                .Should().Pass()
+                .And.HaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
+                .And.HaveStdOutMatching("IL2026: ProjectReference.ProjectReferenceLib.Method.*ProjectReferenceLib.RUC")
+                .And.HaveStdOutMatching("IL2026: TransitiveProjectReference.TransitiveProjectReferenceLib.Method.*TransitiveProjectReferenceLib.RUC")
+                .And.HaveStdOutMatching("IL2026:.*PackageReference.PackageReferenceLib")
+                .And.NotHaveStdOutContaining("IL2104");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_can_show_single_warning_per_assembly(string targetFramework)
+        {
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testAssetName = "TrimmedAppWithReferences";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    SetMetadata(project, "PackageReference", "TrimmerSingleWarn", "false");
+                    SetMetadata(project, "ProjectReference", "TrimmerSingleWarn", "true");
+                    SetMetadata(project, "App", "TrimmerSingleWarn", "true");
+                });
+
+            var publishCommand = new PublishCommand(testAsset, "App");
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:TrimmerSingleWarn=false", "/p:PublishAot=true")
+                .Should().Pass()
+                .And.NotHaveStdOutMatching("IL2026: App.Program.Main.*Program.RUC")
+                .And.NotHaveStdOutMatching("IL2026: ProjectReference.ProjectReferenceLib.Method.*ProjectReferenceLib.RUC")
+                .And.HaveStdOutMatching("IL2026: TransitiveProjectReference.TransitiveProjectReferenceLib.Method.*TransitiveProjectReferenceLib.RUC")
+                .And.HaveStdOutMatching("IL2026:.*PackageReference.PackageReferenceLib")
+                .And.NotHaveStdOutMatching("IL2104.*'PackageReference'")
+                .And.HaveStdOutMatching("IL2104.*'App'")
+                .And.HaveStdOutMatching("IL2104.*'ProjectReference'")
+                .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
+        }
+
+        private void SetMetadata(XDocument project, string assemblyName, string key, string value)
+        {
+            var ns = project.Root.Name.Namespace;
+            var targetName = "SetTrimmerMetadata";
+            var target = project.Root.Elements(ns + "Target")
+                .Where(e => e.Attribute("Name")?.Value == targetName)
+                .FirstOrDefault();
+
+            if (target == null)
+            {
+                target = new XElement(ns + "Target",
+                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("Name", targetName));
+                project.Root.Add(target);
+            }
+
+            target.Add(new XElement(ns + "ItemGroup",
+                new XElement("ManagedAssemblyToLink",
+                    new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
+                    new XAttribute(key, value))));
+        }
+
         private void GetKnownILCompilerPackVersion(TestAsset testAsset, string targetFramework, out string version)
         {
             var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework)
