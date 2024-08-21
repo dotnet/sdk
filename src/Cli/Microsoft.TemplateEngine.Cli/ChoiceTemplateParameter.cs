@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Cli
 {
     /// <summary>
     /// The class combines information from <see cref="ITemplateParameter"/> and <see cref="HostSpecificTemplateData"/> for choice parameter.
-    /// Other parameters are implemented in base class <see cref="CliTemplateParameter"/>.
+    /// Other parameters are implemented in base class <see cref="CliTemplateParameter"/>. Typo!
     /// </summary>
     internal class ChoiceTemplateParameter : CliTemplateParameter
     {
