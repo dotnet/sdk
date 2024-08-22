@@ -38,6 +38,12 @@ namespace Microsoft.DotNet.Installer.Windows
             set;
         }
 
+        public string WorkloadSetPackageVersion
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// The product code (GUID) of the workload set MSI.
         /// </summary>

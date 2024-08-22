@@ -30,18 +30,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 foreach (string workloadSetFeatureBand in installedManifestsKey.GetSubKeyNames())
                 {
                     using RegistryKey workloadSetFeatureBandKey = installedManifestsKey.OpenSubKey(workloadSetFeatureBand);
-                    foreach (string workloadSetVersion in workloadSetFeatureBandKey.GetSubKeyNames())
+                    foreach (string workloadSetPackageVersion in workloadSetFeatureBandKey.GetSubKeyNames())
                     {
-                        using RegistryKey workloadSetVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetVersion);
+                        using RegistryKey workloadSetPackageVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetPackageVersion);
+
+                        string workloadSetVersion = WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(new SdkFeatureBand(workloadSetFeatureBand), workloadSetPackageVersion);
 
                         WorkloadSetRecord record = new WorkloadSetRecord()
                         {
-                            ProviderKeyName = (string)workloadSetVersionKey.GetValue("DependencyProviderKey"),
+                            ProviderKeyName = (string)workloadSetPackageVersionKey.GetValue("DependencyProviderKey"),
                             WorkloadSetVersion = workloadSetVersion,
+                            WorkloadSetPackageVersion = workloadSetPackageVersion,
                             WorkloadSetFeatureBand = workloadSetFeatureBand,
-                            ProductCode = (string)workloadSetVersionKey.GetValue("ProductCode"),
-                            ProductVersion = new Version((string)workloadSetVersionKey.GetValue("ProductVersion")),
-                            UpgradeCode = (string)workloadSetVersionKey.GetValue("UpgradeCode"),
+                            ProductCode = (string)workloadSetPackageVersionKey.GetValue("ProductCode"),
+                            ProductVersion = new Version((string)workloadSetPackageVersionKey.GetValue("ProductVersion")),
+                            UpgradeCode = (string)workloadSetPackageVersionKey.GetValue("UpgradeCode"),
                         };
 
                         Log.LogMessage($"Found workload set record, version: {workloadSetVersion}, feature band: {workloadSetFeatureBand}, ProductCode: {record.ProductCode}, provider key: {record.ProviderKeyName}");

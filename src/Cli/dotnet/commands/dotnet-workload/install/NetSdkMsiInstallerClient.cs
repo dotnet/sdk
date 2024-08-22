@@ -436,8 +436,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if (state == DetectState.Present)
                 {
                     string msiNuGetPackageId = $"Microsoft.NET.Workloads.{record.WorkloadSetFeatureBand}.Msi.{HostArchitecture}";
-                    string packageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(record.WorkloadSetVersion, out _);
-                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, packageVersion, offlineCache);
+                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.WorkloadSetPackageVersion, offlineCache);
 
                     if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
                     {
