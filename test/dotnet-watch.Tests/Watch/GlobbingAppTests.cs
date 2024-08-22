@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertStarted();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task ChangeExcludedFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
