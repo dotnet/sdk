@@ -14,9 +14,9 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
         private readonly CancellationTokenSource _cancellationToken = new();
+
         private MSBuildConnectionHandler _msBuildHelper;
         private TestApplicationActionQueue _actionQueue;
-
         private Task _namedPipeConnectionLoop;
         private string[] _args;
 
@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
                     testApp.Created += OnTestApplicationCreated;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(enableHelp: true);
                 });
@@ -56,6 +57,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
                     testApp.Created += OnTestApplicationCreated;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(enableHelp: false);
                 });
@@ -181,14 +183,14 @@ namespace Microsoft.DotNet.Cli
             {
                 var successfulTestResultMessage = successfulTestResultEventArgs.SuccessfulTestResultMessage;
                 VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, " +
-                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}, {successfulTestResultMessage.ModulePath}");
+                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}");
             }
             else if (args is FailedTestResultEventArgs failedTestResultEventArgs)
             {
                 var failedTestResultMessage = failedTestResultEventArgs.FailedTestResultMessage;
                 VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {failedTestResultMessage.Uid}, {failedTestResultMessage.DisplayName}, " +
                 $"{failedTestResultMessage.State}, {failedTestResultMessage.Reason}, {failedTestResultMessage.ErrorMessage}," +
-                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}, {failedTestResultMessage.ModulePath}");
+                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}");
             }
         }
 
@@ -202,7 +204,7 @@ namespace Microsoft.DotNet.Cli
             var fileArtifactInfo = args.FileArtifactInfo;
             VSTestTrace.SafeWriteTrace(() => $"FileArtifactInfo: {fileArtifactInfo.FullPath}, {fileArtifactInfo.DisplayName}, " +
                 $"{fileArtifactInfo.Description}, {fileArtifactInfo.TestUid}, {fileArtifactInfo.TestDisplayName}, " +
-                $"{fileArtifactInfo.SessionUid}, {fileArtifactInfo.ModulePath}");
+                $"{fileArtifactInfo.SessionUid}");
         }
 
         private void OnSessionEventReceived(object sender, SessionEventArgs args)
@@ -213,7 +215,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             var sessionEvent = args.SessionEvent;
-            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ModulePath}");
+            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}");
         }
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
@@ -253,6 +255,14 @@ namespace Microsoft.DotNet.Cli
         {
             TestApplication testApp = sender as TestApplication;
             _testApplications[testApp.ModulePath] = testApp;
+        }
+
+        private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
+        {
+            if (_testApplications.TryGetValue(args.ModulePath, out var testApp))
+            {
+                testApp.AddExecutionId(args.ExecutionId);
+            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));

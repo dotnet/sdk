@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Tools.Test;
@@ -18,6 +19,7 @@ namespace Microsoft.DotNet.Cli
 
         private NamedPipeServer _pipeConnection;
         private Task _namedPipeConnectionLoop;
+        private ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -28,6 +30,7 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
         public event EventHandler<EventArgs> Created;
+        public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
         public string ModulePath => _modulePath;
 
@@ -35,6 +38,11 @@ namespace Microsoft.DotNet.Cli
         {
             _modulePath = modulePath;
             _args = args;
+        }
+
+        public void AddExecutionId(string executionId)
+        {
+            _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
         public async Task<int> RunAsync(bool enableHelp)
@@ -148,7 +156,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static HandshakeInfo CreateHandshakeInfo() =>
-            new(new Dictionary<string, string>
+            new(new Dictionary<byte, string>
             {
                 { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
                 { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
@@ -239,6 +247,10 @@ namespace Microsoft.DotNet.Cli
 
         public void OnHandshakeInfo(HandshakeInfo handshakeInfo)
         {
+            if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ExecutionId, out string executionId))
+            {
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _modulePath, ExecutionId = executionId });
+            }
             HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
         }
 
