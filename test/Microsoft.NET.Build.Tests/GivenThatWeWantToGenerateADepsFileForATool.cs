@@ -19,11 +19,6 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             TestProject toolProject = new()
             {
                 Name = "TestTool",
@@ -109,8 +104,6 @@ class Program
                 Name = "ToolReferencer",
                 TargetFrameworks = "netcoreapp2.0"
             };
-
-            toolReferencer.AdditionalProperties.Add("RollForward", "LatestMajor");
 
             var toolReferencerInstance = _testAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
                 .WithProjectChanges(project =>
