@@ -5,5 +5,5 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed record HandshakeInfo(Dictionary<string, string>? Properties) : IRequest, IResponse;
+    internal sealed record HandshakeInfo(Dictionary<byte, string>? Properties) : IRequest, IResponse;
 }
