@@ -295,7 +295,12 @@ namespace Microsoft.DotNet.Installer.Windows
                 var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
                 var versions = workloadSetsFile.GetGlobalJsonWorkloadSetVersions();
-                SecurityUtils.SecureFile(workloadSetsFile.Path);
+
+                //  GetGlobalJsonWorkloadSetVersions will not create the file if it doesn't exist, so don't try to secure a non-existant file
+                if (File.Exists(workloadSetsFile.Path))
+                {
+                    SecurityUtils.SecureFile(workloadSetsFile.Path);
+                }
                 return versions;
             }
             else if (IsClient)
