@@ -426,6 +426,66 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
+        public void GarbageCollectWorkloadSets()
+        {
+            InstallSdk();
+
+            UpdateAndSwitchToWorkloadSetMode(out string _, out WorkloadSet rollbackAfterUpdate);
+
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            //  Update to latest workload set version
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
+
+            //  Get workload set feature band
+            WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var workloadSetFeatureBand);
+
+            string workloadSet2Path = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
+
+            VM.GetRemoteDirectory(workloadSet2Path).Should().Exist();
+
+            //  Downgrade to earlier workload set version
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1)
+                .Execute().Should().Pass();
+
+            //  Later workload set version should be GC'd
+            VM.GetRemoteDirectory(workloadSet2Path).Should().NotExist();
+
+            //  Now, pin older workload set version in global.json
+            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{WorkloadSetVersion1}""}}}}").Execute().Should().Pass();
+
+            //  Install pinned version
+            VM.CreateRunCommand("dotnet", "workload", "update")
+               .WithWorkingDirectory(SdkTestingDirectory)
+               .Execute().Should().Pass();
+
+            //  Update globally installed version to later version
+            VM.CreateRunCommand("dotnet", "workload", "update")
+               .Execute().Should().Pass();
+
+            //  Check workload versions in global context and global.json directory
+            GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be(WorkloadSetVersion1);
+
+            //  Workload set 1 should still be installed
+            string workloadSet1Path = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion1}";
+            VM.GetRemoteDirectory(workloadSet1Path).Should().Exist();
+
+            //  Now, remove pinned workload set from global.json
+            VM.WriteFile("C:\\SdkTesting\\global.json", "{}").Execute().Should().Pass();
+
+            //  Run workload update to do a GC
+            VM.CreateRunCommand("dotnet", "workload", "update")
+               .Execute().Should().Pass();
+
+            //  Workload set 1 should have been GC'd
+            VM.GetRemoteDirectory(workloadSet1Path).Should().NotExist();
+        }
+
+        [Fact]
         public void FinalizerUninstallsWorkloadSets()
         {
             UpdateWithWorkloadSets();
