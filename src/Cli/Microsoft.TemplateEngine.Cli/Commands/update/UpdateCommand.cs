@@ -20,7 +20,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static CliOption<bool> CheckOnlyOption { get; } = new("--check-only", "--dry-run")
         {
-            Description = SymbolStrings.Command_Update_Option_CheckOnly
+            Description = SymbolStrings.Command_Update_Option_CheckOnly,
+            Arity = ArgumentArity.Zero
         };
 
         protected override async Task<NewCommandStatus> ExecuteAsync(
