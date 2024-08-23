@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
         private readonly bool _updateAll;
-
+        private readonly bool _forceInstall;
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -99,6 +99,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
             _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
+            _forceInstall = parseResult.GetValue(ToolInstallCommandParser.ForceInstallOption);
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -195,7 +196,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         targetFramework: _framework,
                         verbosity: _verbosity,
                         isGlobalTool: true,
-                        isGlobalToolRollForward: _allowRollForward
+                        isGlobalToolRollForward: _allowRollForward,
+                        forceInstall: _forceInstall
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);

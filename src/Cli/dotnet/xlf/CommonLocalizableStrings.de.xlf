@@ -284,7 +284,42 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">Die Tooleinstellungsdatei ist für das Tool „{0}“ nicht vorhanden.</target>
+        <target state="needs-review-translation">Die Tooleinstellungsdatei ist für das Tool „{0}“ nicht vorhanden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageRuntimeConfigIncompatible">
+        <source>Installation failed.
+
+This app wasn't installed because it requires .NET {1} to run, which is not installed. This can be resolved by one of the following:
+
+1. Install .NET {1} with the following link
+
+https://aka.ms/dotnet/download/sdk 
+
+2. Install with the `--allow-roll-forward` flag, using with the following command.
+
+dotnet tool install {0}{2} --allow-roll-forward
+
+3. Install with `--force` and manually configure the tool to run, using with the following command.
+
+dotnet tool install {0}{2} --force 
+</source>
+        <target state="new">Installation failed.
+
+This app wasn't installed because it requires .NET {1} to run, which is not installed. This can be resolved by one of the following:
+
+1. Install .NET {1} with the following link
+
+https://aka.ms/dotnet/download/sdk 
+
+2. Install with the `--allow-roll-forward` flag, using with the following command.
+
+dotnet tool install {0}{2} --allow-roll-forward
+
+3. Install with `--force` and manually configure the tool to run, using with the following command.
+
+dotnet tool install {0}{2} --force 
+</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">
