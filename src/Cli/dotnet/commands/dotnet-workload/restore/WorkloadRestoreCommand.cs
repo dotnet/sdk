@@ -33,9 +33,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
         public override int Execute()
         {
-            var globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-            var workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
-
             var workloadResolverFactory = new WorkloadResolverFactory();
             var creationResult = workloadResolverFactory.Create();
             var workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(NullReporter.Instance, new SdkFeatureBand(creationResult.SdkVersion),
@@ -53,24 +50,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
             recorder.Run(() =>
             {
-                // If there's a workload set version specified in the global.json file, we need to make sure the workload set is installed before we try to discover workload ids.
-                if (!string.IsNullOrWhiteSpace(workloadSetVersionFromGlobalJson))
-                {
-                    if (creationResult.WorkloadResolver.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider provider && provider.WouldThrowException())
-                    {
-                        new WorkloadUpdateCommand(_result).Execute();
-                    }
-                }
+                // First update manifests and install a workload set as necessary
+                new WorkloadUpdateCommand(_result, recorder: recorder).Execute();
 
                 var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
                 List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
                 Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
-                var workloadInstallCommand = new WorkloadInstallCommand(_result,
-                    workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly());
-                workloadInstallCommand.IsRunningRestore = true;
-
-                workloadInstallCommand.Execute();
+                new WorkloadInstallCommand(_result,
+                    workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly(),
+                    skipWorkloadManifestUpdate: true)
+                {
+                    IsRunningRestore = true
+                }.Execute();
             });
             
             return 0;

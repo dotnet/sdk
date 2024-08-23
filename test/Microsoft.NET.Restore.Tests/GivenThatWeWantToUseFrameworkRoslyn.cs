@@ -66,6 +66,7 @@ namespace Microsoft.NET.Restore.Tests
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
                 .Execute().Should().Pass();
 
             var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
@@ -76,6 +77,7 @@ namespace Microsoft.NET.Restore.Tests
 
             new BuildCommand(testAsset)
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
                 .Execute().Should().Pass().And
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }

@@ -282,6 +282,30 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.True(result);
         }
 
+        [Fact]
+        public void IsWebassemblyBootRequest_ReturnsTrue_ForGetRequestsThatAcceptAnyContentType()
+        {
+            // Arrange
+            var context = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Path = "/_framework/blazor.boot.json",
+                    Method = HttpMethods.Get,
+                    Headers =
+                    {
+                        ["Accept"] = "*/*",
+                    },
+                },
+            };
+
+            // Act
+            var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
+
+            // Assert
+            Assert.True(result);
+        }
+
         [Theory]
         [InlineData("/_framework/blazor.boot.json")]
         [InlineData("/Blazor.boot.json")]
@@ -385,9 +409,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         }
 
         [Theory]
-        [InlineData("document")]
-        [InlineData("Document")]
-        public void IsWebassemblyBootRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsDocument(string headerValue)
+        [InlineData("empty")]
+        [InlineData("Empty")]
+        public void IsWebassemblyBootRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsEmptyValue(string headerValue)
         {
             // Arrange
             var context = new DefaultHttpContext
@@ -415,7 +439,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [InlineData("frame")]
         [InlineData("iframe")]
         [InlineData("serviceworker")]
-        public void IsWebassemblyBootRequest_ReturnsFalse_IfRequestFetchMetadataRequestHeaderIsNotDocument(string headerValue)
+        [InlineData("document")]
+        public void IsWebassemblyBootRequest_ReturnsFalse_IfRequestFetchMetadataRequestHeaderIsEmptyValue(string headerValue)
         {
             // Arrange
             var context = new DefaultHttpContext

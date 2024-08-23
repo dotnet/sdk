@@ -31,12 +31,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             INuGetPackageDownloader nugetPackageDownloader = null,
             IWorkloadManifestUpdater workloadManifestUpdater = null,
             string tempDirPath = null,
-            IReadOnlyCollection<string> workloadIds = null)
+            IReadOnlyCollection<string> workloadIds = null,
+            bool? skipWorkloadManifestUpdate = null)
             : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
                   nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
                   tempDirPath: tempDirPath)
         {
-            _skipManifestUpdate = parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
+            _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
             _workloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument).ToList().AsReadOnly();
             var resolvedReporter = _printDownloadLinkOnly ? NullReporter.Instance : Reporter;
 
@@ -126,13 +127,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
-                WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
-                recorder.HistoryRecord.CommandName = "install";
-
                 try
                 {
                     if (!IsRunningRestore)
                     {
+                        WorkloadHistoryRecorder recorder = new(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
+                        recorder.HistoryRecord.CommandName = "install";
+
                         recorder.Run(() =>
                         {
                             InstallWorkloads(recorder);

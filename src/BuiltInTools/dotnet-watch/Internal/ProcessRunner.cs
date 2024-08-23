@@ -4,25 +4,25 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
-using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class ProcessRunner(IReporter reporter)
+    internal sealed class ProcessRunner
     {
-        // May not be necessary in the future. See https://github.com/dotnet/corefx/issues/12039
-        public async Task<int> RunAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
+        /// <summary>
+        /// Launches a process.
+        /// </summary>
+        /// <param name="isUserApplication">True if the process is a user application, false if it is a helper process (e.g. msbuild).</param>
+        public static async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, CancellationTokenSource? processExitedSource, CancellationToken processTerminationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
-
-            int exitCode;
 
             var stopwatch = new Stopwatch();
 
             using var process = CreateProcess(processSpec);
             using var processState = new ProcessState(process, reporter);
 
-            cancellationToken.Register(() => processState.TryKill());
+            processTerminationToken.Register(() => processState.TryKill());
 
             var readOutput = false;
             var readError = false;
@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 readOutput = true;
                 readError = true;
+
                 process.OutputDataReceived += (_, a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Data))
@@ -37,6 +38,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         processSpec.OutputCapture.AddLine(a.Data);
                     }
                 };
+
                 process.ErrorDataReceived += (_, a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Data))
@@ -67,11 +69,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (processId.HasValue)
                 {
-                    reporter.Verbose($"Launched '{processSpec.Executable}' with arguments '{argsDisplay}': process id {processId.Value}", emoji: "🚀");
+                    reporter.Report(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, processId.Value);
                 }
                 else
                 {
-                    reporter.Verbose($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}'");
+                    reporter.Error($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}'");
                 }
             }
 
@@ -79,18 +81,66 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 process.BeginOutputReadLine();
             }
+
             if (readError)
             {
                 process.BeginErrorReadLine();
             }
 
-            await processState.Task;
+            int? exitCode = null;
+            var failed = false;
 
-            exitCode = process.ExitCode;
-            stopwatch.Stop();
-            reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms");
+            try
+            {
+                await processState.Task;
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                failed = true;
 
-            return exitCode;
+                if (isUserApplication)
+                {
+                    reporter.Error($"Application failed to launch: {e.Message}");
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+
+                if (!failed && !processTerminationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        exitCode = process.ExitCode;
+                    }
+                    catch
+                    {
+                        exitCode = null;
+                    }
+
+                    reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms.");
+
+                    if (isUserApplication)
+                    {
+                        if (exitCode == 0)
+                        {
+                            reporter.Output("Exited");
+                        }
+                        else if (exitCode == null)
+                        {
+                            reporter.Error("Exited with unknown error code");
+                        }
+                        else
+                        {
+                            reporter.Error($"Exited with error code {exitCode}");
+                        }
+                    }
+                }
+
+                processExitedSource?.Cancel();
+            }
+
+            return exitCode ?? int.MinValue;
         }
 
         private static Process CreateProcess(ProcessSpec processSpec)
@@ -132,15 +182,17 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             private readonly IReporter _reporter;
             private readonly Process _process;
-            private readonly TaskCompletionSource _tcs = new();
+            private readonly TaskCompletionSource _processExitedCompletionSource = new();
             private volatile bool _disposed;
+
+            public readonly Task Task;
 
             public ProcessState(Process process, IReporter reporter)
             {
                 _reporter = reporter;
                 _process = process;
                 _process.Exited += OnExited;
-                Task = _tcs.Task.ContinueWith(_ =>
+                Task = _processExitedCompletionSource.Task.ContinueWith(_ =>
                 {
                     try
                     {
@@ -163,8 +215,6 @@ namespace Microsoft.DotNet.Watcher.Internal
                 });
             }
 
-            public Task Task { get; }
-
             public void TryKill()
             {
                 if (_disposed)
@@ -174,9 +224,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 try
                 {
-                    if (_process is not null && !_process.HasExited)
+                    if (!_process.HasExited)
                     {
-                        _reporter.Verbose($"Killing process {_process.Id}");
+                        _reporter.Report(MessageDescriptor.KillingProcess, _process.Id);
                         _process.Kill(entireProcessTree: true);
                     }
                 }
@@ -190,7 +240,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             private void OnExited(object? sender, EventArgs args)
-                => _tcs.TrySetResult();
+                => _processExitedCompletionSource.TrySetResult();
 
             public void Dispose()
             {
