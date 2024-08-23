@@ -771,7 +771,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class FileSystemFile
         {
-            private readonly object _sync = new();
+            private readonly ReaderWriterLockSlim _lock = new();
             private byte[] _data;
             private int _currentReaders;
             private int _currentWriters;
@@ -798,7 +798,8 @@ namespace Microsoft.TemplateEngine.Utils
                     throw new IOException("File is currently locked for writing");
                 }
 
-                lock (_sync)
+                _lock.EnterReadLock();
+                try
                 {
                     if (_currentWriters > 0)
                     {
@@ -806,7 +807,22 @@ namespace Microsoft.TemplateEngine.Utils
                     }
 
                     ++_currentReaders;
-                    return new DisposingStream(new MemoryStream(_data, false), () => { lock (_sync) { --_currentReaders; } });
+                    return new DisposingStream(new MemoryStream(_data, false), () =>
+                            {
+                                _lock.EnterWriteLock();
+                                try
+                                {
+                                    --_currentReaders;
+                                }
+                                finally
+                                {
+                                    _lock.ExitWriteLock();
+                                }
+                            });
+                }
+                finally
+                {
+                    _lock.ExitReadLock();
                 }
             }
 
@@ -822,7 +838,8 @@ namespace Microsoft.TemplateEngine.Utils
                     throw new IOException("File is currently locked for writing");
                 }
 
-                lock (_sync)
+                _lock.EnterWriteLock();
+                try
                 {
                     if (_currentReaders > 0)
                     {
@@ -838,7 +855,8 @@ namespace Microsoft.TemplateEngine.Utils
                     MemoryStream target = new();
                     return new DisposingStream(target, () =>
                     {
-                        lock (_sync)
+                        _lock.EnterWriteLock();
+                        try
                         {
                             --_currentWriters;
                             _data = new byte[target.Length];
@@ -846,7 +864,15 @@ namespace Microsoft.TemplateEngine.Utils
                             _ = target.Read(_data, 0, _data.Length);
                             LastWriteTimeUtc = DateTime.UtcNow;
                         }
+                        finally
+                        {
+                            _lock.ExitWriteLock();
+                        }
                     });
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
         }
