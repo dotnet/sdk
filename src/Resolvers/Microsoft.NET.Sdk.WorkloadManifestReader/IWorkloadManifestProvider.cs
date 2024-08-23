@@ -17,7 +17,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         string? GetWorkloadVersion();
 
         Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
-
-        bool WouldThrowException();
     }
 }

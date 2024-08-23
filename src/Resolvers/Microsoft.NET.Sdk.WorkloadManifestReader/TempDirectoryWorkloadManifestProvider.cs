@@ -55,6 +55,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public string GetSdkFeatureBand() => _sdkVersionBand;
         public string? GetWorkloadVersion() => _sdkVersionBand.ToString() + ".2";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
-        public bool WouldThrowException() => false;
     }
 }

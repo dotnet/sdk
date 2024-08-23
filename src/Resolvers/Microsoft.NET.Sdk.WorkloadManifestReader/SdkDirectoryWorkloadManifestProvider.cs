@@ -235,8 +235,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
         }
 
-        public bool WouldThrowException() => _exceptionToThrow is not null;
-
         void ThrowExceptionIfManifestsNotAvailable()
         {
             if (_exceptionToThrow != null)
