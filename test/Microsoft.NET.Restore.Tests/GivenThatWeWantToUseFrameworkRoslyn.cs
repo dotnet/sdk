@@ -44,7 +44,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
-        [FullMSBuildOnlyFact(Skip = "Skip until we can figure out how to fix the test with the package off globally")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Restore.Tests
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
-                .WithEnvironmentVariable("NUGET_PACKAGES", "")
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
                 .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
                 .Execute().Should().Pass();
 
