@@ -34,11 +34,22 @@ namespace Microsoft.DotNet.Tools.Run
 
         public int Execute()
         {
+            var command = InitializeAndDiscoverCommand();
+            if (command is null)
+            {
+                return -1;
+            }
+
+            return command.Execute().ExitCode;
+        }
+
+        internal ICommand InitializeAndDiscoverCommand()
+        {
             Initialize();
 
             if (!TryGetLaunchProfileSettingsIfNeeded(out var launchSettings))
             {
-                return 1;
+                return null;
             }
 
             if (ShouldBuild)
@@ -54,31 +65,11 @@ namespace Microsoft.DotNet.Tools.Run
             try
             {
                 ICommand targetCommand = GetTargetCommand();
-                if (launchSettings != null)
-                {
-                    if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
-                    {
-                        targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
-                    }
-
-                    targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-                    foreach (var entry in launchSettings.EnvironmentVariables)
-                    {
-                        string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                        //NOTE: MSBuild variables are not expanded like they are in VS
-                        targetCommand.EnvironmentVariable(entry.Key, value);
-                    }
-                    if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
-                    {
-                        targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
-                    }
-                }
-
+                ApplyLaunchSettingsToCommand(targetCommand, launchSettings);
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-                return targetCommand.Execute().ExitCode;
+                return targetCommand;
             }
             catch (InvalidProjectFileException e)
             {
@@ -86,6 +77,31 @@ namespace Microsoft.DotNet.Tools.Run
                     string.Format(LocalizableStrings.RunCommandSpecifiecFileIsNotAValidProject, Project),
                     e);
             }
+        }
+
+        private static void ApplyLaunchSettingsToCommand(ICommand targetCommand, ProjectLaunchSettingsModel launchSettings)
+        {
+            if (launchSettings != null)
+            {
+                if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+                {
+                    targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+                }
+
+                targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+                foreach (var entry in launchSettings.EnvironmentVariables)
+                {
+                    string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                    //NOTE: MSBuild variables are not expanded like they are in VS
+                    targetCommand.EnvironmentVariable(entry.Key, value);
+                }
+                if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+                {
+                    targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+                }
+            }
+
         }
 
         public RunCommand(string configuration,
@@ -240,9 +256,18 @@ namespace Microsoft.DotNet.Tools.Run
             var project = new ProjectInstance(Project, globalProperties, null);
 
             string runProgram = project.GetPropertyValue("RunCommand");
+            string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
             if (string.IsNullOrEmpty(runProgram))
             {
-                ThrowUnableToRunError(project);
+                if (string.IsNullOrEmpty(Framework) && !string.IsNullOrEmpty(targetFrameworks))
+                {
+                    Framework = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First();
+                    return GetTargetCommand();
+                }
+                else
+                {
+                    ThrowUnableToRunError(project);
+                }
             }
 
             string runArguments = project.GetPropertyValue("RunArguments");
