@@ -760,7 +760,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackExcludedRuntimeIdentifiers="android%3Blinux-bionic"
                               />
 
-<!-- .NET 8.0 -->
+    <!-- .NET 8.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
