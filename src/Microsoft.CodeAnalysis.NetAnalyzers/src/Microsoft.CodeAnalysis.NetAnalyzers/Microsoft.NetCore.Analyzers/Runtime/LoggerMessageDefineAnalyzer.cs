@@ -22,6 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA2253: <inheritdoc cref="LoggerMessageDiagnosticNumericsInFormatStringTitle"/>
     /// CA2254: <inheritdoc cref="LoggerMessageDiagnosticConcatenationInFormatStringTitle"/>
     /// CA2017: <inheritdoc cref="LoggerMessageDiagnosticFormatParameterCountMismatchTitle"/>
+    /// CA2023: <inheritdoc cref="LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class LoggerMessageDefineAnalyzer : DiagnosticAnalyzer
@@ -31,6 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string CA2253RuleId = "CA2253";
         internal const string CA2254RuleId = "CA2254";
         internal const string CA2017RuleId = "CA2017";
+        internal const string CA2023RuleId = "CA2023";
 
         internal static readonly DiagnosticDescriptor CA1727Rule = DiagnosticDescriptorHelper.Create(CA1727RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle)),
@@ -82,7 +84,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1727Rule, CA1848Rule, CA2253Rule, CA2254Rule, CA2017Rule);
+        internal static readonly DiagnosticDescriptor CA2023Rule = DiagnosticDescriptorHelper.Create(CA2023RuleId,
+                                                                         CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle)),
+                                                                         CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticMessageTemplateBracesMismatchMessage)),
+                                                                         DiagnosticCategory.Reliability,
+                                                                         RuleLevel.BuildWarning,
+                                                                         description: CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticMessageTemplateBracesMismatchDescription)),
+                                                                         isPortedFxCopRule: false,
+                                                                         isDataflowRule: false,
+                                                                         isReportedAtCompilationEnd: false);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1727Rule, CA1848Rule, CA2253Rule, CA2254Rule, CA2017Rule, CA2023Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -204,6 +216,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
+            if (!IsValidMessageTemplate(formatter.OriginalFormat))
+            {
+                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2023Rule));
+                return;
+            }
+
             foreach (var valueName in formatter.ValueNames)
             {
                 if (int.TryParse(valueName, out _))
@@ -249,6 +267,60 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Is the message template valid? (no unclosed braces, no braces without an opening, and no unescaped braces)
+        /// </summary>
+        /// <param name="messageTemplate">The message template to check for validity.</param>
+        /// <returns>When true braces are valid, false otherwise.</returns>
+        public static bool IsValidMessageTemplate(string messageTemplate)
+        {
+            if (messageTemplate is null)
+            {
+                return false;
+            }
+
+            int index = 0;
+            bool leftBrace = false;
+
+            while (index < messageTemplate.Length)
+            {
+                if (messageTemplate[index] == '{')
+                {
+                    if (index < messageTemplate.Length - 1 && messageTemplate[index + 1] == '{')
+                    {
+                        index++;
+                    }
+                    else if (leftBrace)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        leftBrace = true;
+                    }
+                }
+                else if (messageTemplate[index] == '}')
+                {
+                    if (leftBrace)
+                    {
+                        leftBrace = false;
+                    }
+                    else if (index < messageTemplate.Length - 1 && messageTemplate[index + 1] == '}')
+                    {
+                        index++;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                index++;
+            }
+
+            return !leftBrace;
         }
 
         private static bool FindLogParameters(IMethodSymbol methodSymbol, [NotNullWhen(true)] out IParameterSymbol? message, out IParameterSymbol? arguments)

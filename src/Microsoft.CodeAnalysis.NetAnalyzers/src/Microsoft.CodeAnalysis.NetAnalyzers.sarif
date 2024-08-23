@@ -3711,6 +3711,26 @@
             ]
           }
         },
+        "CA2023": {
+          "id": "CA2023",
+          "shortDescription": "Invalid braces in message template",
+          "fullDescription": "The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "LoggerMessageDefineAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",

@@ -312,6 +312,21 @@
         <target state="translated">매개 변수의 개수가 일치하지 않음</target>
         <note />
       </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchDescription">
+        <source>The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</source>
+        <target state="new">The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchMessage">
+        <source>The braces present in the message template are invalid</source>
+        <target state="new">The braces present in the message template are invalid</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle">
+        <source>Invalid braces in message template</source>
+        <target state="new">Invalid braces in message template</target>
+        <note />
+      </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
         <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자는 숫자로만 구성되어서는 안 됩니다.</target>

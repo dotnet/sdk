@@ -312,6 +312,21 @@
         <target state="translated">Numero di parametri non corrispondente</target>
         <note />
       </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchDescription">
+        <source>The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</source>
+        <target state="new">The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchMessage">
+        <source>The braces present in the message template are invalid</source>
+        <target state="new">The braces present in the message template are invalid</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle">
+        <source>Invalid braces in message template</source>
+        <target state="new">Invalid braces in message template</target>
+        <note />
+      </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
         <target state="translated">I segnaposto denominati nel modello di messaggio di registrazione non devono contenere solo caratteri numerici.</target>
