@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
                     var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity);
 
-                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
+                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
                     bool givenSpecificVersion = false;
                     if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
@@ -407,6 +407,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var packageSourceLocation = new PackageSourceLocation(
                 nugetConfig: packageLocation.NugetConfig,
                 rootConfigDirectory: packageLocation.RootConfigDirectory,
+                sourceFeedOverrides: packageLocation.SourceFeedOverrides,
                 additionalSourceFeeds: packageLocation.AdditionalFeeds);
 
             return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
