@@ -27,7 +27,7 @@
 
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
-    <RepoConsoleLogFile>$(ArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
+    <RepoConsoleLogFile>$(DotNetBuildArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">$(BuildInParallel)</MinimalConsoleLogOutput>
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
@@ -541,7 +541,7 @@
 
     <!-- Make a copy of the build logs & project.assets.json files -->
     <Copy SourceFiles="@(LogFilesToCopy)"
-          DestinationFolder="$(BuildLogsDir)%(RecursiveDir)"
+          DestinationFolder="$(DotNetBuildArtifactsLogDir)"
           Condition="'@(LogFilesToCopy)' != ''" />
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
