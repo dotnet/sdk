@@ -48,15 +48,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
         protected readonly string _runtimeJsonPath;
 
+        private readonly string _currentWorkingDirectory;
+
         public ToolPackageDownloader(
             IToolPackageStore store,
-            string runtimeJsonPathForTests = null
+            string runtimeJsonPathForTests = null,
+            string currentWorkingDirectory = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
+            ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
             _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
+            _currentWorkingDirectory = currentWorkingDirectory;
             
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
@@ -92,7 +96,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
 
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity);
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity, currentWorkingDirectory: _currentWorkingDirectory);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 

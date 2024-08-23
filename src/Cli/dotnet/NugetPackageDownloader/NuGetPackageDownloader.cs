@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private bool _verifySignatures;
         private VerbosityOptions _verbosityOptions;
+        private readonly string _currentWorkingDirectory;
 
         public NuGetPackageDownloader(
             DirectoryPath packageInstallDir,
@@ -51,8 +52,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool shouldUsePackageSourceMapping = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal,
+            string currentWorkingDirectory = null)
         {
+            _currentWorkingDirectory = currentWorkingDirectory;
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
@@ -160,7 +163,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 string commandOutput;
                 if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
-                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput)))
+                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
@@ -315,7 +318,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             List<PackageSource> defaultSources = new List<PackageSource>();
-            string currentDirectory = Directory.GetCurrentDirectory();
+            string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
