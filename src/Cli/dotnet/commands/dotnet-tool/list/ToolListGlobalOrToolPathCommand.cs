@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
         public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
         {
             return _createToolPackageStore(toolPath).EnumeratePackages()
-                .Where((p) => PackageHasCommands(p) && PackageIdMatches(p, packageId))
+                .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
                 .OrderBy(p => p.Id)
                 .ToArray();
         }
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             return !packageId.HasValue || package.Id.Equals(packageId);
         }
 
-        private bool PackageHasCommands(IToolPackage package)
+        private bool PackageHasCommand(IToolPackage package)
         {
             try
             {

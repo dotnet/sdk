@@ -345,7 +345,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             static string GetCommandString(IToolPackage package) => package.Command.Name.ToString();
 
             var packages = store.EnumeratePackages().Where(
-                (p) => PackageHasCommands(p) && ToolListGlobalOrToolPathCommand.PackageIdMatches(p, targetPackageId)
+                (p) => PackageHasCommand(p) && ToolListGlobalOrToolPathCommand.PackageIdMatches(p, targetPackageId)
                 ).OrderBy(package => package.Id);
             var columnDelimiter = PrintableTable<IToolPackageStoreQuery>.ColumnDelimiter;
 
@@ -383,7 +383,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        private static bool PackageHasCommands(IToolPackage package)
+        private static bool PackageHasCommand(IToolPackage package)
         {
             try
             {
