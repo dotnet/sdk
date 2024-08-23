@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
-            var sources = packageSourceLocation != null && packageSourceLocation.SourceFeedOverrides.Any() ?
+            var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
                 LoadOverrideSources(packageSourceLocation) :
                 LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);
 
