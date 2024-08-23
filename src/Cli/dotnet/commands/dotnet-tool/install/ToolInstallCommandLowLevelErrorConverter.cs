@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             if (ex is ToolPackageException)
             {
                 yield return ex.Message;
-                yield return string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance);
+                yield return string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
             }
             else if (ex is ToolConfigurationException)
             {

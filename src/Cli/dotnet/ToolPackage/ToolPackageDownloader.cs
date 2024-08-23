@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (package == null)
                     {
-                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
+                        DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
                     else if(isGlobalTool)
                     {
@@ -219,8 +219,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     string existingJson = File.ReadAllText(runtimeConfigFilePath);
 
                     var jsonObject = JObject.Parse(existingJson);
-                    var runtimeOptions = jsonObject["runtimeOptions"] as JObject;
-                    if (runtimeOptions != null)
+                    if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
                     {
                         runtimeOptions["rollForward"] = "Major";
                         string updateJson = jsonObject.ToString();
@@ -256,13 +255,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     foreach (var item in group.Items)
                     {
                         var newItem = new LockFileItem(item.Path);
-                        object locale;
-                        if (item.Properties.TryGetValue("locale", out locale))
+                        if (item.Properties.TryGetValue("locale", out var locale))
                         {
                             newItem.Properties["locale"] = (string)locale;
                         }
-                        object related;
-                        if (item.Properties.TryGetValue("related", out related))
+
+                        if (item.Properties.TryGetValue("related", out var related))
                         {
                             newItem.Properties["related"] = (string)related;
                         }
@@ -278,11 +276,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         private static async Task<NuGetVersion> DownloadAndExtractPackage(
-            PackageLocation packageLocation,
             PackageId packageId,
             INuGetPackageDownloader nugetPackageDownloader,
             string packagesRootPath,
-            IToolPackageStore toolPackageStore,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation,
             bool includeUnlisted = false
@@ -295,7 +291,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             using (FileStream packageStream = File.OpenRead(packagePath))
             {
-                PackageArchiveReader reader = new PackageArchiveReader(packageStream);
+                PackageArchiveReader reader = new(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
@@ -307,7 +303,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             // Extract the package
             var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToString());
-            var filesInPackage = await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             return version;
         }
