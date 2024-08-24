@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/sdk/issues/42921"]
+        [ConditionalTheory(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
