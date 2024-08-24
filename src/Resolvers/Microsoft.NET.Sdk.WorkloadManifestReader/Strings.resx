@@ -201,9 +201,6 @@
     <value>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
-  <data name="OnlyBaselineManifestFound" xml:space="preserve">
-    <value>Workload version {0} was found. This is the baseline version. If you recently switched to using workload versions, consider running "dotnet workload update" to install the latest version.</value>
-  </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
     <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
   </data>

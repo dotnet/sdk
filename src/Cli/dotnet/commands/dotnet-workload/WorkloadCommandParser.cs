@@ -45,13 +45,8 @@ namespace Microsoft.DotNet.Cli
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
-            (string version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
-            if (error is not null)
-            {
-                Reporter.Output.WriteLine(error);
-            }
-
-            return version;
+            (WorkloadVersion version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+            return version.Version + (error is not null ? ' ' + error : string.Empty);
         }
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
@@ -62,15 +57,11 @@ namespace Microsoft.DotNet.Cli
             reporter ??= Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
+            string error = null;
             if (showVersion)
             {
-                (string version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
-                if (error is not null)
-                {
-                    reporter.WriteLine(error);
-                }
-
-                reporter.WriteLine($" Workload version: {version}");
+                (WorkloadVersion version, error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+                reporter.WriteLine($" Workload version: {version.Version}");
             }
 
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets;
@@ -108,6 +99,11 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
                 );
                 reporter.WriteLine("");
+            }
+
+            if (error is not null)
+            {
+                reporter.WriteLine(error);
             }
         }
 
