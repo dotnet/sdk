@@ -568,31 +568,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
-        public void WhenRunWithValidUnlistedVersionRangeItShouldSucceed()
-        {
-            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
-
-            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "[0.5.0]", "--add-source", nugetSourcePath)
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
-                .WithWorkingDirectory(testDir);
-
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Pass();
-
-            // Uninstall the unlisted package
-            var toolUninstallCommand = new DotnetCommand(Log, "tool", "uninstall", "-g", UnlistedPackageId);
-            toolUninstallCommand.Execute().Should().Pass();
-        }
-
-        [Fact]
-        public void WhenRunWithValidBareVersionItShouldInterpretAsNuGetExactVersion()
+        [Theory]
+        [InlineData("0.5.0")]
+        [InlineData("[0.5.0]")]
+        public void WhenRunWithValidVersionItShouldInterpretAsNuGetExactVersion(string version)
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
             var ridGraphPath = TestContext.GetRuntimeGraphFilePath();
 
-            var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version 0.5.0 --add-source {nugetSourcePath}"),
+            var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version {version} --add-source {nugetSourcePath}"),
                 createToolPackageStoreDownloaderUninstaller: (nonGlobalLocation, _, _) =>
                 {
                     ToolPackageStoreAndQuery toolPackageStore = ToolPackageFactory.CreateToolPackageStoreQuery(nonGlobalLocation);
@@ -608,6 +593,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 verifySignatures: false);
 
             toolInstallCommand.Execute().Should().Be(0);
+
             // Uninstall the unlisted package
             var toolUninstallCommand = new ToolUninstallGlobalOrToolPathCommand(Parser.Instance.Parse("dotnet tool uninstall -g " + UnlistedPackageId),
                 // This is technically not _createShellShimRepository because that is a Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository.
@@ -618,7 +604,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
                     filePermissionSetter: new NoOpFilePermissionSetter()));
-            // var toolUninstallCommand = new DotnetCommand(Log, "tool", "uninstall", "-g", UnlistedPackageId);
             toolUninstallCommand.Execute().Should().Be(0);
         }
 
