@@ -112,11 +112,6 @@
         <target state="translated">Chybějící verze pro sadu úloh {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="OnlyBaselineManifestFound">
-        <source>Workload version {0} was found. This is the baseline version. If you recently switched to using workload versions, consider running "dotnet workload update" to install the latest version.</source>
-        <target state="new">Workload version {0} was found. This is the baseline version. If you recently switched to using workload versions, consider running "dotnet workload update" to install the latest version.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RedirectWorkloadHasOtherKeys">
         <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
         <target state="translated">Přesměrování úlohy {0} má jiné klíče než redirect-to.</target>

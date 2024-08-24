@@ -257,10 +257,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet?.Version is not null)
             {
-                // This not only means workload sets were enabled but also that we found a workload set. We should still
-                // notify the user if the only workload set we could find was the baseline manifest.
-                string? baselineMessage = _workloadSet.IsBaselineWorkloadSet ? string.Format(Strings.OnlyBaselineManifestFound, _workloadSet.Version) : null;
-                return (_workloadSet.Version, baselineMessage);
+                return (new WorkloadVersion()
+                {
+                    Version = _workloadSet.Version,
+                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
+                }, null);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
