@@ -17,7 +17,7 @@ public sealed class RedirectingAnalyzerAssemblyResolver : IAnalyzerAssemblyResol
 
     [ImportingConstructor]
     public RedirectingAnalyzerAssemblyResolver()
-        : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SDK", "RuntimeAnalyzers")) { }
+        : this(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "SDK", "RuntimeAnalyzers"))) { }
 
     // Internal for testing.
     internal RedirectingAnalyzerAssemblyResolver(string? insertedAnalyzersDirectory)

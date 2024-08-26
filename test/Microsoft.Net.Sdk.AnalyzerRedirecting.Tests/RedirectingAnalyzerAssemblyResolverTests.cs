@@ -10,7 +10,7 @@ namespace Microsoft.Net.Sdk.AnalyzerRedirecting.Tests;
 public class RedirectingAnalyzerAssemblyResolverTests(ITestOutputHelper log) : SdkTest(log)
 {
     [Fact]
-    public void Redirects()
+    public void SameMajorVersion()
     {
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
@@ -24,6 +24,23 @@ public class RedirectingAnalyzerAssemblyResolverTests(ITestOutputHelper log) : S
         var resolver = new RedirectingAnalyzerAssemblyResolver(vsDir);
         var resolved = resolver.ResolveAssembly(sdkAnalyzerName, Path.GetDirectoryName(sdkAnalyzerPath));
         resolved.Location.Should().Be(vsAnalyzerPath);
+    }
+
+    [Fact]
+    public void DifferentMajorVersion()
+    {
+        TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
+
+        var vsDir = Path.Combine(testDir.Path, "vs");
+        CompileDll(vsDir, @"AspNetCoreAnalyzers\8.0.100\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers", "8.0.1");
+
+        var sdkDir = Path.Combine(testDir.Path, "sdk");
+        var sdkAnalyzerPath = CompileDll(sdkDir, @"packs\Microsoft.AspNetCore.App.Ref\9.0.0-preview.7.24406.2\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers", "9.3.4");
+        var sdkAnalyzerName = AssemblyName.GetAssemblyName(sdkAnalyzerPath);
+
+        var resolver = new RedirectingAnalyzerAssemblyResolver(vsDir);
+        var resolved = resolver.ResolveAssembly(sdkAnalyzerName, Path.GetDirectoryName(sdkAnalyzerPath));
+        resolved.Should().BeNull();
     }
 
     private static string CompileDll(string root, string subdir, string name, string version)
