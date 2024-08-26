@@ -179,7 +179,7 @@
 
     <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
 
-    <DotNetBuildArtifactsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(Configuration)', '$(MSBuildProjectName)'))</DotNetBuildArtifactsLogDir>
+    <DotNetBuildArtifactsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', '$(MSBuildProjectName)'))</DotNetBuildArtifactsLogDir>
   </PropertyGroup>
 
   <!-- Build task assembly paths -->
