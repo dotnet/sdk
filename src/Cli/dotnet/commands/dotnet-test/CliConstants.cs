@@ -20,23 +20,18 @@ namespace Microsoft.DotNet.Cli
 
     internal static class TestStates
     {
-        internal const string Passed = "Passed";
-
-        internal const string Skipped = "Skipped";
-
-        internal const string Failed = "Failed";
-
-        internal const string Error = "Error";
-
-        internal const string Timeout = "Timeout";
-
-        internal const string Cancelled = "Cancelled";
+        internal const byte Passed = 0;
+        internal const byte Skipped = 1;
+        internal const byte Failed = 2;
+        internal const byte Error = 3;
+        internal const byte Timeout = 4;
+        internal const byte Cancelled = 5;
     }
 
     internal static class SessionEventTypes
     {
-        internal const string TestSessionStart = "TestSessionStart";
-        internal const string TestSessionEnd = "TestSessionEnd";
+        internal const byte TestSessionStart = 0;
+        internal const byte TestSessionEnd = 1;
     }
 
     internal static class HandshakeInfoPropertyNames

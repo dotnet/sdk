@@ -859,9 +859,7 @@ class Program
                 .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
                 .Execute();
             result.Should().Pass();
-            result.StdOut.Should().BeEquivalentTo(expectedFrameworkDisplayName);
-
+            result.StdOut.StripTerminalLoggerProgressIndicators().Should().BeEquivalentTo(expectedFrameworkDisplayName);
         }
-
     }
 }
