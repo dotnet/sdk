@@ -142,10 +142,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     typeSyntax = IdentifierName(Var);
                 }
 
+                var identifierName = (IdentifierNameSyntax)(variableName is not null
+                    ? generator.IdentifierName(variableName)
+                    : generator.FirstUnusedIdentifierName(model, containsKeyInvocation.SpanStart, Value));
                 var outArgument = (ArgumentSyntax)generator.Argument(RefKind.Out,
                     DeclarationExpression(
                         typeSyntax,
-                        SingleVariableDesignation(Identifier(variableName ?? Value))
+                        SingleVariableDesignation(identifierName.Identifier)
                     )
                 );
 
@@ -154,7 +157,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     .AddArgumentListArguments(outArgument);
                 editor.ReplaceNode(containsKeyInvocation, tryGetValueInvocation);
 
-                var identifierName = (IdentifierNameSyntax)generator.IdentifierName(variableName ?? Value);
                 if (addStatementNode != null)
                 {
                     editor.InsertBefore(addStatementNode,

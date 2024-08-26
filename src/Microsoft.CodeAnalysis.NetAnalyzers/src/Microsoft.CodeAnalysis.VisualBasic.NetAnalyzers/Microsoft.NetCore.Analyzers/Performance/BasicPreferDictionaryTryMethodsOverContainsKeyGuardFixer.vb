@@ -1,6 +1,7 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Threading
+Imports Analyzer.Utilities
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
@@ -112,20 +113,22 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                     Async Function(ct As CancellationToken) As Task(Of Document)
                         Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
                         Dim generator = editor.Generator
-                        If variableName Is Nothing Then
-                            variableName = Value
-                        End If
 
+                        Dim identifierName = DirectCast(If(variableName Is Nothing,
+                                                           generator.FirstUnusedIdentifierName(semanticModel,
+                                                                                               containsKeyAccess.SpanStart,
+                                                                                               Value),
+                                                           generator.IdentifierName(variableName)),
+                                                        IdentifierNameSyntax)
                         Dim tryGetValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression,
                                                                                  TryGetValue)
                         Dim keyArgument = containsKeyInvocation.ArgumentList.Arguments.FirstOrDefault()
                         Dim valueAssignment =
                                 generator.LocalDeclarationStatement(dictionaryValueType,
-                                                                    variableName,
+                                                                    identifierName.Identifier.ValueText,
                                                                     generator.DefaultExpression(dictionaryValueType)).
                                 WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed).
                                 WithoutTrailingTrivia()
-                        Dim identifierName As SyntaxNode = generator.IdentifierName(variableName)
                         Dim tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess,
                                                                                    keyArgument,
                                                                                    generator.Argument(identifierName))
