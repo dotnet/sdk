@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await AssertCompiledAppDefinedTypes(expected: 2);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
