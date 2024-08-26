@@ -135,6 +135,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         private void OnData(object sender, DataReceivedEventArgs args)
         {
             var line = args.Data ?? string.Empty;
+            if (line.StartsWith("\x1b]"))
+            {
+                // strip terminal logger progress indicators from line
+                line = line.StripTerminalLoggerProgressIndicators();
+            }
 
             WriteTestOutput($"{DateTime.Now}: post: '{line}'");
             _source.Post(line);
