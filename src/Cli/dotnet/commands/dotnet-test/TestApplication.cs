@@ -158,9 +158,9 @@ namespace Microsoft.DotNet.Cli
         private static string GetSupportedProtocolVersion(HandshakeInfo handshakeInfo)
         {
             handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.SupportedProtocolVersions, out string protocolVersions);
-            string version = string.Empty;
 
-            if (protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+            string version = string.Empty;
+            if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
             {
                 version = ProtocolConstants.Version;
             }
