@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli
             {
                 if (optionResult.GetValueOrDefault<int>() <= 0)
                 {
-                    throw new ArgumentException("The --take option must be positive.");
+                    throw new ArgumentException(LocalizableStrings.TakeOptionMustBePositive);
                 }
             });
 

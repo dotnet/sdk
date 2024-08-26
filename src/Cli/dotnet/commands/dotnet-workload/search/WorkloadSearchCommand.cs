@@ -72,6 +72,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 }
                 else
                 {
+                    // This was left as a comma without a space to make it easier to parse as a csv
                     Reporter.WriteLine(string.Join(',', versions));
                 }
 

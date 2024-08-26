@@ -142,4 +142,7 @@
   <data name="FormatOptionDescription" xml:space="preserve">
     <value>Changes the format of outputted workload versions. Can take 'json' or 'list'</value>
   </data>
+  <data name="TakeOptionMustBePositive" xml:space="preserve">
+    <value>The --take option must be positive.</value>
+  </data>
 </root>
