@@ -41,13 +41,14 @@ namespace Microsoft.DotNet.Cli
 
     internal static class HandshakeInfoPropertyNames
     {
-        internal const string PID = "PID";
-        internal const string Architecture = "Architecture";
-        internal const string Framework = "Framework";
-        internal const string OS = "OS";
-        internal const string ProtocolVersion = "ProtocolVersion";
-        internal const string HostType = "HostType";
-        internal const string ModulePath = "ModulePath";
+        internal const byte PID = 0;
+        internal const byte Architecture = 1;
+        internal const byte Framework = 2;
+        internal const byte OS = 3;
+        internal const byte SupportedProtocolVersions = 4;
+        internal const byte HostType = 5;
+        internal const byte ModulePath = 6;
+        internal const byte ExecutionId = 7;
     }
 
     internal static class ProtocolConstants

@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli
                         {
                             OnHandshakeInfo(handshakeInfo);
 
-                            return Task.FromResult((IResponse)CreateHandshakeInfo());
+                            return Task.FromResult((IResponse)CreateHandshakeInfo(GetSupportedProtocolVersion(handshakeInfo)));
                         }
                         break;
 
@@ -147,14 +147,27 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
-        private static HandshakeInfo CreateHandshakeInfo() =>
-            new(new Dictionary<string, string>
+        private static string GetSupportedProtocolVersion(HandshakeInfo handshakeInfo)
+        {
+            handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.SupportedProtocolVersions, out string protocolVersions);
+            string version = string.Empty;
+
+            if (protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+            {
+                version = ProtocolConstants.Version;
+            }
+
+            return version;
+        }
+
+        private static HandshakeInfo CreateHandshakeInfo(string version) =>
+            new(new Dictionary<byte, string>
             {
                 { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
                 { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
                 { HandshakeInfoPropertyNames.Framework, RuntimeInformation.FrameworkDescription },
                 { HandshakeInfoPropertyNames.OS, RuntimeInformation.OSDescription },
-                { HandshakeInfoPropertyNames.ProtocolVersion, ProtocolConstants.Version }
+                { HandshakeInfoPropertyNames.SupportedProtocolVersions, version }
             });
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
