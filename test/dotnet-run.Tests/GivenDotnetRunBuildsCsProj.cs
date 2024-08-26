@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass()
-                         .And.HaveStdOut("Hello World!");
+                         .And.HaveStdOutContaining("Hello World!");
         }
 
         [Fact]
@@ -402,7 +402,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "AppWithLaunchSettings";

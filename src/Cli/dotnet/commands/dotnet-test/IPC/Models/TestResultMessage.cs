@@ -5,7 +5,7 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed record SuccessfulTestResultMessage(string? Uid, string? DisplayName, string? State, string? Reason, string? SessionUid, string? ModulePath) : IRequest;
+    internal sealed record SuccessfulTestResultMessage(string? Uid, string? DisplayName, byte? State, string? Reason, string? SessionUid, string? ExecutionId) : IRequest;
 
-    internal sealed record FailedTestResultMessage(string? Uid, string? DisplayName, string? State, string? Reason, string? ErrorMessage, string? ErrorStackTrace, string? SessionUid, string? ModulePath) : IRequest;
+    internal sealed record FailedTestResultMessage(string? Uid, string? DisplayName, byte? State, string? Reason, string? ErrorMessage, string? ErrorStackTrace, string? SessionUid, string? ExecutionId) : IRequest;
 }

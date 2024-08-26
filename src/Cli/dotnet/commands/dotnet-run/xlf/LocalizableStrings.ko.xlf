@@ -61,6 +61,11 @@ Make the profile names distinct.</source>
         <target state="translated">빌드하는 중...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
+        <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
+        <target state="new">Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</target>
+        <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
         <target state="translated">빌드하지 못했습니다. 빌드 오류를 수정하고 다시 실행하세요.</target>
@@ -136,6 +141,11 @@ The current {1} is '{2}'.</source>
         <target state="needs-review-translation">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
+        <source>'{0}' is not a valid project file.</source>
+        <target state="new">'{0}' is not a valid project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
         <target state="translated">{0}의 시작 설정을 사용하는 중...</target>
@@ -173,11 +183,6 @@ The current {1} is '{2}'.</source>
 {0}</source>
         <target state="translated">launchSettings.json을 읽는 동안 오류가 발생했습니다.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandSpecifiecFileIsNotAValidProject">
-        <source>'{0}' is not a valid project file.</source>
-        <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">
