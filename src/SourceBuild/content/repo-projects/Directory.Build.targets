@@ -513,22 +513,17 @@
 
   <Target Name="CopyDotNetBuildArtifactsLogs"
         Condition="'$(IsUtilityProject)' != 'true' and
-                    Exists('$(ProjectDirectory)artifacts')">    
+                    Exists('$(ProjectDirectory)artifacts')">
 
     <ItemGroup>
       <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.log" />
       <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.binlog" />
-    </ItemGroup>  
+    </ItemGroup>
     
     <!-- Make a copy of the build logs -->
     <Copy SourceFiles="@(LogFilesToCopy)"
           DestinationFolder="$(DotNetBuildArtifactsLogDir)"
-          Condition="'@(LogFilesToCopy)' != ''" />
-
-    <!-- Cleanup build logs -->
-    <Delete Files="@(LogFilesToCopy)" Condition="'@(LogFilesToCopy)' != ''" />
-    <Message Text="Files deleted: @(LogFilesToCopy)"/>
-  
+          Condition="'@(LogFilesToCopy)' != ''" />  
   </Target>
 
   <Target Name="CleanupRepo"
