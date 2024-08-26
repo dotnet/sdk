@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli
             .SetForwardingFunction((optionVals) =>
                 optionVals
                     .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
-                    .Select(keyValue => keyValue.value == "" ? $"{option.Name}:{keyValue.key}" : $"{option.Name}:{keyValue.key}={keyValue.value}")
+                    .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
                 );
 
         public static CliOption<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T, IEnumerable<string>> format) => option.SetForwardingFunction(format);
