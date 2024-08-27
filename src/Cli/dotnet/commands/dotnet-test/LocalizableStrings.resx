@@ -176,7 +176,7 @@
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
   <data name="CmdNoRestoreDescription" xml:space="preserve">
-    <value>Add the reference without performing restore preview and compatibility check.</value>
+    <value>Do not execute an implicit restore.</value>
   </data>
   <data name="CmdArchitectureDescription" xml:space="preserve">
     <value>The target architecture '{0}' on which tests will run.</value>
