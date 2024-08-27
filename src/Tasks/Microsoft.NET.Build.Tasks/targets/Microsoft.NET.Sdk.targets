@@ -232,6 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/43016. -->
     <_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists Condition="'$(NuGetPackageRoot)' == ''">true</_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists>
   </PropertyGroup>
 
