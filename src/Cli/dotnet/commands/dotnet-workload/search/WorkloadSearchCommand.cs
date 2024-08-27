@@ -70,10 +70,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 {
                     Reporter.WriteLine(JsonSerializer.Serialize(versions));
                 }
+                else if (_workloadSetOutputFormat?.Equals("csv", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    Reporter.WriteLine(string.Join(',', versions));
+                }
                 else
                 {
-                    // This was left as a comma without a space to make it easier to parse as a csv
-                    Reporter.WriteLine(string.Join(',', versions));
+                    Reporter.WriteLine(string.Join('\n', versions));
                 }
 
                 return 0;
