@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
             var mapping = contentTypeProvider.ResolveContentTypeMapping(relativePath, Log);
 
-            if (mapping.Equals(default))
+            if (mapping.MimeType != null)
             {
                 return (mapping.MimeType, mapping.Cache);
             }

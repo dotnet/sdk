@@ -1,30 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
-    internal struct ContentTypeMapping
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+    internal struct ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
     {
         private Matcher _matcher;
 
-        public ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
-        {
-            Pattern = pattern;
-            MimeType = mimeType;
-            Cache = cache;
-            Priority = priority;
-        }
+        public string Pattern { get; set; } = pattern;
 
-        public string Pattern { get; set; }
+        public string MimeType { get; set; } = mimeType;
 
-        public string MimeType { get; set; }
+        public string Cache { get; set; } = cache;
 
-        public string Cache { get; set; }
-
-        public int Priority { get; }
+        public int Priority { get; } = priority;
 
         internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings) => new(
                 contentTypeMappings.ItemSpec,
@@ -41,5 +35,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
             return _matcher.Match(identity).HasMatches;
         }
+
+        private string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
     }
 }
