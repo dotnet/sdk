@@ -113,6 +113,11 @@ Examples:
         <target state="translated">运行测试，而不显示 Microsoft Testplatform 版权标志</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSettingsFile">
         <source>SETTINGS_FILE</source>
         <target state="translated">SETTINGS_FILE</target>

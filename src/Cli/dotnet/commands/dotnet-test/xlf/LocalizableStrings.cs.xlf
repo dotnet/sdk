@@ -113,6 +113,11 @@ Příklady:
         <target state="translated">Spustit testy bez zobrazení nápisu Microsoft Testplatform</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSettingsFile">
         <source>SETTINGS_FILE</source>
         <target state="translated">SETTINGS_FILE</target>
