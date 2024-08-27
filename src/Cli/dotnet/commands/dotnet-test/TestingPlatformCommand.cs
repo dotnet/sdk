@@ -26,6 +26,12 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
+            if (parseResult.HasOption(TestCommandParser.Architecture))
+            {
+                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
+                return ExitCodes.GenericFailure;
+            }
+
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
