@@ -17,9 +17,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Tool.List;
-using static System.Formats.Asn1.AsnWriter;
-using System.CommandLine.Parsing;
-using static System.Threading.Lock;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -33,14 +30,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
         private CreateShellShimRepository _createShellShimRepository;
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
         private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
         private readonly IToolPackageStoreQuery _store;
 
         private readonly PackageId? _packageId;
-        private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string _framework;
         private readonly string[] _source;
@@ -67,7 +62,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
             _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
-            _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
             _source = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
@@ -101,7 +95,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
 
             _reporter = (reporter ?? Reporter.Output);
-            _errorReporter = (reporter ?? Reporter.Error);
         }
 
         public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
