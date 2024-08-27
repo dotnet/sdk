@@ -408,14 +408,9 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
         var builtIn = ResolveBuiltIn(relativePath, log);
         foreach (var mapping in customMappings)
         {
-            // Nothing we've seen so far can beat the built-in mapping and entries are ordered
-            if (mapping.Priority < builtIn.Priority)
-            {
-                return builtIn;
-            }
-
             if (mapping.Matches(Path.GetFileName(relativePath)))
             {
+                // If a custom mapping matches, it wins over the built-in
                 log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
                 return mapping;
             }
@@ -434,8 +429,7 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
         if (extension == ".gz" || extension == ".br")
         {
             var fileName = Path.GetFileNameWithoutExtension(relativePath);
-            var subExt = Path.GetExtension(fileName);
-            if (subExt != "")
+            if (Path.GetExtension(fileName) != "")
             {
                 return ResolveBuiltIn(fileName, log);
             }
