@@ -165,7 +165,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public async Task AotVariants(string name, string language)
         {
             // template framework needs to be hardcoded here during the major version transition.
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // Templates have not been updated to net10.0 yet "net9.0";
+            string currentDefaultFramework = "net9.0";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
@@ -334,9 +336,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // Templates have not been updated to net9.0 yet "net8.0";
-            // string currentDefaultFramework = "net8.0";
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // Templates have not been updated to net10.0 yet "net9.0";
+            string currentDefaultFramework = "net9.0";
+            // string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
             string outputDir = "MyProject";
