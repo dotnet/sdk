@@ -37,6 +37,18 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.Zero
         };
 
+        public static readonly CliOption<string> NoRestore = new("--no-restore")
+        {
+            Description = LocalizableStrings.CmdNoRestoreDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<string> Architecture = new("--arch")
+        {
+            Description = LocalizableStrings.CmdArchitectureDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -222,6 +234,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestModules);
             command.Options.Add(TestModulesRootDirectory);
             command.Options.Add(NoBuild);
+            command.Options.Add(NoRestore);
+            command.Options.Add(Architecture);
 
             return command;
         }

@@ -175,6 +175,12 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not execute an implicit restore.</value>
+  </data>
+  <data name="CmdArchitectureDescription" xml:space="preserve">
+    <value>The target architecture '{0}' on which tests will run.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
