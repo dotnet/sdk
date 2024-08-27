@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertWaitingForChanges();
 
-            var newSrc = /* lang=c#-test */"""
+            var newSrc = """
                 class DepSubType : Dep
                 {
                     int F() => 2;
@@ -128,9 +128,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, "App");
+            App.Start(testAsset, [], "App");
 
-            await App.WaitForSessionStarted();
+            await App.AssertWaitingForChanges();
 
             var newSrc = /* lang=c#-test */"""
                 class DepSubType : Dep.DepType
