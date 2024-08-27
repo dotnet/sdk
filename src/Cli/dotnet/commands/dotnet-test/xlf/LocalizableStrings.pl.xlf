@@ -119,8 +119,8 @@ Przykłady:
         <note />
       </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
-        <source>Add the reference without performing restore preview and compatibility check.</source>
-        <target state="new">Add the reference without performing restore preview and compatibility check.</target>
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSettingsFile">
