@@ -28,6 +28,7 @@
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
     <MicrosoftIORedistPackageVersion>6.0.1</MicrosoftIORedistPackageVersion>
+    <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
@@ -142,7 +143,6 @@
     <MicrosoftWin32SystemEventsPackageVersion>9.0.0-rc.1.24414.5</MicrosoftWin32SystemEventsPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <SystemCodeDomPackageVersion>9.0.0-rc.1.24414.5</SystemCodeDomPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionAttributedModelPackageVersion>9.0.0-rc.1.24414.5</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>9.0.0-rc.1.24414.5</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>9.0.0-rc.1.24414.5</SystemCompositionHostingPackageVersion>
@@ -150,7 +150,6 @@
     <SystemCompositionTypedPartsPackageVersion>9.0.0-rc.1.24414.5</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-rc.1.24414.5</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemReflectionMetadataLoadContextVersion>9.0.0-rc.1.24414.5</SystemReflectionMetadataLoadContextVersion>
-    <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsPackageVersion>9.0.0-rc.1.24414.5</SystemResourcesExtensionsPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-rc.1.24414.5</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-rc.1.24414.5</SystemSecurityCryptographyProtectedDataPackageVersion>
@@ -158,11 +157,16 @@
     <SystemSecurityPermissionsPackageVersion>9.0.0-rc.1.24414.5</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-rc.1.24414.5</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-rc.1.24414.5</SystemTextJsonPackageVersion>
-    <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
-         because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
-    <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24414.5</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>9.0.0-rc.1.24414.5</SystemFormatsAsn1Version>
+    <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
+         Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
+    <MicrosoftBclAsyncInterfacesToolsetPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
+    <SystemCollectionsImmutableToolsetPackageVersion>8.0.0</SystemCollectionsImmutableToolsetPackageVersion>
+    <SystemReflectionMetadataLoadContextToolsetPackageVersion>8.0.0</SystemReflectionMetadataLoadContextToolsetPackageVersion>
+    <SystemReflectionMetadataToolsetPackageVersion>8.0.0</SystemReflectionMetadataToolsetPackageVersion>
+    <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
+    <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
@@ -367,11 +371,6 @@
     <MonoWorkloadManifestVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MonoWorkloadManifestVersion>
     <!-- mono workload prerelease version band must match the runtime feature band -->
     <MonoWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(MonoWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</MonoWorkloadFeatureBand>
-  </PropertyGroup>
-  <PropertyGroup Label="Dependencies for VMR initialization">
-    <!-- These two MicrosoftBuild versions are required to build VMR initialization tasks -->
-    <MicrosoftBuildFrameworkVersion>15.7.179</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>15.7.179</MicrosoftBuildUtilitiesCoreVersion>
   </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
