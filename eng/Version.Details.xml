@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.2.24423.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.2.24425.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6d4ae0bf1b567cd262793b2bdfb93c8e429d1245</Sha>
+      <Sha>c323abc8e827f62be8a300365518030a0561e5c3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.2.24423.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.2.24425.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6d4ae0bf1b567cd262793b2bdfb93c8e429d1245</Sha>
+      <Sha>c323abc8e827f62be8a300365518030a0561e5c3</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.2.24423.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.2.24425.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6d4ae0bf1b567cd262793b2bdfb93c8e429d1245</Sha>
+      <Sha>c323abc8e827f62be8a300365518030a0561e5c3</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.1.24414.5">
@@ -250,22 +250,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0fbd81404d1f211572387498474063bc6f407f0f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24422.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24424.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>8c14079b75db3b56c8cfdcee3c2698c563ccd4db</Sha>
+      <Sha>3280ac77b64db98924127e556acd91e91d984ab6</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24422.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24424.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>8c14079b75db3b56c8cfdcee3c2698c563ccd4db</Sha>
+      <Sha>3280ac77b64db98924127e556acd91e91d984ab6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24422.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24424.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>8c14079b75db3b56c8cfdcee3c2698c563ccd4db</Sha>
+      <Sha>3280ac77b64db98924127e556acd91e91d984ab6</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24422.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24424.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>8c14079b75db3b56c8cfdcee3c2698c563ccd4db</Sha>
+      <Sha>3280ac77b64db98924127e556acd91e91d984ab6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.24415.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
