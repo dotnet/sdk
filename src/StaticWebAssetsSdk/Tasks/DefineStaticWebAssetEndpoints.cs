@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using System.Globalization;
 
@@ -50,6 +49,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+            var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
             var endpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var kvp in staticWebAssets)
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings);
+                var assetEndpoints = CreateEndpoints(asset, contentTypeProvider);
 
                 foreach (var endpoint in assetEndpoints)
                 {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
         {
             var routes = asset.ComputeRoutes();
             var result = new List<StaticWebAssetEndpoint>();
@@ -219,56 +219,19 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
         }
 
-        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider)
         {
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-            foreach (var mapping in contentTypeMappings)
+            var mapping = contentTypeProvider.ResolveContentTypeMapping(relativePath, Log);
+
+            if (mapping.Equals(default))
             {
-                if (mapping.Matches(Path.GetFileName(relativePath)))
-                {
-                    Log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
-                    return (mapping.MimeType, mapping.Cache);
-                }
-                else
-                {
-                    Log.LogMessage(MessageImportance.Low, $"No match for {relativePath} using pattern {mapping.Pattern}");
-                }
+                return (mapping.MimeType, mapping.Cache);
             }
 
             Log.LogMessage(MessageImportance.Low, $"No match for {relativePath}. Using default content type 'application/octet-stream'");
 
             return ("application/octet-stream", null);
-        }
-
-        private class ContentTypeMapping
-        {
-            private readonly Matcher _matcher;
-
-            public ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
-            {
-                Pattern = pattern;
-                MimeType = mimeType;
-                Cache = cache;
-                Priority = priority;
-                _matcher = new Matcher();
-                _matcher.AddInclude(pattern);
-            }
-
-            public string Pattern { get; set; }
-
-            public string MimeType { get; set; }
-
-            public string Cache { get; set; }
-
-            public int Priority { get; }
-
-            internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings) => new(
-                    contentTypeMappings.ItemSpec,
-                    contentTypeMappings.GetMetadata(nameof(Cache)),
-                    contentTypeMappings.GetMetadata(nameof(Pattern)),
-                    int.Parse(contentTypeMappings.GetMetadata(nameof(Priority))));
-
-            internal bool Matches(string identity) => _matcher.Match(identity).HasMatches;
         }
     }
 }
