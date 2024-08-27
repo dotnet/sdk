@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildToolsetPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildUtilitiesCoreToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Versioning" />
   </ItemGroup>

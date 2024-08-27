@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildToolsetPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildUtilitiesCoreToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
     <PackageReference Include="NuGet.ProjectModel" />
