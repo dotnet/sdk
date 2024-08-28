@@ -9,55 +9,62 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal static class CommandLineOptionMessagesFieldsId
     {
-        internal const int ModulePath = 1;
-        internal const int CommandLineOptionMessageList = 2;
+        internal const ushort ModulePath = 1;
+        internal const ushort CommandLineOptionMessageList = 2;
     }
 
     internal static class CommandLineOptionMessageFieldsId
     {
-        internal const int Name = 1;
-        internal const int Description = 2;
-        internal const int IsHidden = 3;
-        internal const int IsBuiltIn = 4;
+        internal const ushort Name = 1;
+        internal const ushort Description = 2;
+        internal const ushort IsHidden = 3;
+        internal const ushort IsBuiltIn = 4;
+    }
+
+    internal static class DiscoveredTestMessageFieldsId
+    {
+        internal const ushort Uid = 1;
+        internal const ushort DisplayName = 2;
+        internal const ushort ExecutionId = 3;
     }
 
     internal static class SuccessfulTestResultMessageFieldsId
     {
-        internal const int Uid = 1;
-        internal const int DisplayName = 2;
-        internal const int State = 3;
-        internal const int Reason = 4;
-        internal const int SessionUid = 5;
-        internal const int ExecutionId = 6;
+        internal const ushort Uid = 1;
+        internal const ushort DisplayName = 2;
+        internal const ushort State = 3;
+        internal const ushort Reason = 4;
+        internal const ushort SessionUid = 5;
+        internal const ushort ExecutionId = 6;
     }
 
     internal static class FailedTestResultMessageFieldsId
     {
-        internal const int Uid = 1;
-        internal const int DisplayName = 2;
-        internal const int State = 3;
-        internal const int Reason = 4;
-        internal const int ErrorMessage = 5;
-        internal const int ErrorStackTrace = 6;
-        internal const int SessionUid = 7;
-        internal const int ExecutionId = 8;
+        internal const ushort Uid = 1;
+        internal const ushort DisplayName = 2;
+        internal const ushort State = 3;
+        internal const ushort Reason = 4;
+        internal const ushort ErrorMessage = 5;
+        internal const ushort ErrorStackTrace = 6;
+        internal const ushort SessionUid = 7;
+        internal const ushort ExecutionId = 8;
     }
 
     internal static class FileArtifactInfoFieldsId
     {
-        internal const int FullPath = 1;
-        internal const int DisplayName = 2;
-        internal const int Description = 3;
-        internal const int TestUid = 4;
-        internal const int TestDisplayName = 5;
-        internal const int SessionUid = 6;
-        internal const int ExecutionId = 7;
+        internal const ushort FullPath = 1;
+        internal const ushort DisplayName = 2;
+        internal const ushort Description = 3;
+        internal const ushort TestUid = 4;
+        internal const ushort TestDisplayName = 5;
+        internal const ushort SessionUid = 6;
+        internal const ushort ExecutionId = 7;
     }
 
     internal static class TestSessionEventFieldsId
     {
-        internal const int SessionType = 1;
-        internal const int SessionUid = 2;
-        internal const int ExecutionId = 3;
+        internal const ushort SessionType = 1;
+        internal const ushort SessionUid = 2;
+        internal const ushort ExecutionId = 3;
     }
 }
