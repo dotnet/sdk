@@ -46,8 +46,8 @@ public class DockerRegistryManager
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
 
-        var pullRegistry = new Registry(BaseImageSource, logger);
-        var pushRegistry = new Registry(LocalRegistry, logger);
+        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
+        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {
