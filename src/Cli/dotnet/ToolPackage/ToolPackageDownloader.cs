@@ -209,22 +209,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             ToolPackageInstance toolPackageInstance
             )
         {
-            foreach (var command in toolPackageInstance.Commands)
+            var runtimeConfigFilePath = Path.ChangeExtension(toolPackageInstance.Command.Executable.Value, ".runtimeconfig.json");
+
+            // Update the runtimeconfig.json file
+            if (File.Exists(runtimeConfigFilePath))
             {
-                var runtimeConfigFilePath = Path.ChangeExtension(command.Executable.Value, ".runtimeconfig.json");
+                string existingJson = File.ReadAllText(runtimeConfigFilePath);
 
-                // Update the runtimeconfig.json file
-                if (File.Exists(runtimeConfigFilePath))
+                var jsonObject = JObject.Parse(existingJson);
+                if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
                 {
-                    string existingJson = File.ReadAllText(runtimeConfigFilePath);
-
-                    var jsonObject = JObject.Parse(existingJson);
-                    if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
-                    {
-                        runtimeOptions["rollForward"] = "Major";
-                        string updateJson = jsonObject.ToString();
-                        File.WriteAllText(runtimeConfigFilePath, updateJson);
-                    }
+                    runtimeOptions["rollForward"] = "Major";
+                    string updateJson = jsonObject.ToString();
+                    File.WriteAllText(runtimeConfigFilePath, updateJson);
                 }
             }
         }

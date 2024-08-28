@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.CommandLine.Help;
 using Microsoft.DotNet.Tools.Test;
 
@@ -9,6 +10,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand
     {
+        private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
+        private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
+
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
         {
             yield return (context) =>
