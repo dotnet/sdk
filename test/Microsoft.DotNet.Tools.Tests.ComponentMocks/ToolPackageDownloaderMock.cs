@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             var allPackages = _feeds
                 .Where(feed =>
                 {
-                    if (sourceFeedOverrides is not null)
+                    if (sourceFeedOverrides is not null && sourceFeedOverrides.Length > 0)
                     {
                         return sourceFeedOverrides.Contains(feed.Uri);
                     }
