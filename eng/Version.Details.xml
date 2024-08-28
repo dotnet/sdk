@@ -59,28 +59,28 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rc.2.24422.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rc.1.24402.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>84d642485896a97e0e443be75345c6bb1469a338</Sha>
+      <Sha>edf3e90fa25b1fc4f7f63ceb45ef70f49c6b121a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="9.0.0-rc.2.24422.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="9.0.0-rc.1.24402.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>84d642485896a97e0e443be75345c6bb1469a338</Sha>
+      <Sha>edf3e90fa25b1fc4f7f63ceb45ef70f49c6b121a</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.12.0-preview-24426-01">
+    <Dependency Name="Microsoft.Build" Version="17.12.0-preview-24407-03">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>14df0589a60cf8945859de05e024ad74829023c3</Sha>
+      <Sha>6bc91d5e2d3d8a199fdbe367ed015b55daf57046</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.12.0-preview-24426-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.12.0-preview-24407-03">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>14df0589a60cf8945859de05e024ad74829023c3</Sha>
+      <Sha>6bc91d5e2d3d8a199fdbe367ed015b55daf57046</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.0-preview-24426-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.0-preview-24407-03">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>14df0589a60cf8945859de05e024ad74829023c3</Sha>
+      <Sha>6bc91d5e2d3d8a199fdbe367ed015b55daf57046</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.100-beta.24427.4">
@@ -404,18 +404,18 @@
       <Sha>0d51607fb791c51a14b552ed24fe3430c252148b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24405.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>fdb9965ce68c1f4e1c0ff301488adf9caa958615</Sha>
+      <Sha>3211f48253bc18560156d90dc5e710d35f7d03fa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24415.1">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24405.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>fdb9965ce68c1f4e1c0ff301488adf9caa958615</Sha>
+      <Sha>3211f48253bc18560156d90dc5e710d35f7d03fa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24415.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24405.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>fdb9965ce68c1f4e1c0ff301488adf9caa958615</Sha>
+      <Sha>3211f48253bc18560156d90dc5e710d35f7d03fa</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24324.3">
