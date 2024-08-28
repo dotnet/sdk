@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
-            string [] args = { "dotnet", "workload", "install", workloadName};
+            string [] args = { "dotnet", "workload", "install", workloadName, "--include-previews"};
             if (skipManifestUpdate)
             {
                 args = [.. args, "--skip-manifest-update"];
