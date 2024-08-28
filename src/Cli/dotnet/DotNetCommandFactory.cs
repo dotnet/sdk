@@ -12,10 +12,12 @@ namespace Microsoft.DotNet.Cli
     public class DotNetCommandFactory : ICommandFactory
     {
         private bool _alwaysRunOutOfProc;
+        private readonly string _currentWorkingDirectory;
 
-        public DotNetCommandFactory(bool alwaysRunOutOfProc = false)
+        public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
         {
             _alwaysRunOutOfProc = alwaysRunOutOfProc;
+            _currentWorkingDirectory = currentWorkingDirectory;
         }
 
         public ICommand Create(
@@ -32,7 +34,7 @@ namespace Microsoft.DotNet.Cli
                 return new BuiltInCommand(commandName, args, builtInCommand);
             }
 
-            return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration);
+            return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration, _currentWorkingDirectory);
         }
 
         private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
