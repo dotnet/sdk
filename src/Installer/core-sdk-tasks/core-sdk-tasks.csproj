@@ -15,10 +15,12 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataLoadContextVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
+    <PackageReference Include="System.Resources.Extensions" VersionOverride="$(SystemResourcesExtensionsToolsetPackageVersion)" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
