@@ -448,8 +448,8 @@
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.0-alpha.1.24426.2">
-      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>6c26545ca7999a4192df6899ea9ed4eaa950d367</Sha>
+      <Uri>https://github.com/MichaelSimons/source-build-reference-packages</Uri>
+      <Sha>1b09f37eb1f596e28d91d2ec3c7a25411b7db6d8</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24406.1">
