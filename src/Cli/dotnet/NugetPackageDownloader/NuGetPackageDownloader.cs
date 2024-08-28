@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Abstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -43,6 +40,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private bool _verifySignatures;
         private VerbosityOptions _verbosityOptions;
+        private readonly string _currentWorkingDirectory;
 
         public NuGetPackageDownloader(
             DirectoryPath packageInstallDir,
@@ -54,8 +52,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool shouldUsePackageSourceMapping = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal,
+            string currentWorkingDirectory = null)
         {
+            _currentWorkingDirectory = currentWorkingDirectory;
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
@@ -130,22 +130,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
-
+            await VerifySigning(nupkgPath, repository);
+            
             return nupkgPath;
         }
 
-        private bool verbosityGreaterThanMinimal()
-        {
-            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
-                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
-        }
+        private bool VerbosityGreaterThanMinimal() =>
+            _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
+            _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
 
-        private void VerifySigning(string nupkgPath)
+        private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
+
+        private async Task VerifySigning(string nupkgPath, SourceRepository repository)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (verbosityGreaterThanMinimal())
+                if (VerbosityGreaterThanMinimal())
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
@@ -157,15 +157,28 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (repository is not null &&
+                await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
+                resource.AllRepositorySigned)
             {
-                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
-                    out string commandOutput))
+                string commandOutput;
+                // The difference between _firstPartyNuGetPackageSigningVerifier.Verify and FirstPartyNuGetPackageSigningVerifier.NuGetVerify is that while NuGetVerify
+                // just ensures that the package is signed properly, Verify additionally requires that the package be from Microsoft. NuGetVerify does not require that
+                // the package be from Microsoft.
+                if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
+                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
                 {
-                    throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                             Environment.NewLine +
-                                                             commandOutput);
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
+
+                if (DiagnosticVerbosity())
+                {
+                    _reporter.WriteLine(LocalizableStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
+                }
+            }
+            else if (DiagnosticVerbosity())
+            {
+                _reporter.WriteLine(LocalizableStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
             }
         }
 
@@ -308,7 +321,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             List<PackageSource> defaultSources = new List<PackageSource>();
-            string currentDirectory = Directory.GetCurrentDirectory();
+            string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
