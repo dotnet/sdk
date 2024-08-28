@@ -93,13 +93,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             SourceRepository repository = GetSourceRepository(source);
 
-                        if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is var searchResource)
+            if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is var searchResource)
             {
                 var results = await searchResource.SearchAsync(packageId.ToString(), new SearchFilter(includePrerelease: includePreview, filter: SearchFilterType.IsLatestVersion)
                 {
                     PackageTypes = [NuGet.Packaging.Core.PackageType.DotnetTool.Name]
                 }, skip: 0, take: 10, log: _verboseLogger, cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (results.Count() == 0)
+
+                if (!results.Any())
                 {
                     throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
                 }
