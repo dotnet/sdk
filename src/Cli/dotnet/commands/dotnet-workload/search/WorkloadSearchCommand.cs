@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                     .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.Version.ToString()));
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Reporter.WriteLine(JsonSerializer.Serialize(versions));
+                    Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
                 }
                 else
                 {
