@@ -39,11 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => _installedManifests ?? throw new NotImplementedException();
         public IWorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         public string GetSdkFeatureBand() => "12.0.400";
-        public (WorkloadVersion version, string error) GetWorkloadVersion() => (new WorkloadVersion()
-        {
-            Version = "12.0.400.2",
-            WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-        }, null);
+        public (string version, string error) GetWorkloadVersion() => ("12.0.400.2", null);
         public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         WorkloadResolver IWorkloadResolver.CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         WorkloadManifest IWorkloadResolver.GetManifestFromWorkload(WorkloadId workloadId) => throw new NotImplementedException();

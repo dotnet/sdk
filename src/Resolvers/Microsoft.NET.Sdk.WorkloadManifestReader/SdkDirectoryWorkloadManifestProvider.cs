@@ -257,11 +257,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet?.Version is not null)
             {
-                return (new WorkloadVersion()
-                {
-                    Version = _workloadSet.Version,
-                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
-                }, null);
+                return (_workloadSet.Version, null);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");

@@ -778,11 +778,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public (WorkloadVersion version, string? error) GetWorkloadVersion() => (new WorkloadVersion
-            {
-                Version = _sdkFeatureBand + ".2",
-                WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-            }, null);
+            public (string? version, string? error) GetWorkloadVersion() => (_sdkFeatureBand + ".2", null);
         }
     }
 
