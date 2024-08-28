@@ -177,11 +177,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     RunWithHandlingUninstallError(() =>
                     {
-                        foreach (RestoredCommand command in oldPackageNullable.Commands)
-                        {
-                            shellShimRepository.RemoveShim(command.Name);
-                        }
-
+                        shellShimRepository.RemoveShim(oldPackageNullable.Command.Name);
                         toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
                     }, packageId);
                 }
@@ -215,10 +211,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
 
-                    foreach (RestoredCommand command in newInstalledPackage.Commands)
-                    {
-                        shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
-                    }
+                    shellShimRepository.CreateShim(newInstalledPackage.Command.Executable, newInstalledPackage.Command.Name, newInstalledPackage.PackagedShims);
 
                     foreach (string w in newInstalledPackage.Warnings)
                     {
@@ -368,8 +361,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     _reporter.WriteLine(
                         string.Format(
-                            Install.LocalizableStrings.InstallationSucceeded,
-                            string.Join(", ", newInstalledPackage.Commands.Select(c => c.Name)),
+                            LocalizableStrings.InstallationSucceeded,
+                            newInstalledPackage.Command.Name,
                             newInstalledPackage.Id,
                             newInstalledPackage.Version.ToNormalizedString()).Green());
                 }

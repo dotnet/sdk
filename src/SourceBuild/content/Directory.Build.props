@@ -178,6 +178,8 @@
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
 
     <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
+
+    <DotNetBuildArtifactsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', '$(MSBuildProjectName)'))</DotNetBuildArtifactsLogDir>
   </PropertyGroup>
 
   <!-- Build task assembly paths -->

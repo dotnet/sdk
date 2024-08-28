@@ -314,7 +314,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain(l =>
                     l.Contains(
                         string.Format(LocalizableStrings.CommandsMismatch,
-                            "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "\"a\"")));
+                            "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "a")));
         }
 
         [Fact]
