@@ -431,7 +431,11 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
             var fileName = Path.GetFileNameWithoutExtension(relativePath);
             if (Path.GetExtension(fileName) != "")
             {
-                return ResolveBuiltIn(fileName, log);
+                var result = ResolveBuiltIn(fileName, log);
+                // If we don't have a specific mapping for the other extension, use any mapping available for `.gz` or `.br`
+                return result.Equals(default) && _builtInMappings.TryGetValue(extension, out var compressed) ?
+                    compressed :
+                    result;
             }
         }
 
