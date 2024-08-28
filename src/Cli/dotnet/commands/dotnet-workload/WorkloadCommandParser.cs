@@ -46,7 +46,9 @@ namespace Microsoft.DotNet.Cli
             workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
             (WorkloadVersion version, string error) = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
-            return version.Version + (error is not null ? ' ' + error : string.Empty);
+
+            // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
+            return version.Version + (error is not null ? ' ' + Workloads.Workload.List.LocalizableStrings.WorkloadVersionNotInstalledShort : string.Empty);
         }
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
