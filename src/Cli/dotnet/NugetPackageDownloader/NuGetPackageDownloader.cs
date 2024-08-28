@@ -83,19 +83,30 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping = null,
+            bool isTool = false)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
                 packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
 
-            FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
 
-            resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
-                .ConfigureAwait(false);
+            if (isTool && await repository.GetResourceAsync<ServiceIndexResourceV3>().ConfigureAwait(false) is ServiceIndexResourceV3 serviceIndex)
+            {
+                var uri = serviceIndex.GetServiceEntries("SearchQueryService/3.5.0")[0].Uri;
+                var queryUri = uri + $"?q={packageId}&packageType=dotnettool";
+                using HttpClient client = new(new HttpClientHandler() { CheckCertificateRevocationList = true });
+                using HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false);
+                if (response.Content.Headers.ContentLength == 139)
+                {
+                    throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                }
+            }
 
+            FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                .ConfigureAwait(false);
             if (resource == null)
             {
                 throw new NuGetPackageNotFoundException(

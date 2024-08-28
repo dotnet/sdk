@@ -284,7 +284,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             bool includeUnlisted = false
             )
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted, isTool: true).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;
