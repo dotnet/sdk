@@ -93,13 +93,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             SourceRepository repository = GetSourceRepository(source);
 
-            if (isTool && await repository.GetResourceAsync<ServiceIndexResourceV3>().ConfigureAwait(false) is ServiceIndexResourceV3 serviceIndex)
+                        if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is var searchResource)
             {
-                var uri = serviceIndex.GetServiceEntries("SearchQueryService/3.5.0")[0].Uri;
-                var queryUri = uri + $"?q={packageId}&packageType=dotnettool";
-                using HttpClient client = new(new HttpClientHandler() { CheckCertificateRevocationList = true });
-                using HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false);
-                if (response.Content.Headers.ContentLength == 139)
+                var results = await searchResource.SearchAsync(packageId.ToString(), new SearchFilter(includePrerelease: includePreview, filter: SearchFilterType.IsLatestVersion)
+                {
+                    PackageTypes = [NuGet.Packaging.Core.PackageType.DotnetTool.Name]
+                }, skip: 0, take: 10, log: _verboseLogger, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (results.Count() == 0)
                 {
                     throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
                 }
