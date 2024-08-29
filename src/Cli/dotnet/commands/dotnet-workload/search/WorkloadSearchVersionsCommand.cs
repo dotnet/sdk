@@ -92,7 +92,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 }
                 else
                 {
-                    Reporter.WriteLine(string.Join('\n', workloadSet.ManifestVersions.Select(kvp => $"{kvp.Key}: {kvp.Value.Version}/{kvp.Value.FeatureBand}")));
+                    PrintableTable<KeyValuePair<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)>> table = new();
+                    table.AddColumn(string.Empty, manifest => manifest.Key.ToString());
+                    table.AddColumn(string.Empty, manifest => $"{manifest.Value.Version}/{manifest.Value.FeatureBand}");
+                    table.PrintRows(workloadSet.ManifestVersions, l => Reporter.WriteLine(l));
                 }
             }
 
