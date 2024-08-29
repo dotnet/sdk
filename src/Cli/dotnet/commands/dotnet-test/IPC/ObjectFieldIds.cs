@@ -67,4 +67,19 @@ namespace Microsoft.DotNet.Tools.Test
         internal const ushort SessionUid = 2;
         internal const ushort ExecutionId = 3;
     }
+
+    internal static class SerializerIds
+    {
+        internal const int VoidResponseSerializerId = 0;
+        internal const int TestHostProcessExitRequestSerializerId = 1;
+        internal const int TestHostProcessPIDRequestSerializerId = 2;
+        internal const int CommandLineOptionMessagesSerializer = 3;
+        internal const int ModuleSerializerId = 4;
+        internal const int SuccessfulTestResultMessageSerializerId = 5;
+        internal const int FailedTestResultMessageSerializerId = 6;
+        internal const int FileArtifactInfoSerializerId = 7;
+        internal const int TestSessionEventSerializerId = 8;
+        internal const int HandshakeInfoSerializerId = 9;
+        internal const int DiscoveredTestMessageSerializerId = 10;
+    }
 }

@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class DiscoveredTestMessageSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 10;
+        public int Id => SerializerIds.DiscoveredTestMessageSerializerId;
 
         public object Deserialize(Stream stream)
         {

@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class SuccessfulTestResultMessageSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 5;
+        public int Id => SerializerIds.SuccessfulTestResultMessageSerializerId;
 
         public object Deserialize(Stream stream)
         {
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class FailedTestResultMessageSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 6;
+        public int Id => SerializerIds.FailedTestResultMessageSerializerId;
 
         public object Deserialize(Stream stream)
         {
