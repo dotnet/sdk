@@ -124,7 +124,7 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24428.2</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24414.5</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24428.2</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24428.2</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-alpha.1.24428.2</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETHostModelVersion>10.0.0-alpha.1.24428.2</MicrosoftNETHostModelVersion>
@@ -136,7 +136,7 @@
     <SystemServiceProcessServiceControllerVersion>10.0.0-alpha.1.24428.2</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.0-alpha.1.24428.2</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-rc.1.24414.5</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24428.2</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
     <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-alpha.1.24428.2</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-alpha.1.24428.2</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0-alpha.1.24428.2</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
@@ -258,7 +258,7 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-alpha.2.24428.4</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.2.24428.4</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
     <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-alpha.2.24428.4</MicrosoftAspNetCoreAppRefInternalPackageVersion>
-    <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>10.0.0-alpha.2.24422.4</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.2.24428.4</VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>
     <dotnetdevcertsPackageVersion>10.0.0-alpha.2.24428.4</dotnetdevcertsPackageVersion>
     <dotnetuserjwtsPackageVersion>10.0.0-alpha.2.24428.4</dotnetuserjwtsPackageVersion>
     <dotnetusersecretsPackageVersion>10.0.0-alpha.2.24428.4</dotnetusersecretsPackageVersion>
