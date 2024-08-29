@@ -47,7 +47,7 @@
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/$(FSharpCorePath)/FSharp.Core.*.nupkg" SubDir="library-packs\"/>
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/$(FSharpCorePath)/Microsoft.FSharp.Core.NetSdk.props" SubDir="" />
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/any/any/*" Exclude="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/any/any/Microsoft.FSharp.Core.NetSdk.props" SubDir="" />
-        <FilesToCopyFromFSharpCompilerPackage Include="$(MibcPath)/*" SubDir="" />
+        <FilesToCopyFromFSharpCompilerPackage Include="$(MibcPath)/*" SubDir="" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     </ItemGroup>
     <ItemGroup>
         <ResolvedFileToPublish
