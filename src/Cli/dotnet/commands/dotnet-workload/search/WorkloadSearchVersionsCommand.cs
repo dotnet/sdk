@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
@@ -67,17 +68,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             if (_workloadVersion is null)
             {
                 var featureBand = new SdkFeatureBand(_sdkVersion);
-                var packageId = _installer.GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), featureBand);
+                var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
                 var versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
                     .GetAwaiter().GetResult()
                     .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.Version.ToString()));
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Reporter.WriteLine(JsonSerializer.Serialize(versions));
+                    Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
                 }
                 else
                 {
-                    Reporter.WriteLine(string.Join(',', versions));
+                    Reporter.WriteLine(string.Join('\n', versions));
                 }
             }
             else
