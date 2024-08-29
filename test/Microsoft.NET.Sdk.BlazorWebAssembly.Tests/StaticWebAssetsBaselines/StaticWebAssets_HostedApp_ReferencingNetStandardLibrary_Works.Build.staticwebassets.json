@@ -28918,7 +28918,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octet-stream"
+          "Value": "application/x-gzip"
         },
         {
           "Name": "ETag",
