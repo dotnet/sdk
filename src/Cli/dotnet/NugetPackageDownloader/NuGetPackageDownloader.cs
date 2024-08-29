@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (!results.Any())
                 {
-                    throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                    throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
                 }
             }
 
