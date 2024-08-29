@@ -6,15 +6,15 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli.commands.dotnet_test
+namespace Microsoft.DotNet.Cli
 {
     internal sealed class MSBuildConnectionHandler : IDisposable
     {
+        private readonly string[] _args;
+        private readonly TestApplicationActionQueue _actionQueue;
+
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
-        private readonly string[] _args;
-
-        private TestApplicationActionQueue _actionQueue;
 
         public MSBuildConnectionHandler(string[] args, TestApplicationActionQueue actionQueue)
         {
@@ -82,10 +82,12 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
         public int RunWithMSBuild(ParseResult parseResult)
         {
-            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
+            bool containsNoBuild = parseResult.HasOption(TestingPlatformOptions.NoBuildOption);
+            bool containsNoRestore = parseResult.HasOption(TestingPlatformOptions.NoRestoreOption) || containsNoBuild;
+
             List<string> msbuildCommandLineArgs =
             [
-                    $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                    $"-t:{(containsNoRestore ? string.Empty : "Restore;")}{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
             ];
@@ -103,7 +105,7 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
         private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
         {
-            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            string msBuildParameters = parseResult.GetValue(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             if (!string.IsNullOrEmpty(msBuildParameters))
             {
                 parameters.AddRange(msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries));
