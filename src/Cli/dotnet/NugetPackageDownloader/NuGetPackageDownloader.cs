@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             SourceRepository repository = GetSourceRepository(source);
 
-            if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is var searchResource)
+            if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is PackageSearchResourceV3 searchResource)
             {
                 var results = await searchResource.SearchAsync(packageId.ToString(), new SearchFilter(includePrerelease: includePreview, filter: SearchFilterType.IsLatestVersion)
                 {
