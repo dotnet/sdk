@@ -234,7 +234,7 @@
 
   <Target Name="_PublishSingleContainer"
           DependsOnTargets="$(PublishContainerDependsOn)"
-          Returns="@(GeneratedContainerInfo)">
+          Returns="@(GeneratedManifestInfo)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -279,12 +279,12 @@
     </CreateNewImage>
 
     <ItemGroup>
-      <GeneratedContainerInfo Include="ContainerInfo">
+      <GeneratedManifestInfo Include="ManifestInfo">
         <ManifestLength>$(GeneratedContainerManifest.Length)</ManifestLength>
         <Digest>$(GeneratedContainerDigest)</Digest>
         <Architecture>$(GeneratedContainerArchitecture)</Architecture>
         <OS>$(GeneratedContainerOS)</OS>
-      </GeneratedContainerInfo>
+      </GeneratedManifestInfo>
     </ItemGroup>
   </Target>
 
@@ -302,10 +302,10 @@
         Projects="@(_InnerBuild)"
         Targets="Publish;_PublishSingleContainer"
         BuildInParallel="false">
-        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedImages"  />
+        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedManifestsInfo"  />
     </MSBuild>
 
-    <CreateImageIndex Images="@(_GeneratedImages)"
+    <CreateImageIndex ManifestsInfo="@(_GeneratedManifestsInfo)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
                       ImageTag="$(ContainerImageTag)">

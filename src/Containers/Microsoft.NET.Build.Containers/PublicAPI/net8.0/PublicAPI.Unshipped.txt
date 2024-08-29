@@ -24,10 +24,10 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.CreateImageIndex() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Dispose() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Images.get -> Microsoft.Build.Framework.ITaskItem![]?
-Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Images.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ManifestsInfo.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ManifestsInfo.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!

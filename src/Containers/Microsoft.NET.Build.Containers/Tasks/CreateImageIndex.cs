@@ -1,15 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Credentials;
 using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.NET.Build.Containers.Resources;
 using NuGet.Protocol;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -65,16 +61,11 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
     private ManifestListV2 GenerateImageIndex()
     {
-        if (Images == null || Images.Length == 0)
-        {
-            throw new ArgumentException("Images cannot be null or empty");
-        }
+        var manifests = new PlatformSpecificManifest[ManifestsInfo.Length];
 
-        var manifests = new PlatformSpecificManifest[Images.Length];
-
-        for (int i = 0; i < Images.Length; i++)
+        for (int i = 0; i < ManifestsInfo.Length; i++)
         {
-            var image = Images[i];
+            var image = ManifestsInfo[i];
 
             var manifest = new PlatformSpecificManifest
             {
