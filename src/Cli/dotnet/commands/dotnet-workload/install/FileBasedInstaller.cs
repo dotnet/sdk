@@ -48,7 +48,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string tempDirPath = null,
             VerbosityOptions verbosity = VerbosityOptions.normal,
             PackageSourceLocation packageSourceLocation = null,
-            RestoreActionConfig restoreActionConfig = null)
+            RestoreActionConfig restoreActionConfig = null,
+            VerbosityOptions nugetPackageDownloaderVerbosity = VerbosityOptions.normal)
         {
             _userProfileDir = userProfileDir;
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
@@ -58,7 +59,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
                                           new FirstPartyNuGetPackageSigningVerifier(), logger,
-                                          restoreActionConfig: _restoreActionConfig);
+                                          restoreActionConfig: _restoreActionConfig,
+                                          verbosityOptions: nugetPackageDownloaderVerbosity);
             bool userLocal = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, sdkFeatureBand.ToString());
             _workloadRootDir = userLocal ? _userProfileDir : _dotnetDir;
             _workloadMetadataDir = Path.Combine(_workloadRootDir, "metadata", "workloads");

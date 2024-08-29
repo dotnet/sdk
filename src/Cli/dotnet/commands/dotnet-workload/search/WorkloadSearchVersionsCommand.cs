@@ -57,7 +57,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 tempDirPath: null,
                 verbosity: Verbosity,
                 packageSourceLocation: null,
-                restoreActionConfig: new RestoreActionConfig(result.HasOption(SharedOptions.InteractiveOption))
+                restoreActionConfig: new RestoreActionConfig(result.HasOption(SharedOptions.InteractiveOption)),
+                nugetPackageDownloaderVerbosity: VerbosityOptions.quiet
                 );
 
             _workloadVersion = result.GetValue(WorkloadSearchVersionsCommandParser.WorkloadVersionArgument);
