@@ -472,7 +472,7 @@ jobs:
 
     # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
     - script: |
-        set -x
+        set -ex
 
         targetFolder=$(Build.StagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
