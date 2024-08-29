@@ -229,9 +229,6 @@
     </PropertyGroup>
   </Target>
 
-
-  <!--Returns="$(GeneratedContainerManifest.Length),$(GeneratedContainerDigest),$(GeneratedContainerArchitecture),$(GeneratedContainerOS)">-->
-
   <Target Name="_PublishSingleContainer"
           DependsOnTargets="$(PublishContainerDependsOn)"
           Returns="@(GeneratedManifestInfo)">
