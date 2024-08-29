@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal sealed class HandshakeInfoSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => SerializerIds.HandshakeInfoSerializerId;
+        public int Id => HandshakeInfoFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {

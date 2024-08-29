@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => SerializerIds.TestSessionEventSerializerId;
+        public int Id => TestSessionEventFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {

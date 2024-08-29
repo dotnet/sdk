@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class FileArtifactInfoSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => SerializerIds.FileArtifactInfoSerializerId;
+        public int Id => FileArtifactInfoFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
