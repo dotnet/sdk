@@ -305,16 +305,6 @@
         <Output TaskParameter="TargetOutputs" ItemName="_GeneratedImages"  />
     </MSBuild>
 
-    <Message Importance="High" Text="_GeneratedImages: @(_GeneratedImages)" />
-
-    <Message Importance="high" Text="Images:" />
-    <Message Importance="high" Text="%(_GeneratedImages.Identity)" />
-
-    <Message Importance="high" Text="ManifestLength: %(_GeneratedImages.ManifestLength)" />
-    <Message Importance="high" Text="Digest: %(_GeneratedImages.Digest)" />
-    <Message Importance="high" Text="Architecture: %(_GeneratedImages.Architecture)" />
-    <Message Importance="high" Text="OS: %(_GeneratedImages.OS)" />
-
     <CreateImageIndex Images="@(_GeneratedImages)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
