@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
         {
             string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
-            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(new PackageId(WorkloadManifestUpdater.WorkloadSetManifestId),
+            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
                                 new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
             var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
             await ExtractManifestAsync(packagePath, tempExtractionDir);

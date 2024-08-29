@@ -86,11 +86,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion);
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Reporter.WriteLine(JsonSerializer.Serialize(workloadSet.ManifestVersions));
+                    Reporter.WriteLine(JsonSerializer.Serialize(
+                        workloadSet.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => $"{kvp.Value.Version}/{kvp.Value.FeatureBand}")));
                 }
                 else
                 {
-                    Reporter.WriteLine(workloadSet.ManifestVersions.ToString());
+                    Reporter.WriteLine(string.Join('\n', workloadSet.ManifestVersions.Select(kvp => $"{kvp.Key}: {kvp.Value.Version}/{kvp.Value.FeatureBand}")));
                 }
             }
 
