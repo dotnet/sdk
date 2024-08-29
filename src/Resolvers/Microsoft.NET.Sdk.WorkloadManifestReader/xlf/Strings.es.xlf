@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="ManifestDoesNotExist">
         <source>No manifest with ID {0} exists.</source>
-        <target state="new">No manifest with ID {0} exists.</target>
+        <target state="translated">No existe ningún manifiesto con id. {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
