@@ -98,10 +98,13 @@
     <MicrosoftAspNetCoreAppRuntime60PackageVersion>6.0.14</MicrosoftAspNetCoreAppRuntime60PackageVersion>
     <MicrosoftDotNetCommonItemTemplates60PackageVersion>6.0.302</MicrosoftDotNetCommonItemTemplates60PackageVersion>
     <MicrosoftDotNetCommonItemTemplates80PackageVersion>8.0.100</MicrosoftDotNetCommonItemTemplates80PackageVersion>
+    <MicrosoftDotNetCommonItemTemplates90PackageVersion>9.0.100-rc.2.24427.15</MicrosoftDotNetCommonItemTemplates90PackageVersion>
     <MicrosoftWinFormsProjectTemplates60PackageVersion>6.0.7-servicing.22322.3</MicrosoftWinFormsProjectTemplates60PackageVersion>
     <MicrosoftWinFormsProjectTemplates80PackageVersion>8.0.0-rtm.23531.5</MicrosoftWinFormsProjectTemplates80PackageVersion>
+    <MicrosoftWinFormsProjectTemplates90PackageVersion>9.0.0-rc.2.24427.3</MicrosoftWinFormsProjectTemplates90PackageVersion>
     <MicrosoftWPFProjectTemplates60PackageVersion>6.0.7-servicing.22322.2</MicrosoftWPFProjectTemplates60PackageVersion>
     <MicrosoftWPFProjectTemplates80PackageVersion>8.0.0-rtm.23531.4</MicrosoftWPFProjectTemplates80PackageVersion>
+    <MicrosoftWPFProjectTemplates90PackageVersion>9.0.0-rc.2.24427.4</MicrosoftWPFProjectTemplates90PackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="MicroBuild.Core version">
     <MicroBuildCorePackageVersion>0.2.0</MicroBuildCorePackageVersion>
@@ -286,10 +289,14 @@
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
   </PropertyGroup>
   <PropertyGroup Label="Template versions">
+    <!-- 10.0 Template versions -->
+    <AspNetCorePackageVersionFor100Templates>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCorePackageVersionFor100Templates>
+    <MicrosoftDotnetWinFormsProjectTemplates100PackageVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplates100PackageVersion>
+    <MicrosoftDotNetWpfProjectTemplates100PackageVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplates100PackageVersion>
     <!-- 9.0 Template versions -->
-    <AspNetCorePackageVersionFor90Templates>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCorePackageVersionFor90Templates>
-    <MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>
-    <MicrosoftDotNetWpfProjectTemplates90PackageVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplates90PackageVersion>
+    <AspNetCorePackageVersionFor90Templates>9.0.0-preview.7.24406.2</AspNetCorePackageVersionFor90Templates>
+    <MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>$(MicrosoftWinFormsProjectTemplates90PackageVersion)</MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>
+    <MicrosoftDotNetWpfProjectTemplates90PackageVersion>$(MicrosoftWPFProjectTemplates90PackageVersion)</MicrosoftDotNetWpfProjectTemplates90PackageVersion>
     <NUnit3Templates90PackageVersion>$(NUnit3DotNetNewTemplatePackageVersion)</NUnit3Templates90PackageVersion>
     <!-- 8.0 Template versions -->
     <AspNetCorePackageVersionFor80Templates>8.0.$(AspNetCoreTemplateFeature80)</AspNetCorePackageVersionFor80Templates>
