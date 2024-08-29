@@ -83,6 +83,8 @@ internal sealed class ImageBuilder
             ImageSha = imageSha,
             ImageSize = imageSize,
             Manifest = newManifest,
+            Architecture = _baseImageConfig.Architecture,
+            OS = _baseImageConfig.Os,
         };
     }
 

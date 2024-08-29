@@ -229,7 +229,12 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_PublishSingleContainer" DependsOnTargets="$(PublishContainerDependsOn)">
+
+  <!--Returns="$(GeneratedContainerManifest.Length),$(GeneratedContainerDigest),$(GeneratedContainerArchitecture),$(GeneratedContainerOS)">-->
+
+  <Target Name="_PublishSingleContainer"
+          DependsOnTargets="$(PublishContainerDependsOn)"
+          Returns="@(GeneratedContainerInfo)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -269,10 +274,21 @@
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
+      <Output TaskParameter="GeneratedContainerArchitecture" PropertyName="GeneratedContainerArchitecture" />
+      <Output TaskParameter="GeneratedContainerOS" PropertyName="GeneratedContainerOS" />
     </CreateNewImage>
+
+    <ItemGroup>
+      <GeneratedContainerInfo Include="ContainerInfo">
+        <ManifestLength>$(GeneratedContainerManifest.Length)</ManifestLength>
+        <Digest>$(GeneratedContainerDigest)</Digest>
+        <Architecture>$(GeneratedContainerArchitecture)</Architecture>
+        <OS>$(GeneratedContainerOS)</OS>
+      </GeneratedContainerInfo>
+    </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)">
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
     <ItemGroup>
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -282,18 +298,31 @@
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
-    <!-- would BuildInParallel, but for some reason the 'compute' targets aren't being called -->
-
     <MSBuild
         Projects="@(_InnerBuild)"
         Targets="Publish;_PublishSingleContainer"
         BuildInParallel="false">
-        <!-- we need the digest + platform at minimum to make the index, so we'll need to add that to the returns from the per-image generation -->
-        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedImage"  />
+        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedImages"  />
     </MSBuild>
 
-    <!-- Create Image Index -->
-    <!-- Push Image Index -->
+    <Message Importance="High" Text="_GeneratedImages: @(_GeneratedImages)" />
+
+    <Message Importance="high" Text="Images:" />
+    <Message Importance="high" Text="%(_GeneratedImages.Identity)" />
+
+    <Message Importance="high" Text="ManifestLength: %(_GeneratedImages.ManifestLength)" />
+    <Message Importance="high" Text="Digest: %(_GeneratedImages.Digest)" />
+    <Message Importance="high" Text="Architecture: %(_GeneratedImages.Architecture)" />
+    <Message Importance="high" Text="OS: %(_GeneratedImages.OS)" />
+
+    <CreateImageIndex Images="@(_GeneratedImages)"
+                      OutputRegistry="$(ContainerRegistry)"
+                      Repository="$(ContainerRepository)"
+                      ImageTag="$(ContainerImageTag)">
+      <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
+    </CreateImageIndex>
+
+    <Message Importance="high" Text="GeneratedImageIndex: $(GeneratedImageIndex)" />
   </Target>
 
   <Target Name="PublishContainer"

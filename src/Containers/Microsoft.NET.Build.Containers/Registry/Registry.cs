@@ -9,6 +9,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -423,6 +424,11 @@ internal sealed class Registry
         await _registryAPI.Blob.Upload.CompleteAsync(finalChunkUri.UploadUri, digest, cancellationToken).ConfigureAwait(false);
         _logger.LogTrace("Finalized upload session for {0}", digest);
 
+    }
+
+    public async Task PushAsync(string repositoryName, string reference, ManifestListV2 manifestList, CancellationToken cancellationToken)
+    {
+        await _registryAPI.Manifest.PutAsync(repositoryName, reference, manifestList, cancellationToken).ConfigureAwait(false);
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
