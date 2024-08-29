@@ -43,15 +43,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
-                    targetFramework: _testTargetframework);
+                    targetFramework: _testTargetframework,
+                    verifySignatures: false);
 
-                var commands = toolPackage.Commands;
+                var command = toolPackage.Command;
                 var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
-                commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
+                command.Executable.Value.Should().StartWith(expectedPackagesFolder);
 
                 fileSystem.File
-                    .Exists(commands[0].Executable.Value)
-                    .Should().BeTrue($"{commands[0].Executable.Value} should exist");
+                    .Exists(command.Executable.Value)
+                    .Should().BeTrue($"{command.Executable.Value} should exist");
             }
             finally
             {
@@ -81,12 +82,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
-                targetFramework: _testTargetframework);
+                targetFramework: _testTargetframework,
+                verifySignatures: false);
 
             var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
 
-            var commands = toolPackage.Commands;
-            commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
+            var command = toolPackage.Command;
+            command.Executable.Value.Should().StartWith(expectedPackagesFolder);
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
         }
 

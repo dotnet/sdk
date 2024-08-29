@@ -46,4 +46,10 @@ namespace Microsoft.DotNet.Cli
         public List<string> ErrorData { get; set; }
         public int ExitCode { get; set; }
     }
+
+    internal class ExecutionEventArgs : EventArgs
+    {
+        public string ModulePath { get; set; }
+        public string ExecutionId { get; set; }
+    }
 }

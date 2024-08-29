@@ -447,8 +447,6 @@ jobs:
         cd "$(sourcesPath)"
 
         CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
@@ -486,11 +484,14 @@ jobs:
         fi
 
         cd "$(sourcesPath)"
+
         find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
+
         if [ -d "artifacts/scenario-tests/" ]; then
           find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
+
         find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
@@ -498,11 +499,8 @@ jobs:
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/log/binary-report/ -exec rsync -R {} -t ${targetFolder} \;
         fi
 
-        find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
 
         # check if we have assets to publish
         if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then

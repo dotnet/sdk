@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     manifestFile,
                     packageId,
                     toolDownloadedPackage.Version,
-                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                    [toolDownloadedPackage.Command.Name]);
                 _reporter.WriteLine(
                     string.Format(
                         Update.LocalizableStrings.UpdateLocalToolSucceeded,
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 manifestFile,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
+                [toolDownloadedPackage.Command.Name],
                 _allowRollForward);
 
             _localToolsResolverCache.SaveToolPackage(
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _reporter.WriteLine(
                 string.Format(
                     LocalizableStrings.LocalToolInstallationSucceeded,
-                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                    toolDownloadedPackage.Command.Name,
                     toolDownloadedPackage.Id,
                     toolDownloadedPackage.Version.ToNormalizedString(),
                     manifestFile.Value).Green());
