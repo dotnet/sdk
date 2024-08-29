@@ -405,7 +405,6 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
 
     internal ContentTypeMapping ResolveContentTypeMapping(string relativePath, TaskLoggingHelper log)
     {
-        var builtIn = ResolveBuiltIn(relativePath, log);
         foreach (var mapping in customMappings)
         {
             if (mapping.Matches(Path.GetFileName(relativePath)))
@@ -420,7 +419,7 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
             }
         }
 
-        return builtIn;
+        return ResolveBuiltIn(relativePath, log);
     }
 
     private ContentTypeMapping ResolveBuiltIn(string relativePath, TaskLoggingHelper log)
@@ -433,7 +432,7 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
             {
                 var result = ResolveBuiltIn(fileName, log);
                 // If we don't have a specific mapping for the other extension, use any mapping available for `.gz` or `.br`
-                return result.Equals(default) && _builtInMappings.TryGetValue(extension, out var compressed) ?
+                return result.MimeType == null && _builtInMappings.TryGetValue(extension, out var compressed) ?
                     compressed :
                     result;
             }
