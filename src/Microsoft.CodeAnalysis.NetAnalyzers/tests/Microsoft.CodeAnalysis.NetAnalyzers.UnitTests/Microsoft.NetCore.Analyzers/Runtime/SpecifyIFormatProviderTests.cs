@@ -1599,16 +1599,32 @@ End Class
         [InlineData("double")]
         [InlineData("float")]
         [InlineData("decimal")]
+        [InlineData("DateTime")]
+        [InlineData("DateOnly")]
+        [InlineData("TimeOnly")]
+        [InlineData("DateTimeOffset")]
         public Task FormatProviderForNullableValueTypes(string valueType)
         {
-            var code = $@"
-public class Test {{
-    public void M({valueType}? x) {{
-        var y = {{|#0:x.ToString()|}};
-    }}
-}}";
+            var code = $$"""
+                         using System;
 
-            return VerifyCS.VerifyAnalyzerAsync(code, new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0).WithArguments($"{valueType}?.ToString()"));
+                         public class Test {
+                             public void M({{valueType}}? x) {
+                                 var y = {|#0:x.ToString()|};
+                             }
+                         }
+                         """;
+
+            DiagnosticResult result = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"{valueType}?.ToString()", $"Test.M({valueType}?)", $"{valueType}.ToString(IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                ExpectedDiagnostics = { result },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
         }
 
         [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
@@ -1621,35 +1637,52 @@ public class Test {{
         [InlineData("double")]
         [InlineData("float")]
         [InlineData("decimal")]
+        [InlineData("DateTime")]
+        [InlineData("DateOnly")]
+        [InlineData("TimeOnly")]
+        [InlineData("DateTimeOffset")]
         public Task FormatProviderForNullableValueTypesAlreadyProvided_NoDiagnostic(string valueType)
         {
-            var code = $@"
-using System.Globalization;
+            var code = $$"""
+                         using System;
+                         using System.Globalization;
 
-public class Test {{
-    public void M({valueType}? x) {{
-        var y = x?.ToString(CultureInfo.CurrentCulture);
-    }}
-}}";
+                         public class Test {
+                             public void M({{valueType}}? x) {
+                                 var y = x?.ToString(CultureInfo.CurrentCulture);
+                             }
+                         }
+                         """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
         }
 
         [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6746")]
         [CombinatorialData]
         public Task FormatProviderForNullableValueTypes_NoDiagnostic(
-            [CombinatorialValues("int", "uint", "long", "ulong", "short", "ushort", "double", "float", "decimal")] string valueType,
+            [CombinatorialValues("int", "uint", "long", "ulong", "short", "ushort", "double", "float", "decimal", "DateTime", "DateOnly", "TimeOnly", "DateTimeOffset")] string valueType,
             [CombinatorialValues("GetHashCode", "GetValueOrDefault")] string methodName
         )
         {
-            var code = $@"
-public class Test {{
-    public void M({valueType}? x) {{
-        var y = x.{methodName}();
-    }}
-}}";
+            var code = $$"""
+                         using System;
+                         
+                         public class Test {
+                             public void M({{valueType}}? x) {
+                                 var y = x.{{methodName}}();
+                             }
+                         }
+                         """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
         }
 
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
