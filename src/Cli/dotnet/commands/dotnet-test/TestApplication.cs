@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
+        public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestReceived;
         public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
         public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
         public event EventHandler<FileArtifactInfoEventArgs> FileArtifactInfoReceived;
@@ -111,6 +112,10 @@ namespace Microsoft.DotNet.Cli
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
+
+                    case DiscoveredTestMessage discoveredTestMessage:
+                        OnDiscoveredTestMessage(discoveredTestMessage);
                         break;
 
                     case SuccessfulTestResultMessage successfulTestResultMessage:
@@ -270,6 +275,11 @@ namespace Microsoft.DotNet.Cli
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
             HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
+        }
+
+        internal void OnDiscoveredTestMessage(DiscoveredTestMessage discoveredTestMessage)
+        {
+            DiscoveredTestReceived?.Invoke(this, new DiscoveredTestEventArgs { DiscoveredTestMessage = discoveredTestMessage });
         }
 
         internal void OnSuccessfulTestResultMessage(SuccessfulTestResultMessage successfulTestResultMessage)
