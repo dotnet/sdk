@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using NuGet.Configuration;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
@@ -69,6 +70,10 @@ internal sealed class Registry
     /// part of Docker commands like `docker login`.
     /// </summary>
     public string RegistryName { get; }
+
+    internal Registry(string registryName, ILogger logger) :
+        this(new Uri($"https://{registryName}"), logger, null, null)
+    { }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
         this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
