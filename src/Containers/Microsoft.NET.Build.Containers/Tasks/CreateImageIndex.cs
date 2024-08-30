@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers;
 using Microsoft.NET.Build.Containers.Logging;
 using NuGet.Protocol;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
