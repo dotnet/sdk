@@ -22,14 +22,14 @@ namespace Microsoft.DotNet.Cli
         public bool RunWithTestModulesFilter(ParseResult parseResult)
         {
             // If the module path pattern(s) was provided, we will use that to filter the test modules
-            string testModules = parseResult.GetValue(TestCommandParser.TestModules);
+            string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
 
             // If the root directory was provided, we will use that to search for the test modules
             // Otherwise, we will use the current directory
             string rootDirectory = Directory.GetCurrentDirectory();
-            if (parseResult.HasOption(TestCommandParser.TestModulesRootDirectory))
+            if (parseResult.HasOption(TestingPlatformOptions.TestModulesRootDirectoryOption))
             {
-                rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory);
+                rootDirectory = parseResult.GetValue(TestingPlatformOptions.TestModulesRootDirectoryOption);
 
                 // If the root directory is not valid, we simply return
                 if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))

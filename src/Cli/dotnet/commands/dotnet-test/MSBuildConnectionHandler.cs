@@ -82,8 +82,8 @@ namespace Microsoft.DotNet.Cli
 
         public int RunWithMSBuild(ParseResult parseResult)
         {
-            bool containsNoBuild = parseResult.HasOption(TestCommandParser.NoBuild);
-            bool containsNoRestore = parseResult.HasOption(TestCommandParser.NoRestore) || containsNoBuild;
+            bool containsNoBuild = parseResult.HasOption(TestingPlatformOptions.NoBuildOption);
+            bool containsNoRestore = parseResult.HasOption(TestingPlatformOptions.NoRestoreOption) || containsNoBuild;
 
             List<string> msbuildCommandLineArgs =
             [
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Cli
 
         private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
         {
-            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            string msBuildParameters = parseResult.GetValue(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             if (!string.IsNullOrEmpty(msBuildParameters))
             {
                 parameters.AddRange(msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries));

@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            if (parseResult.HasOption(TestCommandParser.Architecture))
+            if (parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
             {
                 VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
                 return ExitCodes.GenericFailure;
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli
 
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
+            if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
 
             if (ContainsHelpOption(parseResult.GetArguments()))
@@ -55,6 +55,7 @@ namespace Microsoft.DotNet.Cli
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
                     testApp.HandshakeInfoReceived += OnHandshakeInfoReceived;
+                    testApp.DiscoveredTestReceived += OnDiscoveredTestReceived;
                     testApp.SuccessfulTestResultReceived += OnTestResultReceived;
                     testApp.FailedTestResultReceived += OnTestResultReceived;
                     testApp.FileArtifactInfoReceived += OnFileArtifactInfoReceived;
@@ -73,7 +74,7 @@ namespace Microsoft.DotNet.Cli
             _testModulesFilterHandler = new(_args, _actionQueue);
             _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
 
-            if (parseResult.HasOption(TestCommandParser.TestModules))
+            if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
             {
                 if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                 {
@@ -126,6 +127,17 @@ namespace Microsoft.DotNet.Cli
             {
                 VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
             }
+        }
+
+        private void OnDiscoveredTestReceived(object sender, DiscoveredTestEventArgs args)
+        {
+            if (!VSTestTrace.TraceEnabled)
+            {
+                return;
+            }
+
+            var successfulTestResultMessage = args.DiscoveredTestMessage;
+            VSTestTrace.SafeWriteTrace(() => $"DiscoveredTestMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, {successfulTestResultMessage.ExecutionId}");
         }
 
         private void OnTestResultReceived(object sender, EventArgs args)
