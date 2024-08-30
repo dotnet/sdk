@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="it" original="../Resources.resx">
+    <body>
+      <trans-unit id="CouldNotResolveReference">
+        <source>Could not resolve reference '{0}' in any of the provided search directories.</source>
+        <target state="translated">Non è stato possibile risolvere il riferimento '{0}' in nessuna delle directory di ricerca specificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MatchingAssemblyNotFound">
+        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
+        <target state="translated">Non è stato possibile trovare un assembly corrispondente: '{0}' in nessuna delle directory di ricerca.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedPathToLoadBinariesFromNotFound">
+        <source>Could not find the provided path '{0}' to load binaries from.</source>
+        <target state="translated">Non è stato possibile trovare il percorso specificato '{0}' da cui caricare i file binari.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedStreamDoesNotHaveMetadata">
+        <source>Provided stream for assembly '{0}' doesn't have any metadata to read. from.</source>
+        <target state="translated">Il flusso specificato per l'assembly '{0}' non contiene metadati da leggere.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">
+        <source>Should not be null and contain at least one element.</source>
+        <target state="translated">Non deve essere null e deve contenere almeno un elemento.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldProvideValidAssemblyName">
+        <source>Should provide a valid assembly name.</source>
+        <target state="translated">Deve fornire un nome di assembly valido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StreamPositionGreaterThanLength">
+        <source>Stream position is greater than it's length, so there are no contents available to read.</source>
+        <target state="translated">La posizione del flusso è maggiore della lunghezza, quindi non sono disponibili contenuti da leggere.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

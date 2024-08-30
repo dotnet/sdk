@@ -1,12 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Threading;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -111,7 +107,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             if (IsLoggingEnabled)
             {
-                var prefix = GetLoggingPrefix();
+                var prefix = string.Format(CultureInfo.InvariantCulture, "{0} PID={1} TID={2} Ticks={3}: ", s_prefix,
+                    GetCurrentProcessId(), Environment.CurrentManagedThreadId, Environment.TickCount);
 
                 var output = prefix + message + "\r\n";
                 var bytes = Encoding.UTF8.GetBytes(output);
@@ -124,23 +121,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        private static int GetCurrentProcessId()
-        {
-            var process = Process.GetCurrentProcess();
-            return process.Id;
-        }
-
-        private static int GetCurrentThreadId()
-        {
-            return Environment.CurrentManagedThreadId;
-        }
-
-        /// <summary>
-        /// Get the string that prefixes all log entries. Shows the process, thread, and time.
-        /// </summary>
-        private static string GetLoggingPrefix()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} PID={1} TID={2} Ticks={3}: ", s_prefix, GetCurrentProcessId(), GetCurrentThreadId(), Environment.TickCount);
-        }
+        private static int GetCurrentProcessId() =>
+#if NET5_0_OR_GREATER
+            Environment.ProcessId;
+#else
+            Process.GetCurrentProcess().Id;
+#endif
     }
 }

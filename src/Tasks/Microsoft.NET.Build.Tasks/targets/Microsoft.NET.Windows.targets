@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                              and '$(TargetPlatformIdentifier)' == 'Windows'
                              and '$(TargetPlatformVersion)' != ''
                              and $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.0'))
-                             and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')
+                             and '$(Language)' != 'C++'
                              and '$(IncludeWindowsSDKRefFrameworkReferences)' == ''">
     <IncludeWindowsSDKRefFrameworkReferences>true</IncludeWindowsSDKRefFrameworkReferences>
   </PropertyGroup>
@@ -50,6 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CsWinRTAotOptimizerEnabled Condition="'$(CsWinRTAotOptimizerEnabled)' == '' and $([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) >= 6">true</CsWinRTAotOptimizerEnabled>
     <CsWinRTAotExportsEnabled Condition="'$(CsWinRTAotExportsEnabled)' == '' and '$(CsWinRTAotOptimizerEnabled)' == 'true' and '$(PublishAot)' == 'true'">true</CsWinRTAotExportsEnabled>
     <CsWinRTCcwLookupTableGeneratorEnabled Condition="'$(CsWinRTCcwLookupTableGeneratorEnabled)' == '' and '$(CsWinRTGenerateProjection)' != 'true'">true</CsWinRTCcwLookupTableGeneratorEnabled>
+    <CsWinRTAotWarningLevel Condition="'$(CsWinRTAotWarningLevel)' == '' and '$(CsWinRTGenerateProjection)' != 'true' and ('$(PublishAot)' == 'true' or '$(IsAotCompatible)' == 'true')">1</CsWinRTAotWarningLevel>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'">
