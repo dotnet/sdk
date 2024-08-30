@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -151,6 +152,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var guidParseMethods = guidType?.GetMembers("Parse") ?? ImmutableArray<ISymbol>.Empty;
 
+            var convertType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConvert);
+            ImmutableHashSet<IMethodSymbol> superfluousFormatProviderOverloads = ImmutableHashSet<IMethodSymbol>.Empty;
+            if (convertType != null)
+            {
+                superfluousFormatProviderOverloads = convertType.GetMembers(nameof(Convert.ToString))
+                    .OfType<IMethodSymbol>()
+                    .Where(m => m.Parameters is [{ Type.SpecialType: SpecialType.System_String or SpecialType.System_Boolean or SpecialType.System_Char }, var possibleFormatProvider]
+                                && possibleFormatProvider.Type.Equals(iformatProviderType, SymbolEqualityComparer.Default)).ToImmutableHashSet();
+                superfluousFormatProviderOverloads = superfluousFormatProviderOverloads
+                    .Add(convertType.GetMembers(nameof(Convert.ToChar))
+                        .OfType<IMethodSymbol>()
+                        .First(m => m.Parameters is [{ Type.SpecialType: SpecialType.System_String }, var possibleFormatProvider]
+                                    && possibleFormatProvider.Type.Equals(iformatProviderType, SymbolEqualityComparer.Default)))
+                    .Add(convertType.GetMembers(nameof(Convert.ToBoolean))
+                        .OfType<IMethodSymbol>()
+                        .First(m => m.Parameters is [{ Type.SpecialType: SpecialType.System_String }, var possibleFormatProvider]
+                                    && possibleFormatProvider.Type.Equals(iformatProviderType, SymbolEqualityComparer.Default)));
+            }
+
             #endregion
 
             context.RegisterOperationAction(oaContext =>
@@ -211,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         // Sample message for IFormatProviderAlternateRule: Because the behavior of Convert.ToInt64(string) could vary based on the current user's locale settings,
                         // replace this call in IFormatProviderStringTest.TestMethod() with a call to Convert.ToInt64(string, IFormatProvider).
-                        if (correctOverload != null)
+                        if (correctOverload != null && !superfluousFormatProviderOverloads.Contains(correctOverload))
                         {
                             oaContext.ReportDiagnostic(
                                 invocationExpression.Syntax.CreateDiagnostic(

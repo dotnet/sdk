@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -1682,6 +1683,535 @@ End Class
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("bool")]
+        [InlineData("char")]
+        [InlineData("string")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToString_NoDiagnostic(string type)
+        {
+            var source = $$"""
+                         using System;
+
+                         #nullable enable
+                         class Test
+                         {
+                            void M({{type}} value)
+                            {
+                                var x = Convert.ToString(value);
+                            }
+                         }
+                         """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("sbyte")]
+        [InlineData("byte")]
+        [InlineData("short")]
+        [InlineData("ushort")]
+        [InlineData("int")]
+        [InlineData("uint")]
+        [InlineData("long")]
+        [InlineData("ulong")]
+        [InlineData("float")]
+        [InlineData("double")]
+        [InlineData("decimal")]
+        [InlineData("DateTime")]
+        public Task CA1305_ConvertToString_Diagnostic(string type)
+        {
+            var source = $$"""
+                         using System;
+
+                         #nullable enable
+                         class Test
+                         {
+                            void M({{type}} value)
+                            {
+                                var x = {|#0:Convert.ToString(value)|};
+                            }
+                         }
+                         """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToString({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToString({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        public Task CA1305_ConvertToChar_NoDiagnostic()
+        {
+            const string source = """
+                                  using System;
+
+                                  class Test
+                                  {
+                                     void M(string value)
+                                     {
+                                         var x = Convert.ToChar(value);
+                                     }
+                                  }
+                                  """;
+
+            return VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        public Task CA1305_ConvertToChar_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToChar(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToChar({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToChar({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("string")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToBoolean_NoDiagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = Convert.ToBoolean(value);
+                              }
+                           }
+                           """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        public Task CA1305_ConvertToBoolean_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToBoolean(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToBoolean({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToBoolean({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string")]
+        public Task CA1305_ConvertToSByte_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToSByte(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToSByte({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToSByte({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToByte_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToByte(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToByte({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToByte({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToInt16_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToInt16(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToInt16({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToInt16({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToUInt16_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToUInt16(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToUInt16({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToUInt16({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToInt32_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToInt32(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToInt32({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToInt32({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToUInt32_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToUInt32(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToUInt32({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToUInt32({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToInt64_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToInt64(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToInt64({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToInt64({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToUInt64_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToUInt64(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToUInt64({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToUInt64({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToSingle_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToSingle(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToSingle({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToSingle({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToDouble_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToDouble(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToDouble({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToDouble({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToDecimal_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToDecimal(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToDecimal({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToDecimal({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [InlineData("object")]
+        [InlineData("object?")]
+        [InlineData("string?")]
+        public Task CA1305_ConvertToDateTime_Diagnostic(string type)
+        {
+            var source = $$"""
+                           using System;
+
+                           #nullable enable
+                           class Test
+                           {
+                              void M({{type}} value)
+                              {
+                                  var x = {|#0:Convert.ToSingle(value)|};
+                              }
+                           }
+                           """;
+            var expectedDiagnostic = new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+                .WithLocation(0)
+                .WithArguments($"Convert.ToSingle({type.TrimEnd('?')})", $"Test.M({type.TrimEnd('?')})", $"Convert.ToSingle({type.TrimEnd('?')}, IFormatProvider)");
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ExpectedDiagnostics = { expectedDiagnostic },
+                LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync();
         }
 
