@@ -19,12 +19,14 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 
 ## Overview
 
-- The SDK will contain a VSIX with the analyzer DLLs and an MEF-exported implementation of `IAnalyzerAssemblyResolver`.
-  Implementations of this interface are imported by Roslyn and can intercept analyzer DLL loading.
+- The SDK will contain a VSIX with the analyzer DLLs and an MEF-exported implementation of `IAnalyzerAssemblyRedirector`.
+  Implementations of this interface are imported by Roslyn and can redirect analyzer DLL loading.
 
-- Our `IAnalyzerAssemblyResolver` will redirect any analyzer DLL matching some pattern
-  to the corresponding DLL installed from the VSIX.
+- The SDK's implementation of `IAnalyzerAssemblyRedirector` will redirect any analyzer DLL matching some pattern
+  to the corresponding DLL deployed via the VSIX.
   Details of this process are described below.
+
+- Note that when `IAnalyzerAssemblyRedirector` is involved, Roslyn is free to not use shadow copy loading and instead load the DLLs directly.
 
 ## Details
 
@@ -38,9 +40,9 @@ SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis
 WebSDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
 ```
 
-Given an analyzer assembly load going through our `IAnalyzerAssemblyResolver`,
-we will redirect it if the original path of the assembly being loaded
-matches the path of a VSIX-deployed analyzer - only segments of these paths starting after the version segment are compared,
+Given an analyzer assembly load going through our `IAnalyzerAssemblyRedirector`,
+we will redirect it if the original path of the assembly being loaded matches the path of a VSIX-deployed analyzer -
+only segments of these paths starting after the version segment are compared,
 plus the major and minor component of the versions must match.
 
 For example, analyzer
