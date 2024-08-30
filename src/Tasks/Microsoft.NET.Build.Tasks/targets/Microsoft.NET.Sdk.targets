@@ -237,11 +237,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' ">
       <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
     </ItemGroup>
+  </Target>
 
-    <Target Name="_AddGenerateSbomTask" BeforeTargets="CollectPackageReferences">
-      <ItemGroup Condition=" '$(GenerateSbom)' == 'true' ">
-        <PackageReference Include="Microsoft.Sbom.Targets" Version="0.0.0-preview.0" IsImplicitlyDefined="true" />
-      </ItemGroup>
+  <Target Name="_AddGenerateSbomTask" BeforeTargets="CollectPackageReferences">
+    <ItemGroup Condition=" '$(GenerateSbom)' == 'true' ">
+      <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
   </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.
