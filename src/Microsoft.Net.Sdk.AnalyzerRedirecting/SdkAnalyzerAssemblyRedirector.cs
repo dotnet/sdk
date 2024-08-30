@@ -4,7 +4,12 @@
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis;
-using AnalyzerInfo = (int MajorVersion, string PathSuffix, string FullPath);
+
+// Example:
+// FullPath: "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll"
+// ProductVersion: "8.0.8"
+// PathSuffix: "analyzers\dotnet"
+using AnalyzerInfo = (string FullPath, string ProductVersion, string PathSuffix);
 
 namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 
@@ -34,6 +39,12 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     {
         var builder = ImmutableDictionary.CreateBuilder<string, List<AnalyzerInfo>>(StringComparer.OrdinalIgnoreCase);
 
+        // Expects layout like:
+        // VsInstallDir\SDK\RuntimeAnalyzers\WindowsDesktopAnalyzers\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+        //                                   ~~~~~~~~~~~~~~~~~~~~~~~                                                           = topLevelDirectory
+        //                                                           ~~~~~                                                     = versionDirectory
+        //                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ = analyzerPath
+
         foreach (string topLevelDirectory in Directory.EnumerateDirectories(_insertedAnalyzersDirectory))
         {
             foreach (string versionDirectory in Directory.EnumerateDirectories(topLevelDirectory))
@@ -46,23 +57,19 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
                     }
 
                     string version = Path.GetFileName(versionDirectory);
-                    string majorVersionStr = version.IndexOf('.') is >= 0 and var index ? version.Substring(0, index) : version;
-                    if (!int.TryParse(majorVersionStr, out int majorVersion))
-                    {
-                        continue;
-                    }
-
                     string analyzerName = Path.GetFileNameWithoutExtension(analyzerPath);
                     string pathSuffix = analyzerPath.Substring(versionDirectory.Length + (EndsWithSlash(versionDirectory) ? 0 : 1));
                     pathSuffix = Path.GetDirectoryName(pathSuffix);
 
+                    AnalyzerInfo analyzer = new() { FullPath = analyzerPath, ProductVersion = version, PathSuffix = pathSuffix };
+
                     if (builder.TryGetValue(analyzerName, out var existing))
                     {
-                        existing.Add((majorVersion, pathSuffix, analyzerPath));
+                        existing.Add(analyzer);
                     }
                     else
                     {
-                        builder.Add(analyzerName, new() { (majorVersion, pathSuffix, analyzerPath) });
+                        builder.Add(analyzerName, [analyzer]);
                     }
                 }
             }
@@ -75,11 +82,11 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     {
         if (AnalyzerMap.TryGetValue(Path.GetFileNameWithoutExtension(fullPath), out var analyzers))
         {
-            foreach (var analyzer in analyzers)
+            foreach (AnalyzerInfo analyzer in analyzers)
             {
                 var directoryPath = Path.GetDirectoryName(fullPath);
                 if (endsWithIgnoringTrailingSlashes(directoryPath, analyzer.PathSuffix) &&
-                    hasMajorVersion(directoryPath, analyzer.PathSuffix, analyzer.MajorVersion))
+                    majorAndMinorVersionsMatch(directoryPath, analyzer.PathSuffix, analyzer.ProductVersion))
                 {
                     return analyzer.FullPath;
                 }
@@ -88,20 +95,38 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
         return null;
 
-        static bool hasMajorVersion(string directoryPath, string pathSuffix, int majorVersion)
+        static bool majorAndMinorVersionsMatch(string directoryPath, string pathSuffix, string version)
         {
-            // Find the version number in the directory path which is in the directory name before the path suffix.
+            // Find the version number in the directory path - it is in the directory name before the path suffix.
+            // Example:
+            // "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\" = directoryPath
+            //                                                                       ~~~~~~~~~~~~~~~~   = pathSuffix
+            //                                                                 ~~~~~                    = directoryPathVersion
             int index = directoryPath.LastIndexOf(pathSuffix, StringComparison.OrdinalIgnoreCase);
             if (index < 0)
             {
                 return false;
             }
-            string version = Path.GetFileName(Path.GetDirectoryName(directoryPath.Substring(0, index)));
+            string directoryPathVersion = Path.GetFileName(Path.GetDirectoryName(directoryPath.Substring(0, index)));
 
-            // Check that the major version part matches.
-            return version.IndexOf('.') is >= 0 and var dotIndex &&
-                int.TryParse(version.Substring(0, dotIndex), out int versionMajor) &&
-                versionMajor == majorVersion;
+            return getMajorMinorPart(directoryPathVersion) == getMajorMinorPart(version);
+        }
+
+        static string getMajorMinorPart(string version)
+        {
+            int firstDotIndex = version.IndexOf('.');
+            if (firstDotIndex < 0)
+            {
+                return version;
+            }
+
+            int secondDotIndex = version.IndexOf('.', firstDotIndex + 1);
+            if (secondDotIndex < 0)
+            {
+                return version;
+            }
+
+            return version.Substring(0, secondDotIndex);
         }
 
         static bool endsWithIgnoringTrailingSlashes(string s, string suffix)
