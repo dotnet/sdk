@@ -940,10 +940,6 @@ You may need to build the project on another operating system or architecture, o
 &lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</value>
     <comment>{StrBegin="NETSDK1212: "}</comment>
   </data>
-  <data name="Net8NotCompatibleWithDev177" xml:space="preserve">
-    <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
-    <comment>{StrBegin="NETSDK1213: "}</comment>
-  </data>
   <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
     <value>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
     <comment>{StrBegin="NETSDK1214: "}</comment>
@@ -972,5 +968,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</value>
     <comment>{StrBegin="NETSDK1220: "}</comment>
   </data>
-  <!-- The latest message added is WindowsSDKXamlInvalidTfm. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="Net9NotCompatibleWithDev1711" xml:space="preserve">
+    <value>NETSDK1221: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
+    <comment>{StrBegin="NETSDK1221: "}</comment>
+  </data>
+  <!-- The latest message added is Net9NotCompatibleWithDev1711. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
