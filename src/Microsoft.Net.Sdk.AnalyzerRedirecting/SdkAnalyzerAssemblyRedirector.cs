@@ -3,24 +3,23 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using AnalyzerInfo = (int MajorVersion, string PathSuffix, string FullPath);
 
 namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 
-[Export(typeof(IAnalyzerAssemblyResolver))]
-public sealed class RedirectingAnalyzerAssemblyResolver : IAnalyzerAssemblyResolver
+[Export(typeof(IAnalyzerAssemblyRedirector))]
+public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 {
     private readonly string? _insertedAnalyzersDirectory;
     private readonly Lazy<ImmutableDictionary<string, List<AnalyzerInfo>>> _analyzerMap;
 
     [ImportingConstructor]
-    public RedirectingAnalyzerAssemblyResolver()
+    public SdkAnalyzerAssemblyRedirector()
         : this(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "SDK", "RuntimeAnalyzers"))) { }
 
     // Internal for testing.
-    internal RedirectingAnalyzerAssemblyResolver(string? insertedAnalyzersDirectory)
+    internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory)
     {
         _insertedAnalyzersDirectory = insertedAnalyzersDirectory;
         _analyzerMap = new(CreateAnalyzerMap);
@@ -79,7 +78,7 @@ public sealed class RedirectingAnalyzerAssemblyResolver : IAnalyzerAssemblyResol
             foreach (var analyzer in analyzers)
             {
                 var directoryPath = Path.GetDirectoryName(fullPath);
-                if (EndsWithIgnoringTrailingSlashes(directoryPath, analyzer.PathSuffix) &&
+                if (endsWithIgnoringTrailingSlashes(directoryPath, analyzer.PathSuffix) &&
                     hasMajorVersion(directoryPath, analyzer.PathSuffix, analyzer.MajorVersion))
                 {
                     return analyzer.FullPath;
@@ -104,31 +103,14 @@ public sealed class RedirectingAnalyzerAssemblyResolver : IAnalyzerAssemblyResol
                 int.TryParse(version.Substring(0, dotIndex), out int versionMajor) &&
                 versionMajor == majorVersion;
         }
-    }
 
-    public Assembly? ResolveAssembly(AssemblyName assemblyName, string assemblyOriginalDirectory)
-    {
-        if (AnalyzerMap.TryGetValue(assemblyName.Name, out var analyzers))
+        static bool endsWithIgnoringTrailingSlashes(string s, string suffix)
         {
-            foreach (var analyzer in analyzers)
-            {
-                if (analyzer.MajorVersion == assemblyName.Version.Major &&
-                    EndsWithIgnoringTrailingSlashes(assemblyOriginalDirectory, analyzer.PathSuffix))
-                {
-                    return Assembly.LoadFrom(analyzer.FullPath);
-                }
-            }
+            var sEndsWithSlash = EndsWithSlash(s);
+            var suffixEndsWithSlash = EndsWithSlash(suffix);
+            var index = s.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase);
+            return index >= 0 && index + suffix.Length - (suffixEndsWithSlash ? 1 : 0) == s.Length - (sEndsWithSlash ? 1 : 0);
         }
-
-        return null;
-    }
-
-    private static bool EndsWithIgnoringTrailingSlashes(string s, string suffix)
-    {
-        var sEndsWithSlash = EndsWithSlash(s);
-        var suffixEndsWithSlash = EndsWithSlash(suffix);
-        var index = s.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase);
-        return index >= 0 && index + suffix.Length - (suffixEndsWithSlash ? 1 : 0) == s.Length - (sEndsWithSlash ? 1 : 0);
     }
 
     private static bool EndsWithSlash(string s) => !string.IsNullOrEmpty(s) && s[s.Length - 1] is '/' or '\\';
