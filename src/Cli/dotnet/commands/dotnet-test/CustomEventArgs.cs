@@ -15,6 +15,11 @@ namespace Microsoft.DotNet.Cli
         public CommandLineOptionMessages CommandLineOptionMessages { get; set; }
     }
 
+    internal class DiscoveredTestEventArgs : EventArgs
+    {
+        public DiscoveredTestMessage DiscoveredTestMessage { get; set; }
+    }
+
     internal class SuccessfulTestResultEventArgs : EventArgs
     {
         public SuccessfulTestResultMessage SuccessfulTestResultMessage { get; set; }

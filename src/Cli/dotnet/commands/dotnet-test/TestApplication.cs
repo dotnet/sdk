@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
+        public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestReceived;
         public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
         public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
         public event EventHandler<FileArtifactInfoEventArgs> FileArtifactInfoReceived;
@@ -105,12 +106,16 @@ namespace Microsoft.DotNet.Cli
                         {
                             OnHandshakeInfo(handshakeInfo);
 
-                            return Task.FromResult((IResponse)CreateHandshakeInfo());
+                            return Task.FromResult((IResponse)CreateHandshakeInfo(GetSupportedProtocolVersion(handshakeInfo)));
                         }
                         break;
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
+
+                    case DiscoveredTestMessage discoveredTestMessage:
+                        OnDiscoveredTestMessage(discoveredTestMessage);
                         break;
 
                     case SuccessfulTestResultMessage successfulTestResultMessage:
@@ -155,14 +160,27 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
-        private static HandshakeInfo CreateHandshakeInfo() =>
+        private static string GetSupportedProtocolVersion(HandshakeInfo handshakeInfo)
+        {
+            handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.SupportedProtocolVersions, out string protocolVersions);
+
+            string version = string.Empty;
+            if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+            {
+                version = ProtocolConstants.Version;
+            }
+
+            return version;
+        }
+
+        private static HandshakeInfo CreateHandshakeInfo(string version) =>
             new(new Dictionary<byte, string>
             {
                 { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
                 { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
                 { HandshakeInfoPropertyNames.Framework, RuntimeInformation.FrameworkDescription },
                 { HandshakeInfoPropertyNames.OS, RuntimeInformation.OSDescription },
-                { HandshakeInfoPropertyNames.ProtocolVersion, ProtocolConstants.Version }
+                { HandshakeInfoPropertyNames.SupportedProtocolVersions, version }
             });
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
@@ -257,6 +275,11 @@ namespace Microsoft.DotNet.Cli
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
             HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
+        }
+
+        internal void OnDiscoveredTestMessage(DiscoveredTestMessage discoveredTestMessage)
+        {
+            DiscoveredTestReceived?.Invoke(this, new DiscoveredTestEventArgs { DiscoveredTestMessage = discoveredTestMessage });
         }
 
         internal void OnSuccessfulTestResultMessage(SuccessfulTestResultMessage successfulTestResultMessage)

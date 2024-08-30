@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Abstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -38,11 +35,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IReporter _reporter;
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
-        private IDictionary<PackageSource, SourceRepository> _sourceRepositories;
+        private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositories;
         private readonly bool _shouldUsePackageSourceMapping;
 
-        private bool _verifySignatures;
-        private VerbosityOptions _verbosityOptions;
+        private readonly bool _verifySignatures;
+        private readonly VerbosityOptions _verbosityOptions;
+        private readonly string _currentWorkingDirectory;
 
         public NuGetPackageDownloader(
             DirectoryPath packageInstallDir,
@@ -54,8 +52,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool shouldUsePackageSourceMapping = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal,
+            string currentWorkingDirectory = null)
         {
+            _currentWorkingDirectory = currentWorkingDirectory;
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
-            _sourceRepositories = new Dictionary<PackageSource, SourceRepository>();
+            _sourceRepositories = new();
             _verifySignatures = verifySignatures;
 
             _cacheSettings = new SourceCacheContext
@@ -130,22 +130,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
-
+            await VerifySigning(nupkgPath, repository);
+            
             return nupkgPath;
         }
 
-        private bool verbosityGreaterThanMinimal()
-        {
-            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
-                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
-        }
+        private bool VerbosityGreaterThanMinimal() =>
+            _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
+            _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
 
-        private void VerifySigning(string nupkgPath)
+        private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
+
+        private async Task VerifySigning(string nupkgPath, SourceRepository repository)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (verbosityGreaterThanMinimal())
+                if (VerbosityGreaterThanMinimal())
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
@@ -157,15 +157,28 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (repository is not null &&
+                await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
+                resource.AllRepositorySigned)
             {
-                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
-                    out string commandOutput))
+                string commandOutput;
+                // The difference between _firstPartyNuGetPackageSigningVerifier.Verify and FirstPartyNuGetPackageSigningVerifier.NuGetVerify is that while NuGetVerify
+                // just ensures that the package is signed properly, Verify additionally requires that the package be from Microsoft. NuGetVerify does not require that
+                // the package be from Microsoft.
+                if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
+                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
                 {
-                    throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                             Environment.NewLine +
-                                                             commandOutput);
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
                 }
+
+                if (DiagnosticVerbosity())
+                {
+                    _reporter.WriteLine(LocalizableStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
+                }
+            }
+            else if (DiagnosticVerbosity())
+            {
+                _reporter.WriteLine(LocalizableStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
             }
         }
 
@@ -186,7 +199,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             IReadOnlyList<Uri> packageBaseAddress =
                 serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 
-            return GetNupkgUrl(packageBaseAddress.First().ToString(), packageId, resolvedPackageVersion);
+            return GetNupkgUrl(packageBaseAddress[0].ToString(), packageId, resolvedPackageVersion);
         }
 
         public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
@@ -305,9 +318,32 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return true;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        private IEnumerable<PackageSource> LoadOverrideSources(PackageSourceLocation packageSourceLocation = null)
         {
-            List<PackageSource> defaultSources = new List<PackageSource>();
+            foreach (string source in packageSourceLocation?.SourceFeedOverrides)
+            {
+                if (string.IsNullOrWhiteSpace(source))
+                {
+                    continue;
+                }
+
+                PackageSource packageSource = new(source);
+                if (packageSource.TrySourceAsUri == null)
+                {
+                    _verboseLogger.LogWarning(string.Format(
+                        LocalizableStrings.FailedToLoadNuGetSource,
+                        source));
+                    continue;
+                }
+
+                yield return packageSource;
+            }
+
+        }
+
+        private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        {
+            List<PackageSource> defaultSources = new();
             string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
@@ -367,62 +403,28 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 }
             }
 
-            if (!packageSourceLocation?.SourceFeedOverrides.Any() ?? true)
-            {
-                if (!defaultSources.Any())
-                {
-                    throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
-                }
+            return defaultSources;
+        }
 
-                return defaultSources;
-            }
+        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        {
+            var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
+                LoadOverrideSources(packageSourceLocation) :
+                LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);
 
-            List<PackageSource> customSources = new();
-            foreach (string source in packageSourceLocation?.SourceFeedOverrides)
-            {
-                if (string.IsNullOrWhiteSpace(source))
-                {
-                    continue;
-                }
-
-                PackageSource packageSource = new(source);
-                if (packageSource.TrySourceAsUri == null)
-                {
-                    _verboseLogger.LogWarning(string.Format(
-                        LocalizableStrings.FailedToLoadNuGetSource,
-                        source));
-                    continue;
-                }
-
-                customSources.Add(packageSource);
-            }
-
-            IEnumerable<PackageSource> retrievedSources;
-            if (packageSourceLocation != null && packageSourceLocation.SourceFeedOverrides.Any())
-            {
-                retrievedSources = customSources;
-            }
-            else
-            {
-                retrievedSources = defaultSources;
-            }
-
-            if (!retrievedSources.Any())
+            if (!sources.Any())
             {
                 throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
             }
 
-            return retrievedSources;
+            return sources;
         }
 
         private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(
             string packageIdentifier, IEnumerable<PackageSource> packageSources, VersionRange versionRange,
             CancellationToken cancellationToken)
         {
-            if (packageSources == null)
-            {
-                throw new ArgumentNullException(nameof(packageSources));
-            }
+            ArgumentNullException.ThrowIfNull(packageSources);
 
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
@@ -468,7 +470,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
         }
 
-        private string GenerateVersionRangeErrorDescription(string packageIdentifier, VersionRange versionRange)
+        private static string GenerateVersionRangeErrorDescription(string packageIdentifier, VersionRange versionRange)
         {
             if (!string.IsNullOrEmpty(versionRange.OriginalString) && versionRange.OriginalString == "*")
             {
@@ -503,10 +505,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
         CancellationToken cancellationToken)
         {
-            if (packageSources == null)
-            {
-                throw new ArgumentNullException(nameof(packageSources));
-            }
+            ArgumentNullException.ThrowIfNull(packageSources);
 
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
@@ -531,7 +530,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         .ConfigureAwait(false);
             }
 
-            if (!foundPackagesBySource.Any())
+            if (foundPackagesBySource.Length == 0)
             {
                 throw new NuGetPackageNotFoundException(
                     string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageIdentifier, packageSources.Select(s => s.Source)));
@@ -579,13 +578,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             IPackageSearchMetadata packageMetadata;
 
             IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
-            PackageSource source;
-
-            (source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
+            (_, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
                     versionRange, cancellationToken).ConfigureAwait(false);
 
-            NuGetVersion packageVersion = packageMetadata.Identity.Version;
-            return packageVersion;
+            return packageMetadata.Identity.Version;
         }
 
         private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,
@@ -597,8 +593,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     nameof(packageIdentifier));
             }
 
-            _ = packageVersion ?? throw new ArgumentNullException(nameof(packageVersion));
-            _ = sources ?? throw new ArgumentNullException(nameof(sources));
+            ArgumentNullException.ThrowIfNull(packageVersion);
+            ArgumentNullException.ThrowIfNull(sources);
 
             bool atLeastOneSourceValid = false;
             using CancellationTokenSource linkedCts =
@@ -762,17 +758,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         // only exposed for testing
-        internal static TimeSpan CliCompletionsTimeout
-        {
-            get => _cliCompletionsTimeout;
-            set => _cliCompletionsTimeout = value;
-        }
-        private static TimeSpan _cliCompletionsTimeout = TimeSpan.FromMilliseconds(500);
+        internal static TimeSpan CliCompletionsTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+
         private async Task<IEnumerable<NuGetVersion>> GetPackageVersionsForSource(AutoCompleteResource autocomplete, PackageId packageId, string versionPrefix, bool allowPrerelease, CancellationToken cancellationToken)
         {
             try
             {
-                var timeoutCts = new CancellationTokenSource(_cliCompletionsTimeout);
+                var timeoutCts = new CancellationTokenSource(CliCompletionsTimeout);
                 var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
                 // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
                 return await autocomplete.VersionStartsWith(packageId.ToString(), versionPrefix: versionPrefix ?? "", includePrerelease: allowPrerelease, sourceCacheContext: _cacheSettings, log: NullLogger.Instance, token: linkedCts.Token);
@@ -787,11 +779,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
         }
 
-        private async Task<IEnumerable<string>> GetPackageIdsForSource(AutoCompleteResource autocomplete, PackageId packageId, bool allowPrerelease, CancellationToken cancellationToken)
+        private static async Task<IEnumerable<string>> GetPackageIdsForSource(AutoCompleteResource autocomplete, PackageId packageId, bool allowPrerelease, CancellationToken cancellationToken)
         {
             try
             {
-                var timeoutCts = new CancellationTokenSource(_cliCompletionsTimeout);
+                var timeoutCts = new CancellationTokenSource(CliCompletionsTimeout);
                 var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
                 // we use the NullLogger because we don't want to log to stdout for completions - they interfere with the completions mechanism of the shell program.
                 return await autocomplete.IdStartsWith(packageId.ToString(), includePrerelease: allowPrerelease, log: NullLogger.Instance, token: linkedCts.Token);
@@ -808,12 +800,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private SourceRepository GetSourceRepository(PackageSource source)
         {
-            if (!_sourceRepositories.ContainsKey(source))
+            if (!_sourceRepositories.TryGetValue(source, out SourceRepository value))
             {
-                _sourceRepositories.Add(source, Repository.Factory.GetCoreV3(source));
+                value = Repository.Factory.GetCoreV3(source);
+                _sourceRepositories.Add(source, value);
             }
 
-            return _sourceRepositories[source];
+            return value;
         }
     }
 }
