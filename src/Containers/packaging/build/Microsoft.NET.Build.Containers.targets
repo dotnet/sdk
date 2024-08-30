@@ -291,7 +291,7 @@
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
       <_InnerBuild
         Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
+        AdditionalProperties="ContainerRuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
