@@ -71,10 +71,6 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger) :
-        this(new Uri($"https://{registryName}"), logger, null, null)
-    { }
-
     internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
         this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
