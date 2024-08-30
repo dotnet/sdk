@@ -287,7 +287,7 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
     <ItemGroup>
-      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
+      <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
       <_InnerBuild
         Include="$(MSBuildProjectFullPath)"
@@ -318,7 +318,7 @@
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
       <_IsMultiRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == '')">true</_IsMultiRIDBuild>
-      <_IsSingleRIDBuild Condition="('$(_IsMultiRIDBuild)' == '')">true</_IsSingleRIDBuild>
+      <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
     <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
