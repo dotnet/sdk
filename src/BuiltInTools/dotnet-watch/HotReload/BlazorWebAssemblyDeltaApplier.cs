@@ -11,55 +11,59 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier : SingleProcessDeltaApplier
+    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : SingleProcessDeltaApplier(reporter)
     {
         private const string DefaultCapabilities60 = "Baseline";
         private const string DefaultCapabilities70 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes";
         private const string DefaultCapabilities80 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType";
 
-        private static Task<ImmutableArray<string>>? s_cachedCapabilties;
-        private readonly IReporter _reporter;
-        private Version? _targetFrameworkVersion;
+        private ImmutableArray<string> _cachedCapabilities;
+        private readonly SemaphoreSlim _capabilityRetrievalSemaphore = new(initialCount: 1);
         private int _sequenceId;
 
-        public BlazorWebAssemblyDeltaApplier(IReporter reporter)
+        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
-            _reporter = reporter;
         }
 
-        public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
-            base.Initialize(context, cancellationToken);
-
-            // Configure the app for EnC
-            context.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-
-            _targetFrameworkVersion = context.FileSet?.Project?.TargetFrameworkVersion;
-        }
-
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
-        {
-            return s_cachedCapabilties ??= GetApplyUpdateCapabilitiesCoreAsync();
-
-            async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesCoreAsync()
+            var cachedCapabilities = _cachedCapabilities;
+            if (!cachedCapabilities.IsDefault)
             {
-                if (context.BrowserRefreshServer is null)
+                return cachedCapabilities;
+            }
+
+            await _capabilityRetrievalSemaphore.WaitAsync(cancellationToken);
+            try
+            {
+                if (_cachedCapabilities.IsDefault)
                 {
-                    throw new ApplicationException("The browser refresh server is unavailable.");
+                    _cachedCapabilities = await RetrieveAsync(cancellationToken);
                 }
+            }
+            finally
+            {
+                _capabilityRetrievalSemaphore.Release();
+            }
 
-                _reporter.Verbose("Connecting to the browser.");
+            return _cachedCapabilities;
 
-                await context.BrowserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
-                await context.BrowserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
-
+            async Task<ImmutableArray<string>> RetrieveAsync(CancellationToken cancellationToken)
+            {
                 var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+
                 try
                 {
+                    Reporter.Verbose("Connecting to the browser.");
+
+                    await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
+                    await browserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
+
                     // We'll query the browser and ask it send capabilities.
-                    var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken);
+                    var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
                     if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
                     {
                         throw new ApplicationException("Unable to connect to the browser refresh server.");
@@ -69,26 +73,33 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var shouldFallBackToDefaultCapabilities = false;
 
                     // error while fetching capabilities from WASM:
-                    if (capabilities.StartsWith("!"))
+                    if (capabilities.StartsWith('!'))
                     {
-                        _reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                        Reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
                         shouldFallBackToDefaultCapabilities = true;
                     }
                     else if (capabilities.Length == 0)
                     {
-                        _reporter.Verbose($"Unable to read WASM runtime capabilities");
+                        Reporter.Verbose($"Unable to read WASM runtime capabilities");
                         shouldFallBackToDefaultCapabilities = true;
                     }
 
                     if (shouldFallBackToDefaultCapabilities)
                     {
-                        capabilities = GetDefaultCapabilities(_targetFrameworkVersion);
-                        _reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
+                        capabilities = GetDefaultCapabilities(targetFrameworkVersion);
+                        Reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
                     }
 
                     // Capabilities are expressed a space-separated string.
                     // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
                     return capabilities.Split(' ').ToImmutableArray();
+                }
+                catch (Exception e) when (!cancellationToken.IsCancellationRequested)
+                {
+                    Reporter.Error($"Failed to read capabilities: {e.Message}");
+
+                    // Do not attempt to retrieve capabilities again if it fails once, unless the operation is canceled.
+                    return [];
                 }
                 finally
                 {
@@ -106,21 +117,21 @@ namespace Microsoft.DotNet.Watcher.Tools
                 };
         }
 
-        public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
-            if (context.BrowserRefreshServer is null)
+            if (browserRefreshServer is null)
             {
-                _reporter.Verbose("Unable to send deltas because the browser refresh server is unavailable.");
+                Reporter.Verbose("Unable to send deltas because the browser refresh server is unavailable.");
                 return ApplyStatus.Failed;
             }
 
-            var applicableUpdates = await FilterApplicableUpdatesAsync(context, updates, cancellationToken);
+            var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
                 return ApplyStatus.NoChangesApplied;
             }
 
-            await context.BrowserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload
+            await browserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload
             {
                 SharedSecret = sharedSecret,
                 Deltas = updates.Select(update => new UpdateDelta
@@ -133,7 +144,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 })
             }, cancellationToken);
 
-            bool result = await ReceiveApplyUpdateResult(context.BrowserRefreshServer, cancellationToken);
+            bool result = await ReceiveApplyUpdateResult(browserRefreshServer, cancellationToken);
 
             return !result ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
@@ -146,7 +157,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (result is not { MessageType: WebSocketMessageType.Binary })
             {
                 // A null result indicates no clients are connected. No deltas could have been applied in this state.
-                _reporter.Verbose("Apply confirmation: No browser is connected");
+                Reporter.Verbose("Apply confirmation: No browser is connected");
                 return false;
             }
 
@@ -155,7 +166,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return buffer[0] == 1;
             }
 
-            _reporter.Verbose("Browser failed to apply the change and reported error:");
+            Reporter.Verbose("Browser failed to apply the change and reported error:");
 
             buffer = new byte[1024];
             var messageStream = new MemoryStream();
@@ -165,7 +176,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
                 if (result is not { MessageType: WebSocketMessageType.Binary })
                 {
-                    _reporter.Verbose("Failed to receive error message");
+                    Reporter.Verbose("Failed to receive error message");
                     break;
                 }
 
@@ -174,7 +185,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 if (result is { EndOfMessage: true })
                 {
                     // message and stack trace are separated by '\0'
-                    _reporter.Verbose(Encoding.UTF8.GetString(messageStream.ToArray()).Replace("\0", Environment.NewLine));
+                    Reporter.Verbose(Encoding.UTF8.GetString(messageStream.ToArray()).Replace("\0", Environment.NewLine));
                     break;
                 }
             }

@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="The_project_file_0_does_not_exist" xml:space="preserve">
+    <value>The project file '{0}' does not exist.</value>
+  </data>
+  <data name="The_solution_file_0_does_not_exist" xml:space="preserve">
+    <value>The solution file '{0}' does not exist.</value>
+  </data>
+  <data name="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument" xml:space="preserve">
+    <value>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</value>
+  </data>
+  <data name="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument" xml:space="preserve">
+    <value>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</value>
+  </data>
+  <data name="Failed_to_save_formatting_changes" xml:space="preserve">
+    <value>Failed to save formatting changes.</value>
+  </data>
+  <data name="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file" xml:space="preserve">
+    <value>The file '{0}' does not appear to be a valid project or solution file.</value>
+  </data>
+  <data name="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument" xml:space="preserve">
+    <value>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</value>
+  </data>
+  <data name="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument" xml:space="preserve">
+    <value>Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</value>
+  </data>
+  <data name="Format_complete_in_0_ms" xml:space="preserve">
+    <value>Format complete in {0}ms.</value>
+  </data>
+  <data name="Formatting_code_file_0" xml:space="preserve">
+    <value>Formatting code file '{0}'.</value>
+  </data>
+  <data name="Formatting_code_files_in_workspace_0" xml:space="preserve">
+    <value>Formatting code files in workspace '{0}'.</value>
+  </data>
+  <data name="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects" xml:space="preserve">
+    <value>Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</value>
+  </data>
+  <data name="Formatted_0_of_1_files" xml:space="preserve">
+    <value>Formatted {0} of {1} files.</value>
+  </data>
+  <data name="Loading_workspace" xml:space="preserve">
+    <value>Loading workspace.</value>
+  </data>
+  <data name="Skipping_referenced_project_0" xml:space="preserve">
+    <value>Skipping referenced project '{0}'.</value>
+  </data>
+  <data name="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic" xml:space="preserve">
+    <value>Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</value>
+  </data>
+  <data name="A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used" xml:space="preserve">
+    <value>A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</value>
+  </data>
+  <data name="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted" xml:space="preserve">
+    <value>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</value>
+  </data>
+  <data name="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty" xml:space="preserve">
+    <value>A list of relative file or folder paths to include in formatting. All files are formatted if empty.</value>
+  </data>
+  <data name="Formatted_code_file_0" xml:space="preserve">
+    <value>Formatted code file '{0}'.</value>
+  </data>
+  <data name="Determining_formattable_files" xml:space="preserve">
+    <value>Determining formattable files.</value>
+  </data>
+  <data name="Complete_in_0_ms" xml:space="preserve">
+    <value>Complete in {0}ms.</value>
+  </data>
+  <data name="Running_formatters" xml:space="preserve">
+    <value>Running formatters.</value>
+  </data>
+  <data name="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings" xml:space="preserve">
+    <value>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</value>
+  </data>
+  <data name="Fix_final_newline" xml:space="preserve">
+    <value>Fix final newline.</value>
+  </data>
+  <data name="Fix_end_of_line_marker" xml:space="preserve">
+    <value>Fix end of line marker.</value>
+  </data>
+  <data name="Fix_whitespace_formatting" xml:space="preserve">
+    <value>Fix whitespace formatting.</value>
+  </data>
+  <data name="Fix_file_encoding" xml:space="preserve">
+    <value>Fix file encoding.</value>
+  </data>
+  <data name="Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files" xml:space="preserve">
+    <value>Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</value>
+  </data>
+  <data name="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory" xml:space="preserve">
+    <value>Accepts a file path, which if provided, will produce a json report in the given directory.</value>
+  </data>
+  <data name="Writing_formatting_report_to_0" xml:space="preserve">
+    <value>Writing formatting report to: '{0}'.</value>
+  </data>
+  <data name="A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting" xml:space="preserve">
+    <value>A list of relative file or folder paths to exclude from formatting.</value>
+  </data>
+  <data name="Using_msbuildexe_located_in_0" xml:space="preserve">
+    <value>Using MSBuild.exe located in '{0}'.</value>
+  </data>
+  <data name="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer" xml:space="preserve">
+    <value>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</value>
+  </data>
+  <data name="Include_generated_code_files_in_formatting_operations" xml:space="preserve">
+    <value>Include generated code files in formatting operations.</value>
+  </data>
+  <data name="Standard_input_used_multiple_times" xml:space="preserve">
+    <value>Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</value>
+  </data>
+  <data name="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH" xml:space="preserve">
+    <value>Unable to locate dotnet CLI. Ensure that it is on the PATH.</value>
+  </data>
+  <data name="The_dotnet_CLI_version_is_0" xml:space="preserve">
+    <value>The dotnet CLI version is '{0}'.</value>
+  </data>
+  <data name="Fix_imports_ordering" xml:space="preserve">
+    <value>Fix imports ordering.</value>
+  </data>
+  <data name="Unable_to_organize_imports_for_0_The_document_is_too_complex" xml:space="preserve">
+    <value>Unable to organize imports for '{0}'. The document is too complex.</value>
+  </data>
+  <data name="Run_code_style_analyzers_and_apply_fixes" xml:space="preserve">
+    <value>Run code style analyzers and apply fixes.</value>
+  </data>
+  <data name="Run_3rd_party_analyzers_and_apply_fixes" xml:space="preserve">
+    <value>Run 3rd party analyzers and apply fixes.</value>
+  </data>
+  <data name="Analyzer_Reference" xml:space="preserve">
+    <value>Analyzer Reference</value>
+  </data>
+  <data name="Code_Style" xml:space="preserve">
+    <value>Code Style</value>
+  </data>
+  <data name="Analysis_complete_in_0ms." xml:space="preserve">
+    <value>Analysis complete in {0}ms.</value>
+  </data>
+  <data name="Determining_diagnostics" xml:space="preserve">
+    <value>Determining diagnostics...</value>
+  </data>
+  <data name="Failed_to_apply_code_fix_0_for_1_2" xml:space="preserve">
+    <value>Failed to apply code fix {0} for {1}: {2}</value>
+  </data>
+  <data name="Fixing_diagnostics" xml:space="preserve">
+    <value>Fixing diagnostics...</value>
+  </data>
+  <data name="Running_0_analysis" xml:space="preserve">
+    <value>Running {0} analysis.</value>
+  </data>
+  <data name="Solution_0_has_ no_projects" xml:space="preserve">
+    <value>Solution {0} has no projects</value>
+  </data>
+  <data name="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution" xml:space="preserve">
+    <value>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</value>
+  </data>
+  <data name="Unable_to_fix_0_No_associated_code_fix_found" xml:space="preserve">
+    <value>Unable to fix {0}. No associated code fix found.</value>
+  </data>
+  <data name="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting" xml:space="preserve">
+    <value>Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</value>
+  </data>
+  <data name="Running_0_analyzers_on_1" xml:space="preserve">
+    <value>Running {0} analyzers on {1}.</value>
+  </data>
+  <data name="The_dotnet_runtime_version_is_0" xml:space="preserve">
+    <value>The dotnet runtime version is '{0}'.</value>
+  </data>
+  <data name="Remove_unnecessary_import" xml:space="preserve">
+    <value>Remove unnecessary import.</value>
+  </data>
+  <data name="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action" xml:space="preserve">
+    <value>Unable to fix {0}. Code fix {1} didn't return a Fix All action.</value>
+  </data>
+  <data name="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation" xml:space="preserve">
+    <value>Unable to fix {0}. Code fix {1} returned an unexpected operation.</value>
+  </data>
+  <data name="Run_whitespace_formatting_Run_by_default_when_not_applying_fixes" xml:space="preserve">
+    <value>Run whitespace formatting. Run by default when not applying fixes.</value>
+  </data>
+  <data name="The_dotnet_format_version_is_0" xml:space="preserve">
+    <value>The dotnet format version is '{0}'.</value>
+  </data>
+  <data name="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues" xml:space="preserve">
+    <value>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</value>
+  </data>
+  <data name="The_diagnostics_option_only_applies_when_fixing_style_or_running_analyzers" xml:space="preserve">
+    <value>The '--diagnostics' option only applies when fixing style or running analyzers.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_when_running_analyzers" xml:space="preserve">
+    <value>Cannot specify the '--folder' option when running analyzers.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_when_fixing_style" xml:space="preserve">
+    <value>Cannot specify the '--folder' option when fixing style.</value>
+  </data>
+  <data name="Project_0_is_using_configuration_from_1" xml:space="preserve">
+    <value>Project {0} is using configuration from '{1}'.</value>
+  </data>
+  <data name="Doesnt_execute_an_implicit_restore_before_formatting" xml:space="preserve">
+    <value>Doesn't execute an implicit restore before formatting.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_with_no_restore" xml:space="preserve">
+    <value>Cannot specify the '--folder' option with '--no-restore'.</value>
+  </data>
+  <data name="Delete_0_characters" xml:space="preserve">
+    <value>Delete {0} characters.</value>
+  </data>
+  <data name="Insert_0" xml:space="preserve">
+    <value>Insert '{0}'.</value>
+  </data>
+  <data name="Replace_0_characters_with_1" xml:space="preserve">
+    <value>Replace {0} characters with '{1}'.</value>
+  </data>
+  <data name="Log_all_project_or_solution_load_information_to_a_binary_log_file" xml:space="preserve">
+    <value>Log all project or solution load information to a binary log file.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_when_writing_a_binary_log" xml:space="preserve">
+    <value>Cannot specify the '--folder' option when writing a binary log.</value>
+  </data>
+  <data name="SolutionOrProjectArgumentName" xml:space="preserve">
+    <value>PROJECT | SOLUTION</value>
+  </data>
+  <data name="SolutionOrProjectArgumentDescription" xml:space="preserve">
+    <value>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="Accepts_a_file_path_which_if_provided_will_produce_a_json_report_in_the_given_directory" xml:space="preserve">
+    <value>Accepts a file path which if provided will produce a json report in the given directory.</value>
+  </data>
+  <data name="Format_files_generated_by_the_SDK" xml:space="preserve">
+    <value>Format files generated by the SDK.</value>
+  </data>
+  <data name="The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error" xml:space="preserve">
+    <value>The severity of diagnostics to fix. Allowed values are info, warn, and error.</value>
+  </data>
+  <data name="Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted" xml:space="preserve">
+    <value>Verify no formatting changes would be performed. Terminates with a non-zero exit code if any files would have been formatted.</value>
+  </data>
+  <data name="Formats_code_to_match_editorconfig_settings" xml:space="preserve">
+    <value>Formats code to match editorconfig settings.</value>
+  </data>
+  <data name="Run_3rd_party_analyzers__and_apply_fixes" xml:space="preserve">
+    <value>Run 3rd party analyzers and apply fixes.</value>
+  </data>
+  <data name="Run_whitespace_formatting" xml:space="preserve">
+    <value>Run whitespace formatting.</value>
+  </data>
+  <data name="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues" xml:space="preserve">
+    <value>A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</value>
+  </data>
+</root>
