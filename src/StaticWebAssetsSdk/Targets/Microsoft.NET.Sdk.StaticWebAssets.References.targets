@@ -46,11 +46,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectsConfiguration" />
     </MSBuild>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
       <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(BuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.BuildManifestPath)' != ''" />
     </ItemGroup>
 
-    <WriteLinesToFile
+    <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)' == 'true'"
       File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
       Lines="@(_ReferenceManifestPath)"
       Overwrite="false"
