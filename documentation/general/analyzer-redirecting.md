@@ -1,7 +1,7 @@
 # Redirecting analyzers in SDK to VS
 
 We will redirect analyzers from the SDK to ones deployed in the VS to avoid the [torn SDK][torn-sdk] issue at design time.
-Only major versions will be redirected because different major versions of the same analyzer cannot be assumed to be compatible.
+Only matching major+minor versions will be redirected because different versions of the same analyzer cannot be assumed to be compatible.
 So this applies to a situation like:
 - Having an analyzer in SDK 9.0.1 referencing Roslyn 4.12. That gets deployed to VS 17.12.
 - Having an analyzer in SDK 9.0.7 referencing Roslyn 4.13.
@@ -9,7 +9,7 @@ So this applies to a situation like:
   Previously the analyzers would fail to load as they reference newer Roslyn version (4.13) than what is part of VS (4.12).
   Now we will redirect the analyzers to those from SDK 9.0.1 that are deployed as part of VS and reference the matching Roslyn (4.12).
 
-Loading analyzers with older major version should not be a problem because they must reference an older version of Roslyn.
+Loading older analyzer versions should not be a problem because they must reference an older version of Roslyn.
 
 Targeting an SDK (and hence also loading analyzers) with newer major version in an old VS already results in an error like:
 
@@ -41,7 +41,7 @@ WebSDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.As
 Given an analyzer assembly load going through our `IAnalyzerAssemblyResolver`,
 we will redirect it if the original path of the assembly being loaded
 matches the path of a VSIX-deployed analyzer - only segments of these paths starting after the version segment are compared,
-plus the major component of the versions must match.
+plus the major and minor component of the versions must match.
 
 For example, analyzer
 
@@ -57,10 +57,9 @@ will be redirected to
 
 because
 1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
-2. the version `9.0.100-preview.5.24307.3` has the same major component (`9`) as the version `9.0.100-dev`.
+2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`.
 
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than the VS).
 
 [torn-sdk]: https://github.com/dotnet/sdk/issues/42087
-[dual-insert]: https://github.com/dotnet/sdk/blob/8a2a7d01c3d3f060d5812424a9de8a00d70b3061/documentation/general/torn-sdk.md#net-sdk-in-box-analyzers-dual-insert
