@@ -8,6 +8,10 @@ namespace Microsoft.DotNet.Cli.Utils
         public bool IsUserError { get; } = true;
         public string VerboseMessage { get; } = string.Empty;
 
+        public GracefulException()
+        {
+        }
+
         public GracefulException(string message) : base(message)
         {
             Data.Add(ExceptionExtensions.CLI_User_Displayed_Exception, true);
