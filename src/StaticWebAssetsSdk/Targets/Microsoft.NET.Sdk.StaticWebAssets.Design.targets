@@ -35,22 +35,22 @@
 
     <ItemGroup>
       <_UpToDateCheckStaticWebAssetResolvedCandidate Include="@(_UpToDateCheckStaticWebAssetResolved->'%(OriginalItemSpec)')" />
-      <_StaticWebAssetUpToDateCheckInput Include="@(_UpToDateCheckStaticWebAssetResolvedCandidate->'%(FullPath)')" />
+      <_StaticWebAssetUpToDateCheckInput Include="@(_UpToDateCheckStaticWebAssetResolvedCandidate->Distinct()->'%(FullPath)')" />
     </ItemGroup>
 
     <ItemGroup>
-      <_ExistingStaticWebAssetUpToDateCheckInput Include="@(_StaticWebAssetUpToDateCheckInput)" Condition="Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
-      <_NonExistingStaticWebAssetUpToDateCheckInput Include="@(_StaticWebAssetUpToDateCheckInput)" Condition="!Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
+      <_ExistingStaticWebAssetUpToDateCheckInput Include="%(_StaticWebAssetUpToDateCheckInput.FullPath)" Condition="Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
+      <_NonExistingStaticWebAssetUpToDateCheckInput Include="%(_StaticWebAssetUpToDateCheckInput.FullPath)" Condition="!Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
     </ItemGroup>
 
     <WriteLinesToFile
       File="$(StaticWebAssetUpToDateCheckRemovedManifestPath)"
-      Lines="@(_NonExistingStaticWebAssetUpToDateCheckInput->Distinct())"
+      Lines="@(_NonExistingStaticWebAssetUpToDateCheckInput)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
     <ItemGroup>
-      <UpToDateCheckInput Condition="'@(_NonExistingStaticWebAssetUpToDateCheckInput->Distinct())' != ''" Include="$(StaticWebAssetUpToDateCheckRemovedManifestPath)" Set="StaticWebAssets" />
+      <UpToDateCheckInput Condition="'@(_NonExistingStaticWebAssetUpToDateCheckInput)' != ''" Include="$(StaticWebAssetUpToDateCheckRemovedManifestPath)" Set="StaticWebAssets" />
       <UpToDateCheckInput Include="@(_ExistingStaticWebAssetUpToDateCheckInput)" Set="StaticWebAssets" />
       <UpToDateCheckInput Include="@(_StaticWebAssetReferenceUpToDateCheckInput)" Set="StaticWebAssets" />
     </ItemGroup>
