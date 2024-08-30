@@ -318,7 +318,7 @@
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
       <_IsMultiRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == '')">true</_IsMultiRIDBuild>
-      <_IsSingleRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' != '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' != '')">true</_IsSingleRIDBuild>
+      <_IsSingleRIDBuild Condition="('$(_IsMultiRIDBuild)' == '')">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
     <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
