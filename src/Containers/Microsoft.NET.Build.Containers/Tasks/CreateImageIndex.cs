@@ -3,7 +3,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers;
 using Microsoft.NET.Build.Containers.Logging;
 using NuGet.Protocol;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -95,7 +94,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         using MSBuildLoggerProvider loggerProvider = new(Log);
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
-        var registry = new Registry(OutputRegistry, logger);
+        var registry = new Registry(OutputRegistry, logger, null, null);
 
         await registry.PushAsync(Repository, ImageTag, manifestList, cancellationToken).ConfigureAwait(false);
     }
