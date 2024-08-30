@@ -101,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-  
+
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
@@ -285,7 +285,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- For preview only, to ease in the new implementation -->
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
-    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);ResolveBuildStaticWebAssets;GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputDirectory;WriteStaticWebAssetsUpToDateCheck</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);ResolveBuildStaticWebAssets;GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputDirectory;</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'true'">$(StaticWebAssetsPrepareForRunDependsOn);WriteStaticWebAssetsUpToDateCheck;</StaticWebAssetsPrepareForRunDependsOn>
 
     <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
     <GenerateComputedBuildStaticWebAssetsDependsOn>ResolveCoreStaticWebAssets;$(GenerateComputedBuildStaticWebAssetsDependsOn)</GenerateComputedBuildStaticWebAssetsDependsOn>
@@ -693,7 +694,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets" Condition="$(DesignTimeBuild) != 'true'" >
+  <Target Name="UpdateExistingPackageStaticWebAssets" Condition="$(DesignTimeBuild) != 'true'">
     <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
@@ -709,7 +710,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.References.targets" />
 
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Design.targets" />
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Design.targets" Condition="'$(DesignTimeBuild)' == 'true' and '$(BuildingInsideVisualStudio)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets" />
 
