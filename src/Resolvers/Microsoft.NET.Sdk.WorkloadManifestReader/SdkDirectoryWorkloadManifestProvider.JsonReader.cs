@@ -83,7 +83,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         [Serializable]
-        internal class JsonFormatException : Exception
+        public class JsonFormatException : Exception
         {
             public JsonFormatException() { }
             public JsonFormatException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }
