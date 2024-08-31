@@ -26,12 +26,8 @@
       <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
       <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
-      <VSToolsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
-      <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
       <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
-      <VSToolsResolverNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
-      <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
 
       <SdkMSBuildExtensionsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
@@ -318,8 +314,11 @@
           Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
+      <!-- While we don't have 10.0 templates available (need SDK update, choose the 9.0 templates -->
+      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'" />
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '9.0'"/>
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
@@ -441,41 +440,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateVSToolsNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' "
-          Inputs="$(RedistLayoutPath)/**/*;
-                  $(VSToolsNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(VSToolsNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(RedistLayoutPath.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VSToolsNuspecFile)' ^
-                      '$(VSToolsNupkgFile)' ^
-                      '$(Architecture)'" />
-  </Target>
-
-  <!--
-    This project references assets from multiple architectures, so it can't be built until we have a join point job that can pull assets from multiple legs.
-    https://github.com/dotnet/source-build/issues/4336
-  -->
-  <Target Name="GenerateVSToolsResolverNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' And '$(DotNetBuild)' != 'true'"
-          Inputs="$(SdkResolverLayoutPath)/**/*;
-                  $(VSToolsResolverNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(VSToolsResolverNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(SdkResolverLayoutPath.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VSToolsResolverNuspecFile)' ^
-                      '$(VSToolsResolverNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
           DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
@@ -527,8 +491,6 @@
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
-                            GenerateVSToolsNupkg;
-                            GenerateVSToolsResolverNupkg;
                             GenerateSdkMSBuildExtensionsNupkg;
                             GenerateVSTemplateLocatorNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />

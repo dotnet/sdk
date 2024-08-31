@@ -409,7 +409,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                 {
                     var itemGroup = new XElement("PropertyGroup");
                     var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(serviceWorkerAssetsManifest);
+                    itemGroup.Add(fingerprintAssets);
                     doc.Root.Add(itemGroup);
                 }
             });
@@ -426,7 +428,17 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         // Arrange
         var testAppName = "BlazorHosted";
-        var testInstance = CreateAspNetSdkTestAsset(testAppName);
+        var testInstance = CreateAspNetSdkTestAsset(testAppName)
+            .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
         var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
         buildCommand.Execute()
@@ -442,7 +454,17 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         // Arrange
         var testAppName = "BlazorWasmWithLibrary";
-        var testInstance = CreateAspNetSdkTestAsset(testAppName);
+        var testInstance = CreateAspNetSdkTestAsset(testAppName)
+            .WithProjectChanges((p, doc) =>
+            {
+                if (Path.GetFileName(p) == "blazorwasm.csproj")
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                }
+            });
 
         var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
         publishCommand.Execute().Should().Pass();
@@ -457,7 +479,17 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     {
         // Arrange
         var testAppName = "BlazorHosted";
-        var testInstance = CreateAspNetSdkTestAsset(testAppName);
+        var testInstance = CreateAspNetSdkTestAsset(testAppName)
+            .WithProjectChanges((p, doc) =>
+            {
+                if (Path.GetFileName(p) == "blazorwasm.csproj")
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                }
+            });
 
         var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
         publishCommand.Execute().Should().Pass();

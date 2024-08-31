@@ -57,6 +57,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Enable the built-in source generators. -->
     <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
     <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
+
+    <!-- Default feature switch values for trimmed apps. -->
+    <SignalRCustomAwaitableSupport Condition="'$(SignalRCustomAwaitableSupport)' == ''">false</SignalRCustomAwaitableSupport>
+    <MvcEnhancedModelMetadataSupport Condition="'$(MvcEnhancedModelMetadataSupport)' == ''">false</MvcEnhancedModelMetadataSupport>
   </PropertyGroup>
 
   <PropertyGroup>

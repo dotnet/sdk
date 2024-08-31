@@ -97,7 +97,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = false
             )
         {
             string rollbackDirectory = null;
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
                     rollbackDirectory = _toolDownloadDir.Value;
-                    
+
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
                         throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
@@ -174,16 +175,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Commands = new List<RestoredCommand> {
-                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
                     }
-                    else 
+                    else
                     {
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-                       
+
                         _fileSystem.Directory.CreateDirectory(packageRootDirectory.Value);
                         _fileSystem.Directory.Move(_toolDownloadDir.Value, packageDirectory.Value);
                         rollbackDirectory = packageDirectory.Value;
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                                         version: version,
                                         packageDirectory: packageDirectory,
                                         warnings: warnings, packagedShims: packedShims, frameworks: frameworks);
-                    }                   
+                    }
                 },
                 rollback: () =>
                 {
@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         _fileSystem.Directory.Delete(packageRootDirectory.Value, false);
                     }
-                    
+
                 });
         }
 
@@ -300,6 +300,29 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
         }
 
+        public NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false)
+        {
+            versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
+
+            if (string.IsNullOrEmpty(packageId.ToString()))
+            {
+                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+            }
+
+            var feedPackage = GetPackage(
+                packageId.ToString(),
+                versionRange,
+                packageLocation.NugetConfig,
+                packageLocation.RootConfigDirectory);
+
+            return NuGetVersion.Parse(feedPackage.Version);
+        }
+
         private class TestToolPackage : IToolPackage
         {
             public PackageId Id { get; set; }
@@ -307,7 +330,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+            public RestoredCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 

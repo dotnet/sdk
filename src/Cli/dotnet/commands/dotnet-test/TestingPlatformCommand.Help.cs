@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.CommandLine.Help;
 using Microsoft.DotNet.Tools.Test;
 
@@ -9,6 +10,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand
     {
+        private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
+        private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
+
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
         {
             yield return (context) =>
@@ -45,9 +49,9 @@ namespace Microsoft.DotNet.Cli
 
             foreach (CommandLineOptionMessage commandLineOptionMessage in commandLineOptionMessages.CommandLineOptionMessageList)
             {
-                if (commandLineOptionMessage.IsHidden) continue;
+                if (commandLineOptionMessage.IsHidden.HasValue && commandLineOptionMessage.IsHidden.Value) continue;
 
-                if (commandLineOptionMessage.IsBuiltIn)
+                if (commandLineOptionMessage.IsBuiltIn.HasValue && commandLineOptionMessage.IsBuiltIn.Value)
                 {
                     builtInOptions.Add(commandLineOptionMessage.Name);
                 }
@@ -77,9 +81,9 @@ namespace Microsoft.DotNet.Cli
 
             foreach (KeyValuePair<string, CommandLineOptionMessage> option in _commandLineOptionNameToModuleNames)
             {
-                if (!builtInToOptions.TryGetValue(option.Value.IsBuiltIn, out List<CommandLineOptionMessage> value))
+                if (!builtInToOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOptionMessage> value))
                 {
-                    builtInToOptions.Add(option.Value.IsBuiltIn, [option.Value]);
+                    builtInToOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
                 }
                 else
                 {

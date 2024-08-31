@@ -115,7 +115,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
         }
 
-        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public WorkloadVersion GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
         private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
         {
@@ -742,9 +742,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
             if (_manifests.TryGetValue(manifestId, out var value))
             {
-                return value.manifest.Version;
+                return value.info.Version;
             }
-            throw new Exception($"Manifest with id {manifestId} does not exist.");
+            
+            throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
+        }
+
+        public string GetManifestFeatureBand(string manifestId)
+        {
+            InitializeManifests();
+            if (_manifests.TryGetValue(manifestId, out var value))
+            {
+                return value.info.ManifestFeatureBand;
+            }
+
+            throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
             
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
@@ -766,7 +778,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion
+            {
+                Version = _sdkFeatureBand + ".2",
+                WorkloadInstallType = WorkloadVersion.Type.LooseManifest
+            };
         }
     }
 

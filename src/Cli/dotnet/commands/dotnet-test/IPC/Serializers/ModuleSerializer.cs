@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal sealed class ModuleSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 4;
+        public int Id => ModuleFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {

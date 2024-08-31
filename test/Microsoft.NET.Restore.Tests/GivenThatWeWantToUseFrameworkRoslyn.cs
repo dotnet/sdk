@@ -10,7 +10,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         [FullMSBuildOnlyFact]
-        public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
+        public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
             var project = new TestProject
@@ -24,21 +24,28 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            string projectAssetsJsonPath = Path.Combine(
-                testAsset.Path,
-                project.Name,
-                "obj",
-                "project.assets.json");
+            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
 
-            var restoreCommand =
-                testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute().Should().Pass();
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
-            Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
+            testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass();
+
+            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
+
+            Assert.True(Directory.Exists(toolsetPackageDir));
+
+            var toolsetPackageVersion = Directory.EnumerateDirectories(toolsetPackageDir).Should().ContainSingle().Subject;
+
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass().And
+                .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
         [FullMSBuildOnlyFact]
-        public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
+        public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
             var project = new TestProject
@@ -53,24 +60,26 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            string projectAssetsJsonPath = Path.Combine(
-                testAsset.Path,
-                project.Name,
-                "obj",
-                "project.assets.json");
+            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
 
-            var restoreCommand =
-                testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute().Should().Pass();
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
-            }
-            else
-            {
-                Assert.DoesNotContain("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
-            }
+            testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
+                .Execute().Should().Pass();
+
+            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
+
+            Assert.True(Directory.Exists(toolsetPackageDir));
+
+            var toolsetPackageVersion = Directory.EnumerateDirectories(toolsetPackageDir).Should().ContainSingle().Subject;
+
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .WithEnvironmentVariable("BuildWithNetFrameworkHostedCompiler", "")
+                .Execute().Should().Pass().And
+                .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
         [FullMSBuildOnlyFact]
@@ -93,6 +102,33 @@ namespace Microsoft.NET.Restore.Tests
             var result = restoreCommand.Execute();
             result.Should().Pass();
             result.Should().HaveStdOutContaining("NETSDK1205");
+        }
+
+        [FullMSBuildOnlyFact]
+        public void It_throws_an_error_when_the_package_is_not_downloaded()
+        {
+            const string testProjectName = "NetCoreApp";
+            var project = new TestProject
+            {
+                Name = testProjectName,
+                TargetFrameworks = "net6.0",
+            };
+            
+            project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "false");
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(project);
+
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
+
+            testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
+                .Execute().Should().Pass();
+
+            var buildCommand = (BuildCommand)new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir);
+            buildCommand.ExecuteWithoutRestore("/p:BuildWithNetFrameworkHostedCompiler=true")
+                .Should().Fail().And.HaveStdOutContaining("NETSDK1216");
         }
     }
 }

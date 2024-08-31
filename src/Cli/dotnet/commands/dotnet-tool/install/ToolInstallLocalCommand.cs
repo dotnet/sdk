@@ -9,7 +9,6 @@ using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.List;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -23,7 +22,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly PackageId? _packageId;
         private readonly bool _allowPackageDowngrade;
-        private readonly IToolPackageDownloader _toolPackageDownloader;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
@@ -37,7 +35,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             IToolManifestFinder toolManifestFinder = null,
             IToolManifestEditor toolManifestEditor = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
-            IReporter reporter = null
+            IReporter reporter = null,
+            string runtimeJsonPathForTests = null
             )
             : base(parseResult)
         {
@@ -54,8 +53,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
-            _toolPackageDownloader = toolPackageDownloader;
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests);
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
         }
@@ -139,7 +137,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     manifestFile,
                     packageId,
                     toolDownloadedPackage.Version,
-                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                    [toolDownloadedPackage.Command.Name]);
                 _reporter.WriteLine(
                     string.Format(
                         Update.LocalizableStrings.UpdateLocalToolSucceeded,
@@ -165,7 +163,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 manifestFile,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
+                [toolDownloadedPackage.Command.Name],
                 _allowRollForward);
 
             _localToolsResolverCache.SaveToolPackage(
@@ -175,7 +173,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _reporter.WriteLine(
                 string.Format(
                     LocalizableStrings.LocalToolInstallationSucceeded,
-                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                    toolDownloadedPackage.Command.Name,
                     toolDownloadedPackage.Id,
                     toolDownloadedPackage.Version.ToNormalizedString(),
                     manifestFile.Value).Green());
