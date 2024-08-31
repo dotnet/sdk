@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(TargetFramework)' ==  '$(NetFrameworkToolCurrent)'">
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-  </PropertyGroup
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" Publish="false" ExcludeAssets="runtime" />
