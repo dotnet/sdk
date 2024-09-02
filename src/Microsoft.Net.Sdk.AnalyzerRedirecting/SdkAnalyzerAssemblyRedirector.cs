@@ -109,24 +109,24 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
             }
             string directoryPathVersion = Path.GetFileName(Path.GetDirectoryName(directoryPath.Substring(0, index)));
 
-            return getMajorMinorPart(directoryPathVersion) == getMajorMinorPart(version);
+            return areVersionMajorMinorPartEqual(directoryPathVersion, version);
         }
 
-        static string getMajorMinorPart(string version)
+        static bool areVersionMajorMinorPartEqual(string version1, string version2)
         {
-            int firstDotIndex = version.IndexOf('.');
+            int firstDotIndex = version1.IndexOf('.');
             if (firstDotIndex < 0)
             {
-                return version;
+                return false;
             }
 
-            int secondDotIndex = version.IndexOf('.', firstDotIndex + 1);
+            int secondDotIndex = version1.IndexOf('.', firstDotIndex + 1);
             if (secondDotIndex < 0)
             {
-                return version;
+                return false;
             }
 
-            return version.Substring(0, secondDotIndex);
+            return 0 == string.Compare(version1, 0, version2, 0, secondDotIndex, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
