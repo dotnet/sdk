@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
