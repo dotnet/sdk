@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -21,10 +22,10 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "DepsJsonVersions",
-                TargetFrameworks = "netcoreapp2.0",
+                TargetFrameworks = "net6.0",
                 IsExe = true,
             };
-            testProject.PackageReferences.Add(new TestPackageReference("System.Collections.Immutable", "1.5.0-preview1-26216-02"));
+            testProject.PackageReferences.Add(new TestPackageReference("System.Collections.Immutable", "8.0.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
             return testProject;
@@ -50,6 +51,108 @@ namespace Microsoft.NET.Publish.Tests
             CheckVersionsInDepsFile(depsFilePath);
         }
 
+        [Fact]
+        public void Inbox_version_of_assembly_is_loaded_over_applocal_version()
+        {
+            var (coreDir, publishDir, immutableDir) = TestConflictResult();
+            immutableDir.Should().BeEquivalentTo(coreDir, "immutable collections library from Framework should win");
+        }
+
+        [Fact]
+        public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
+        {
+            static void testProjectChanges(TestProject testProject)
+            {
+                testProject.AdditionalProperties["IncludeFileVersionsInDependencyFile"] = "false";
+            }
+
+            var (coreDir, publishDir, immutableDir) = TestConflictResult(testProjectChanges);
+            immutableDir.Should().BeEquivalentTo(coreDir, "inbox immutable collections library from should win");
+        }
+
+        [Fact]
+        public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
+        {
+            static void publishFolderChanges(string publishFolder)
+            {
+                var depsJsonPath = Path.Combine(publishFolder, "DepsJsonVersions.deps.json");
+                var depsJson = JObject.Parse(File.ReadAllText(depsJsonPath));
+                var target = ((JProperty)depsJson["targets"].First).Value;
+                var file = target["System.Collections.Immutable/8.0.0"]["runtime"]["lib/net6.0/System.Collections.Immutable.dll"];
+                //  Set fileVersion in deps.json to 9.0.0.0, which should be bigger than in box 4.6.x version
+                file["fileVersion"] = "9.0.0.0";
+                File.WriteAllText(depsJsonPath, depsJson.ToString());
+            }
+
+            var (coreDir, publishDir, immutableDir) = TestConflictResult(publishFolderChanges: publishFolderChanges);
+            immutableDir.Should().BeEquivalentTo(publishDir, "published immutable collections library from should win");
+        }
+
+        private (string coreDir, string publishDir, string immutableDir) TestConflictResult(
+            Action<TestProject> testProjectChanges = null,
+            Action<string> publishFolderChanges = null,
+            [CallerMemberName] string callingMethod = "")
+        {
+            var testProject = GetTestProject();
+
+            testProject.SourceFiles["Program.cs"] = @"
+using System;
+static class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(typeof(object).Assembly.Location);
+        Console.WriteLine(typeof(System.Collections.Immutable.ImmutableList).Assembly.Location);
+    }
+}
+";
+            if (testProjectChanges != null)
+            {
+                testProjectChanges(testProject);
+            }
+
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
+
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand.Execute()
+                .Should()
+                .Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
+
+            if (publishFolderChanges != null)
+            {
+                publishFolderChanges(publishDirectory.FullName);
+            }
+
+            //  Assembly from package should be deployed, as it is newer than the in-box version for netcoreapp2.0,
+            //  which is what the app targets
+            publishDirectory.Should().HaveFile("System.Collections.Immutable.dll");
+
+            var exePath = Path.Combine(publishDirectory.FullName, testProject.Name + ".dll");
+
+            string rollForwardVersion = "8.0.0";
+
+            var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
+
+            var runAppResult = runAppCommand
+                .Execute();
+
+            runAppResult
+                .Should()
+                .Pass();
+
+            var stdOutLines = runAppResult.StdOut.Split(Environment.NewLine);
+
+            string coreDir = Path.GetDirectoryName(stdOutLines[0]);
+            string immutableDir = Path.GetDirectoryName(stdOutLines[1]);
+
+            return (coreDir, publishDirectory.FullName, immutableDir);
+
+        }
+
         void CheckVersionsInDepsFile(string depsFilePath)
         {
             DependencyContext dependencyContext;
@@ -72,8 +175,8 @@ namespace Microsoft.NET.Publish.Tests
             immutableRuntimeFiles.Should().NotBeEmpty();
             foreach (var runtimeFile in immutableRuntimeFiles)
             {
-                runtimeFile.AssemblyVersion.Should().Be("1.2.3.0");
-                runtimeFile.FileVersion.Should().Be("4.6.26216.2");
+                runtimeFile.AssemblyVersion.Should().Be("8.0.0.0");
+                runtimeFile.FileVersion.Should().Be("8.0.23.53103");
             }
         }
 
@@ -120,136 +223,6 @@ namespace Microsoft.NET.Publish.Tests
 
             var depsFilePath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}.deps.json");
             CheckVersionsInDepsFile(depsFilePath);
-        }
-
-        [Fact]
-        public void Inbox_version_of_assembly_is_loaded_over_applocal_version()
-        {
-            var (coreDir, publishDir, immutableDir) = TestConflictResult();
-            immutableDir.Should().BeEquivalentTo(coreDir, "immutable collections library from Framework should win");
-        }
-
-        [Fact]
-        public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
-        {
-            static void testProjectChanges(TestProject testProject)
-            {
-                testProject.AdditionalProperties["IncludeFileVersionsInDependencyFile"] = "false";
-            }
-
-            var (coreDir, publishDir, immutableDir) = TestConflictResult(testProjectChanges);
-            immutableDir.Should().BeEquivalentTo(coreDir, "inbox immutable collections library from should win");
-        }
-
-        [Fact]
-        public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
-        {
-            static void publishFolderChanges(string publishFolder)
-            {
-                var depsJsonPath = Path.Combine(publishFolder, "DepsJsonVersions.deps.json");
-                var depsJson = JObject.Parse(File.ReadAllText(depsJsonPath));
-                var target = ((JProperty)depsJson["targets"].First).Value;
-                var file = target["System.Collections.Immutable/1.5.0-preview1-26216-02"]["runtime"]["lib/netstandard2.0/System.Collections.Immutable.dll"];
-                //  Set fileVersion in deps.json to 4.7.0.0, which should be bigger than in box 4.6.x version
-                file["fileVersion"] = "4.7.0.0";
-                File.WriteAllText(depsJsonPath, depsJson.ToString());
-            }
-
-            var (coreDir, publishDir, immutableDir) = TestConflictResult(publishFolderChanges: publishFolderChanges);
-            immutableDir.Should().BeEquivalentTo(publishDir, "published immutable collections library from should win");
-        }
-
-        private (string coreDir, string publishDir, string immutableDir) TestConflictResult(
-            Action<TestProject> testProjectChanges = null,
-            Action<string> publishFolderChanges = null,
-            [CallerMemberName] string callingMethod = "")
-        {
-            var testProject = GetTestProject();
-
-            testProject.SourceFiles["Program.cs"] = @"
-using System;
-
-static class Program
-{
-    public static void Main()
-    {
-        Console.WriteLine(typeof(object).Assembly.Location);
-        Console.WriteLine(typeof(System.Collections.Immutable.ImmutableList).Assembly.Location);
-    }
-}
-";
-            if (testProjectChanges != null)
-            {
-                testProjectChanges(testProject);
-            }
-
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
-
-            var publishCommand = new PublishCommand(testAsset);
-
-            publishCommand.Execute()
-                .Should()
-                .Pass();
-
-            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
-
-            if (publishFolderChanges != null)
-            {
-                publishFolderChanges(publishDirectory.FullName);
-            }
-
-            //  Assembly from package should be deployed, as it is newer than the in-box version for netcoreapp2.0,
-            //  which is what the app targets
-            publishDirectory.Should().HaveFile("System.Collections.Immutable.dll");
-
-            var exePath = Path.Combine(publishDirectory.FullName, testProject.Name + ".dll");
-
-            //  We want to test a .NET Core 2.0 app rolling forward to .NET Core 2.2.
-            //  This wouldn't happen in our test environment as we also have the .NET Core 2.0 shared
-            //  framework installed.  So we get the RuntimeFrameworkVersion of an app
-            //  that targets .NET Core 2.1, and then use the --fx-version parameter to the host
-            //  to force the .NET Core 2.0 app to run on that version
-            string rollForwardVersion = GetRollForwardNetCoreAppVersion(callingMethod);
-
-            var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
-
-            var runAppResult = runAppCommand
-                .Execute();
-
-            runAppResult
-                .Should()
-                .Pass();
-
-            var stdOutLines = runAppResult.StdOut.Split(Environment.NewLine);
-
-            string coreDir = Path.GetDirectoryName(stdOutLines[0]);
-            string immutableDir = Path.GetDirectoryName(stdOutLines[1]);
-
-            return (coreDir, publishDirectory.FullName, immutableDir);
-
-        }
-
-        string GetRollForwardNetCoreAppVersion([CallerMemberName] string callingMethod = "", string identifier = null)
-        {
-            var testProject = new TestProject()
-            {
-                Name = nameof(GetRollForwardNetCoreAppVersion),
-                TargetFrameworks = "netcoreapp2.2",
-                IsExe = true
-            };
-            testProject.AdditionalProperties.Add("TargetLatestRuntimePatch", "true");
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
-                .Restore(Log, testProject.Name);
-
-            LockFile lockFile = LockFileUtilities.GetLockFile(Path.Combine(testAsset.TestRoot, testProject.Name,
-                                            "obj", "project.assets.json"), NullLogger.Instance);
-
-            var target = lockFile.GetTarget(NuGetFramework.Parse(testProject.TargetFrameworks), null);
-            var netCoreAppLibrary = target.Libraries.Single(l => l.Name == "Microsoft.NETCore.App");
-
-            return netCoreAppLibrary.Version.ToString();
         }
     }
 }
