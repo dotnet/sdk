@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -10,7 +11,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
-        private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
+        private readonly ConcurrentBag<TestApplication> _testApplications = [];
         private readonly CancellationTokenSource _cancellationToken = new();
 
         private MSBuildConnectionHandler _msBuildConnectionHandler;
@@ -26,16 +27,17 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            if (parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
-            {
-                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
-                return ExitCodes.GenericFailure;
-            }
-
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
+
+            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+            BuiltInOptions builtInOptions = new(
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
 
             if (ContainsHelpOption(parseResult.GetArguments()))
             {
@@ -47,7 +49,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    return await testApp.RunAsync(enableHelp: true);
+                    return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
                 });
             }
             else
@@ -65,7 +67,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    return await testApp.RunAsync(enableHelp: false);
+                    return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
                 });
             }
 
@@ -108,7 +110,7 @@ namespace Microsoft.DotNet.Cli
         private void CleanUp()
         {
             _msBuildConnectionHandler.Dispose();
-            foreach (var testApplication in _testApplications.Values)
+            foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
             }
@@ -222,15 +224,11 @@ namespace Microsoft.DotNet.Cli
         private void OnTestApplicationCreated(object sender, EventArgs args)
         {
             TestApplication testApp = sender as TestApplication;
-            _testApplications[testApp.ModulePath] = testApp;
+            _testApplications.Add(testApp);
         }
 
         private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
         {
-            if (_testApplications.TryGetValue(args.ModulePath, out var testApp))
-            {
-                testApp.AddExecutionId(args.ExecutionId);
-            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));

@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
                     throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
 
-                var testApp = new TestApplication(module.DLLPath, _args);
+                var testApp = new TestApplication(module, _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
                 testApp.OnCreated();
@@ -82,12 +82,9 @@ namespace Microsoft.DotNet.Cli
 
         public int RunWithMSBuild(ParseResult parseResult)
         {
-            bool containsNoBuild = parseResult.HasOption(TestingPlatformOptions.NoBuildOption);
-            bool containsNoRestore = parseResult.HasOption(TestingPlatformOptions.NoRestoreOption) || containsNoBuild;
-
             List<string> msbuildCommandLineArgs =
             [
-                    $"-t:{(containsNoRestore ? string.Empty : "Restore;")}{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                    $"-t:_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
             ];

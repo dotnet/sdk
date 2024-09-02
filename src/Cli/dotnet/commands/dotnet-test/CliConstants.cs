@@ -5,13 +5,12 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class CliConstants
     {
+        public const string DotnetRunCommand = "dotnet run";
         public const string HelpOptionKey = "--help";
-        public const string MSBuildOptionKey = "--msbuild-params";
-        public const string NoBuildOptionKey = "--no-build";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
-        public const string DegreeOfParallelismOptionKey = "--degree-of-parallelism";
-        public const string DOPOptionKey = "--dop";
+        public const string ProjectOptionKey = "--project";
+        public const string FrameworkOptionKey = "--framework";
 
         public const string ServerOptionValue = "dotnettestcli";
 
