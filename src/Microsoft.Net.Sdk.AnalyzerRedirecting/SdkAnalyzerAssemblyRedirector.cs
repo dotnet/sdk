@@ -58,7 +58,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
                     string version = Path.GetFileName(versionDirectory);
                     string analyzerName = Path.GetFileNameWithoutExtension(analyzerPath);
-                    string pathSuffix = analyzerPath.Substring(versionDirectory.Length + (EndsWithSlash(versionDirectory) ? 0 : 1));
+                    string pathSuffix = analyzerPath.Substring(versionDirectory.Length + 1 /* slash */);
                     pathSuffix = Path.GetDirectoryName(pathSuffix);
 
                     AnalyzerInfo analyzer = new() { FullPath = analyzerPath, ProductVersion = version, PathSuffix = pathSuffix };
@@ -85,7 +85,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
             foreach (AnalyzerInfo analyzer in analyzers)
             {
                 var directoryPath = Path.GetDirectoryName(fullPath);
-                if (endsWithIgnoringTrailingSlashes(directoryPath, analyzer.PathSuffix) &&
+                if (directoryPath.EndsWith(analyzer.PathSuffix, StringComparison.OrdinalIgnoreCase) &&
                     majorAndMinorVersionsMatch(directoryPath, analyzer.PathSuffix, analyzer.ProductVersion))
                 {
                     return analyzer.FullPath;
@@ -128,15 +128,5 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
             return version.Substring(0, secondDotIndex);
         }
-
-        static bool endsWithIgnoringTrailingSlashes(string s, string suffix)
-        {
-            var sEndsWithSlash = EndsWithSlash(s);
-            var suffixEndsWithSlash = EndsWithSlash(suffix);
-            var index = s.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase);
-            return index >= 0 && index + suffix.Length - (suffixEndsWithSlash ? 1 : 0) == s.Length - (sEndsWithSlash ? 1 : 0);
-        }
     }
-
-    private static bool EndsWithSlash(string s) => !string.IsNullOrEmpty(s) && s[s.Length - 1] is '/' or '\\';
 }
