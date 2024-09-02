@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli
         public const string ServerOptionValue = "dotnettestcli";
 
         public const string MSBuildExeName = "MSBuild.dll";
+        public const string ParametersSeparator = "--";
     }
 
     internal static class TestStates

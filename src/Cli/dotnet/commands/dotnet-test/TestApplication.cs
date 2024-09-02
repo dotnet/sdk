@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
-using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
@@ -263,7 +262,7 @@ namespace Microsoft.DotNet.Cli
                 builder.Append($" {CliConstants.FrameworkOptionKey} {_module.TargetFramework}");
             }
 
-            builder.Append(" -- ");
+            builder.Append($" {CliConstants.ParametersSeparator} ");
 
             builder.Append(_args.Length != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
