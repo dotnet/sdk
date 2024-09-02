@@ -237,7 +237,7 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($"{CliConstants.DotnetRunCommand} {CliConstants.ProjectOptionKey} \"{_module.ProjectPath}\"");
 
-            if (builtInOptions.HasNoRestore || builtInOptions.HasNoBuild)
+            if (builtInOptions.HasNoRestore)
             {
                 builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
             }
