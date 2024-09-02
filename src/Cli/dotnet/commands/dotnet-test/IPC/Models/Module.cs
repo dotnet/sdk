@@ -6,6 +6,3 @@
 namespace Microsoft.DotNet.Tools.Test;
 
 internal sealed record Module(string? DLLPath, string? ProjectPath, string? TargetFramework) : IRequest
-{
-    public Module(string? DLLPath) : this(DLLPath, string.Empty, string.Empty) { }
-}
