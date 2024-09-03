@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: https://localhost:5001/");
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: http://localhost:5000/");
             await App.AssertWaitingForChanges();
 
             // TODO: enable once https://github.com/dotnet/razor/issues/10818 is fixed
