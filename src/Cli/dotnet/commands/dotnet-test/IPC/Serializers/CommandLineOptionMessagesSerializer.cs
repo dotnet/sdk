@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 3;
+        public int Id => CommandLineOptionMessagesFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
