@@ -57,7 +57,7 @@
         <target state="translated">Foi encontrado um problema ao verificar as cargas de trabalho. Para obter mais informações, execute "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Versão do Manifesto</target>
         <note />
@@ -80,6 +80,11 @@
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Gravando registros de instalação para cargas de trabalho do Visual Studio: "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Configurado para usar {0} ao instalar novos manifestos.</target>
         <note />
       </trans-unit>
     </body>
