@@ -71,9 +71,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                stream.Position = 0;
-
-                return BitConverter.ToString(XxHash3.Hash(stream.ToArray())).Replace("-", "");
+                return BitConverter.ToString(XxHash3.Hash(stream.GetBuffer().AsSpan(0, (int)stream.Length))).Replace("-", "");
             }
         }
     }
