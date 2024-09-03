@@ -10,9 +10,6 @@ set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
 
-set TestExecutionDirectory=%CD%\testExecutionDirectory
-mkdir %TestExecutionDirectory%
-
 REM Use powershell to call partical Arcade logic to get full framework msbuild path and assign it
 if "%TestFullMSBuild%"=="true" (
     FOR /F "tokens=*" %%g IN ('PowerShell -ExecutionPolicy ByPass -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\print-full-msbuild-path.ps1"') do (SET DOTNET_SDK_TEST_MSBUILD_PATH=%%g)
