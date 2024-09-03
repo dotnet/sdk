@@ -1,27 +1,16 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using FluentAssertions;
+using FluentAssertions.Extensions;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -191,10 +180,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 File.WriteAllText(Path.Combine(AdManifestPath, "AdvertisedManifestFeatureBand.txt"), currentFeatureBand);
             }
 
-            var manifestDirs = expectedManifestUpdates.Select(manifest => Path.Combine(testDir, "dotnet", "sdk-manifests", manifest.ExistingFeatureBand, manifest.ManifestId.ToString(), "WorkloadManifest.json"))
-                .Concat(expectedManifestNotUpdated.Select(manifest => Path.Combine(testDir, "dotnet", "sdk-manifests", currentFeatureBand, manifest.ToString(), "WorkloadManifest.json")))
+            var manifestInfo = expectedManifestUpdates.Select(
+                    manifest => (manifest.ManifestId.ToString(), Path.Combine(testDir, "dotnet", "sdk-manifests", manifest.ExistingFeatureBand, manifest.ManifestId.ToString(), "WorkloadManifest.json"), manifest.ExistingFeatureBand))
+                .Concat(expectedManifestNotUpdated.Select(
+                    manifestId => (manifestId.ToString(), Path.Combine(testDir, "dotnet", "sdk-manifests", currentFeatureBand, manifestId.ToString(), "WorkloadManifest.json"), currentFeatureBand)))
                 .ToArray();
-            var workloadManifestProvider = new MockManifestProvider(manifestDirs);
+
+            var workloadManifestProvider = new MockManifestProvider(manifestInfo);
             workloadManifestProvider.SdkFeatureBand = new SdkFeatureBand(currentFeatureBand);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
@@ -230,7 +222,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.CreateDirectory(Path.Combine(installedManifestDir6_0_200, testManifestName));
             File.WriteAllText(Path.Combine(installedManifestDir6_0_200, testManifestName, _manifestFileName), GetManifestContent(new ManifestVersion("1.0.0")));
 
-            var workloadManifestProvider = new MockManifestProvider(Path.Combine(installedManifestDir6_0_200, testManifestName, _manifestFileName))
+            string manifestPath = Path.Combine(installedManifestDir6_0_200, testManifestName, _manifestFileName);
+
+            var workloadManifestProvider = new MockManifestProvider((testManifestName, manifestPath, "6.0.200"))
             {
                 SdkFeatureBand = new SdkFeatureBand(sdkFeatureBand)
             };
@@ -260,9 +254,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 //  6.0.300 manifest was requested and then 6.0.200 manifest was requested
                 // we can't assert this for the offline cache
                 nugetDownloader.DownloadCallParams[0].id.ToString().Should().Be($"{testManifestName}.manifest-6.0.300");
-                nugetDownloader.DownloadCallParams[0].version.ShouldBeEquivalentTo(null);
+                nugetDownloader.DownloadCallParams[0].version.Should().BeNull();
                 nugetDownloader.DownloadCallParams[1].id.ToString().Should().Be($"{testManifestName}.manifest-6.0.200");
-                nugetDownloader.DownloadCallParams[1].version.ShouldBeEquivalentTo(null);
+                nugetDownloader.DownloadCallParams[1].version.Should().BeNull();
                 nugetDownloader.DownloadCallParams.Count.Should().Be(2);    
                 
             }
@@ -308,7 +302,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.CreateDirectory(Path.Combine(emptyInstalledManifestsDir, testManifestName));
             File.WriteAllText(Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), GetManifestContent(new ManifestVersion("1.0.0")));
 
-            var workloadManifestProvider = new MockManifestProvider(Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName)) 
+            var workloadManifestProvider = new MockManifestProvider((testManifestName, Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), "6.0.200")) 
             {
                 SdkFeatureBand = new SdkFeatureBand(sdkFeatureBand)
             };        
@@ -337,9 +331,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 //  6.0.300 manifest was requested and then 6.0.200 manifest was requested
                 // we can't assert this for the offline cache
                 nugetDownloader.DownloadCallParams[0].id.ToString().Should().Be($"{testManifestName}.manifest-6.0.300");
-                nugetDownloader.DownloadCallParams[0].version.ShouldBeEquivalentTo(null);
+                nugetDownloader.DownloadCallParams[0].version.Should().BeNull();
                 nugetDownloader.DownloadCallParams[1].id.ToString().Should().Be($"{testManifestName}.manifest-6.0.200");
-                nugetDownloader.DownloadCallParams[1].version.ShouldBeEquivalentTo(null);
+                nugetDownloader.DownloadCallParams[1].version.Should().BeNull();
                 nugetDownloader.DownloadCallParams.Count.Should().Be(2);
             }
 
@@ -403,7 +397,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 // only 6.0.300 manifest was requested
                 // we can't assert this for the offline cache
                 nugetDownloader.DownloadCallParams[0].id.ToString().Should().Be($"{testManifestName}.manifest-6.0.300");
-                nugetDownloader.DownloadCallParams[0].version.ShouldBeEquivalentTo(null);
+                nugetDownloader.DownloadCallParams[0].version.Should().BeNull();
             }
 
             //  Assert
@@ -671,7 +665,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync().Wait();
             // var updateTime1 = DateTime.Now;
             downloader2.DownloadCallParams.Should().BeEmpty();
-            File.GetLastAccessTime(sentinelPath2).Should().BeCloseTo(updateTime2);
+            File.GetLastAccessTime(sentinelPath2).Should().BeCloseTo(updateTime2, 1.Seconds());
         }
 
         private List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)> GetExpectedDownloadedPackages(string sdkFeatureBand = "6.0.100")
