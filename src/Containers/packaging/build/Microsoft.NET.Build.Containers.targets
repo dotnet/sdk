@@ -57,14 +57,22 @@
     </ComputeDotnetBaseImageAndTag>
   </Target>
 
-  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
+  <Target Name="ComputeContainerImageTag">
     <PropertyGroup Label="VS defaults">
-      <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
-      <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
       <!-- PublishImageTag is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerImageTag Condition="'$(PublishImageTag)' != ''">$(PublishImageTag)</ContainerImageTag>
       <!-- This line is a compatibility shim for VS support - the VS container targets define a container tag using this property and format. This lets us be a drop-in replacement for them. -->
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true'">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
+      <!-- Only default a tag name if no tag names at all are provided -->
+      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
+      <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
+    <PropertyGroup Label="VS defaults">
+      <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
+      <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
     </PropertyGroup>
 
     <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->
@@ -82,10 +90,6 @@
       <ContainerRepository Condition="'$(ContainerImageName)' != ''">$(ContainerImageName)</ContainerRepository>
       <!-- Note: spaces will be replaced with '-' in ContainerRepository and ContainerImageTag -->
       <ContainerRepository Condition="'$(ContainerRepository)' == ''">$(AssemblyName)</ContainerRepository>
-
-      <!-- Only default a tag name if no tag names at all are provided -->
-      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
-      <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
 
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
@@ -188,9 +192,12 @@
   <PropertyGroup>
     <PublishContainerDependsOn>
       _ContainerVerifySDKVersion;
-      ComputeContainerConfig;
+      ComputeContainerImageTag;
       _CheckContainersPackage
     </PublishContainerDependsOn>
+    <PublishSingleContainerDependsOn>
+      ComputeContainerConfig
+    </PublishSingleContainerDependsOn>
   </PropertyGroup>
 
   <Target Name="_CheckContainersPackage" AfterTargets="Build">
@@ -230,7 +237,7 @@
   </Target>
 
   <Target Name="_PublishSingleContainer"
-          DependsOnTargets="$(PublishContainerDependsOn)"
+          DependsOnTargets="$(PublishSingleContainerDependsOn)"
           Returns="@(GeneratedManifestInfo)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
@@ -291,15 +298,15 @@
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
       <_InnerBuild
         Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
+        AdditionalProperties="ContainerRuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
     <MSBuild
         Projects="@(_InnerBuild)"
-        Targets="Publish;_PublishSingleContainer"
+        Targets="_PublishSingleContainer"
         BuildInParallel="false">
-        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedManifestsInfo"  />
+        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedManifestsInfo" />
     </MSBuild>
 
     <CreateImageIndex ManifestsInfo="@(_GeneratedManifestsInfo)"
