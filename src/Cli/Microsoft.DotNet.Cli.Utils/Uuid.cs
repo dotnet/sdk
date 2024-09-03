@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.Utils
     public class Uuid
     {
         /// <summary>
-        /// Generate a Version 5 (XxHash3 Name Based) Guid from a name.
+        /// Generate a Version 8 (XxHash3 Name Based) Guid from a name.
         /// </summary>
         /// <param name="name">The name to use for generating the GUID.</param>
         /// <returns>A generated <see cref="GUID"/>.</returns>
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Utils
             Array.Copy(namespaceBytes, streamToHash, namespaceBytes.Length);
             Array.Copy(nameBytes, 0, streamToHash, namespaceBytes.Length, nameBytes.Length);
 
-            var hashResult = XxHash3.Hash(streamToHash);
+            var hashResult = XxHash3.Hash(streamToHash); // This is just used for generating a named pipe so we don't need a cryptographic hash
 
             var res = new byte[16];
 
