@@ -158,7 +158,7 @@ namespace Microsoft.NET.Restore.Tests
             // because NuGetPackageRoot is empty during `/t:Restore;Build`.
             // See https://github.com/dotnet/sdk/issues/43016.
             var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
-            Assert.True(Directory.Exists(toolsetPackageDir));
+            new DirectoryInfo(toolsetPackageDir).Should().Exist();
         }
     }
 }
