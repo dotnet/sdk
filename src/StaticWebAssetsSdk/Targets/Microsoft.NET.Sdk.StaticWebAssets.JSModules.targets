@@ -229,7 +229,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   >
     <Output TaskParameter="ResolvedEndpoints" ItemName="_ResolvedJSBuildModuleEndpoints" />
   </ResolveStaticWebAssetEndpointRoutes>
-  
+
     <GenerateJsModuleManifest
       Condition="'@(_ExistingBuildJSModules)' != ''"
       OutputFile="@(_JsModuleBuildManifestCandidate)"
@@ -341,7 +341,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="ResolvedEndpoints" ItemName="_ResolvedJSPublishModuleEndpoints" />
     </ResolveStaticWebAssetEndpointRoutes>
-  
+
     <GenerateJsModuleManifest
       Condition="'@(_ExistingPublishJSModules)' != ''"
       OutputFile="@(_JsModulePublishManifestCandidate)"
@@ -389,7 +389,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- JS file modules -->
-  <Target Name="ResolveJSModuleStaticWebAssets" DependsOnTargets="ResolveProjectStaticWebAssets">
+  <Target Name="ResolveJSModuleStaticWebAssets" DependsOnTargets="ResolveProjectStaticWebAssets;ResolveRazorComponentInputs;ResolveRazorGenerateInputs">
 
     <ItemGroup>
       <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
