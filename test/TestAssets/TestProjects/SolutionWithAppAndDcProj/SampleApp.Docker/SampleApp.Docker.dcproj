@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.Docker.Sdk">
+    <PropertyGroup Label="Globals">
+        <ProjectVersion>2.1</ProjectVersion>
+        <DockerTargetOS>Windows</DockerTargetOS>
+        <ProjectGuid>154022c1-8014-4e9d-bd78-6ff46670ffa4</ProjectGuid>
+        <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+        <DockerServiceUrl>{Scheme}://{ServiceIPAddress}{ServicePort}</DockerServiceUrl>
+        <DockerServiceName>webapplication1</DockerServiceName>
+        <DockerComposeBaseFilePath>DockerComposeFiles\mydockercompose</DockerComposeBaseFilePath>
+        <AdditionalComposeFilePaths>AdditionalComposeFiles\myadditionalcompose.yml</AdditionalComposeFilePaths>
+        <ProjectTypeGuids>E53339B2-1760-4266-BCC7-CA923CBCF16C</ProjectTypeGuids>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="DockerComposeFiles\mydockercompose.override.yml">
+            <DependentUpon>DockerComposeFiles\mydockercompose.yml</DependentUpon>
+        </None>
+        <None Include="DockerComposeFiles\mydockercompose.yml" />
+        <None Include=".dockerignore" />
+    </ItemGroup>
+</Project>

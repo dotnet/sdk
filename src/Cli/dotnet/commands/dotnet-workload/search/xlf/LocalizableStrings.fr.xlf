@@ -12,9 +12,24 @@
         <target state="translated">Description</target>
         <note />
       </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="new">Changes the format of outputted workload versions. Can take 'json' or 'list'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PlatformColumnName">
         <source>Platforms</source>
         <target state="translated">Plateformes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</source>
+        <target state="new">Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</target>
+        <note>Do not localize --take or --format</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="new">The --take option must be positive.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumnName">
