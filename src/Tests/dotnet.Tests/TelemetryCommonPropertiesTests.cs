@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
         {
             var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["DevDeviceId"].Should().Be("plaintext");
+            unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"].Should().Be("plaintext");
         }
 
         [Fact]
@@ -52,8 +52,8 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotDevDeviceId()
         {
-            var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => null, userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["DevDeviceId"];
+            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
