@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NotATool">
-        <source>Package {0} is not a dotnet tool.</source>
-        <target state="new">Package {0} is not a dotnet tool.</target>
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
