@@ -9,6 +9,7 @@
   <PropertyGroup>
     <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
     <MibcTargetOS>$([System.Text.RegularExpressions.Regex]::Match('$(NETCoreSdkRuntimeIdentifier)', '^[^-]+').Value)</MibcTargetOS>
+    <MibcTargetOS Condition="'$(MibcTargetOS)'=='win'">windows_nt</MibcTargetOS>
     <MibcTargetArch>$([System.Text.RegularExpressions.Regex]::Match('$(NETCoreSdkRuntimeIdentifier)', '[^-]+$').Value)</MibcTargetArch>
     <MibcId>$(MibcTargetOS)-$(MibcTargetArch)</MibcId>
     <MibcFile>$(MibcPath)/optimization.$(MibcId).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
