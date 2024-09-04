@@ -8,7 +8,9 @@
   <!-- MIBC, PGO -->
   <PropertyGroup>
     <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
-    <MibcId>$(NETCoreSdkRuntimeIdentifier)</MibcId>
+    <MibcTargetOS>$([System.Text.RegularExpressions.Regex]::Match('$(NETCoreSdkRuntimeIdentifier)', '^[^-]+').Value)</MibcTargetOS>
+    <MibcTargetArch>$([System.Text.RegularExpressions.Regex]::Match('$(NETCoreSdkRuntimeIdentifier)', '[^-]+$').Value)</MibcTargetArch>
+    <MibcId>$(MibcTargetOS)-$(MibcTargetArch)</MibcId>
     <MibcFile>$(MibcPath)/optimization.$(MibcId).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
     <ReadyToRunOptimizationData>$(MibcFile)</ReadyToRunOptimizationData>
   </PropertyGroup>
