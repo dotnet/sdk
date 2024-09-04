@@ -245,19 +245,19 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-alpha.2.24453.16</MicrosoftAspNetCoreAppRefInternalPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-alpha.2.24454.1</MicrosoftAspNetCoreAppRefInternalPackageVersion>
     <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>10.0.0-alpha.2.24422.4</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
-    <dotnetdevcertsPackageVersion>10.0.0-alpha.2.24453.16</dotnetdevcertsPackageVersion>
-    <dotnetuserjwtsPackageVersion>10.0.0-alpha.2.24453.16</dotnetuserjwtsPackageVersion>
-    <dotnetusersecretsPackageVersion>10.0.0-alpha.2.24453.16</dotnetusersecretsPackageVersion>
+    <dotnetdevcertsPackageVersion>10.0.0-alpha.2.24454.1</dotnetdevcertsPackageVersion>
+    <dotnetuserjwtsPackageVersion>10.0.0-alpha.2.24454.1</dotnetuserjwtsPackageVersion>
+    <dotnetusersecretsPackageVersion>10.0.0-alpha.2.24454.1</dotnetusersecretsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
