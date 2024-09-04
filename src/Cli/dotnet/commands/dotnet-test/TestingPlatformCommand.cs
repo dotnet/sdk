@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.Testing.TestInfrastructure;
 
@@ -58,7 +59,9 @@ namespace Microsoft.DotNet.Cli
             var console = new SystemConsole();
             var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                UseAnsi = true,
+                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1",
+                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
+                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });
@@ -151,8 +154,8 @@ namespace Microsoft.DotNet.Cli
         {
             var testApplication = (TestApplication)sender;
             var executionId = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.ExecutionId];
-            var arch = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Architecture];
-            var tfm = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Framework];
+            var arch = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Framework]);
             (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
