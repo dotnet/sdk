@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
-        private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
+        private readonly ConcurrentBag<TestApplication> _testApplications = [];
         private readonly CancellationTokenSource _cancellationToken = new();
 
         private MSBuildConnectionHandler _msBuildConnectionHandler;
@@ -48,6 +48,13 @@ namespace Microsoft.DotNet.Cli
             if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
 
+            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+            BuiltInOptions builtInOptions = new(
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+
             var console = new SystemConsole();
             var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
@@ -68,7 +75,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    var result = await testApp.RunAsync(enableHelp: true);
+                    var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
                     _output.TestExecutionCompleted(DateTimeOffset.Now);
                     return result;
                 });
@@ -88,8 +95,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    var result = await testApp.RunAsync(enableHelp: false);
-                    return result;
+                    return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
                 });
             }
 
@@ -135,7 +141,7 @@ namespace Microsoft.DotNet.Cli
         private void CleanUp()
         {
             _msBuildConnectionHandler.Dispose();
-            foreach (var testApplication in _testApplications.Values)
+            foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
             }
@@ -147,7 +153,7 @@ namespace Microsoft.DotNet.Cli
             var executionId = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.ExecutionId];
             var arch = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Architecture];
             var tfm = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Framework];
-            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.ModulePath, tfm, arch, executionId);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
@@ -293,25 +299,13 @@ namespace Microsoft.DotNet.Cli
         private void OnTestApplicationCreated(object sender, EventArgs args)
         {
             TestApplication testApp = sender as TestApplication;
-            _testApplications[testApp.ModulePath] = testApp;
-
-            VSTestTrace.SafeWriteTrace(() => $"Created {testApp.ModulePath}");
-
-
+            _testApplications.Add(testApp);
         }
 
         private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
         {
-            if (_testApplications.TryGetValue(args.ModulePath, out var testApp))
-            {
-                VSTestTrace.SafeWriteTrace(() => $"id {args.ModulePath}");
-
-                testApp.AddExecutionId(args.ExecutionId);
-            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
     }
 }
-
-

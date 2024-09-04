@@ -275,23 +275,35 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
-        public void UpdateWorkloadSetViaGlobalJson()
+        public void RestoreWorkloadSetViaGlobalJson()
         {
-            SetupWorkloadSetInGlobalJson(out var originalRollback);
+            InstallSdk();
 
-            VM.CreateRunCommand("dotnet", "workload", "update").WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
-            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
-        }
-
-        [Fact]
-        public void InstallWorkloadSetViaGlobalJson()
-        {
-            SetupWorkloadSetInGlobalJson(out var originalRollback);
-
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
+            var testProjectFolder = Path.Combine(SdkTestingDirectory, "ConsoleApp");
+            VM.CreateRunCommand("dotnet", "new", "console", "-o", "ConsoleApp")
                 .WithWorkingDirectory(SdkTestingDirectory)
                 .Execute().Should().Pass();
 
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
+
+            VM.CreateRunCommand("dotnet", "workload", "restore")
+                .WithWorkingDirectory(testProjectFolder)
+                .Execute().Should().Pass();
+
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be(WorkloadSetVersion2);
+
+            GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
+        }
+
+        [Theory]
+        [InlineData("update")]
+        [InlineData("install")]
+        public void UseGlobalJsonToSpecifyWorkloadSet(string command)
+        {
+            SetupWorkloadSetInGlobalJson(out var originalRollback);
+
+            string[] args = command.Equals("install") ? ["dotnet", "workload", "install", "aspire"] : ["dotnet", "workload", command];
+            VM.CreateRunCommand(args).WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
             GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
         }
 
