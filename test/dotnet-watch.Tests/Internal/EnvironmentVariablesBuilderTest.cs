@@ -1,66 +1,38 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watcher.Tools;
+
 namespace Microsoft.DotNet.Watcher.Internal
 {
     public class EnvironmentVariablesBuilderTest
     {
         [Fact]
-        public void AddToEnvironment_Value()
+        public void Value()
         {
             var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHooks.Add("a");
-            builder.AspNetCoreHostingStartupAssemblies.Add("b");
+            builder.DotNetStartupHookDirective.Add("a");
+            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b");
 
             var values = new Dictionary<string, string>();
             builder.AddToEnvironment(values);
-            Assert.Equal("a", values["DOTNET_STARTUP_HOOKS"]);
-            Assert.Equal("b", values["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"]);
+            AssertEx.SequenceEqual(["[env:DOTNET_STARTUP_HOOKS=a]"], builder.GetCommandLineDirectives());
+            AssertEx.SequenceEqual([("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b")], values.Select(e => (e.Key, e.Value)));
         }
 
         [Fact]
-        public void AddToEnvironment_MultipleValues()
+        public void MultipleValues()
         {
             var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHooks.Add("a1");
-            builder.DotNetStartupHooks.Add("a2");
-            builder.AspNetCoreHostingStartupAssemblies.Add("b1");
-            builder.AspNetCoreHostingStartupAssemblies.Add("b2");
+            builder.DotNetStartupHookDirective.Add("a1");
+            builder.DotNetStartupHookDirective.Add("a2");
+            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b1");
+            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b2");
 
             var values = new Dictionary<string, string>();
             builder.AddToEnvironment(values);
-            Assert.Equal("a1" + Path.PathSeparator + "a2", values["DOTNET_STARTUP_HOOKS"]);
-            Assert.Equal("b1;b2", values["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"]);
-        }
-
-        [Fact]
-        public void AddToEnvironment_ExistingHook()
-        {
-            var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHooks.Add("value1");
-
-            var values = new Dictionary<string, string>()
-            {
-                ["DOTNET_STARTUP_HOOKS"] = "value3"
-            };
-
-            // variables shouild only be set via builder:
-            Assert.Throws<ArgumentException>(() => builder.AddToEnvironment(values));
-        }
-
-        [Fact]
-        public void AddToEnvironment_ExistingHostingStartupAssembly()
-        {
-            var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHooks.Add("value1");
-
-            var values = new Dictionary<string, string>()
-            {
-                ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "value3"
-            };
-
-            // variables shouild only be set via builder:
-            Assert.Throws<ArgumentException>(() => builder.AddToEnvironment(values));
+            AssertEx.SequenceEqual([$"[env:DOTNET_STARTUP_HOOKS=a1{Path.PathSeparator}a2]"], builder.GetCommandLineDirectives());
+            AssertEx.SequenceEqual([("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b1;b2")], values.Select(e => (e.Key, e.Value)));
         }
     }
 }

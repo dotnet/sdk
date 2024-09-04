@@ -5,19 +5,21 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal sealed class ModuleSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 4;
+        public int Id => ModuleFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
             string modulePath = ReadString(stream);
             string projectPath = ReadString(stream);
-            return new Module(modulePath.Trim(), projectPath.Trim());
+            string targetFramework = ReadString(stream);
+            return new Module(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim());
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
         {
             WriteString(stream, ((Module)objectToSerialize).DLLPath);
             WriteString(stream, ((Module)objectToSerialize).ProjectPath);
+            WriteString(stream, ((Module)objectToSerialize).TargetFramework);
         }
     }
 }

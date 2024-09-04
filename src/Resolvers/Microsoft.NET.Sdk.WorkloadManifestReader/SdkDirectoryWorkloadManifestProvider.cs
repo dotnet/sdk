@@ -243,18 +243,26 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public string? GetWorkloadVersion()
+        public WorkloadVersion GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
             {
-                return _globalJsonWorkloadSetVersion;
+                return new WorkloadVersion()
+                {
+                    Version = _globalJsonWorkloadSetVersion,
+                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
+                };
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return _workloadSet?.Version!;
+                return new WorkloadVersion()
+                {
+                    Version = _workloadSet.Version,
+                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
+                };
             }
 
             using (SHA256 sha256Hash = SHA256.Create())
@@ -271,7 +279,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return $"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}";
+                return new WorkloadVersion()
+                {
+                    Version = $"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}",
+                    WorkloadInstallType = WorkloadVersion.Type.LooseManifest
+                };
             }
         }
 

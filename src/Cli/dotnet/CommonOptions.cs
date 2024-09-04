@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Description = CommonLocalizableStrings.DisableBuildServersOptionDescription
             }
-            .ForwardAsMany(_ => new string[] { "-p:UseRazorBuildServer=false", "-p:UseSharedCompilation=false", "/nodeReuse:false" });
+            .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
         public static CliOption<string> ArchitectureOption =
             new ForwardedOption<string>("--arch", "-a")

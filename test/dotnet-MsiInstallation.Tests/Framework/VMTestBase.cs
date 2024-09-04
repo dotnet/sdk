@@ -53,6 +53,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         }
 
         Lazy<string> _sdkInstallerVersion;
+        private bool _sdkInstalled = false;
 
         protected string SdkInstallerVersion => _sdkInstallerVersion.Value;
 
@@ -60,6 +61,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         protected void InstallSdk(bool deployStage2 = true)
         {
+            if (_sdkInstalled)
+            {
+                return;
+            }
+
             VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
                 .WithDescription("Disable .NET SDK first run message")
                 .Execute()
@@ -70,12 +76,12 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithDescription($"Install SDK {SdkInstallerVersion}")
                 .Execute().Should().Pass();
 
-            
-
             if (deployStage2)
             {
                 DeployStage2Sdk();
             }
+
+            _sdkInstalled = true;
         }
 
         protected void UninstallSdk()

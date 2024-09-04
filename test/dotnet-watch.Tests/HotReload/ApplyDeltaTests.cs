@@ -3,14 +3,44 @@
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
-    public class ApplyDeltaTests : DotNetWatchTestBase
+    public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        public ApplyDeltaTests(ITestOutputHelper logger)
-            : base(logger)
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        public async Task AddSourceFile()
         {
+            Logger.WriteLine("AddSourceFile started");
+
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+
+            // add a new file:
+            UpdateSourceFile(Path.Combine(dependencyDir, "AnotherLib.cs"), """
+                public class AnotherLib
+                {
+                    public static void Print()
+                        => System.Console.WriteLine("Changed!");
+                }
+                """);
+
+            // update existing file:
+            UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
+                public class Lib
+                {
+                    public static void Print()
+                        => AnotherLib.Print();
+                }
+                """);
+
+            await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -18,9 +48,9 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
 
-            await App.StartWatcherAsync(testAsset, "AppWithDeps");
+            App.Start(testAsset, [], "AppWithDeps");
 
-            await App.WaitForSessionStarted();
+            await App.AssertWaitingForChanges();
 
             var newSrc = """
                 public class Lib
@@ -30,20 +60,21 @@ namespace Microsoft.DotNet.Watcher.Tests
                 }
                 """;
 
-            File.WriteAllText(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
+            UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
+
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, "App");
+            App.Start(testAsset, [], "App");
 
-            await App.WaitForSessionStarted();
+            await App.AssertWaitingForChanges();
 
             var newSrc = """
                 class DepSubType : Dep
@@ -58,9 +89,9 @@ namespace Microsoft.DotNet.Watcher.Tests
                         Console.WriteLine("Changed!");
                     }
                 }
-                """;    
+                """;
 
-            File.WriteAllText(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
+            UpdateSourceFile(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }

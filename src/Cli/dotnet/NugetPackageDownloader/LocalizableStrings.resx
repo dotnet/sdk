@@ -132,11 +132,18 @@
   <data name="NuGetPackageSignatureVerificationSkipped" xml:space="preserve">
     <value>Skipping NuGet package signature verification.</value>
   </data>
+  <data name="VerifyingNuGetPackageSignature" xml:space="preserve">
+    <value>Verified that the NuGet package "{0}" has a valid signature.</value>
+  </data>
+  <data name="NuGetPackageShouldNotBeSigned" xml:space="preserve">
+    <value>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</value>
+  </data>
   <data name="SkipNuGetpackageSigningValidationmacOSLinux" xml:space="preserve">
     <value>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</value>
   </data>
   <data name="FailedToValidatePackageSigning" xml:space="preserve">
-    <value>Failed to validate package signing.</value>
+    <value>Failed to validate package signing.
+{0}</value>
   </data>
   <data name="FailedToFindSourceUnderPackageSourceMapping" xml:space="preserve">
     <value>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
