@@ -21,7 +21,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
     [ImportingConstructor]
     public SdkAnalyzerAssemblyRedirector()
-        : this(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "SDK", "RuntimeAnalyzers"))) { }
+        : this(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\DotNetRuntimeAnalyzers"))) { }
 
     // Internal for testing.
     internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory)
