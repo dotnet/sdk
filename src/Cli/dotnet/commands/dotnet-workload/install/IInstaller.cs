@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -29,6 +30,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion);
 
+        void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand);
+
+        IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand);
+
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>
         /// for a set of workload manifests that isn't currently installed
@@ -52,6 +57,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
         void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
+
+        void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion);
     }
 
     // Interface to pass to workload manifest updater
