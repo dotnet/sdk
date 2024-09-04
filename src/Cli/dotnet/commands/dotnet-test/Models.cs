@@ -5,6 +5,8 @@
 
 namespace Microsoft.DotNet.Cli
 {
+    internal sealed record Module(string? DLLPath, string? ProjectPath, string? TargetFramework);
+
     internal sealed record Handshake(Dictionary<byte, string>? Properties);
 
     internal sealed record CommandLineOption(string? Name, string? Description, bool? IsHidden, bool? IsBuiltIn);
