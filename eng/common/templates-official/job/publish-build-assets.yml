@@ -78,8 +78,6 @@ jobs:
 
     - task: AzureCLI@2
       displayName: Publish Build Assets
-      condition: ${{ parameters.condition }}
-      continueOnError: ${{ parameters.continueOnError }}
       inputs:
         azureSubscription: "Darc: Maestro Production"
         scriptType: ps

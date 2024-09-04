@@ -76,8 +76,6 @@ jobs:
 
     - task: AzureCLI@2
       displayName: Publish Build Assets
-      condition: ${{ parameters.condition }}
-      continueOnError: ${{ parameters.continueOnError }}
       inputs:
         azureSubscription: "Darc: Maestro Production"
         scriptType: ps
@@ -89,6 +87,8 @@ jobs:
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:OfficialBuildId=$(Build.BuildNumber)
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
 
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
