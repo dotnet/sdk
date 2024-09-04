@@ -151,10 +151,10 @@ jobs:
       value: $(vmrPath)
 
   - ${{ if ne(parameters.buildPass, '') }}:
-    - name: _artifactsSuffix
+    - name: artifactsSuffix
       value: '_buildpass${{ parameters.buildPass }}'
   - ${{ else }}:
-    - name: _artifactsSuffix
+    - name: artifactsSuffix
       value: ''
 
   templateContext:
@@ -168,7 +168,7 @@ jobs:
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts$(_artifactsSuffix)
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       sbomEnabled: true
 
@@ -579,6 +579,6 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts$(_artifactsSuffix)
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       continueOnError: true
