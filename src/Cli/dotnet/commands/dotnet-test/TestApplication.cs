@@ -269,7 +269,7 @@ namespace Microsoft.DotNet.Cli
             {
                 ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _modulePath, ExecutionId = executionId });
             }
-            HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
+            HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { HandshakeInfo = handshakeInfo });
         }
 
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)

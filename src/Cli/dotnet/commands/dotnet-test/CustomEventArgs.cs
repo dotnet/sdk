@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal class HandshakeInfoArgs : EventArgs
     {
-        public HandshakeInfo handshakeInfo { get; set; }
+        public HandshakeInfo HandshakeInfo { get; set; }
     }
 
     internal class HelpEventArgs : EventArgs

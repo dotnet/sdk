@@ -65,6 +65,7 @@ namespace Microsoft.DotNet.Cli
                 var testApp = new TestApplication(module.DLLPath, _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
+                Thread.Sleep(100);
                 testApp.OnCreated();
             }
             catch (Exception ex)
