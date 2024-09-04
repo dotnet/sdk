@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Intentionally pinned. This feature is supported in projects targeting 3.1 or newer.-->
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <!-- Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.-->
+    <TargetFramework>net6.0</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <IsPackable>false</IsPackable>
@@ -12,6 +12,16 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <EmbeddedResource Include="WebSocketScriptInjection.js" />
     <EmbeddedResource Include="BlazorHotReload.js" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <!-- Reference 6.0.2 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
+    <FrameworkReference
+      Update="Microsoft.AspNetCore.App"
+      TargetingPackVersion="6.0.2" />
+    <FrameworkReference
+      Update="Microsoft.NETCore.App"
+      TargetingPackVersion="6.0.2" />
   </ItemGroup>
 
 </Project>

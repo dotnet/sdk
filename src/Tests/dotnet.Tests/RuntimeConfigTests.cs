@@ -1,15 +1,8 @@
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using FluentAssertions;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -88,7 +81,7 @@ namespace Microsoft.DotNet.Tests
             var tempPath = GetTempPath();
             File.WriteAllText(tempPath, "");
             Action a = () => new RuntimeConfig(tempPath);
-            a.ShouldThrow<System.Text.Json.JsonException>();
+            a.Should().Throw<System.Text.Json.JsonException>();
         }
 
         [Fact]
