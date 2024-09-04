@@ -18,7 +18,15 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 deviceId = Guid.NewGuid().ToString("D").ToLowerInvariant();
 
                 // Cache the new device Id
-                CacheDeviceId(deviceId);
+                try
+                {
+                    CacheDeviceId(deviceId);
+                }
+                catch
+                {
+                    // If caching fails, return empty string to avoid sending a non-stored id
+                    deviceId = ""
+                }
             }
 
             return deviceId;
@@ -92,14 +100,25 @@ namespace Microsoft.DotNet.Cli.Telemetry
                     cacheFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "deviceid");
                 }
 
-                File.WriteAllText(cacheFilePath, deviceId);
+                CreateDirectoryAndWriteToFile(cacheFilePath, deviceId);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 // Cache device Id in macOS cache file
                 string cacheFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "Microsoft", "DeveloperTools", "deviceid");
-                File.WriteAllText(cacheFilePath, deviceId);
+
+                CreateDirectoryAndWriteToFile(cacheFilePath, deviceId);
             }
+        }
+
+        private static void CreateDirectoryAndWriteToFile(string filePath, string content)
+        {
+            string directory = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllText(filePath, content);
         }
     }
 }

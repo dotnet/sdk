@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private const string ProductVersion = "Product Version";
         private const string TelemetryProfile = "Telemetry Profile";
         private const string CurrentPathHash = "Current Path Hash";
-        private const string DeviceId = "DeviceId";
+        private const string DeviceId = "devdeviceid";
         private const string MachineId = "Machine ID";
         private const string MachineIdOld = "Machine ID Old";
         private const string DockerContainer = "Docker Container";
