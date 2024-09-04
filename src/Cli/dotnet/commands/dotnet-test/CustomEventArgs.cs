@@ -15,6 +15,11 @@ namespace Microsoft.DotNet.Cli
         public CommandLineOptionMessages CommandLineOptionMessages { get; set; }
     }
 
+    internal class DiscoveredTestEventArgs : EventArgs
+    {
+        public DiscoveredTestMessage DiscoveredTestMessage { get; set; }
+    }
+
     internal class SuccessfulTestResultEventArgs : EventArgs
     {
         public SuccessfulTestResultMessage SuccessfulTestResultMessage { get; set; }
@@ -45,5 +50,11 @@ namespace Microsoft.DotNet.Cli
         public List<string> OutputData { get; set; }
         public List<string> ErrorData { get; set; }
         public int ExitCode { get; set; }
+    }
+
+    internal class ExecutionEventArgs : EventArgs
+    {
+        public string ModulePath { get; set; }
+        public string ExecutionId { get; set; }
     }
 }

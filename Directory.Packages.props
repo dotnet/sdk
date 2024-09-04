@@ -33,6 +33,7 @@
     <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.DarcLib" Version="$(MicrosoftDotNetDarcLibVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
     <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
@@ -44,8 +45,8 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)"/>
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />

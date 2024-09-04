@@ -10,38 +10,38 @@ namespace Microsoft.DotNet.Tools.Test
     /*
         |---FieldCount---| 2 bytes
 
-        |---File FullPath Id---| 1 (2 bytes)
+        |---File FullPath Id---| (2 bytes)
         |---File FullPath Size---| (4 bytes)
         |---File FullPath Value---| (n bytes)
 
-        |---File DisplayName Id---| 1 (2 bytes)
+        |---File DisplayName Id---| (2 bytes)
         |---File DisplayName Size---| (4 bytes)
         |---File DisplayName Value---| (n bytes)
 
-        |---File Description Id---| 1 (2 bytes)
+        |---File Description Id---| (2 bytes)
         |---File Description Size---| (4 bytes)
         |---File Description Value---| (n bytes)
 
-        |---File TestUid Id---| 1 (2 bytes)
+        |---File TestUid Id---| (2 bytes)
         |---File TestUid Size---| (4 bytes)
         |---File TestUid Value---| (n bytes)
 
-        |---File TestDisplayName Id---| 1 (2 bytes)
+        |---File TestDisplayName Id---| (2 bytes)
         |---File TestDisplayName Size---| (4 bytes)
         |---File TestDisplayName Value---| (n bytes)
 
-        |---File SessionUid Id---| 1 (2 bytes)
+        |---File SessionUid Id---| (2 bytes)
         |---File SessionUid Size---| (4 bytes)
         |---File SessionUid Value---| (n bytes)
 
-        |---File ModulePath Id---| 1 (2 bytes)
-        |---File ModulePath Size---| (4 bytes)
-        |---File ModulePath Value---| (n bytes)
+        |---File ExecutionId Id---| (2 bytes)
+        |---File ExecutionId Size---| (4 bytes)
+        |---File ExecutionId Value---| (n bytes)
     */
 
     internal sealed class FileArtifactInfoSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 7;
+        public int Id => FileArtifactInfoFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tools.Test
             string? testUid = null;
             string? testDisplayName = null;
             string? sessionUid = null;
-            string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
@@ -86,8 +86,8 @@ namespace Microsoft.DotNet.Tools.Test
                         sessionUid = ReadString(stream);
                         break;
 
-                    case FileArtifactInfoFieldsId.ModulePath:
-                        modulePath = ReadString(stream);
+                    case FileArtifactInfoFieldsId.ExecutionId:
+                        executionId = ReadString(stream);
                         break;
 
                     default:
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, modulePath);
+            return new FileArtifactInfo(fullPath, displayName, description, testUid, testDisplayName, sessionUid, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -114,7 +114,8 @@ namespace Microsoft.DotNet.Tools.Test
             WriteField(stream, FileArtifactInfoFieldsId.TestUid, fileArtifactInfo.TestUid);
             WriteField(stream, FileArtifactInfoFieldsId.TestDisplayName, fileArtifactInfo.TestDisplayName);
             WriteField(stream, FileArtifactInfoFieldsId.SessionUid, fileArtifactInfo.SessionUid);
-            WriteField(stream, FileArtifactInfoFieldsId.ModulePath, fileArtifactInfo.ModulePath);
+            WriteField(stream, FileArtifactInfoFieldsId.ExecutionId, fileArtifactInfo.ExecutionId);
+
         }
 
         private static ushort GetFieldCount(FileArtifactInfo fileArtifactInfo) =>
@@ -124,6 +125,6 @@ namespace Microsoft.DotNet.Tools.Test
             (fileArtifactInfo.TestUid is null ? 0 : 1) +
             (fileArtifactInfo.TestDisplayName is null ? 0 : 1) +
             (fileArtifactInfo.SessionUid is null ? 0 : 1) +
-            (fileArtifactInfo.ModulePath is null ? 0 : 1));
+            (fileArtifactInfo.ExecutionId is null ? 0 : 1));
     }
 }

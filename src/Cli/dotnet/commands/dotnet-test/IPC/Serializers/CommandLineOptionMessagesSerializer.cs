@@ -12,37 +12,37 @@ namespace Microsoft.DotNet.Tools.Test
     /*
     |---FieldCount---| 2 bytes
 
-    |---ModuleName Id---| 1 (2 bytes)
+    |---ModuleName Id---| (2 bytes)
     |---ModuleName Size---| (4 bytes)
     |---ModuleName Value---| (n bytes)
 
-    |---CommandLineOptionMessageList Id---| 2 (2 bytes)
+    |---CommandLineOptionMessageList Id---| (2 bytes)
     |---CommandLineOptionMessageList Size---| (4 bytes)
     |---CommandLineOptionMessageList Value---| (n bytes)
         |---CommandLineOptionMessageList Length---| (4 bytes)
 
         |---CommandLineOptionMessageList[0] FieldCount---| 2 bytes
 
-        |---CommandLineOptionMessageList[0] Name Id---| 1 (2 bytes)
+        |---CommandLineOptionMessageList[0] Name Id---| (2 bytes)
         |---CommandLineOptionMessageList[0] Name Size---| (4 bytes)
         |---CommandLineOptionMessageList[0] Name Value---| (n bytes)
 
-        |---CommandLineOptionMessageList[1] Description Id---| 2 (2 bytes)
+        |---CommandLineOptionMessageList[1] Description Id---| (2 bytes)
         |---CommandLineOptionMessageList[1] Description Size---| (4 bytes)
         |---CommandLineOptionMessageList[1] Description Value---| (n bytes)
 
-        |---CommandLineOptionMessageList[3] IsHidden Id---| 4 (2 bytes)
+        |---CommandLineOptionMessageList[3] IsHidden Id---| (2 bytes)
         |---CommandLineOptionMessageList[3] IsHidden Size---| (4 bytes)
         |---CommandLineOptionMessageList[3] IsHidden Value---| (1 byte)
 
-        |---CommandLineOptionMessageList[4] IsBuiltIn Id---| 5 (2 bytes)
+        |---CommandLineOptionMessageList[4] IsBuiltIn Id---| (2 bytes)
         |---CommandLineOptionMessageList[4] IsBuiltIn Size---| (4 bytes)
         |---CommandLineOptionMessageList[4] IsBuiltIn Value---| (1 byte)
     */
 
     internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 3;
+        public int Id => CommandLineOptionMessagesFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
