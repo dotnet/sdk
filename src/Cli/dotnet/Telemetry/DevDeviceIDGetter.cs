@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 catch
                 {
                     // If caching fails, return empty string to avoid sending a non-stored id
-                    deviceId = ""
+                    deviceId = "";
                 }
             }
 
