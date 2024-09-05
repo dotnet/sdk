@@ -24,7 +24,7 @@ Below is a list of selected NuGet.org templates which are available for use with
 | Name     | Quick Install |
 |----------|:--------------|
 | [.NET Boxed](https://github.com/Dotnet-Boxed/Templates) | `dotnet new install "Boxed.Templates"`|
-| [Auth0 Templates](https://github.com/auth0/auth0-dotnet-templates) | `dotnet new install Auth0.Templates"` |
+| [Auth0 Templates](https://github.com/auth0/auth0-dotnet-templates) | `dotnet new install Auth0.Templates` |
 | [AWS Lambda .NET Core Templates](https://github.com/aws/aws-lambda-dotnet/tree/master/Blueprints) | `dotnet new install "Amazon.Lambda.Templates"`|
 | [Avalonia UI Templates](https://github.com/AvaloniaUI/Avalonia) - Avalonia is a framework for creating cross platform UI | `dotnet new install "Avalonia.Templates"`|
 | [Blazor](http://blazor.net) - Full stack web development with C# and WebAssembly | `dotnet new install "Microsoft.AspNetCore.Blazor.Templates::3.0.0-*"`|
