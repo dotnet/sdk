@@ -57,7 +57,7 @@
         <target state="translated">驗證工作負載時發生問題。如需詳細資訊，請執行 "dotnet workload update"。</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">資訊清單版本</target>
         <note />
@@ -80,6 +80,11 @@
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">正在寫入 Visual Studio 工作負載的安裝紀錄：'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">設為在安裝新資訊清單時使用 {0}。</target>
         <note />
       </trans-unit>
     </body>
