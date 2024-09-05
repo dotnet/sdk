@@ -8,7 +8,7 @@ This document clarifies some guidelines for authors of components that are consu
 
 ## Sending telemetry
 
-### DO create and manage your own MSBuild Task for sending telemetry.
+### DO create and manage your own MSBuild Task for sending telemetry
 
 This allows you to have full control over the telemetry you send, where it is
 sent, and any PII masking requirements that are unique to your product.
@@ -29,9 +29,9 @@ to destinations you expect.
 
 ## Managing telemetry
 
-## DO adhere to the SDK telemetry opt-out
+### DO adhere to the SDK telemetry opt-out
 
-The SDK has an [opt out](https://learn.microsoft.com/en-us/dotnet/core/tools/telemetry#how-to-opt-out) mechanism for telemetry that all SDK-generated
+The SDK has an [opt out](https://learn.microsoft.com/dotnet/core/tools/telemetry#how-to-opt-out) mechanism for telemetry that all SDK-generated
 telemetry should adhere to. When running in the context of the SDK that means your
 telemetry should adhere to this signal as well. This opt-out mechanism is an
 environment variable, but the default value of this variable changes for
