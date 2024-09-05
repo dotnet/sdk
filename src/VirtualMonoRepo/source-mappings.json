@@ -199,7 +199,11 @@
         },
         {
             "name": "wpf",
-            "defaultRemote": "https://github.com/dotnet/wpf"
+            "defaultRemote": "https://github.com/dotnet/wpf",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4590
+                "src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Resources/ColorProfiles/sRGB.icm"
+            ]
         },
         {
             "name": "windowsdesktop",
