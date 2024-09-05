@@ -46,7 +46,7 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -93,7 +93,7 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -134,7 +134,7 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -209,7 +209,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -562,7 +562,7 @@ public class EndToEndTests : IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
         var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,

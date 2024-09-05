@@ -17,9 +17,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Tool.List;
-using static System.Formats.Asn1.AsnWriter;
-using System.CommandLine.Parsing;
-using static System.Threading.Lock;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -33,14 +30,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
         private CreateShellShimRepository _createShellShimRepository;
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
         private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
         private readonly IToolPackageStoreQuery _store;
 
         private readonly PackageId? _packageId;
-        private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string _framework;
         private readonly string[] _source;
@@ -52,7 +47,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
         private readonly bool _updateAll;
-
+        private readonly string _currentWorkingDirectory;
+        private readonly bool? _verifySignatures;
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -62,12 +58,15 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null,
             INuGetPackageDownloader nugetPackageDownloader = null,
-            IToolPackageStoreQuery store = null)
+            IToolPackageStoreQuery store = null,
+            string currentWorkingDirectory = null,
+            bool? verifySignatures = null)
             : base(parseResult)
         {
+            _verifySignatures = verifySignatures;
+            _currentWorkingDirectory = currentWorkingDirectory;
             var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
             _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
-            _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
             _source = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
@@ -89,7 +88,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
             _store = store;
 
@@ -101,7 +100,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
 
             _reporter = (reporter ?? Reporter.Output);
-            _errorReporter = (reporter ?? Reporter.Error);
         }
 
         public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
@@ -151,7 +149,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             (IToolPackageStore toolPackageStore,
              IToolPackageStoreQuery toolPackageStoreQuery,
              IToolPackageDownloader toolPackageDownloader,
-             IToolPackageUninstaller toolPackageUninstaller) = _createToolPackageStoreDownloaderUninstaller(toolPath, _forwardRestoreArguments);
+             IToolPackageUninstaller toolPackageUninstaller) = _createToolPackageStoreDownloaderUninstaller(toolPath, _forwardRestoreArguments, _currentWorkingDirectory);
 
             var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
             IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
@@ -177,11 +175,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     RunWithHandlingUninstallError(() =>
                     {
-                        foreach (RestoredCommand command in oldPackageNullable.Commands)
-                        {
-                            shellShimRepository.RemoveShim(command.Name);
-                        }
-
+                        shellShimRepository.RemoveShim(oldPackageNullable.Command.Name);
                         toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
                     }, packageId);
                 }
@@ -195,7 +189,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         targetFramework: _framework,
                         verbosity: _verbosity,
                         isGlobalTool: true,
-                        isGlobalToolRollForward: _allowRollForward
+                        isGlobalToolRollForward: _allowRollForward,
+                        verifySignatures: _verifySignatures ?? true
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
@@ -215,10 +210,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
 
-                    foreach (RestoredCommand command in newInstalledPackage.Commands)
-                    {
-                        shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
-                    }
+                    shellShimRepository.CreateShim(newInstalledPackage.Command.Executable, newInstalledPackage.Command.Name, newInstalledPackage.PackagedShims);
 
                     foreach (string w in newInstalledPackage.Warnings)
                     {
@@ -368,8 +360,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     _reporter.WriteLine(
                         string.Format(
-                            Install.LocalizableStrings.InstallationSucceeded,
-                            string.Join(", ", newInstalledPackage.Commands.Select(c => c.Name)),
+                            LocalizableStrings.InstallationSucceeded,
+                            newInstalledPackage.Command.Name,
                             newInstalledPackage.Id,
                             newInstalledPackage.Version.ToNormalizedString()).Green());
                 }

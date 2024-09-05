@@ -12,6 +12,10 @@ parameters:
 - name: buildName
   type: string
 
+- name: buildPass
+  type: string
+  default: ''
+
 - name: container
   type: string
   default: ''
@@ -146,6 +150,13 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
+  - ${{ if ne(parameters.buildPass, '') }}:
+    - name: artifactsSuffix
+      value: '_buildpass${{ parameters.buildPass }}'
+  - ${{ else }}:
+    - name: artifactsSuffix
+      value: ''
+
   templateContext:
     outputs:
     - output: pipelineArtifact
@@ -157,7 +168,7 @@ jobs:
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       sbomEnabled: true
 
@@ -247,7 +258,9 @@ jobs:
         versionSpec: 20.x
 
     - script: |
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+        set extraBuildProperties=
+        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
       env:
@@ -346,6 +359,10 @@ jobs:
 
         if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
           extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
+        fi
+
+        if [[ -n "${{ parameters.buildPass }}" ]]; then
+          extraBuildProperties="$extraBuildProperties /p:DotNetBuildPass=${{ parameters.buildPass }}"
         fi
 
         if [[ -n "${{ parameters.extraProperties }}" ]]; then
@@ -447,8 +464,6 @@ jobs:
         cd "$(sourcesPath)"
 
         CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
@@ -474,7 +489,7 @@ jobs:
 
     # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
     - script: |
-        set -x
+        set -ex
 
         targetFolder=$(Build.StagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
@@ -486,23 +501,25 @@ jobs:
         fi
 
         cd "$(sourcesPath)"
+
         find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
+
         if [ -d "artifacts/scenario-tests/" ]; then
           find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
-        find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+
+        if [ -d "artifacts/TestResults/" ]; then
+          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+        fi
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/log/binary-report/ -exec rsync -R {} -t ${targetFolder} \;
         fi
 
-        find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
 
         # check if we have assets to publish
         if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then
@@ -564,6 +581,6 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       continueOnError: true
