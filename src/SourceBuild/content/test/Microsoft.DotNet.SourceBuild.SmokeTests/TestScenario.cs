@@ -59,11 +59,11 @@ public class TestScenario
         {
             dotNetHelper.ExecutePublish(projectName, Template, selfContained: false);
             dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: Config.TargetRid);
-            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: $"linux-{Config.TargetArchitecture}");
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: Config.PortableRid);
         }
         if (Commands.HasFlag(DotNetActions.PublishR2R))
         {
-            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: $"linux-{Config.TargetArchitecture}", trimmed: true, readyToRun: true);
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: Config.PortableRid, trimmed: true, readyToRun: true);
         }
         if (Commands.HasFlag(DotNetActions.Test))
         {

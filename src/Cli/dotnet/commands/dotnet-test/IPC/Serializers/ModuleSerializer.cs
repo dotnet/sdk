@@ -11,13 +11,15 @@ namespace Microsoft.DotNet.Tools.Test
         {
             string modulePath = ReadString(stream);
             string projectPath = ReadString(stream);
-            return new Module(modulePath.Trim(), projectPath.Trim());
+            string targetFramework = ReadString(stream);
+            return new Module(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim());
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
         {
             WriteString(stream, ((Module)objectToSerialize).DLLPath);
             WriteString(stream, ((Module)objectToSerialize).ProjectPath);
+            WriteString(stream, ((Module)objectToSerialize).TargetFramework);
         }
     }
 }

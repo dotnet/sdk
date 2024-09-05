@@ -78,6 +78,11 @@ Quando usado junto com testes controlados por dados, o comportamento do tempo li
 Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigurationDescription">
+        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
+        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
