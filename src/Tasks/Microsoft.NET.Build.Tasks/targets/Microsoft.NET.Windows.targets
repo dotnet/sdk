@@ -102,4 +102,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
   </Target>
+
+  <!-- Emit a warning if 'UseUwp' is set (it is only supported by the .NET 9 SDK) -->
+  <Target Name="_WarnForUnsupportedUseUwpFeatureEnabled"
+          AfterTargets="ResolvePackageAssets"
+          Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                      and '$(UseUwp)' == 'true'">
+    <NETSdkWarning ResourceName="UsingUnsupportedUseUwpFeature" />
+  </Target>
 </Project>

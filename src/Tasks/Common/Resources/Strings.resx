@@ -948,5 +948,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
     <comment>{StrBegin="NETSDK1213: "}</comment>
   </data>
-  <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="UsingUnsupportedUseUwpFeature" xml:space="preserve">
+    <value>NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</value>
+    <comment>{StrBegin="NETSDK1214: "}</comment>
+  </data>
+  <!-- The latest message added is UsingUnsupportedUseUwpFeature. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
