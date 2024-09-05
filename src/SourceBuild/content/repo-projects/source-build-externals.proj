@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <!--
+      We need to continue to use inner-clone for this repo, as there are hundreds of modified files
+      after a build, due to numerous patches and modifications we need to do.
+
+      Modified files make developer experience worse, as they would need to be manually reverted.
+    -->
+    <UseInnerClone>true</UseInnerClone>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+</Project>
