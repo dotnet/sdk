@@ -149,6 +149,6 @@
     <value>SEARCH_STRING</value>
   </data>
   <data name="WorkloadVersionArgumentDescription" xml:space="preserve">
-    <value>Output workload versions associated with the provided workload version.</value>
+    <value>Output workload manifest versions associated with the provided workload version.</value>
   </data>
 </root>

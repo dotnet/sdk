@@ -87,8 +87,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion);
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Reporter.WriteLine(JsonSerializer.Serialize(
-                        workloadSet.ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => $"{kvp.Value.Version}/{kvp.Value.FeatureBand}")));
+                    var set = new WorkloadSet() { ManifestVersions = workloadSet.ManifestVersions };
+                    Reporter.WriteLine(JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        { "manifestVersions", set.ToDictionaryForJson() }
+                    }, new JsonSerializerOptions { WriteIndented = true }));
                 }
                 else
                 {

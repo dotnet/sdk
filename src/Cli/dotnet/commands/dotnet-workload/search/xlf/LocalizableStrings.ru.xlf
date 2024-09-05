@@ -53,8 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionArgumentDescription">
-        <source>Output workload versions associated with the provided workload version.</source>
-        <target state="new">Output workload versions associated with the provided workload version.</target>
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="new">Output workload manifest versions associated with the provided workload version.</target>
         <note />
       </trans-unit>
     </body>
