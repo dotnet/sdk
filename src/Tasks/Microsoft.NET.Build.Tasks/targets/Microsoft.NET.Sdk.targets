@@ -232,6 +232,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/43016. -->
+    <_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists Condition="'$(NuGetPackageRoot)' == ''">true</_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists>
   </PropertyGroup>
 
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
@@ -254,7 +256,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists"
-          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true'"
+          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists)' != 'true'"
           BeforeTargets="CoreCompile">
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->

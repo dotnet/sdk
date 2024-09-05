@@ -45,5 +45,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdArchitectureDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> ConfigurationOption = new("--configuration")
+        {
+            Description = LocalizableStrings.CmdConfigurationDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
     }
 }

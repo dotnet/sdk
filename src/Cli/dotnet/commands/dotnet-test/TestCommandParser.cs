@@ -198,6 +198,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.NoBuildOption);
             command.Options.Add(TestingPlatformOptions.NoRestoreOption);
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
 
             return command;
         }
