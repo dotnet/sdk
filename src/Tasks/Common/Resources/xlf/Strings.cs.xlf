@@ -1093,9 +1093,9 @@ Možná bude nutné sestavit projekt v jiném operačním systému nebo architek
       <trans-unit id="WorkloadNotInstalled">
         <source>NETSDK1147: To build this project, the following workloads must be installed: {0}
 To install these workloads, run the following command: dotnet workload restore</source>
-        <target state="translated">NETSDK1147: k sestavení tohoto projektu musí být nainstalované následující úlohy: {0}
+        <target state="needs-review-translation">NETSDK1147: k sestavení tohoto projektu musí být nainstalované následující úlohy: {0}
 Pokud chcete nainstalovat tyto úlohy, spusťte následující příkaz: dotnet workload restore</target>
-        <note>{StrBegin="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegin="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>
