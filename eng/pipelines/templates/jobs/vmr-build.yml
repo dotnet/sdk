@@ -12,6 +12,10 @@ parameters:
 - name: buildName
   type: string
 
+- name: buildPass
+  type: string
+  default: ''
+
 - name: container
   type: string
   default: ''
@@ -146,6 +150,13 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
+  - ${{ if ne(parameters.buildPass, '') }}:
+    - name: artifactsSuffix
+      value: '_buildpass${{ parameters.buildPass }}'
+  - ${{ else }}:
+    - name: artifactsSuffix
+      value: ''
+
   templateContext:
     outputs:
     - output: pipelineArtifact
@@ -157,7 +168,7 @@ jobs:
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       sbomEnabled: true
 
@@ -247,7 +258,9 @@ jobs:
         versionSpec: 20.x
 
     - script: |
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+        set extraBuildProperties=
+        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
       env:
@@ -346,6 +359,10 @@ jobs:
 
         if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
           extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
+        fi
+
+        if [[ -n "${{ parameters.buildPass }}" ]]; then
+          extraBuildProperties="$extraBuildProperties /p:DotNetBuildPass=${{ parameters.buildPass }}"
         fi
 
         if [[ -n "${{ parameters.extraProperties }}" ]]; then
@@ -564,6 +581,6 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       continueOnError: true
