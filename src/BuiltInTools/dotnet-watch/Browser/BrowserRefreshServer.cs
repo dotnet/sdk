@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly List<(WebSocket clientSocket, string? sharedSecret)> _clientSockets = new();
         private readonly RSA _rsa;
-        private readonly EnvironmentOptions _options;
+
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _clientConnected;
@@ -40,10 +40,12 @@ namespace Microsoft.DotNet.Watcher.Tools
         private IHost? _refreshServer;
         private string? _serverUrls;
 
+        public readonly EnvironmentOptions Options;
+
         public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
-            _options = options;
+            Options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -150,16 +152,35 @@ namespace Microsoft.DotNet.Watcher.Tools
             await _terminateWebSocket.Task;
         }
 
+        /// <summary>
+        /// For testing.
+        /// </summary>
+        internal void EmulateClientConnected()
+        {
+            _clientConnected.TrySetResult();
+        }
+
         public async Task WaitForClientConnectionAsync(CancellationToken cancellationToken)
         {
             using var progressCancellationSource = new CancellationTokenSource();
+
+            // It make take a while to connect since the app might need to build first.
+            // Indicate progress in the output. Start with 60s and then report progress every 10s.
+            var firstReportSeconds = TimeSpan.FromSeconds(60);
+            var nextReportSeconds = TimeSpan.FromSeconds(10);
+
+            var reportDelayInSeconds = firstReportSeconds;
+            var connectionAttemptReported = false;
 
             var progressReportingTask = Task.Run(async () =>
             {
                 while (!progressCancellationSource.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(_options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : TimeSpan.FromSeconds(5), progressCancellationSource.Token);
-                    _reporter.Warn("Connecting to the browser is taking longer than expected ...");
+                    await Task.Delay(Options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+
+                    connectionAttemptReported = true;
+                    reportDelayInSeconds = nextReportSeconds;
+                    _reporter.Output("Connecting to the browser ...");
                 }
             }, progressCancellationSource.Token);
 
@@ -170,6 +191,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             finally
             {
                 progressCancellationSource.Cancel();
+            }
+
+            if (connectionAttemptReported)
+            {
+                _reporter.Output("Browser connection established.");
             }
         }
 
@@ -286,7 +312,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             try
             {
-                using var process = Process.Start(_options.MuxerPath, "dev-certs https --check --quiet");
+                using var process = Process.Start(Options.MuxerPath, "dev-certs https --check --quiet");
                 await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
                 return process.ExitCode == 0;
             }
