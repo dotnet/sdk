@@ -29,9 +29,15 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// The HRESULT of the requested operaiton that failed.
+        /// The HRESULT of the requested operation that failed.
         /// </summary>
         public int HResult
+        {
+            get;
+            set;
+        }
+
+        public Dictionary<string, string> GlobalJsonWorkloadSetVersions
         {
             get;
             set;
@@ -51,7 +57,7 @@ namespace Microsoft.DotNet.Installer.Windows
         public static InstallResponseMessage Create(byte[] bytes)
         {
             string json = Encoding.UTF8.GetString(bytes);
-            
+
             return JsonConvert.DeserializeObject<InstallResponseMessage>(json, DefaultSerializerSettings);
         }
 

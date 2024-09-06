@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {
+    // Only used in legacy builds (5.0 and earlier)
     public partial class GenerateServiceWorkerAssetsManifest : Task
     {
         [Required]
@@ -31,7 +32,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         internal string GenerateAssetManifest(Stream stream)
         {
             var assets = new AssetsManifestFileEntry[Assets.Length];
-            System.Threading.Tasks.Parallel.For(0, assets.Length, i =>
+            Parallel.For(0, assets.Length, i =>
             {
                 var item = Assets[i];
                 var hash = item.GetMetadata("FileHash");

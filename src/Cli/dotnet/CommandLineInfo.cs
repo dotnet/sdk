@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
 
         private static string GetDisplayRid(DotnetVersionFile versionFile)
         {
-            FrameworkDependencyFile fxDepsFile = new FrameworkDependencyFile();
+            FrameworkDependencyFile fxDepsFile = new();
 
             string currentRid = RuntimeInformation.RuntimeIdentifier;
 
