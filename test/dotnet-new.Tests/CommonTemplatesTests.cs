@@ -12,6 +12,8 @@ using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    // Temporary workaround for possible threading issues related to accessing VS COM objects.
+    [Collection("C1")]
     public class CommonTemplatesTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
     {
         private readonly SharedHomeDirectory _fixture;
