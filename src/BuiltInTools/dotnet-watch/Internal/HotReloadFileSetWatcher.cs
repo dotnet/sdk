@@ -3,6 +3,7 @@
 
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -10,6 +11,7 @@ namespace Microsoft.DotNet.Watcher.Internal
     internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter) : IDisposable
     {
         private static readonly TimeSpan s_debounceInterval = TimeSpan.FromMilliseconds(50);
+        private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
 
         private readonly FileWatcher _fileWatcher = new(fileSet, reporter);
         private readonly object _changedFilesLock = new();
@@ -90,23 +92,46 @@ namespace Microsoft.DotNet.Watcher.Internal
                     return;
                 }
 
-                try
+                if (kind != ChangeKind.Delete)
                 {
-                    // TODO: Deleted files will be ignored https://github.com/dotnet/sdk/issues/42535
-
-                    // Do not report changes to files that happened during build:
-                    var creationTime = File.GetCreationTimeUtc(path);
-                    var writeTime = File.GetLastWriteTimeUtc(path);
-                    if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
+                    try
                     {
-                        reporter.Verbose($"Ignoring file updated during build: '{path}' ({FormatTimestamp(creationTime)},{FormatTimestamp(writeTime)} < {FormatTimestamp(buildCompletionTime)}).");
+                        // Do not report changes to files that happened during build:
+                        var creationTime = File.GetCreationTimeUtc(path);
+                        var writeTime = File.GetLastWriteTimeUtc(path);
+
+                        if (creationTime == s_fileNotExistFileTime || writeTime == s_fileNotExistFileTime)
+                        {
+                            // file might have been deleted since we received the event
+                            kind = ChangeKind.Delete;
+                        }
+                        else if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
+                        {
+                            reporter.Verbose(
+                                $"Ignoring file change during build: {kind} '{path}' " +
+                                $"(created {FormatTimestamp(creationTime)} and written {FormatTimestamp(writeTime)} before {FormatTimestamp(buildCompletionTime)}).");
+
+                            return;
+                        }
+                        else if (writeTime > creationTime)
+                        {
+                            reporter.Verbose($"File change: {kind} '{path}' (written {FormatTimestamp(writeTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                        }
+                        else
+                        {
+                            reporter.Verbose($"File change: {kind} '{path}' (created {FormatTimestamp(creationTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
                         return;
                     }
                 }
-                catch (Exception e)
+
+                if (kind == ChangeKind.Delete)
                 {
-                    reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
-                    return;
+                    reporter.Verbose($"File '{path}' deleted after {FormatTimestamp(buildCompletionTime)}.");
                 }
 
                 if (kind == ChangeKind.Add)
@@ -142,6 +167,6 @@ namespace Microsoft.DotNet.Watcher.Internal
         }
 
         internal static string FormatTimestamp(DateTime time)
-            => time.ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+            => time.ToString("HH:mm:ss.fffffff");
     }
 }
