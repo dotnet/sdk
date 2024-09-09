@@ -5,4 +5,4 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal sealed record Module(string? DLLPath, string? ProjectPath, string? TargetFramework) : IRequest;
+internal sealed record ModuleMessage(string? DLLPath, string? ProjectPath, string? TargetFramework) : IRequest;
