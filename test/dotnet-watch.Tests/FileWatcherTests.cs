@@ -39,7 +39,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             EventHandler<(string path, ChangeKind kind)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f);
+                if (filesChanged.Add(f))
+                {
+                    output.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                }
+                else
+                {
+                    output.WriteLine($"Already seen {f.kind}: '{f.path}'");
+                }
 
                 if (filesChanged.Count == expectedChanges.Length)
                 {
