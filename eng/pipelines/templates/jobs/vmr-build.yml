@@ -295,7 +295,7 @@ jobs:
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
-          elif [[ -n '${{ parameters.reuseBuildArtifactsFrom }}' ]]; then
+          elif [[ '${{ length(parameters.reuseBuildArtifactsFrom) }}' -gt '0' ]]; then
             customPrepArgs="${customPrepArgs} --no-sdk --no-artifacts"
             prepSdk=false
           fi
