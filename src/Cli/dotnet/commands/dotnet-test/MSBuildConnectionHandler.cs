@@ -57,15 +57,14 @@ namespace Microsoft.DotNet.Cli
         {
             try
             {
-                if (request is not Module module)
+                if (request is not ModuleMessage module)
                 {
                     throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
 
-                var testApp = new TestApplication(module, _args);
+                var testApp = new TestApplication(new Module(module.DLLPath, module.ProjectPath, module.TargetFramework), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
-                testApp.OnCreated();
             }
             catch (Exception ex)
             {
@@ -84,6 +83,7 @@ namespace Microsoft.DotNet.Cli
         {
             List<string> msbuildCommandLineArgs =
             [
+                    parseResult.GetValue(TestingPlatformOptions.ProjectOption) ?? string.Empty,
                     $"-t:_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
