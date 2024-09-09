@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             Array.Copy(hashResult, res, res.Length);
 
-            unchecked { res[6] = (byte)(0x50 | (res[6] & 0x0F)); }
+            unchecked { res[6] = (byte)(0x80 | (res[6] & 0x0F)); }
             unchecked { res[8] = (byte)(0x40 | (res[8] & 0x3F)); }
 
             SwapGuidByteOrder(res);
