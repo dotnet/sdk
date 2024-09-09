@@ -187,6 +187,9 @@
   <data name="CmdProjectDescription" xml:space="preserve">
     <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
   </data>
+  <data name="CmdBinLogDescription" xml:space="preserve">
+    <value>Enables the binary logger.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>

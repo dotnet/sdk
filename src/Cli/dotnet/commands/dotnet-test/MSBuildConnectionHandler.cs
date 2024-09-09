@@ -89,6 +89,11 @@ namespace Microsoft.DotNet.Cli
                     "-verbosity:q"
             ];
 
+            if (parseResult.HasOption(TestingPlatformOptions.BinLogOption))
+            {
+                msbuildCommandLineArgs.Add(TestingPlatformOptions.BinLogOption.Name);
+            };
+
             AddAdditionalMSBuildParameters(parseResult, msbuildCommandLineArgs);
 
             if (VSTestTrace.TraceEnabled)
