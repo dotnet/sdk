@@ -93,18 +93,51 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             SourceRepository repository = GetSourceRepository(source);
 
-            if (isTool && await repository.GetResourceAsync<PackageSearchResourceV3>(cancellationToken).ConfigureAwait(false) is PackageSearchResourceV3 searchResource)
+            if (isTool && await repository.GetResourceAsync<ServiceIndexResourceV3>().ConfigureAwait(false) is ServiceIndexResourceV3 serviceIndex)
             {
-                var results = await searchResource.SearchAsync(packageId.ToString(), new SearchFilter(includePrerelease: includePreview, filter: SearchFilterType.IsLatestVersion)
-                {
-                    PackageTypes = [NuGet.Packaging.Core.PackageType.DotnetTool.Name]
-                }, skip: 0, take: 10, log: _verboseLogger, cancellationToken: cancellationToken).ConfigureAwait(false);
+                // TODO: Fix this to use the PackageSearchResourceV3 once https://github.com/NuGet/NuGet.Client/pull/5991 is completed.
+                var uri = serviceIndex.GetServiceEntries("PackageBaseAddress/3.0.0")[0].Uri;
+                var queryUri = uri + $"{packageId}/{packageVersion}/{packageId}.nuspec";
 
-                if (!results.Any())
+                using HttpClient client = new(new HttpClientHandler() { CheckCertificateRevocationList = true });
+                using HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
+                    string nuspec = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                    try
+                    {
+                        XDocument doc = XDocument.Parse(nuspec);
+
+                        if (!doc.Root.Descendants().Where(e => e.Name.LocalName == "packageType" &&
+                        e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any() {
+
+                        }
+                    }
                 }
+
+
+
+                throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
             }
+
+
+
+
+            //if (isTool && await repository.GetResourceAsync<PackageMetadataResourceV3>(cancellationToken).ConfigureAwait(false) is var metadataResource)
+            //{
+            //    var cacheContext = new SourceCacheContext { NoCache = true, DirectDownload = true };
+
+            //    var results = await metadataResource.GetMetadataAsync(packageId.ToString(), includePreview, includeUnlisted ?? false, cacheContext, _verboseLogger, cancellationToken)
+            //        .ConfigureAwait(false);
+
+            //    if (results.Count() == 0)
+            //    {
+            //        results.First().C
+            //        throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
+            //    }
+            //}
 
             FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
                 .ConfigureAwait(false);
