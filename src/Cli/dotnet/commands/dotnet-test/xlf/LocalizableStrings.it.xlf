@@ -128,6 +128,11 @@ Esempi:
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdProjectDescription">
+        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSettingsFile">
         <source>SETTINGS_FILE</source>
         <target state="translated">SETTINGS_FILE</target>
@@ -141,6 +146,11 @@ Esempi:
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests.</source>
         <target state="translated">Elenca i testi individuati invece di eseguirli.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run (folder name or full path) configuration. If not specified, it defaults to the solution file in the current directory.</source>
+        <target state="new">Defines the path of the solution file to run (folder name or full path) configuration. If not specified, it defaults to the solution file in the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">
