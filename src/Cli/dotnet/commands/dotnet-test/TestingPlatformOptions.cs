@@ -57,11 +57,5 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdProjectDescription,
             Arity = ArgumentArity.ExactlyOne
         };
-
-        public static readonly CliOption<string> SolutionOption = new("--solution")
-        {
-            Description = LocalizableStrings.CmdSolutionDescription,
-            Arity = ArgumentArity.ExactlyOne
-        };
     }
 }
