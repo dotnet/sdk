@@ -51,6 +51,7 @@
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="System.Formats.Asn1" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
