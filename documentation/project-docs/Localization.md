@@ -5,7 +5,7 @@ The .NET SDK is translated into 14 languages. In our codebase, you can see the p
 ### Making changes
 The local dev build automatically generates updates to the xlf files that contain the translations. You can see the UpdateXlf task in the binlog to see that in action. 
 
-When making string changes, update the resx, build, and check in all xlf file changes
+When making string changes, update the resx, build, and check in all xlf file changes. Developers should never need to update the xlf files directly and should always rely on the local build for updates to those files. This will leave the files in english initially and they will get translated eventually.
 
 For internal folks, see https://aka.ms/allaboutloc
 
@@ -20,7 +20,7 @@ These are triggered automatically by the loc system as new translations come in.
 https://github.com/dotnet/sdk/pulls?q=is%3Apr+author%3Adotnet-bot+onelocbuild
 
 ### Loc Builds
-We typically only localize the primary development branch. We move to vNext once we get to RC1 and localize all new strings introduced in that release then. That way we can continue to add messages in the 4xx release of an SDK.
+We typically only localize the primary development branch. We move to vNext once we get to RC1 and only then, localize all new strings introduced in that release. That way we can continue to add messages in the 4xx release of an SDK.
 
 This is controlled https://github.com/dotnet/sdk/blob/main/eng/pipelines/templates/jobs/sdk-job-matrix.yml#L86 and requires a change both here and in the loc system to align branches.
 
