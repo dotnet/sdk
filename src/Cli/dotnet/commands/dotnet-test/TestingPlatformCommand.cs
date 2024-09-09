@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
-        private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
+        private readonly ConcurrentBag<TestApplication> _testApplications = [];
         private readonly CancellationTokenSource _cancellationToken = new();
 
         private MSBuildConnectionHandler _msBuildConnectionHandler;
@@ -26,16 +26,17 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            if (parseResult.HasOption(TestCommandParser.Architecture))
-            {
-                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
-                return ExitCodes.GenericFailure;
-            }
-
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
+            if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
                 degreeOfParallelism = Environment.ProcessorCount;
+
+            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+            BuiltInOptions builtInOptions = new(
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
 
             if (ContainsHelpOption(parseResult.GetArguments()))
             {
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    return await testApp.RunAsync(enableHelp: true);
+                    return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
                 });
             }
             else
@@ -55,6 +56,7 @@ namespace Microsoft.DotNet.Cli
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
                     testApp.HandshakeInfoReceived += OnHandshakeInfoReceived;
+                    testApp.DiscoveredTestReceived += OnDiscoveredTestReceived;
                     testApp.SuccessfulTestResultReceived += OnTestResultReceived;
                     testApp.FailedTestResultReceived += OnTestResultReceived;
                     testApp.FileArtifactInfoReceived += OnFileArtifactInfoReceived;
@@ -64,7 +66,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.Created += OnTestApplicationCreated;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    return await testApp.RunAsync(enableHelp: false);
+                    return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
                 });
             }
 
@@ -73,7 +75,7 @@ namespace Microsoft.DotNet.Cli
             _testModulesFilterHandler = new(_args, _actionQueue);
             _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
 
-            if (parseResult.HasOption(TestCommandParser.TestModules))
+            if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
             {
                 if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                 {
@@ -107,7 +109,7 @@ namespace Microsoft.DotNet.Cli
         private void CleanUp()
         {
             _msBuildConnectionHandler.Dispose();
-            foreach (var testApplication in _testApplications.Values)
+            foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
             }
@@ -126,6 +128,17 @@ namespace Microsoft.DotNet.Cli
             {
                 VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
             }
+        }
+
+        private void OnDiscoveredTestReceived(object sender, DiscoveredTestEventArgs args)
+        {
+            if (!VSTestTrace.TraceEnabled)
+            {
+                return;
+            }
+
+            var successfulTestResultMessage = args.DiscoveredTestMessage;
+            VSTestTrace.SafeWriteTrace(() => $"DiscoveredTestMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, {successfulTestResultMessage.ExecutionId}");
         }
 
         private void OnTestResultReceived(object sender, EventArgs args)
@@ -210,15 +223,11 @@ namespace Microsoft.DotNet.Cli
         private void OnTestApplicationCreated(object sender, EventArgs args)
         {
             TestApplication testApp = sender as TestApplication;
-            _testApplications[testApp.ModulePath] = testApp;
+            _testApplications.Add(testApp);
         }
 
         private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
         {
-            if (_testApplications.TryGetValue(args.ModulePath, out var testApp))
-            {
-                testApp.AddExecutionId(args.ExecutionId);
-            }
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));

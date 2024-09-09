@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }
 
-                if (SpecifiedWorkloadSetVersionInGlobalJson)
+                if (SpecifiedWorkloadSetVersionInGlobalJson && recorder is not null)
                 {
                     recorder.HistoryRecord.GlobalJsonVersion = _workloadSetVersionFromGlobalJson;
                 }

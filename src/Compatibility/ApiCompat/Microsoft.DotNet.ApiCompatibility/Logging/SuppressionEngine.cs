@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
     /// <param name="baselineAllErrors">If true, baselines all errors.</param>
     public class SuppressionEngine(string? noWarn = null, bool baselineAllErrors = false) : ISuppressionEngine
     {
-        protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
+        protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids ";
         private readonly HashSet<Suppression> _baselineSuppressions = [];
         private readonly HashSet<Suppression> _suppressions = [];
         private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new HashSet<string>(noWarn!.Split(';'));
