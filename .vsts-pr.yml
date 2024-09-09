@@ -37,7 +37,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals 1es-windows-2022-open
+        demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
