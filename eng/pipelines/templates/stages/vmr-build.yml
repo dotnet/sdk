@@ -120,7 +120,8 @@ stages:
           runOnline: true                    # ✅
           useMonoRuntime: false              # 🚫
           withPreviousSDK: false             # 🚫
-          reuseBuildArtifactsFrom: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
+          reuseBuildArtifactsFrom:
+          - ${{ format('{0}_Online_MsftSdk_x64', variables.centOSStreamName) }}
 
       - template: ../jobs/vmr-build.yml
         parameters:
@@ -318,7 +319,8 @@ stages:
             runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
-            reuseBuildArtifactsFrom: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
+            reuseBuildArtifactsFrom:
+            - ${{ format('{0}_Offline_MsftSdk_x64', variables.fedoraName) }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -336,7 +338,8 @@ stages:
             runOnline: false                   # 🚫
             useMonoRuntime: true               # ✅
             withPreviousSDK: false             # 🚫
-            reuseBuildArtifactsFrom: ${{ format('{0}_Mono_Offline_MsftSdk', variables.centOSStreamName) }}
+            reuseBuildArtifactsFrom:
+            - ${{ format('{0}_Mono_Offline_MsftSdk_x64', variables.centOSStreamName) }}
 
 #### VERTICAL BUILD ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
