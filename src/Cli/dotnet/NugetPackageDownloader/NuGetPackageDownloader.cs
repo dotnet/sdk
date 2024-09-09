@@ -109,9 +109,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                     XDocument doc = XDocument.Parse(nuspec);
 
-                    if (!doc.Root.Descendants().Where(
-                        e => e.Name.LocalName == "packageType" &&
-                        e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any())
+                    if (!ToolPackageInstance.IsToolPackage(doc))
                     {
                         throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
                     }

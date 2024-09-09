@@ -134,13 +134,21 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else if(isGlobalTool)
+                    else
                     {
-                        throw new ToolPackageException(
-                            string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
-                                packageId,
-                                packageVersion.ToNormalizedString()));
+                        if (!ToolPackageInstance.IsToolPackage(package.Nuspec.Xml))
+                        {
+                            throw new ToolPackageException(string.Format(NuGetPackageDownloader.LocalizableStrings.NotATool, packageId));
+                        }
+
+                        if (isGlobalTool)
+                        {
+                            throw new ToolPackageException(
+                                string.Format(
+                                    CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                    packageId,
+                                    packageVersion.ToNormalizedString()));
+                        }
                     }
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
