@@ -148,11 +148,6 @@ Příklady:
         <target state="translated">Místo spuštění testů vypíše seznam zjištěných testů.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run (folder name or full path) configuration. If not specified, it defaults to the solution file in the current directory.</source>
-        <target state="new">Defines the path of the solution file to run (folder name or full path) configuration. If not specified, it defaults to the solution file in the current directory.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">
         <source>EXPRESSION</source>
         <target state="translated">EXPRESSION</target>
