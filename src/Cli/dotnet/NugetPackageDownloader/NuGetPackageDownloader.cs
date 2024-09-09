@@ -93,9 +93,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             SourceRepository repository = GetSourceRepository(source);
 
+            // TODO: Fix this to use the PackageSearchResourceV3 once https://github.com/NuGet/NuGet.Client/pull/5991 is completed.
             if (isTool && await repository.GetResourceAsync<ServiceIndexResourceV3>().ConfigureAwait(false) is ServiceIndexResourceV3 serviceIndex)
             {
-                // TODO: Fix this to use the PackageSearchResourceV3 once https://github.com/NuGet/NuGet.Client/pull/5991 is completed.
+                // See https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource#download-package-manifest-nuspec
                 var uri = serviceIndex.GetServiceEntries("PackageBaseAddress/3.0.0")[0].Uri;
                 var queryUri = uri + $"{packageId}/{packageVersion}/{packageId}.nuspec";
 
@@ -106,38 +107,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     string nuspec = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                    try
+                    XDocument doc = XDocument.Parse(nuspec);
+
+                    if (!doc.Root.Descendants().Where(
+                        e => e.Name.LocalName == "packageType" &&
+                        e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any())
                     {
-                        XDocument doc = XDocument.Parse(nuspec);
-
-                        if (!doc.Root.Descendants().Where(e => e.Name.LocalName == "packageType" &&
-                        e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any() {
-
-                        }
+                        throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
                     }
                 }
-
-
-
-                throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                else
+                {
+                    throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                }
             }
-
-
-
-
-            //if (isTool && await repository.GetResourceAsync<PackageMetadataResourceV3>(cancellationToken).ConfigureAwait(false) is var metadataResource)
-            //{
-            //    var cacheContext = new SourceCacheContext { NoCache = true, DirectDownload = true };
-
-            //    var results = await metadataResource.GetMetadataAsync(packageId.ToString(), includePreview, includeUnlisted ?? false, cacheContext, _verboseLogger, cancellationToken)
-            //        .ConfigureAwait(false);
-
-            //    if (results.Count() == 0)
-            //    {
-            //        results.First().C
-            //        throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
-            //    }
-            //}
 
             FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
                 .ConfigureAwait(false);
