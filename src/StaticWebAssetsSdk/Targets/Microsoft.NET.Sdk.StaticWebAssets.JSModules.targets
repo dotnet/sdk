@@ -36,20 +36,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCoreStaticWebAssetsDependsOn>
       $(ResolveCoreStaticWebAssetsDependsOn);
-      ResolveJSModuleStaticWebAssets;
       ResolveJsInitializerModuleStaticWebAssets;
     </ResolveCoreStaticWebAssetsDependsOn>
 
-    <ResolveJSModuleStaticWebAssetsDependsOn>
-      $(ResolveJSModuleStaticWebAssetsDependsOn);
-      ResolveProjectStaticWebAssets;
-    </ResolveJSModuleStaticWebAssetsDependsOn>
-
-    <ResolveJSModuleStaticWebAssetsDependsOn Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'">
-      $(ResolveJSModuleStaticWebAssetsDependsOn);
-      ResolveRazorComponentInputs;
-      ResolveRazorGenerateInputs;
-    </ResolveJSModuleStaticWebAssetsDependsOn>
+    <ResolveCoreStaticWebAssetsDependsOn Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'">
+      $(ResolveCoreStaticWebAssetsDependsOn);
+      ResolveJSModuleStaticWebAssets;
+    </ResolveCoreStaticWebAssetsDependsOn>
 
   </PropertyGroup>
 
@@ -400,7 +393,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- JS file modules -->
-  <Target Name="ResolveJSModuleStaticWebAssets" DependsOnTargets="$(ResolveJSModuleStaticWebAssetsDependsOn)">
+  <Target Name="ResolveJSModuleStaticWebAssets" DependsOnTargets="ResolveProjectStaticWebAssets">
 
     <ItemGroup>
       <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
