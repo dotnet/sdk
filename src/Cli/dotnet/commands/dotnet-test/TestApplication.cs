@@ -54,7 +54,6 @@ namespace Microsoft.DotNet.Cli
             {
                 return 1;
             }
-
             bool isDll = _module.DLLPath.EndsWith(".dll");
             ProcessStartInfo processStartInfo = new()
             {
@@ -314,7 +313,7 @@ namespace Microsoft.DotNet.Cli
 
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
-            HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
+            HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
         }
 
         internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)

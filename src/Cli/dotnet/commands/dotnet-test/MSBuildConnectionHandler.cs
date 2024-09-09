@@ -83,6 +83,7 @@ namespace Microsoft.DotNet.Cli
         {
             List<string> msbuildCommandLineArgs =
             [
+                    parseResult.GetValue(TestingPlatformOptions.ProjectOption) ?? string.Empty,
                     $"-t:_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
