@@ -15,5 +15,6 @@
     <PackageReference Include="Microsoft.Build.Localization" />
     <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
     <PackageReference Include="System.Resources.Extensions" />
+    <PackageReference Include="System.Formats.Asn1" />
   </ItemGroup>
 </Project>
