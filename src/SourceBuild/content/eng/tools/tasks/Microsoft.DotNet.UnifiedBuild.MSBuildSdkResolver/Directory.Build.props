@@ -1,0 +1,13 @@
+<Project>
+
+  <!--
+    Do not import the Arcade SDK as this would introduce a prebuilt as this project builds
+    the custom sdk resolver that makes the bootstrap toolsets available.
+  -->
+  <PropertyGroup>
+    <SkipArcadeSdkImport>true</SkipArcadeSdkImport>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+
+</Project>

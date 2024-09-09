@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+     <_BuildUnlessNoBuild Condition="'$(NoBuild)' != 'true'">Build</_BuildUnlessNoBuild>
+  </PropertyGroup>
+
+  <Target Name="GenerateInstallers"
+          Condition="'$(PgoInstrument)' != 'true'"
+          BeforeTargets="Pack"
+          DependsOnTargets="$(_BuildUnlessNoBuild);
+                            GetCurrentRuntimeInformation;
+                            GenerateMsis;
+                            GeneratePkgs;
+                            GenerateRpms;
+                            GenerateDebs"
+          />
+
+</Project>
