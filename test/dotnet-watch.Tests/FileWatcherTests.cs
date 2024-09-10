@@ -18,12 +18,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             bool usePolling,
             Action operation)
         {
-            // On Unix the native file watcher may surface events from
-            // the recent past. Delay to avoid those.
-            // On Unix the file write time is in 1s increments;
-            // if we don't wait, there's a chance that the polling
-            // watcher will not detect the change
-            await Task.Delay(1250);
+            // Used to filter all events prior to this write.
+            // On Unix the native file watcher may surface events from the recent past.
+            var barrierFileName = ".filewatcher";
+            var barrier = File.Create(Path.Combine(dir, barrierFileName));
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
             if (watcher is DotnetFileWatcher dotnetWatcher)
@@ -34,11 +32,16 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<(string path, ChangeKind kind)>();
 
-            var testFileFullPath = Path.Combine(dir, "foo");
-
             EventHandler<(string path, ChangeKind kind)> handler = null;
             handler = (_, f) =>
             {
+                if (Path.GetFileName(f.path) == barrierFileName)
+                {
+                    filesChanged.Clear();
+                    output.WriteLine("Observed barrier");
+                    return;
+                }
+
                 if (filesChanged.Add(f))
                 {
                     output.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
@@ -159,18 +162,11 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
-                ? new[]
-                {
-                    (srcFile, ChangeKind.Update),
+                expectedChanges:
+                [
                     (srcFile, ChangeKind.Delete),
                     (dstFile, ChangeKind.Add),
-                }
-                : new[]
-                {
-                    (srcFile, ChangeKind.Delete),
-                    (dstFile, ChangeKind.Add),
-                },
+                ],
                 usePolling,
                 () => File.Move(srcFile, dstFile));
 
@@ -361,8 +357,16 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges:
+                expectedChanges: usePolling ?
                 [
+                    (subdir, ChangeKind.Delete),
+                    (f1, ChangeKind.Delete),
+                    (f2, ChangeKind.Delete),
+                    (f3, ChangeKind.Delete),
+                ]
+                :
+                [
+                    (subdir, ChangeKind.Update),
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Delete),
                     (f2, ChangeKind.Delete),

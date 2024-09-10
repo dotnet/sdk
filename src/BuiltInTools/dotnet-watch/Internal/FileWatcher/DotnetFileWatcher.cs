@@ -95,6 +95,17 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
+        private void WatcherDeletedHandler(object sender, FileSystemEventArgs e)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            Logger?.Invoke("Deleted");
+            NotifyChange(e.FullPath, ChangeKind.Delete);
+        }
+
         private void WatcherChangeHandler(object sender, FileSystemEventArgs e)
         {
             if (_disposed)
@@ -140,7 +151,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 _fileSystemWatcher.IncludeSubdirectories = true;
 
                 _fileSystemWatcher.Created += WatcherAddedHandler;
-                _fileSystemWatcher.Deleted += WatcherChangeHandler;
+                _fileSystemWatcher.Deleted += WatcherDeletedHandler;
                 _fileSystemWatcher.Changed += WatcherChangeHandler;
                 _fileSystemWatcher.Renamed += WatcherRenameHandler;
                 _fileSystemWatcher.Error += WatcherErrorHandler;
@@ -156,7 +167,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 _fileSystemWatcher.EnableRaisingEvents = false;
 
                 _fileSystemWatcher.Created -= WatcherAddedHandler;
-                _fileSystemWatcher.Deleted -= WatcherChangeHandler;
+                _fileSystemWatcher.Deleted -= WatcherDeletedHandler;
                 _fileSystemWatcher.Changed -= WatcherChangeHandler;
                 _fileSystemWatcher.Renamed -= WatcherRenameHandler;
                 _fileSystemWatcher.Error -= WatcherErrorHandler;
