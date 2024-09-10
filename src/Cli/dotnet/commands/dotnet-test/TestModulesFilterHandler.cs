@@ -53,7 +53,6 @@ namespace Microsoft.DotNet.Cli
                 var testApp = new TestApplication(new Module(testModule, null, null), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
-                testApp.OnCreated();
             }
 
             return true;
