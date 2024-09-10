@@ -22,6 +22,11 @@
         <target state="translated">아티팩트 경로입니다. 빌드, 게시 및 팩 출력을 포함한 프로젝트의 모든 출력이 지정된 경로 아래의 하위 폴더로 이동합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">현재 런타임 식별자를 확인하지 못했습니다.</target>

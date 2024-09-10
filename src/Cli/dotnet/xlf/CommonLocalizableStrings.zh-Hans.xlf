@@ -22,6 +22,11 @@
         <target state="translated">工件路径。项目中的所有输出(包括生成、发布和打包输出)都将放到指定路径下的子文件夹中。</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">解决当前运行时标识符失败。</target>

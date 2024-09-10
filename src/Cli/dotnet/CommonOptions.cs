@@ -201,17 +201,15 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<BinlogArgs?> BinaryLoggerOption = new ForwardedOption<BinlogArgs?>("-bl", "--bl")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            //TODO: loc
-            Description = "Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.",
+            Description = CommonLocalizableStrings.BinaryLoggerOptionDescription,
             CustomParser = (arg) => ParseBinlogArgs(arg)
         }.ForwardAsSingle(value =>
         {
             return value switch
             {
-                { binlogFilePathOrPattern: string pattern, projectImports: BinlogProjectImports imports } => $"-bl:{pattern};ProjectImports={imports}",
-                { binlogFilePathOrPattern: null, projectImports: BinlogProjectImports imports } => $"-bl:ProjectImports={imports}",
-                { binlogFilePathOrPattern: string pattern, projectImports: null } => $"-bl:{pattern}",
-                _ => "-bl"
+                null => "-bl",
+                { binlogFilePathOrPattern: null, projectImports: null } => "-bl",
+                BinlogArgs args => $"-bl:{args.ToMSBuildArgString()}"
             };
         });
 

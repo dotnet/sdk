@@ -22,6 +22,11 @@
         <target state="translated">Percorso degli artefatti. Tutto l'output del progetto, inclusi l'output di compilazione, pubblicazione e pacchetto, verrà inserito nelle sottocartelle nel percorso specificato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">La risoluzione dell'identificatore di runtime corrente non è riuscita.</target>

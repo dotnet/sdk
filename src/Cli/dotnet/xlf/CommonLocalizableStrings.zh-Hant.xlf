@@ -22,6 +22,11 @@
         <target state="translated">成品路徑。來自專案的所有輸出 (包括建置、發佈和封裝輸出)，都會進入指定路徑下的子資料夾。</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">解析目前執行階段識別碼失敗。</target>

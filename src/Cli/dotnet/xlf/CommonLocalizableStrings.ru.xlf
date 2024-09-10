@@ -22,6 +22,11 @@
         <target state="translated">Путь к артефактам. Все выходные данные проекта, включая выходные данные сборки, публикации и упаковки, будут направляться во вложенные папки по указанному пути.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">Не удалось разрешить текущий идентификатор среды выполнения.</target>

@@ -22,6 +22,11 @@
         <target state="translated">Ruta de acceso de los artefactos. Todas las salidas del proyecto, incluidas las salidas de compilación, publicación y empaquetado, se incluirán en subcarpetas en la ruta de acceso especificada.</target>
         <note />
       </trans-unit>
+      <trans-unit id="BinaryLoggerOptionDescription">
+        <source>Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</source>
+        <target state="new">Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
         <source>Resolving the current runtime identifier failed.</source>
         <target state="translated">No se ha podido resolver el identificador en el tiempo de ejecución actual.</target>
