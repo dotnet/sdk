@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertWaitingForChanges();
 
-            // rename the file:
+            // rename the directory:
             if (useMove)
             {
                 Directory.Move(oldSubdir, newSubdir);
