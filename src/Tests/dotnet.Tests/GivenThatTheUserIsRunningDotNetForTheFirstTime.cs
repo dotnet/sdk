@@ -69,8 +69,8 @@ namespace Microsoft.DotNet.Tests
 
                 var command = dotnetFirstTime.Setup(log, testAssets, testName: "Dotnet_first_time_experience_tests");
 
-                FirstDotnetVerbUseCommandResult = command.Execute("new", "--debug:ephemeral-hive");
                 FirstDotnetNonVerbUseCommandResult = command.Execute("--info");
+                FirstDotnetVerbUseCommandResult = command.Execute("new", "--debug:ephemeral-hive");
 
                 TestDirectory = dotnetFirstTime.TestDirectory;
                 NugetFallbackFolder = dotnetFirstTime.NugetFallbackFolder;
