@@ -120,7 +120,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                 : new[]
                 {
                     (newDir, ChangeKind.Add),
-                    (newFile, ChangeKind.Add),
                 },
                 usePolling,
                 () =>
@@ -362,13 +361,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [
+                expectedChanges:
+                [
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Delete),
                     (f2, ChangeKind.Delete),
                     (f3, ChangeKind.Delete),
                 ],
-                usePolling: true,
+                usePolling,
                 () => Directory.Delete(subdir, recursive: true));
         }
     }

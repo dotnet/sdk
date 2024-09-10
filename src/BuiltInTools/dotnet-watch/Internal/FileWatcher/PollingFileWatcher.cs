@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (!_knownEntities.ContainsKey(fullFilePath))
                 {
-                    // New file
+                    // New file or directory
                     RecordChange(f, ChangeKind.Add);
                 }
                 else
@@ -115,7 +115,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     try
                     {
-                        if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                        if (!fileMeta.FileInfo.Attributes.HasFlag(FileAttributes.Directory) &&
+                            fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
                         {
                             // File changed
                             RecordChange(f, ChangeKind.Update);
@@ -136,7 +137,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 if (!file.Value.FoundAgain)
                 {
-                    // File deleted
+                    // File or directory deleted
                     RecordChange(file.Value.FileInfo, ChangeKind.Delete);
                 }
             }
