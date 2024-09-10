@@ -26,7 +26,8 @@ internal sealed class StartupHook
         // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
         // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
         // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
-        if (Path.ChangeExtension(processPath, ".exe") != Path.ChangeExtension(s_targetProcessPath, ".exe"))
+        if (string.Equals(Path.ChangeExtension(processPath, ".exe"), Path.ChangeExtension(s_targetProcessPath, ".exe"),
+            Path.PathSeparator == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
         {
             Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
             return;
