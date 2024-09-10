@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            Logger?.Invoke("Rename");
+            Logger?.Invoke($"Renamed '{e.OldFullPath}' to '{e.FullPath}'.");
 
             NotifyChange(e.OldFullPath, ChangeKind.Delete);
             NotifyChange(e.FullPath, ChangeKind.Add);
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            Logger?.Invoke("Deleted");
+            Logger?.Invoke($"Deleted '{e.FullPath}'.");
             NotifyChange(e.FullPath, ChangeKind.Delete);
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            Logger?.Invoke("Change");
+            Logger?.Invoke($"Updated  '{e.FullPath}'.");
             NotifyChange(e.FullPath, ChangeKind.Update);
         }
 
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            Logger?.Invoke("Added");
+            Logger?.Invoke($"Added  '{e.FullPath}'.");
             NotifyChange(e.FullPath, ChangeKind.Add);
         }
 

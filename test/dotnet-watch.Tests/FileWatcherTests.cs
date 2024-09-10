@@ -18,11 +18,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             bool usePolling,
             Action operation)
         {
-            // Used to filter all events prior to this write.
-            // On Unix the native file watcher may surface events from the recent past.
-            var barrierFileName = ".filewatcher";
-            var barrier = File.Create(Path.Combine(dir, barrierFileName));
-
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
             if (watcher is DotnetFileWatcher dotnetWatcher)
             {
@@ -35,13 +30,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             EventHandler<(string path, ChangeKind kind)> handler = null;
             handler = (_, f) =>
             {
-                if (Path.GetFileName(f.path) == barrierFileName)
-                {
-                    filesChanged.Clear();
-                    output.WriteLine("Observed barrier");
-                    return;
-                }
-
                 if (filesChanged.Add(f))
                 {
                     output.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
@@ -150,8 +138,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task MoveFile(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -162,7 +149,15 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges:
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling ?
+                [
+                    // On Linux/OSX events from before we started observing are reported as well.
+                    (srcFile, ChangeKind.Update),
+                    (srcFile, ChangeKind.Add),
+                    (srcFile, ChangeKind.Delete),
+                    (dstFile, ChangeKind.Add),
+                ]
+                :
                 [
                     (srcFile, ChangeKind.Delete),
                     (dstFile, ChangeKind.Add),
@@ -364,12 +359,26 @@ namespace Microsoft.DotNet.Watcher.Tools
                     (f2, ChangeKind.Delete),
                     (f3, ChangeKind.Delete),
                 ]
-                :
+                : RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 [
                     (subdir, ChangeKind.Update),
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Delete),
                     (f2, ChangeKind.Delete),
+                    (f3, ChangeKind.Delete),
+                ]
+                : // On Linux/OSX events from before we started observing are reported as well.
+                [
+                    (subdir, ChangeKind.Update),
+                    (subdir, ChangeKind.Delete),
+                    (f1, ChangeKind.Update),
+                    (f1, ChangeKind.Add),
+                    (f1, ChangeKind.Delete),
+                    (f2, ChangeKind.Update),
+                    (f2, ChangeKind.Add),
+                    (f2, ChangeKind.Delete),
+                    (f3, ChangeKind.Update),
+                    (f3, ChangeKind.Add),
                     (f3, ChangeKind.Delete),
                 ],
                 usePolling,
