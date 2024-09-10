@@ -243,6 +243,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return allFilesInPackage;
         }
 
+        public async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionsOfPackage(string packageId, bool includePreview, int numberOfResults)
+        {
+            IEnumerable<PackageSource> packageSources = LoadNuGetSources(new PackageId(packageId), null, null);
+            return (await GetLatestVersionsInternalAsync(packageId, packageSources, includePreview, CancellationToken.None, numberOfResults)).Select(result => result.Item2);
+        }
+
         private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
              NuGetVersion packageVersion = null,
              PackageSourceLocation packageSourceLocation = null,
@@ -505,8 +511,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
         CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(packageSources);
+            return (await GetLatestVersionsInternalAsync(packageIdentifier, packageSources, includePreview, cancellationToken, 1)).First();
+        }
 
+        private async Task<IEnumerable<(PackageSource, IPackageSearchMetadata)>> GetLatestVersionsInternalAsync(
+            string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview, CancellationToken cancellationToken, int numberOfResults)
+        {
+            ArgumentNullException.ThrowIfNull(packageSources);
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
                 throw new ArgumentException($"{nameof(packageIdentifier)} cannot be null or empty",
@@ -556,13 +567,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (stableVersions.Any())
                 {
-                    return stableVersions.MaxBy(r => r.package.Identity.Version);
+                    return stableVersions.OrderByDescending(r => r.package.Identity.Version).Take(numberOfResults);
                 }
             }
 
-            (PackageSource, IPackageSearchMetadata) latestVersion = accumulativeSearchResults
-                .MaxBy(r => r.package.Identity.Version);
-            return latestVersion;
+            IEnumerable<(PackageSource, IPackageSearchMetadata)> latestVersions = accumulativeSearchResults
+                .OrderByDescending(r => r.package.Identity.Version);
+            return latestVersions.Take(numberOfResults);
         }
 
         public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
@@ -708,14 +719,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
              PackageSourceLocation packageSourceLocation = null,
              bool includePreview = false)
         {
+            return (await GetLatestPackageVersions(packageId, numberOfResults: 1, packageSourceLocation, includePreview)).First();
+        }
+
+        public async Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+        {
             CancellationToken cancellationToken = CancellationToken.None;
-            IPackageSearchMetadata packageMetadata;
             IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
-            (_, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
-                includePreview, cancellationToken).ConfigureAwait(false);
-
-            return packageMetadata.Identity.Version;
+            return (await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
+                includePreview, cancellationToken, numberOfResults).ConfigureAwait(false)).Select(result =>
+                result.Item2.Identity.Version);
         }
 
         public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
