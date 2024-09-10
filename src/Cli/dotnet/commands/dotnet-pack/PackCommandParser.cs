@@ -79,6 +79,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ConfigurationOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
+            command.Options.Add(CommonOptions.BinaryLoggerOption);
 
             command.SetAction(PackCommand.Run);
 

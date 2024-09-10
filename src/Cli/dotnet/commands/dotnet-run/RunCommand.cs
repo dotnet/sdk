@@ -31,6 +31,9 @@ namespace Microsoft.DotNet.Tools.Run
 
         public string LaunchProfile { get; private set; }
         public bool NoLaunchProfile { get; private set; }
+
+        public BinlogArgs? BinLogArgs { get; private set; }
+
         private bool UseLaunchProfile => !NoLaunchProfile;
 
         public RunCommand(
@@ -41,6 +44,7 @@ namespace Microsoft.DotNet.Tools.Run
             bool noRestore,
             bool interactive,
             VerbosityOptions? verbosity,
+            BinlogArgs? binlogArgs,
             string[] restoreArgs,
             string[] args)
         {
@@ -52,6 +56,7 @@ namespace Microsoft.DotNet.Tools.Run
             Interactive = interactive;
             NoRestore = noRestore;
             Verbosity = verbosity;
+            BinLogArgs = binlogArgs;
             RestoreArgs = GetRestoreArguments(restoreArgs);
         }
 
@@ -228,7 +233,7 @@ namespace Microsoft.DotNet.Tools.Run
             // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
             var project = EvaluateProject(ProjectFileFullPath, RestoreArgs);
             ValidatePreconditions(project);
-            InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity);
+            InvokeRunArgumentsTarget(project, RestoreArgs, BinLogArgs, Verbosity);
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
@@ -329,26 +334,21 @@ namespace Microsoft.DotNet.Tools.Run
                 return command;
             }
 
-            static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, VerbosityOptions? verbosity)
+            static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, BinlogArgs? binlogArgs, VerbosityOptions? verbosity)
             {
                 // if the restoreArgs contain a `-bl` then let's probe it
                 List<ILogger> loggersForBuild = [
                     MakeTerminalLogger(verbosity)
                 ];
-                if (restoreArgs.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)) is string blArg)
+                if (binlogArgs is BinlogArgs bl)
                 {
-                    if (blArg.Contains(':'))
+                    if (bl.binlogFilePathOrPattern is null) // when using the API MSbuild expects this path to have been set
                     {
-                        // split and forward args
-                        var split = blArg.Split(':', 2);
-                        loggersForBuild.Add(new BinaryLogger { Parameters = split[1] });
+                        bl.binlogFilePathOrPattern = "msbuild.binlog";
                     }
-                    else
-                    {
-                        // just the defaults
-                        loggersForBuild.Add(new BinaryLogger { Parameters = "{}.binlog" });
-                    }
-                };
+                    var logger = new BinaryLogger() { Parameters = bl.ToMSBuildArgString() };
+                    loggersForBuild.Add(logger);
+                }
 
                 if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
                 {

@@ -246,6 +246,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
+            command.Options.Add(CommonOptions.BinaryLoggerOption);
             command.SetAction(TestCommand.Run);
 
             return command;

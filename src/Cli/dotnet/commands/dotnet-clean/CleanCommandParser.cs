@@ -54,6 +54,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(NoLogoOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
+            command.Options.Add(CommonOptions.BinaryLoggerOption);
 
             command.SetAction(CleanCommand.Run);
 

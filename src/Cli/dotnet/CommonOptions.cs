@@ -3,12 +3,30 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 
+#nullable enable
+
 namespace Microsoft.DotNet.Cli
 {
+    public enum BinlogProjectImports { None, Embed, ZipFile }
+    public record struct BinlogArgs(string? binlogFilePathOrPattern, BinlogProjectImports? projectImports)
+    {
+        public string? ToMSBuildArgString()
+        {
+            return this switch
+            {
+                { binlogFilePathOrPattern: string pattern, projectImports: BinlogProjectImports imports } => $"{pattern};ProjectImports={imports}",
+                { binlogFilePathOrPattern: null, projectImports: BinlogProjectImports imports } => $"ProjectImports={imports}",
+                { binlogFilePathOrPattern: string pattern, projectImports: null } => $"{pattern}",
+                _ => null
+            };
+        }
+    }
+
     internal static class CommonOptions
     {
         public static CliOption<string[]> PropertiesOption =
@@ -145,7 +163,7 @@ namespace Microsoft.DotNet.Cli
                 HelpName = CommonLocalizableStrings.ArchArgumentName
             }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-        internal static string ArchOptionValue(ParseResult parseResult) =>
+        internal static string? ArchOptionValue(ParseResult parseResult) =>
             string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
                 parseResult.GetValue(LongFormArchitectureOption) :
                 parseResult.GetValue(ArchitectureOption);
@@ -179,6 +197,57 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
 
         public static readonly CliOption<string[]> TestLoggerOption = new("--logger");
+
+        public static readonly CliOption<BinlogArgs?> BinaryLoggerOption = new ForwardedOption<BinlogArgs?>("-bl", "--bl")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            //TODO: loc
+            Description = "Serializes build events to a compressed binary file. See https://learn.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers for more details.",
+            CustomParser = (arg) => ParseBinlogArgs(arg)
+        }.ForwardAsSingle(value =>
+        {
+            return value switch
+            {
+                { binlogFilePathOrPattern: string pattern, projectImports: BinlogProjectImports imports } => $"-bl:{pattern};ProjectImports={imports}",
+                { binlogFilePathOrPattern: null, projectImports: BinlogProjectImports imports } => $"-bl:ProjectImports={imports}",
+                { binlogFilePathOrPattern: string pattern, projectImports: null } => $"-bl:{pattern}",
+                _ => "-bl"
+            };
+        });
+
+        private static BinlogArgs ParseBinlogArgs(System.CommandLine.Parsing.ArgumentResult arg)
+        {
+            if (arg.Tokens.Count == 0)
+            {
+                return new BinlogArgs(null, null);
+            }
+            if (arg.Tokens.Count == 1)
+            {
+                return arg.Tokens[0].Value.Split(";", 2) switch
+                {
+                [] => new BinlogArgs(null, null),
+                [string path] when path.EndsWith(".binlog") => new BinlogArgs(path, null),
+                [string imports] when imports.StartsWith("ProjectImports") => new BinlogArgs(null, ParseImports(imports)),
+                [string path, string imports] when path.EndsWith(".binlog") && imports.StartsWith("ProjectImports") => new BinlogArgs(path, ParseImports(imports)),
+                    _ => new BinlogArgs(null, null) // impossible, split call above limits to two parts
+                };
+            }
+            // cannot happen, the parser should not allow more than one argument
+            return new BinlogArgs(null, null);
+
+            static BinlogProjectImports? ParseImports(string imports)
+            {
+                var parts = imports.Split('=', 2);
+                if (parts.Length != 2) return null;
+                return parts[1] switch
+                {
+                    "None" => BinlogProjectImports.None,
+                    "Embed" => BinlogProjectImports.Embed,
+                    "ZipFile" => BinlogProjectImports.ZipFile,
+                    _ => null
+                };
+            }
+        }
 
         public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
         {
@@ -215,10 +284,10 @@ namespace Microsoft.DotNet.Cli
             return ResolveRidShorthandOptions(arg, arch);
         }
 
-        private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
+        private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
             new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
 
-        internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
+        internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
         {
             var currentRid = GetCurrentRuntimeId();
             arch = arch == "amd64" ? "x64" : arch;
@@ -230,11 +299,15 @@ namespace Microsoft.DotNet.Cli
         public static string GetCurrentRuntimeId()
         {
             // Get the dotnet directory, while ignoring custom msbuild resolvers
-            string dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+            string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
                 key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                     ? null
                     : Environment.GetEnvironmentVariable(key));
             var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
+            if (dotnetRootPath is null)
+            {
+                throw new GracefulException(CommonLocalizableStrings.CannotResolveRuntimeIdentifier);
+            }
             // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
             string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?
                 Path.Combine(Directory.GetDirectories(Path.Combine(dotnetRootPath, "sdk"))[0], ridFileName) :

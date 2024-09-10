@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Tools.Run
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
                 verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
                 restoreArgs: parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToArray(),
+                binlogArgs: parseResult.GetValue(CommonOptions.BinaryLoggerOption),
                 args: parseResult.GetValue(RunCommandParser.ApplicationArguments)
             );
 

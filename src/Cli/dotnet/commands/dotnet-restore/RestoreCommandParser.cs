@@ -70,6 +70,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.BinaryLoggerOption);
             command.SetAction(RestoreCommand.Run);
 
             return command;
