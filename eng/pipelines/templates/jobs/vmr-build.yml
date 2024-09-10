@@ -218,7 +218,7 @@ jobs:
       - task: CopyFiles@2
         displayName: Copy Previous Build (${{ reuseBuildArtifacts }})
         inputs:
-          SourceFolder: $(Pipeline.Workspace)/${{ parameters.reuseBuildArtifacts }}_Artifacts/assets/Release
+          SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
           Contents: '*.tar.gz'
           TargetFolder: $(sourcesPath)/prereqs/packages/archive/
 
