@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
                 _packageId,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
+                (location, forwardArguments, currentWorkingDirectory) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
