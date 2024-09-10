@@ -343,7 +343,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
-            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
+            var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
+
+            var garbageCollector = new WorkloadGarbageCollector(_workloadRootDir,
+                _sdkFeatureBand,
+                _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
+                getResolverForWorkloadSet,
+                globalJsonWorkloadSetVersions,
+                Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -357,23 +364,50 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             //  Garbage collect workload sets
             var installedWorkloadSets = _workloadResolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-            var manifestInstallDirForFeatureBand = GetManifestInstallDirForFeatureBand(_sdkFeatureBand.ToString());
-            string workloadSetsDirectory = Path.Combine(manifestInstallDirForFeatureBand, SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName);
-
+            Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> workloadSetInstallRecords = GetAllWorkloadSetInstallRecords();
             foreach ((string workloadSetVersion, _) in installedWorkloadSets)
             {
-                if (garbageCollector.WorkloadSetsToKeep.Contains(workloadSetVersion))
+                //  Get the feature band of the workload set
+                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+
+                List<SdkFeatureBand> referencingFeatureBands;
+                if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))
                 {
-                    //  Don't uninstall this workload set
+                    //  If there are no install records for a workload set that is on disk, then ignore it.  It is probably a baseline workload set.
                     continue;
                 }
-
-                string workloadSetDirectory = Path.Combine(workloadSetsDirectory, workloadSetVersion);
-                if (Directory.Exists(workloadSetDirectory))
+                List<SdkFeatureBand> featureBandsToRemove = new();
+                foreach (var referencingFeatureBand in referencingFeatureBands)
                 {
-                    //  If the directory doesn't exist, the workload set is probably from a directory specified via the DOTNETSDK_WORKLOAD_MANIFEST_ROOTS environment variable
-                    //  In that case just ignore it, as the CLI doesn't manage that install
-                    Directory.Delete(workloadSetDirectory, true);
+                    if (!installedSdkFeatureBands.Contains(referencingFeatureBand))
+                    {
+                        //  If an SDK feature band is no longer installed, manifests it references can be garbage collected
+                        featureBandsToRemove.Add(referencingFeatureBand);
+                    }
+
+                    if (referencingFeatureBand.Equals(_sdkFeatureBand) && !garbageCollector.WorkloadSetsToKeep.Contains(workloadSetVersion))
+                    {
+                        //  For current feature band, garbage collect workload sets that the garbage collector didn't mark as ones to keep
+                        featureBandsToRemove.Add(referencingFeatureBand);
+                    }
+                }
+
+                foreach (var featureBandToRemove in featureBandsToRemove)
+                {
+                    RemoveWorkloadSetInstallationRecord(workloadSetVersion, workloadSetFeatureBand, featureBandToRemove);
+                }
+
+                if (featureBandsToRemove.Count == referencingFeatureBands.Count)
+                {
+                    //  All installation records for the workload set were removed, so it can be deleted
+                    string workloadSetDirectory = Path.Combine(GetManifestInstallDirForFeatureBand(workloadSetFeatureBand.ToString()), SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName, workloadSetVersion);
+                    if (Directory.Exists(workloadSetDirectory))
+                    {
+                        //  If the directory doesn't exist, the workload set is probably from a directory specified via the DOTNETSDK_WORKLOAD_MANIFEST_ROOTS environment variable
+                        //  In that case just ignore it, as the CLI doesn't manage that install
+                        _reporter.WriteLine(string.Format(LocalizableStrings.DeletingWorkloadSet, workloadSetVersion));
+                        Directory.Delete(workloadSetDirectory, true);
+                    }
                 }
             }
 
@@ -403,7 +437,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     RemoveManifestInstallationRecord(manifestId, manifestVersion, manifestFeatureBand, featureBandToRemove);
                 }
 
-                if (featureBandsToRemove.Count == manifestInstallRecords[(manifestId, manifestVersion, manifestFeatureBand)].Count)
+                if (featureBandsToRemove.Count == referencingFeatureBands.Count)
                 {
                     //  All installation records for the manifest were removed, so we can delete the manifest
                     _reporter.WriteLine(string.Format(LocalizableStrings.DeletingWorkloadManifest, manifestId, $"{manifestVersion}/{manifestFeatureBand}"));
@@ -509,6 +543,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var installStateContents = InstallStateContents.FromPath(path);
             update(installStateContents);
             File.WriteAllText(path, installStateContents.ToString());
+        }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            return new GlobalJsonWorkloadSetsFile(sdkFeatureBand, _workloadRootDir).GetGlobalJsonWorkloadSetVersions();
         }
 
         /// <summary>
@@ -645,6 +689,40 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             var path = GetWorkloadSetInstallRecordPath(workloadSetVersion, workloadSetFeatureBand, referencingFeatureBand);
             PathUtility.DeleteFileAndEmptyParents(path, maxDirectoriesToDelete: 2);
+        }
+
+        private Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> GetAllWorkloadSetInstallRecords()
+        {
+            Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> records = new();
+
+            var installedWorkloadSetsDir = Path.Combine(_workloadMetadataDir, InstalledWorkloadSetsDir, "v1");
+
+            if (!Directory.Exists(installedWorkloadSetsDir))
+            {
+                return records;
+            }
+
+            foreach (var workloadSetVersionDir in Directory.GetDirectories(installedWorkloadSetsDir))
+            {
+                var workloadSetVersion = Path.GetFileName(workloadSetVersionDir);
+                foreach (var workloadSetFeatureBandDir in Directory.GetDirectories(workloadSetVersionDir))
+                {
+                    var workloadSetFeatureBand = new SdkFeatureBand(Path.GetFileName(workloadSetFeatureBandDir));
+                    foreach (var featureBandInstallationRecord in Directory.GetFileSystemEntries(workloadSetFeatureBandDir))
+                    {
+                        var referencingFeatureBand = new SdkFeatureBand(Path.GetFileName(featureBandInstallationRecord));
+                        if (!records.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out var referencingFeatureBands))
+                        {
+                            referencingFeatureBands = new List<SdkFeatureBand>();
+                            records[(workloadSetVersion, workloadSetFeatureBand)] = referencingFeatureBands;
+                        }
+
+                        referencingFeatureBands.Add(referencingFeatureBand);
+                    }
+                }
+            }
+
+            return records;
         }
 
         private string GetManifestInstallRecordPath(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand, SdkFeatureBand referencingFeatureBand) =>

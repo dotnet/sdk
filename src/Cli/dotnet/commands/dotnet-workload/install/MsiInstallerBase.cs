@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
@@ -13,6 +14,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.IInstaller;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -29,6 +31,12 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Backing field for the install location of .NET
         /// </summary>
         private string _dotNetHome;
+
+        private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Full path to the root directory for storing workload data.
@@ -249,6 +257,57 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadVersion);
                 ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                workloadSetsFile.RecordWorkloadSetInGlobalJson(globalJsonPath, workloadSetVersion);
+                SecurityUtils.SecureFile(workloadSetsFile.Path);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendRecordWorkloadSetInGlobalJsonRequest(sdkFeatureBand, globalJsonPath, workloadSetVersion);
+                ExitOnFailure(response, "Failed to record workload set version in GC Roots file.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                var workloadSetsFile = new GlobalJsonWorkloadSetsFile(sdkFeatureBand, DotNetHome);
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(workloadSetsFile.Path));
+                var versions = workloadSetsFile.GetGlobalJsonWorkloadSetVersions();
+
+                //  GetGlobalJsonWorkloadSetVersions will not create the file if it doesn't exist, so don't try to secure a non-existant file
+                if (File.Exists(workloadSetsFile.Path))
+                {
+                    SecurityUtils.SecureFile(workloadSetsFile.Path);
+                }
+                return versions;
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendGetGlobalJsonWorkloadSetVersionsRequest(sdkFeatureBand);
+                ExitOnFailure(response, "Failed to get global.json GC roots");
+                return response.GlobalJsonWorkloadSetVersions;
             }
             else
             {

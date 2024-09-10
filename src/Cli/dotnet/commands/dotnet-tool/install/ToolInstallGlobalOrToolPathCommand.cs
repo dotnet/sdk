@@ -39,6 +39,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _configFilePath;
         private readonly string _framework;
         private readonly string[] _source;
+        private readonly string[] _addSource;
         private readonly bool _global;
         private readonly VerbosityOptions _verbosity;
         private readonly string _toolPath;
@@ -69,7 +70,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
-            _source = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
+            _source = parseResult.GetValue(ToolInstallCommandParser.SourceOption);
+            _addSource = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
             _verbosity = GetValueOrDefault(ToolInstallCommandParser.VerbosityOption, VerbosityOptions.minimal, parseResult);
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
@@ -183,7 +185,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 RunWithHandlingInstallError(() =>
                 {
                     IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
-                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                    new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                         packageId: packageId,
                         versionRange: versionRange,
                         targetFramework: _framework,
@@ -233,7 +235,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange versionRange, IToolPackageDownloader toolPackageDownloader)
         {
             return toolPackageDownloader.GetNuGetVersion(
-                packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                 packageId: packageId,
                 versionRange: versionRange,
                 verbosity: _verbosity,

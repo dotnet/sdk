@@ -128,5 +128,37 @@ namespace Microsoft.NET.Restore.Tests
             buildCommand.ExecuteWithoutRestore("/p:BuildWithNetFrameworkHostedCompiler=true")
                 .Should().Fail().And.HaveStdOutContaining("NETSDK1216");
         }
+
+        [FullMSBuildOnlyFact]
+        public void It_throws_a_warning_when_NuGetPackageRoot_is_empty()
+        {
+            const string testProjectName = "NetCoreApp";
+            var project = new TestProject
+            {
+                Name = testProjectName,
+                TargetFrameworks = "net6.0",
+            };
+
+            // simulate mismatched MSBuild versions
+            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(project);
+
+            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+
+            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
+
+            var command = (MSBuildCommand)new MSBuildCommand(testAsset, "Restore;Build")
+                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir);
+            command.ExecuteWithoutRestore()
+                .Should().Pass().And.HaveStdOutContaining("NETSDK1221");
+
+            // The package is downloaded, but the targets cannot find the path to it
+            // because NuGetPackageRoot is empty during `/t:Restore;Build`.
+            // See https://github.com/dotnet/sdk/issues/43016.
+            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
+            new DirectoryInfo(toolsetPackageDir).Should().Exist();
+        }
     }
 }
