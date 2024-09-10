@@ -61,13 +61,13 @@ namespace Microsoft.DotNet.Tests
 
         public Dictionary<string, string> ExtraEnvironmentVariables = new Dictionary<string, string>();
 
-        public void Init(ITestOutputHelper log, TestAssetsManager testAssets, [CallerMemberName] string testName = null)
+        public void Init(ITestOutputHelper log, TestAssetsManager testAssets)
         {
             if (TestDirectory == null)
             {
                 var dotnetFirstTime = new DotNetFirstTime();
 
-                var command = dotnetFirstTime.Setup(log, testAssets, testName: testName ?? "Dotnet_first_time_experience_tests");
+                var command = dotnetFirstTime.Setup(log, testAssets, testName: "Dotnet_first_time_experience_tests");
 
                 FirstDotnetVerbUseCommandResult = command.Execute("new", "--debug:ephemeral-hive");
                 FirstDotnetNonVerbUseCommandResult = command.Execute("--info");
@@ -87,18 +87,16 @@ namespace Microsoft.DotNet.Tests
     public class GivenThatTheUserIsRunningDotNetForTheFirstTime : SdkTest, IClassFixture<DotNetFirstTimeFixture>
     {
         DotNetFirstTimeFixture _fixture;
-        ITestOutputHelper _log;
 
         public GivenThatTheUserIsRunningDotNetForTheFirstTime(ITestOutputHelper log, DotNetFirstTimeFixture fixture) : base(log)
         {
-            _log = log;
+            fixture.Init(log, _testAssetsManager);
             _fixture = fixture;
         }
 
         [Fact]
         public void UsingDotnetForTheFirstTimeSucceeds()
         {
-            _fixture.Init(_log, _testAssetsManager);
             _fixture.FirstDotnetVerbUseCommandResult
                 .Should()
                 .Pass();
@@ -107,7 +105,6 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void UsingDotnetForTheFirstTimeWithNonVerbsDoesNotPrintEula()
         {
-            _fixture.Init(_log, _testAssetsManager);
             string firstTimeNonVerbUseMessage = Cli.Utils.LocalizableStrings.DotNetSdkInfoLabel;
 
             _fixture.FirstDotnetNonVerbUseCommandResult.StdOut
@@ -118,7 +115,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
-            _fixture.Init(_log, _testAssetsManager);
+
             var expectedVersion = GetDotnetVersion();
             _fixture.FirstDotnetVerbUseCommandResult.StdOut
                 .Should()
@@ -133,7 +130,6 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItCreatesAFirstUseSentinelFileUnderTheDotDotNetFolder()
         {
-            _fixture.Init(_log, _testAssetsManager);
             _fixture.DotDotnetFolder
                 .Should()
                 .HaveFile($"{GetDotnetVersion()}.dotnetFirstUseSentinel");
@@ -142,7 +138,6 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItCreatesAnAspNetCertificateSentinelFileUnderTheDotDotNetFolder()
         {
-            _fixture.Init(_log, _testAssetsManager);
             _fixture.DotDotnetFolder
                 .Should()
                 .HaveFile($"{GetDotnetVersion()}.aspNetCertificateSentinel");
