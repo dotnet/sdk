@@ -62,7 +62,7 @@ public class DockerRegistryManager
                 using var reader = new StringReader(processResult.StdOut!);
                 s_registryContainerId = reader.ReadLine();
 
-                EnsureRegistryLoaded(LocalRegistry, s_registryContainerId, logger, testOutput);
+                EnsureRegistryLoaded(new Uri($"http://{LocalRegistry}"), s_registryContainerId, logger, testOutput);
 
                 foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag })
                 {
@@ -116,13 +116,13 @@ public class DockerRegistryManager
         }
     }
 
-    private static void EnsureRegistryLoaded(string registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
+    private static void EnsureRegistryLoaded(Uri registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
     {
         const int registryLoadMaxRetry = 10;
         const int registryLoadTimeout = 1000; //ms
 
         using HttpClient client = new();
-        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(ContainerHelpers.TryExpandRegistryToUri(registryBaseUri), "/v2/"));
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(registryBaseUri, "/v2/"));
 
         logger.LogInformation("Checking if the registry '{registry}' is available.", registryBaseUri);
 

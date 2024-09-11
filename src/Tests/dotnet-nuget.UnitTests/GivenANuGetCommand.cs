@@ -75,6 +75,9 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                                    "--interactive",
                                    "--verbosity", "detailed",
                                    "--format", "json"}, 0)]
+        [InlineData(new[] { "why" }, 0)]
+        [InlineData(new[] { "why", "C:\\path", "Fake.Package" }, 0)]
+        [InlineData(new[] { "why", "C:\\path", "Fake.Package", "--framework", "net472", "-f", "netcoreapp5.0" }, 0)]
 
         public void ItPassesCommandIfSupported(string[] inputArgs, int result)
         {
