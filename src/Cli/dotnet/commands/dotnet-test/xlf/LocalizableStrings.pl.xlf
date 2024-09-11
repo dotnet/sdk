@@ -22,11 +22,6 @@
         <target state="new">The target architecture '{0}' on which tests will run.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdBinLogDescription">
-        <source>Enables the binary logger.</source>
-        <target state="new">Enables the binary logger.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Włącza zbieranie zrzutów awaryjnych po oczekiwanym i nieoczekiwanym zakończenia działania przez host testowy.</target>

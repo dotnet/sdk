@@ -57,11 +57,5 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdProjectDescription,
             Arity = ArgumentArity.ExactlyOne
         };
-
-        public static readonly CliOption<string> BinLogOption = new("-bl")
-        {
-            Description = LocalizableStrings.CmdBinLogDescription,
-            Arity = ArgumentArity.Zero
-        };
     }
 }

@@ -11,8 +11,8 @@ namespace Microsoft.DotNet.Cli
     internal sealed class TestApplication : IDisposable
     {
         private readonly Module _module;
+        private readonly List<string> _args;
 
-        private readonly string[] _args;
         private readonly List<string> _outputData = [];
         private readonly List<string> _errorData = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli
 
         public Module Module => _module;
 
-        public TestApplication(Module module, string[] args)
+        public TestApplication(Module module, List<string> args)
         {
             _module = module;
             _args = args;
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($" {CliConstants.ParametersSeparator} ");
 
-            builder.Append(_args.Length != 0
+            builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
@@ -278,7 +278,7 @@ namespace Microsoft.DotNet.Cli
                 builder.Append($"exec {_module.DLLPath} ");
             }
 
-            builder.Append(_args.Length != 0
+            builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 

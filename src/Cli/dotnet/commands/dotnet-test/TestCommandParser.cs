@@ -200,7 +200,6 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
-            command.Options.Add(TestingPlatformOptions.BinLogOption);
 
             return command;
         }
