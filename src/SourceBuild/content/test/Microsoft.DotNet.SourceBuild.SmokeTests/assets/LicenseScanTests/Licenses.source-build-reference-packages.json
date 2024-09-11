@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "src/textOnlyPackages/src/microsoft.private.intellisense/9.0.0-preview-20240830.1/IntellisenseFiles/net/1033/System.Security.Permissions.xml",
+      "detected_license_expression": "unknown-license-reference"
+    },
+    {
+      "path": "src/textOnlyPackages/src/microsoft.private.intellisense/9.0.0-preview-20240830.1/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml",
+      "detected_license_expression": "proprietary-license"
+    },
+    {
+      "path": "src/textOnlyPackages/src/microsoft.private.intellisense/9.0.0-preview-20240830.1/IntellisenseFiles/windowsdesktop/1033/System.Security.Permissions.xml",
+      "detected_license_expression": "unknown-license-reference"
+    }
+  ]
+}
