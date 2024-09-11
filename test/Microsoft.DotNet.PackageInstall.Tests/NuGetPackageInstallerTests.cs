@@ -270,47 +270,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [WindowsOnlyFact]
-        public async Task WhenCalledWithNotSignedPackageItShouldThrowWithCommandOutput()
-        {
-            string commandOutput = "COMMAND OUTPUT";
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(verifyResult: false, commandOutput: commandOutput),
-                _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true), verifySignatures: true);
-
-            NuGetPackageInstallerException ex = await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
-                nuGetPackageDownloader.DownloadPackageAsync(
-                    TestPackageId,
-                    new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() })));
-
-            ex.Message.Should().Contain(commandOutput);
-        }
-
-        [UnixOnlyFact]
-        public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
-        {
-            BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
-            await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            // download 2 packages should only print the message once
-            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            bufferedReporter.Lines.Should()
-                .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
-            File.Exists(packagePath).Should().BeTrue();
-        }
-
-        [WindowsOnlyFact]
         // https://aka.ms/netsdkinternal-certificate-rotate
         public void ItShouldHaveUpdateToDateCertificateSha()
         {

@@ -97,7 +97,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = false
             )
         {
             string rollbackDirectory = null;
@@ -175,8 +176,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Commands = new List<RestoredCommand> {
-                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+            public RestoredCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 

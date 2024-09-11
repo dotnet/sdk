@@ -5,5 +5,7 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed record HandshakeInfo(Dictionary<string, string>? Properties) : IRequest, IResponse;
+    internal sealed record DiscoveredTestMessage(string? Uid, string? DisplayName);
+
+    internal sealed record DiscoveredTestMessages(string? ExecutionId, DiscoveredTestMessage[] DiscoveredMessages) : IRequest;
 }
