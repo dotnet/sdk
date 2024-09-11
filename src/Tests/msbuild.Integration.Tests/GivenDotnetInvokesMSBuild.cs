@@ -71,6 +71,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("HelixAccessToken", "")
                 .Execute(command, "-v", "diag");
 
             cmd.Should().Pass();
