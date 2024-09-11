@@ -517,12 +517,18 @@
     <ItemGroup>
       <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.log" />
       <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.binlog" />
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/**/*usage.xml" />
     </ItemGroup>
-    
+
     <!-- Move the build logs -->
     <Move SourceFiles="@(LogFilesToMove)"
           DestinationFolder="$(DotNetBuildArtifactsLogDir)"
-          Condition="'@(LogFilesToMove)' != ''" />  
+          Condition="'@(LogFilesToMove)' != ''" />
+
+    <!-- Move the prebuilt reports -->
+    <Move SourceFiles="@(PrebuiltReportsToMove)"
+          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          Condition="'@(PrebuiltReportsToMove)' != ''" />
   </Target>
 
   <Target Name="CleanupRepo"
