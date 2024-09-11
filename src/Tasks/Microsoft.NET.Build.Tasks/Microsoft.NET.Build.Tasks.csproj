@@ -3,6 +3,7 @@
 <Project>
 
   <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageId>Microsoft.NET.Sdk</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
   </PropertyGroup>
@@ -29,6 +30,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
 
@@ -54,25 +58,26 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="Microsoft.NET.HostModel" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="NuGet.Build.Tasks.Pack" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
-    <ProjectReference Include="..\..\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!--
         Microsoft.NET.HostModel also uses System.Reflection.Metadata. Don't move ahead of the version of System.Reflection.Metadata
         that MSBuild supports with the binding redirect to ensure that both this project and Microsoft.NET.HostModel can load
         the same System.Reflection.Metadata assembly and their types can unify. See the following link for the MSBuild binding redirect config.
-          https://github.com/dotnet/msbuild/blob/5d102ae37163fc1f22610bb433c3ab9a2fff91f0/src/MSBuild/app.config#L59
+          https://github.com/dotnet/msbuild/blob/299e0514835a1588e6ef21b1da748462dec706b8/src/MSBuild/app.config#L60
     -->
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="8.0.0" />
   </ItemGroup>
 
   <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->
@@ -86,16 +91,17 @@
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
     <Compile Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="WorkloadManifestReader" />
-    <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader"/>
-    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-test\IPC\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
-    <EmbeddedResource Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources\WorkloadManifestReoder" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization"/>
+    <EmbeddedResource Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources\WorkloadManifestReoder" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization" />
   </ItemGroup>
 
   <ItemGroup>
@@ -148,6 +154,7 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GetTargetPath" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 

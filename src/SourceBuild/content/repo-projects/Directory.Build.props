@@ -1,0 +1,242 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+
+  <PropertyGroup>
+    <RepositoryName>$(MSBuildProjectName)</RepositoryName>
+    <GitInfoRepoPropsFile>$(GitInfoDir)$(RepositoryName).props</GitInfoRepoPropsFile>
+    <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+    <RunEachTargetSeparately>false</RunEachTargetSeparately>
+    <!-- If this is a dev build with parallelism enabled, ensure that RunEachTargetSeparately is true so that StopOnFirstFailure will be honored.
+         This improves the dev experience because it will fail the build as soon as an error occurs rather than waiting for all parallel projects
+         to finish. This isn't enabled in CI builds because it has a slight perf impact. -->
+    <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
+  </PropertyGroup>
+
+  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)')" />
+
+  <PropertyGroup>
+    <!-- Fake, to satisfy the SDK. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+
+    <ProjectDirectory>$([MSBuild]::NormalizeDirectory('$(SrcDir)', '$(RepositoryName)'))</ProjectDirectory>
+
+    <!-- Paths to the version props files -->
+    <PackageVersionsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'PackageVersions'))</PackageVersionsDir>
+    <PackageVersionPropsPath>$(PackageVersionsDir)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>
+    <CurrentSourceBuiltPackageVersionPropsPath>$(PackageVersionsDir)PackageVersions.$(RepositoryName).Current.props</CurrentSourceBuiltPackageVersionPropsPath>
+    <PreviouslySourceBuiltPackageVersionPropsPath>$(PackageVersionsDir)PackageVersions.$(RepositoryName).Previous.props</PreviouslySourceBuiltPackageVersionPropsPath>
+    <SnapshotPackageVersionPropsPath>$(PackageVersionsDir)PackageVersions.$(RepositoryName).Snapshot.props</SnapshotPackageVersionPropsPath>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
+
+    <GlobalJsonFile Condition="'$(GlobalJsonFile)' == '' and Exists('$(ProjectDirectory)global.json')">$(ProjectDirectory)global.json</GlobalJsonFile>
+    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.config')">$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+    <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.Config')">$(ProjectDirectory)NuGet.Config</NuGetConfigFile>
+
+    <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
+    <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
+    <NuGetConfigFile Condition="'$(OriginalNuGetConfigFile)' != ''">$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(OriginalNuGetConfigFile)'))</NuGetConfigFile>
+
+    <RepoAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(AssetManifestsIntermediateDir)', '$(RepositoryName)'))</RepoAssetManifestsDir>
+    <IntermediateSymbolsRepoDir>$([MSBuild]::NormalizeDirectory('$(IntermediateSymbolsRootDir)', '$(RepositoryName)'))</IntermediateSymbolsRepoDir>
+
+    <SourceBuiltSdksDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'source-built-sdks'))</SourceBuiltSdksDir>
+
+    <SbrpCacheNuGetSourceName>source-build-reference-package-cache</SbrpCacheNuGetSourceName>
+    <SourceBuiltSourceNamePrefix>source-built-</SourceBuiltSourceNamePrefix>
+
+    <!-- Set the bootstrap version to the VMR's version if empty. (no bootstrap set). -->
+    <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildOS)' == 'windows'">
+    <FlagParameterPrefix>-</FlagParameterPrefix>
+    <ArcadeFalseBoolBuildArg>0</ArcadeFalseBoolBuildArg>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildOS)' != 'windows'">
+    <FlagParameterPrefix>--</FlagParameterPrefix>
+    <ArcadeFalseBoolBuildArg>false</ArcadeFalseBoolBuildArg>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- By default, use the eng/common/build.cmd/sh script -->
+    <BuildScript>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'eng', 'common', 'build$(ShellExtension)'))</BuildScript>
+
+    <BuildActions>$(FlagParameterPrefix)restore</BuildActions>
+    <BuildActions>$(BuildActions) $(FlagParameterPrefix)build</BuildActions>
+    <BuildActions>$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
+    <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
+
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
+    <BuildArgs>$(BuildArgs) -bl</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
+    <!-- Indicate that the build is being run from the orchestrator -->
+    <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
+    <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=true</BuildArgs>
+    <!-- Only pass when enabled to reduce command line noise. -->
+    <BuildArgs Condition="'$(DotNetBuildTests)' == 'true'">$(BuildArgs) /p:DotNetBuildTests=true</BuildArgs>
+    <BuildArgs Condition="'$(NuGetConfigFile)' != ''">$(BuildArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</BuildArgs>
+    <!-- TODO rename this property https://github.com/dotnet/source-build/issues/4165 -->
+    <BuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(BuildArgs) /p:SourceBuildUseMonoRuntime=$(SourceBuildUseMonoRuntime)</BuildArgs>
+    <!-- Pass locations for assets -->
+    <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <BuildArgs>$(BuildArgs) /p:SourceBuiltSymbolsDir=$(IntermediateSymbolsRepoDir)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ArcadeBuildFromSource=true</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:DotNetBuildSourceOnly=true</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TestActions>$(FlagParameterPrefix)restore</TestActions>
+    <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
+
+    <TestArgs Condition="'$(UseOfficialBuildVersioning)' != 'false'">$(FlagParameterPrefix)ci</TestArgs>
+    <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
+    <TestArgs>$(TestArgs) /bl:artifacts/log/$(Configuration)/Test.binlog</TestArgs>
+
+    <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableExtraDebugging)' == 'true'">
+    <MSBuildDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'msbuild-debug'))</MSBuildDebugPathTargetDir>
+    <RoslynDebugPathTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'roslyn-debug'))</RoslynDebugPathTargetDir>
+
+    <AspNetRazorBuildServerLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'aspnet-debug'))</AspNetRazorBuildServerLogDir>
+    <AspNetRazorBuildServerLogFile>$(AspNetRazorBuildServerLogDir)razor-build-server.log</AspNetRazorBuildServerLogFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
+    <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
+    <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
+    <EnvironmentVariables Include="DOTNET_HOST_PATH=$(DotNetTool)" />
+
+    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
+    <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetRoot)" />
+    <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetRoot)" />
+    <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
+                          Condition="'$(UseBootstrapArcade)' != 'true'" />
+    <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
+
+    <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'" Include="ContinuousIntegrationBuild=true" />
+
+    <!-- Turn off node reuse for source build because repos use conflicting versions
+         of compilers which cause assembly load errors.
+         See https://github.com/dotnet/source-build/issues/541 -->
+    <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
+
+  </ItemGroup>
+
+  <!--
+    Apply official build versioning to match Microsoft build. These are based on build date, so
+    need to be parsed from Maestro++ auto-update and passed through.
+  -->
+  <ItemGroup Condition="'$(UseOfficialBuildVersioning)' != 'false'">
+    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
+    <EnvironmentVariables Include="BUILD_BUILDNUMBER=$(OfficialBuildId)" />
+
+    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
+    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
+    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="DeterministicSourcePaths=true" Condition="'$(DeterministicBuildOptOut)' != 'true'" />
+    <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
+
+    <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
+    <EnvironmentVariables Include="DotNetBuildFromSourceFlavor=Product" />
+
+    <!-- Need to be passed in as an env var so that custom Exec tasks in the repo's SourceBuild.props receive this setting. -->
+    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
+
+    <!-- Needed for miscellanous projects in various repos - see https://github.com/dotnet/source-build/issues/4081-->
+    <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" Condition="'$(NuGetConfigFile)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="DotNetBuildFromSource=true" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
+    <!-- If MSBuild exits early, make sure debug output like 'MSBuild_*.failure.txt' ends up in a place we can see it. -->
+    <EnvironmentVariables Include="MSBUILDDEBUGPATH=$(MSBuildDebugPathTargetDir)" />
+    <EnvironmentVariables Include="MSBUILDDEBUGCOMM=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGSCHEDULER=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGFORCECACHING=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUG=1" />
+    <EnvironmentVariables Include="MSBUILDDEBUGEVALUATION=1" />
+    <EnvironmentVariables Include="MSBUILDTARGETOUTPUTLOGGING=1" />
+    <EnvironmentVariables Include="MSBUILDLOGTASKINPUTS=1" />
+    <EnvironmentVariables Include="MSBUILDEMITSOLUTION=1" />
+    <EnvironmentVariables Include="MSBUILDLOGVERBOSERARSEARCHRESULTS=1" />
+
+    <!-- Output Roslyn logs to allow debugging compiler errors -->
+    <EnvironmentVariables Include="RoslynCommandLineLogFile=$(RoslynDebugPathTargetDir)" />
+
+    <!--ASP.NET dev server request logs -->
+    <EnvironmentVariables Include="RAZORBUILDSERVER_LOG=$(AspNetRazorBuildServerLogFile)" />
+  </ItemGroup>
+
+  <!-- If we're using the bootstrapped arcade, we can set the override here. -->
+  <ItemGroup>
+    <!-- Configure the bootstrapped Arcade version here. Repositories that build before arcade (and arcade itself) will use the bootstrapped SDK. -->
+    <BootstrapArcadeSdkOverride Include="Microsoft.DotNet.Arcade.Sdk"
+                                Group="ARCADE"
+                                Version="$(ArcadeBootstrapVersion)"
+                                Location="$(BootstrapPackagesDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />
+    <!-- Make the WindowsDesktop SDK override opt-in for repos that need it. -->
+    <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+    <!-- CLI internal version is statically set by us to a version that will never show up in the wild.
+       This ensures we will never restore a public version instead of our source-built version.  We
+       invlude the version number because it is used both by CLI.proj and the core-sdk build and they
+       have to be synced up.  ExtraPackageVersionPropsPackageInfo doesn't work in cli.proj because
+       toolset is between CLI and core-sdk, and the extra package version info is lost.               -->
+  <PropertyGroup>
+    <CliInternalReleaseTag>source</CliInternalReleaseTag>
+    <CliInternalBuildVersion>30000001-1</CliInternalBuildVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="DotnetCliInternalVersion" Version="3.0.100-$(CliInternalReleaseTag)-$(CliInternalBuildVersion)" />
+  </ItemGroup>
+
+  <!-- Additional pseudo-versions that some repos depend on -->
+  <ItemGroup>
+    <!-- we don't produce the Windows version of this package but that's the one core-sdk keys off of for the ASP.NET version -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
+    <!-- same thing here for CLI -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <!-- same thing here for toolset -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <!-- same thing here for core-sdk -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
+    <!-- Used by windowsdesktop to determine msi version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
+
+    <!-- Used by installer partition in sdk repo to determine sdk version -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
+
+    <!-- Used by sdk to determine msbuild version for fsharp -->
+    <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
+  </ItemGroup>
+
+</Project>

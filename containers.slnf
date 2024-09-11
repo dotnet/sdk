@@ -7,10 +7,10 @@
       "src\\Containers\\Microsoft.NET.Build.Containers\\Microsoft.NET.Build.Containers.csproj",
       "src\\Containers\\containerize\\containerize.csproj",
       "src\\Containers\\packaging\\package.csproj",
-      "src\\Tests\\Microsoft.NET.Build.Containers.IntegrationTests\\Microsoft.NET.Build.Containers.IntegrationTests.csproj",
-      "src\\Tests\\Microsoft.NET.Build.Containers.UnitTests\\Microsoft.NET.Build.Containers.UnitTests.csproj",
-      "src\\Tests\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
-      "src\\Tests\\containerize.UnitTests\\containerize.UnitTests.csproj"
+      "test\\Microsoft.NET.Build.Containers.IntegrationTests\\Microsoft.NET.Build.Containers.IntegrationTests.csproj",
+      "test\\Microsoft.NET.Build.Containers.UnitTests\\Microsoft.NET.Build.Containers.UnitTests.csproj",
+      "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
+      "test\\containerize.UnitTests\\containerize.UnitTests.csproj"
     ]
   }
 }
