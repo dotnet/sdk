@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/43328")]]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/43328")]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
