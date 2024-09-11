@@ -232,6 +232,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
         }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            return new();
+        }
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository
