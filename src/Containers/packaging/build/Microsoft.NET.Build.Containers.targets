@@ -309,14 +309,21 @@
         <Output TaskParameter="TargetOutputs" ItemName="_GeneratedManifestsInfo" />
     </MSBuild>
 
-    <CreateImageIndex ManifestsInfo="@(_GeneratedManifestsInfo)"
+    <PropertyGroup>
+      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' != ''">true</_SkipCreateImageIndex>
+    </PropertyGroup>
+
+    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'true' "
+                      ManifestsInfo="@(_GeneratedManifestsInfo)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
                       ImageTag="$(ContainerImageTag)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
 
-    <Message Importance="high" Text="GeneratedImageIndex: $(GeneratedImageIndex)" />
+    <Message Condition="'$(_SkipCreateImageIndex)' == 'true' "
+             Importance="high"
+             Text="GeneratedImageIndex: $(GeneratedImageIndex)" />
   </Target>
 
   <Target Name="PublishContainer"
