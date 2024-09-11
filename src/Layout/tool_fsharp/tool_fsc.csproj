@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <!-- MIBC, PGO -->
+  <Import Project="..\redist\targets\GetRuntimeInformation.targets" /> <!-- Rid is set here -->
   <PropertyGroup>
     <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
     <MibcFile>$(MibcPath)/optimization.$(Rid).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
