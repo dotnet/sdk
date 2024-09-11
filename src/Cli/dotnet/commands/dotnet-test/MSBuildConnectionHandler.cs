@@ -108,6 +108,8 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(binLog))
             {
                 msbuildCommandLineArgs.Add(binLog);
+
+                // We remove it from the args list so that it is not passed to the test application
                 args.Remove(binLog);
             }
         }
