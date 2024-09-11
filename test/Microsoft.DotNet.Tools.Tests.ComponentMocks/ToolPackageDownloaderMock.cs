@@ -97,7 +97,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = false
             )
         {
             string rollbackDirectory = null;
@@ -121,7 +122,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         packageId.ToString(),
                         versionRange,
                         packageLocation.NugetConfig,
-                        packageLocation.RootConfigDirectory);
+                        packageLocation.RootConfigDirectory,
+                        packageLocation.SourceFeedOverrides);
 
                     var packageVersion = feedPackage.Version;
                     targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
@@ -174,8 +176,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Commands = new List<RestoredCommand> {
-                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -222,12 +223,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string packageId,
             VersionRange versionRange,
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null)
+            DirectoryPath? rootConfigDirectory = null,
+            string[] sourceFeedOverrides = null)
         {
             var allPackages = _feeds
                 .Where(feed =>
                 {
-                    if (nugetConfig == null)
+                    if (sourceFeedOverrides is not null && sourceFeedOverrides.Length > 0)
+                    {
+                        return sourceFeedOverrides.Contains(feed.Uri);
+                    }
+                    else if (nugetConfig == null)
                     {
                         return SimulateNugetSearchNugetConfigAndMatch(
                             rootConfigDirectory,
@@ -318,7 +324,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageId.ToString(),
                 versionRange,
                 packageLocation.NugetConfig,
-                packageLocation.RootConfigDirectory);
+                packageLocation.RootConfigDirectory,
+                packageLocation.SourceFeedOverrides);
 
             return NuGetVersion.Parse(feedPackage.Version);
         }
@@ -330,7 +337,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+            public RestoredCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 

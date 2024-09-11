@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--os", "linux", "--arch", "arm64" }, "-property:RuntimeIdentifier=linux-arm64")]
         [InlineData(new string[] { "-v", "diag" }, "-verbosity:diag")]
         [InlineData(new string[] { "--verbosity", "diag" }, "-verbosity:diag")]
-        [InlineData(new string[] { "--disable-build-servers" }, "-p:UseRazorBuildServer=false -p:UseSharedCompilation=false /nodeReuse:false")]
+        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
         public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

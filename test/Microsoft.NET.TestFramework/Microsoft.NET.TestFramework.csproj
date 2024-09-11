@@ -29,6 +29,10 @@
       <_Parameter1>SystemDataSqlClientPackageVersion</_Parameter1>
       <_Parameter2>$(SystemDataSqlClientPackageVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftAspNetCoreAppRefPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftAspNetCoreAppRefPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,8 +47,8 @@
 
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
