@@ -511,7 +511,7 @@
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
-  <Target Name="MoveDotNetBuildArtifactsLogs"
+  <Target Name="MoveDotNetBuildLogs"
         Condition="'$(IsUtilityProject)' != 'true' and
                     Exists('$(ProjectDirectory)artifacts')">
     <ItemGroup>
@@ -639,7 +639,7 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
-    MoveDotNetBuildArtifactsLogs;
+    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="Test">
