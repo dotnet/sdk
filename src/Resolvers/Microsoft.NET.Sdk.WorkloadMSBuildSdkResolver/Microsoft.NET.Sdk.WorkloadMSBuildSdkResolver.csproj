@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <PackageReference Include="System.Formats.Asn1" />
   </ItemGroup>
 
   <ItemGroup>
