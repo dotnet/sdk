@@ -294,7 +294,7 @@
     <MicrosoftDotnetWinFormsProjectTemplates100PackageVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplates100PackageVersion>
     <MicrosoftDotNetWpfProjectTemplates100PackageVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplates100PackageVersion>
     <!-- 9.0 Template versions -->
-    <AspNetCorePackageVersionFor90Templates>9.0.0-preview.7.24406.2</AspNetCorePackageVersionFor90Templates>
+    <AspNetCorePackageVersionFor90Templates>9.0.0-rc.1.24452.1</AspNetCorePackageVersionFor90Templates>
     <MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>$(MicrosoftWinFormsProjectTemplates90PackageVersion)</MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>
     <MicrosoftDotNetWpfProjectTemplates90PackageVersion>$(MicrosoftWPFProjectTemplates90PackageVersion)</MicrosoftDotNetWpfProjectTemplates90PackageVersion>
     <NUnit3Templates90PackageVersion>$(NUnit3DotNetNewTemplatePackageVersion)</NUnit3Templates90PackageVersion>
