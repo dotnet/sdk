@@ -15,6 +15,8 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using NuGet.Versioning;
 
+using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
+
 namespace Microsoft.DotNet.Workloads.Workload.Search
 {
     internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
@@ -107,8 +109,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 else
                 {
                     PrintableTable<KeyValuePair<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)>> table = new();
-                    table.AddColumn(string.Empty, manifest => manifest.Key.ToString());
-                    table.AddColumn(string.Empty, manifest => $"{manifest.Value.Version}/{manifest.Value.FeatureBand}");
+                    table.AddColumn(LocalizableStrings.WorkloadManifestIdColumn, manifest => manifest.Key.ToString());
+                    table.AddColumn(LocalizableStrings.WorkloadManifestFeatureBandColumn, manifest => manifest.Value.FeatureBand.ToString());
+                    table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, manifest => manifest.Value.Version.ToString());
                     table.PrintRows(workloadSet.ManifestVersions, l => Reporter.WriteLine(l));
                 }
             }

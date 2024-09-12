@@ -57,6 +57,16 @@
         <target state="translated">SEARCH_STRING</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="new">Manifest feature band</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="new">Workload manifest ID</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadVersionArgument">
         <source>WORKLOAD_VERSION</source>
         <target state="new">WORKLOAD_VERSION</target>

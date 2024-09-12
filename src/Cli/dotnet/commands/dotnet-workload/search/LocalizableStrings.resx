@@ -157,5 +157,11 @@
   <data name="NoWorkloadVersionsFound" xml:space="preserve">
     <value>No workload versions found for SDK feature band {0}.</value>
   </data>
+  <data name="WorkloadManifestIdColumn" xml:space="preserve">
+    <value>Workload manifest ID</value>
+  </data>
+  <data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
+    <value>Manifest feature band</value>
+  </data>
   
 </root>
