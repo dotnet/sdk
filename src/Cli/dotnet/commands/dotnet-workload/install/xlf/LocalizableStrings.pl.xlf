@@ -22,14 +22,24 @@
         <target state="translated">Nie można jednocześnie używać poleceń {0} i {1}. W przypadku instalowania z pliku wycofywania usuń polecenie {0}. W przeciwnym razie usuń polecenie {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
-        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
-        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">Nie można używać opcji {0} i {1} razem.  Usuń jedną z opcji.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">Nie można określić określonej wersji obciążenia w wierszu polecenia za pomocą opcji --version lub --from-history, jeśli istnieje już wersja określona w pliku global.json {0}. Aby zaktualizować wersję obciążenia zainstalowaną globalnie, uruchom polecenie poza ścieżką zawierającą ten plik global.json lub zaktualizuj wersję określoną w pliku global.json i uruchom polecenie „dotnet workload update”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">Nie można użyć opcji {0}, jeśli wersja obciążenia jest określona w pliku global.json.  Usuń opcję {0} lub usuń element „workloadVersion” z {1}.</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">Sprawdzanie zaktualizowanych manifestów obciążenia.</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">Sprawdzanie dostępności zaktualizowanej wersji obciążenia.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -80,6 +90,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">Instalowanie manifestu {0} w wersji {1} nie powiodło się: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">Nie można zainstalować wersji obciążenia {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -155,11 +170,6 @@
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
         <target state="translated">Docelowa platforma, dla której ma zostać zainstalowane obciążenie.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Nie istnieje żaden manifest o identyfikatorze {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -289,7 +299,7 @@
       </trans-unit>
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
-        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <target state="translated">Pomyślnie zaktualizowano tryb instalacji obciążenia w celu użycia {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
@@ -375,11 +385,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">ŚCIEŻKA</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Aktualizowanie wersji obciążenia z {0} do {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

@@ -7,6 +7,11 @@
         <target state="translated">Yalnızca reklam bildirimlerini güncelleştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">{0} ve {1} seçenekleri birlikte kullanılamaz.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Tüm yüklü iş yüklerini güncelleştirin.</target>
@@ -24,7 +29,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
-        <target state="new">No workload update found.</target>
+        <target state="translated">İş yükü güncelleştirmesi bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">İş yükü güncelleştirmesi başarısız oldu: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">{0} iş yükü sürümü bulunamadı.</target>
         <note />
       </trans-unit>
     </body>

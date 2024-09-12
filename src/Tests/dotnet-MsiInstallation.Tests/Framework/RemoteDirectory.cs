@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public abstract List<string> Directories { get; }
 
+        public abstract List<string> Files { get; }
+
         public Assertions Should()
         {
             return new Assertions(this);
