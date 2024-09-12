@@ -426,6 +426,7 @@ namespace EndToEnd.Tests
                     return $"net9.0";
                 }
                 return $"net{latestMajorVersion}.0";
+            }
 
             throw new Exception("Unsupported version of SDK");
         }
