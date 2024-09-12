@@ -215,6 +215,12 @@ jobs:
           **/*.nupkg
         displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
+      - script: |
+          echo "*** DEBUG ***"
+          find $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts -type f
+        displayName: DEBUG Check the folder
+        workingDirectory: $(Build.StagingDirectory)
+
       - task: CopyFiles@2
         displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
         inputs:
