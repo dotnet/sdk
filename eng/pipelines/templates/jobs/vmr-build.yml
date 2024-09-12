@@ -232,7 +232,7 @@ jobs:
         displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
         inputs:
           SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
-          Contents: '*.nupkg'
+          Contents: '**/*.nupkg'
           OverWrite: false
           TargetFolder: $(sourcesPath)/.packages/
 

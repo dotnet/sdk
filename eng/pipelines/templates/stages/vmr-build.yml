@@ -374,6 +374,7 @@ stages:
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
+        buildPass: 2
         reuseBuildArtifactsFrom:
         - Android_Shortstack_arm64
         - Browser_Shortstack_wasm
