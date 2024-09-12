@@ -9,7 +9,6 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
-set BuildWithNetFrameworkHostedCompiler=false
 
 set TestExecutionDirectory=%CD%\testExecutionDirectory
 mkdir %TestExecutionDirectory%
@@ -38,6 +37,7 @@ REM We downloaded a special zip of files to the .nuget folder so add that as a s
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
 PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
+if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
 dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config

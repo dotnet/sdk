@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }
 
-                if (SpecifiedWorkloadSetVersionInGlobalJson)
+                if (SpecifiedWorkloadSetVersionInGlobalJson && recorder is not null)
                 {
                     recorder.HistoryRecord.GlobalJsonVersion = _workloadSetVersionFromGlobalJson;
                 }
@@ -273,6 +273,12 @@ namespace Microsoft.DotNet.Workloads.Workload
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
+
+                    if (_workloadSetVersionFromGlobalJson != null)
+                    {
+                        //  Record GC Root for this global.json file
+                        _workloadInstaller.RecordWorkloadSetInGlobalJson(_sdkFeatureBand, _globalJsonPath, _workloadSetVersionFromGlobalJson);
+                    }
                 },
                 rollback: () =>
                 {

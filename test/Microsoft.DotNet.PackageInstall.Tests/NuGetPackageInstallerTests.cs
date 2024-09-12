@@ -182,9 +182,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -203,9 +203,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -266,30 +266,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             bufferedReporter.Lines.Should().BeEmpty();
-            File.Exists(packagePath).Should().BeTrue();
-        }
-
-        [UnixOnlyFact]
-        public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
-        {
-            BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
-            await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            // download 2 packages should only print the message once
-            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            bufferedReporter.Lines.Should()
-                .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
             File.Exists(packagePath).Should().BeTrue();
         }
 

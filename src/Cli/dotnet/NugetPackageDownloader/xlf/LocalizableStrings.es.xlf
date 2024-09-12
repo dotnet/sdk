@@ -74,11 +74,6 @@
         <target state="translated">Versión anterior a la {0} del paquete {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
-        <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
-        <target state="translated">Omitir la validación de firma del paquete NuGet. La validación de firma de NuGet no está disponible en Linux o macOS https://aka.ms/workloadskippackagevalidation.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
         <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>

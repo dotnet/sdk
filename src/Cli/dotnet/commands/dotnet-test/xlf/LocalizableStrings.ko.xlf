@@ -78,6 +78,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 2.2.4 이전 MSTest의 경우 모든 테스트 사례에 시간 제한이 사용됩니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigurationDescription">
+        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
+        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -121,6 +126,11 @@ Examples:
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not execute an implicit restore.</source>
         <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectDescription">
+        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSettingsFile">
