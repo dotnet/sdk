@@ -294,4 +294,6 @@ internal abstract class BaseSerializer
         Type type when type == typeof(bool) => sizeof(bool),
         _ => 0,
     };
+
+    public static bool IsNullOrEmpty<T>(T[]? list) => list is null || list.Length == 0;
 }
