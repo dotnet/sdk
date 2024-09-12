@@ -258,7 +258,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Pdb files to be copied to the output directory
         /// </remarks>
         [Output]
-        public ITaskItem[] DebugSymbolsFiles { get; private set;}
+        public ITaskItem[] DebugSymbolsFiles { get; private set; }
 
         /// <summary>
         /// List of xml files related to NuGet packages.
@@ -742,10 +742,10 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: null); 
+                    _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: null);
                     _runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, _task.RuntimeIdentifier);
                 }
-                
+
 
                 _stringTable = new Dictionary<string, int>(InitialStringTableCapacity, StringComparer.Ordinal);
                 _metadataStrings = new List<string>(InitialStringTableCapacity);
@@ -895,7 +895,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     return StringComparer.OrdinalIgnoreCase.Equals(l1.Item1, l2.Item1)
                         && l1.Item2.Equals(l2.Item2);
-                    
+
                 }
                 public int GetHashCode((string, NuGetVersion) library)
                 {
@@ -914,7 +914,7 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteAnalyzers()
             {
-                AnalyzerResolver resolver = new AnalyzerResolver(this);
+                AnalyzerResolver resolver = new(this);
 
                 foreach (var library in _lockFile.Libraries)
                 {
@@ -1400,7 +1400,7 @@ namespace Microsoft.NET.Build.Tasks
                     return false;
                 }
                 else
-                { 
+                {
                     var targetFramework = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
 
                     if (targetFramework.Version.Major >= 3
@@ -1438,6 +1438,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 // Scan PackageDependencies to build the set of packages in our target.
                 var allowItemSpecs = GetPackageDependencies();
+                var diagnosticLevels = GetPackageDiagnosticLevels();
 
                 foreach (var package in _lockFile.Libraries)
                 {
@@ -1477,8 +1478,11 @@ namespace Microsoft.NET.Build.Tasks
                             : itemPath) ?? string.Empty;
                         WriteMetadata(MetadataKeys.Path, path);
 
-                        string itemDiagnosticLevel = GetPackageDiagnosticLevel(package);
-                        var diagnosticLevel = itemDiagnosticLevel ?? string.Empty;
+                        string diagnosticLevel = string.Empty;
+                        if (diagnosticLevels?.TryGetValue(package.Name, out LogLevel level) ?? false)
+                        {
+                            diagnosticLevel = level.ToString();
+                        }
                         WriteMetadata(MetadataKeys.DiagnosticLevel, diagnosticLevel);
                     }
                 }
@@ -1506,28 +1510,92 @@ namespace Microsoft.NET.Build.Tasks
 
                 static string GetPackageId(LockFileTargetLibrary package) => $"{package.Name}/{package.Version.ToNormalizedString()}";
 
-                string GetPackageDiagnosticLevel(LockFileLibrary package)
+                Dictionary<string, LogLevel> GetPackageDiagnosticLevels()
                 {
-                    string target = _task.TargetFramework ?? "";
-
-                    var messages = _lockFile.LogMessages.Where(log =>
-                        log.LibraryId == package.Name &&
-                        log.TargetGraphs.Any(tg =>
-                        {
-                            var parts = tg.Split(LockFile.DirectorySeparatorChar);
-                            var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
-                            var alias = _lockFile.PackageSpec.TargetFrameworks
-                                .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
-                                ?.TargetAlias ?? tg;
-                            return alias == target;
-                        }));
-
-                    if (!messages.Any())
+                    if (_lockFile.LogMessages.Count == 0)
                     {
-                        return string.Empty;
+                        return null;
                     }
 
-                    return messages.Max(log => log.Level).ToString();
+                    var packageReverseDependencies = GetReverseDependencies();
+                    var result = new Dictionary<string, LogLevel>();
+                    for (int i = 0; i < _lockFile.LogMessages.Count; i++)
+                    {
+                        var message = _lockFile.LogMessages[i];
+                        if (string.IsNullOrEmpty(message.LibraryId)) continue;
+
+                        if (message.TargetGraphs is null || message.TargetGraphs.Count == 0 || message.TargetGraphs.Any(ForCurrentTargetFramework))
+                        {
+                            ApplyDiagnosticLevel(message.LibraryId, message.Level, result, packageReverseDependencies);
+                        }
+                    }
+
+                    return result;
+
+                    Dictionary<string, HashSet<string>> GetReverseDependencies()
+                    {
+                        var packageReverseDependencies = new Dictionary<string, HashSet<string>>(_compileTimeTarget.Libraries.Count, StringComparer.OrdinalIgnoreCase);
+                        for (int i = 0; i < _compileTimeTarget.Libraries.Count; i++)
+                        {
+                            var parentPackage = _compileTimeTarget.Libraries[i];
+                            if (string.IsNullOrEmpty(parentPackage.Name)) continue;
+
+                            if (!packageReverseDependencies.ContainsKey(parentPackage.Name))
+                            {
+                                packageReverseDependencies[parentPackage.Name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            }
+
+                            for (int j = 0; j < parentPackage.Dependencies.Count; j++)
+                            {
+                                var dependency = parentPackage.Dependencies[j].Id;
+
+                                if (!packageReverseDependencies.TryGetValue(dependency, out HashSet<string> parentPackages))
+                                {
+                                    parentPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    packageReverseDependencies[dependency] = parentPackages;
+                                }
+
+                                parentPackages.Add(parentPackage.Name);
+                            }
+                        }
+                        return packageReverseDependencies;
+                    }
+
+                    bool ForCurrentTargetFramework(string targetFramework)
+                    {
+                        var parts = targetFramework.Split(LockFile.DirectorySeparatorChar);
+                        var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
+                        var alias = _lockFile.PackageSpec.TargetFrameworks
+                            .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
+                            ?.TargetAlias ?? targetFramework;
+                        return alias == _task.TargetFramework;
+                    }
+
+                    void ApplyDiagnosticLevel(string package, LogLevel messageLevel, Dictionary<string, LogLevel> diagnosticLevels, Dictionary<string, HashSet<string>> reverseDependencies)
+                    {
+                        if (!reverseDependencies.TryGetValue(package, out HashSet<string> parentPackages))
+                        {
+                            // The package is not used in the current TargetFramework
+                            return;
+                        }
+
+                        if (diagnosticLevels.TryGetValue(package, out LogLevel cachedLevel))
+                        {
+                            // Only continue if we need to increase the level
+                            if (cachedLevel >= messageLevel)
+                            {
+                                return;
+                            }
+                        }
+
+                        diagnosticLevels[package] = messageLevel;
+
+                        // Flow changes upwards, towards the direct PackageReference
+                        foreach (var parentPackage in parentPackages)
+                        {
+                            ApplyDiagnosticLevel(parentPackage, messageLevel, diagnosticLevels, reverseDependencies);
+                        }
+                    }
                 }
 
                 static DependencyType GetDependencyType(string dependencyTypeString)
@@ -1652,7 +1720,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 foreach (var library in _runtimeTarget.Libraries)
                 {
-                    if (!library.IsTransitiveProjectReference(_lockFile, ref directProjectDependencies, 
+                    if (!library.IsTransitiveProjectReference(_lockFile, ref directProjectDependencies,
                         _lockFile.GetLockFileTargetAlias(_lockFile.GetTargetAndReturnNullIfNotFound(_targetFramework, null))))
                     {
                         continue;
@@ -1761,7 +1829,7 @@ namespace Microsoft.NET.Build.Tasks
                     shouldIncludeInPublish = false;
                 }
 
-                if (!shouldCopyLocal&& !shouldIncludeInPublish)
+                if (!shouldCopyLocal && !shouldIncludeInPublish)
                 {
                     return false;
                 }
@@ -1819,7 +1887,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         // If the platform library is not Microsoft.NETCore.App, treat it as an implicit dependency.
                         // This makes it so Microsoft.AspNet.* 2.x platforms also exclude Microsoft.NETCore.App files.
-                        if (!String.Equals(platformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(platformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
                         {
                             var library = _runtimeTarget.GetLibrary(NetCorePlatformLibrary);
                             if (library != null)
@@ -1844,12 +1912,12 @@ namespace Microsoft.NET.Build.Tasks
                         //  Exclude transitive dependencies of excluded packages unless they are also dependencies
                         //  of non-excluded packages
 
-                        HashSet<string> includedDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        HashSet<string> excludeFromPublishPackageIds = new HashSet<string>(
+                        HashSet<string> includedDependencies = new(StringComparer.OrdinalIgnoreCase);
+                        HashSet<string> excludeFromPublishPackageIds = new(
                             excludeFromPublishPackageReferences.Select(pr => pr.ItemSpec),
                             StringComparer.OrdinalIgnoreCase);
 
-                        Stack<string> dependenciesToWalk = new Stack<string>(
+                        Stack<string> dependenciesToWalk = new(
                             topLevelDependencies.Except(excludeFromPublishPackageIds, StringComparer.OrdinalIgnoreCase));
 
                         while (dependenciesToWalk.Any())
@@ -1903,7 +1971,7 @@ namespace Microsoft.NET.Build.Tasks
 
             private static Dictionary<string, string> GetProjectReferencePaths(LockFile lockFile)
             {
-                Dictionary<string, string> paths = new Dictionary<string, string>();
+                Dictionary<string, string> paths = new();
 
                 foreach (var library in lockFile.Libraries)
                 {
