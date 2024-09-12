@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -500,6 +502,53 @@ namespace Microsoft.DotNet.MsiInstallerTests
             UninstallSdk();
 
             VM.GetRemoteDirectory(workloadSetPath).Should().NotExist();
+        }
+
+        [Fact]
+        public void WorkloadSearchVersion()
+        {
+            InstallSdk();
+
+            //  Run `dotnet workload search version` without source set up
+            var searchVersionResult = VM.CreateRunCommand("dotnet", "workload", "search", "version")
+                .WithIsReadOnly(true)
+                .Execute(); ;
+            searchVersionResult.Should().Pass();
+
+            //  Without source set up, there should be no workload sets found
+            searchVersionResult.StdOut.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Should().BeEmpty();
+            searchVersionResult.StdErr.Should().Contain($"No workload versions found for SDK feature band {new SdkFeatureBand(SdkInstallerVersion)}");
+
+            //  Add source so workload sets will be found
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            //  `dotnet workload search version` should return expected versions
+            searchVersionResult = VM.CreateRunCommand("dotnet", "workload", "search", "version")
+                .WithIsReadOnly(true)
+                .Execute();
+            searchVersionResult.Should().Pass();
+            var actualVersions = searchVersionResult.StdOut.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            actualVersions.Should().Equal(WorkloadSetVersion2, WorkloadSetVersion1);
+
+
+            //  `dotnet workload search version <VERSION> --format json` should return manifest versions (and eventually perhaps other information) about that workload set
+            searchVersionResult = VM.CreateRunCommand("dotnet", "workload", "search", "version", WorkloadSetVersion2, "--format", "json")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            searchVersionResult.Should().Pass();
+
+            var searchResultJson = JsonNode.Parse(searchVersionResult.StdOut);
+            var searchResultWorkloadSet = WorkloadSet.FromDictionaryForJson(JsonSerializer.Deserialize<Dictionary<string, string>>(searchResultJson["manifestVersions"]), new SdkFeatureBand(SdkInstallerVersion));
+
+            //  Update to the workload set version we got the search info from so we can check to see if the manifest versions match what we expect
+            VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews", "--version", WorkloadSetVersion2)
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetRollback().ManifestVersions.Should().BeEquivalentTo(searchResultWorkloadSet.ManifestVersions);
         }
 
         string GetWorkloadVersion(string workingDirectory = null)
