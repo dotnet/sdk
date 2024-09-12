@@ -70,9 +70,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             {
                 var featureBand = new SdkFeatureBand(_sdkVersion);
                 var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
-                var versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
-                    .GetAwaiter().GetResult()
-                    .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.Version.ToString()));
+
+                List<string> versions;
+                try
+                {
+                    versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
+                        .GetAwaiter().GetResult()
+                        .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.ToString()))
+                        .ToList();
+                }
+                catch (NuGetPackageNotFoundException)
+                {
+                    Microsoft.DotNet.Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
+                    return 0;
+                }
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));

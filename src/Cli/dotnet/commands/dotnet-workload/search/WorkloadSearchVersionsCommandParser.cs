@@ -45,6 +45,14 @@ namespace Microsoft.DotNet.Cli
                 }
             });
 
+            command.Validators.Add(result =>
+            {
+                if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
+                {
+                    result.AddError(string.Format(LocalizableStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                }
+            });
+
             command.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
 
             return command;
