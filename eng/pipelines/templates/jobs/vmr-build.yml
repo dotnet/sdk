@@ -324,6 +324,9 @@ jobs:
         set -ex
         df -h
 
+        echo "*** DEBUG ***"
+        find $(sourcesPath)/.packages -type f
+
         customEnvVars=""
         customBuildArgs="--ci --clean-while-building --prepareMachine"
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
