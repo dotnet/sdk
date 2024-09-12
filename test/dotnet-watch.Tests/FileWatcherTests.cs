@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ]
                 : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
                 [
-                    (subdir, ChangeKind.Update),
+                    (subdir, ChangeKind.Add),
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Update),
                     (f1, ChangeKind.Add),
