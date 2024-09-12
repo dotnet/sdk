@@ -325,7 +325,9 @@ jobs:
         df -h
 
         echo "*** DEBUG ***"
-        find $(sourcesPath)/.packages -type f
+        if [[ -d "$(sourcesPath)" ]]; then
+          find $(sourcesPath)/.packages -type f
+        fi
 
         customEnvVars=""
         customBuildArgs="--ci --clean-while-building --prepareMachine"
