@@ -9,7 +9,9 @@
   <Import Project="..\redist\targets\GetRuntimeInformation.targets" /> <!-- Rid is set here -->
   <PropertyGroup>
     <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
-    <MibcFile>$(MibcPath)/optimization.$(Rid).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
+    <MibcRid>$(Rid)</MibcRid>  
+    <MibcRid Condition="$(MibcRid.Contains('musl-'))">$(MibcRid.Replace('musl-', ''))</MibcRid>
+    <MibcFile>$(MibcPath)/optimization.$(MibcRid).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
     <ReadyToRunOptimizationData>$(MibcFile)</ReadyToRunOptimizationData>
   </PropertyGroup>
 
@@ -21,7 +23,7 @@
   </ItemGroup>
 
   <!-- MIBC don't work for SB yet: https://github.com/dotnet/source-build/issues/247 -->
-  <Target Name="ValidateMibcFile" AfterTargets="_ResolvePublishNuGetPackagePdbsAndXml" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <Target Name="ValidateMibcFile" AfterTargets="_ResolvePublishNuGetPackagePdbsAndXml" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(SelfContained)' == 'true'">
     <Error Condition="!Exists('$(MibcFile)')" Text="MIBC file '$(MibcFile)' does not exist." />
   </Target>
 
