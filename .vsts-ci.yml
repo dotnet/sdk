@@ -181,9 +181,9 @@ extends:
               image: macOS-latest
               os: macOS
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.13.Amd64.Open
+              helixTargetQueue: OSX.1200.Amd64.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.13.Amd64
+              helixTargetQueue: OSX.1200.Amd64
             variables:
             - name: _BuildConfig
               value: Release
