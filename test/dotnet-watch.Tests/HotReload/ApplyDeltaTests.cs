@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                 """;
 
             // Delete all files in testAsset.Path named Dep.dll
-            foreach (var depDll in Directory.GetFiles(testAsset.Path, "Dep.dll", SearchOption.AllDirectories))
+            foreach (var depDll in Directory.GetFiles(testAsset.Path, "Dep2.dll", SearchOption.AllDirectories))
             {
                 File.Delete(depDll);
             }
