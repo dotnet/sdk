@@ -85,6 +85,8 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
             foreach (AnalyzerInfo analyzer in analyzers)
             {
                 var directoryPath = Path.GetDirectoryName(fullPath);
+
+                // Note that both paths we compare here are normalized via netfx's Path.GetDirectoryName.
                 if (directoryPath.EndsWith(analyzer.PathSuffix, StringComparison.OrdinalIgnoreCase) &&
                     majorAndMinorVersionsMatch(directoryPath, analyzer.PathSuffix, analyzer.ProductVersion))
                 {
@@ -102,11 +104,15 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
             // "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\" = directoryPath
             //                                                                       ~~~~~~~~~~~~~~~~   = pathSuffix
             //                                                                 ~~~~~                    = directoryPathVersion
+            // This can match also a NuGet package because the version number is at the same position:
+            // "C:\.nuget\packages\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\"
+
             int index = directoryPath.LastIndexOf(pathSuffix, StringComparison.OrdinalIgnoreCase);
             if (index < 0)
             {
                 return false;
             }
+
             string directoryPathVersion = Path.GetFileName(Path.GetDirectoryName(directoryPath.Substring(0, index)));
 
             return areVersionMajorMinorPartEqual(directoryPathVersion, version);
