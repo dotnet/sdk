@@ -7,6 +7,11 @@
         <target state="translated">Обновляются только манифесты рекламы.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">Невозможно использовать параметры {0} и {1} одновременно.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Обновление всех установленных рабочих нагрузок.</target>
@@ -24,7 +29,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
-        <target state="new">No workload update found.</target>
+        <target state="translated">Изменений рабочей нагрузки не найдено.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Сбой обновления рабочей нагрузки: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Версия рабочей нагрузки {0} не найдена.</target>
         <note />
       </trans-unit>
     </body>

@@ -119,6 +119,7 @@ internal class Layer
                                 },
                                 options: new EnumerationOptions()
                                 {
+                                    AttributesToSkip = FileAttributes.System, // Include hidden files
                                     RecurseSubdirectories = true
                                 });
                     foreach (var item in fileList)

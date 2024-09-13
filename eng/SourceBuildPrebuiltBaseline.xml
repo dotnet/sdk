@@ -35,6 +35,7 @@
 
     <!-- (Don't include these for 9.0) Allow 8.0.2xx and higher to use any version of these packages since source build
          is only applicable to 8.0.1xx. -->
+    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Abstractions/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core.Contracts/8.0.*" />
@@ -45,5 +46,8 @@
     <UsagePattern IdentityGlob="System.Drawing.Common/8.0.*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
+
+    <!-- Transitive dependencies from roslyn -->
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Options/8.0.0" />
   </IgnorePatterns>
 </UsageData>

@@ -39,7 +39,7 @@ internal static class HttpExtensions
     internal static bool IsAmazonECRRegistry(this Uri uri)
     {
         // If this the registry is to public ECR the name will contain "public.ecr.aws".
-        if (uri.Authority.Contains("public.ecr.aws"))
+        if (uri.Authority.Contains(RegistryConstants.PublicAmazonElasticContainerRegistryDomain))
         {
             return true;
         }
