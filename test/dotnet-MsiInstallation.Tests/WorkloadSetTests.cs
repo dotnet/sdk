@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             var originalRollback = GetRollback();
 
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             var newRollback = GetRollback();
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             rollbackAfterUpdate = GetRollback();
             updatedWorkloadVersion = GetWorkloadVersion();
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithDescription("Switch mode to workload-set")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
 
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
 
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews", "--source", @"c:\SdkTesting\EmptySource")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             var newRollback = GetRollback();
 
@@ -157,13 +157,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--version", versionToInstall, "--include-previews")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             VM.CreateRunCommand("dotnet", "workload", "search")
                 .WithIsReadOnly(true)
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(versionToInstall);
 
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             originalRollback = GetRollback(SdkTestingDirectory);
 
-            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo}""}}}}").Execute().Should().Pass();
+            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo}""}}}}").Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion(SdkTestingDirectory).Should().Be(versionToUpdateTo);
 
@@ -285,13 +285,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var testProjectFolder = Path.Combine(SdkTestingDirectory, "ConsoleApp");
             VM.CreateRunCommand("dotnet", "new", "console", "-o", "ConsoleApp")
                 .WithWorkingDirectory(SdkTestingDirectory)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             SetupWorkloadSetInGlobalJson(out var originalRollback);
 
             VM.CreateRunCommand("dotnet", "workload", "restore")
                 .WithWorkingDirectory(testProjectFolder)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion(SdkTestingDirectory).Should().Be(WorkloadSetVersion2);
 
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             SetupWorkloadSetInGlobalJson(out var originalRollback);
 
             string[] args = command.Equals("install") ? ["dotnet", "workload", "install", "aspire"] : ["dotnet", "workload", command];
-            VM.CreateRunCommand(args).WithWorkingDirectory(SdkTestingDirectory).Execute().Should().Pass();
+            VM.CreateRunCommand(args).WithWorkingDirectory(SdkTestingDirectory).Execute().Should().PassWithoutWarning();
             GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
         }
 
@@ -344,12 +344,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
             originalVersion.Should().NotBe(WorkloadSetVersion1);
 
             VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1, "--include-previews")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
             VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--version", WorkloadSetVersion2)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
@@ -365,13 +365,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
             originalVersion.Should().NotBe(WorkloadSetVersion1);
 
             VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1, "--include-previews")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
             VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
                 .WithWorkingDirectory(SdkTestingDirectory)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion(SdkTestingDirectory).Should().Be(WorkloadSetVersion2);
 
@@ -393,10 +393,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateActionGroup($"Disable {WorkloadSetVersion2}",
                     VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak"),
                     VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak"))
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
@@ -404,7 +404,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateActionGroup($"Enable {WorkloadSetVersion2}",
                     VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg"),
                     VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg"))
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             InstallWorkload("aspire", skipManifestUpdate: false);
 
@@ -438,7 +438,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             //  Update to latest workload set version
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
 
@@ -451,22 +451,22 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             //  Downgrade to earlier workload set version
             VM.CreateRunCommand("dotnet", "workload", "update", "--version", WorkloadSetVersion1)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             //  Later workload set version should be GC'd
             VM.GetRemoteDirectory(workloadSet2Path).Should().NotExist();
 
             //  Now, pin older workload set version in global.json
-            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{WorkloadSetVersion1}""}}}}").Execute().Should().Pass();
+            VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{WorkloadSetVersion1}""}}}}").Execute().Should().PassWithoutWarning();
 
             //  Install pinned version
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
                .WithWorkingDirectory(SdkTestingDirectory)
-               .Execute().Should().Pass();
+               .Execute().Should().PassWithoutWarning();
 
             //  Update globally installed version to later version
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
-               .Execute().Should().Pass();
+               .Execute().Should().PassWithoutWarning();
 
             //  Check workload versions in global context and global.json directory
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
@@ -477,11 +477,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.GetRemoteDirectory(workloadSet1Path).Should().Exist();
 
             //  Now, remove pinned workload set from global.json
-            VM.WriteFile("C:\\SdkTesting\\global.json", "{}").Execute().Should().Pass();
+            VM.WriteFile("C:\\SdkTesting\\global.json", "{}").Execute().Should().PassWithoutWarning();
 
             //  Run workload update to do a GC
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
-               .Execute().Should().Pass();
+               .Execute().Should().PassWithoutWarning();
 
             //  Workload set 1 should have been GC'd
             VM.GetRemoteDirectory(workloadSet1Path).Should().NotExist();
@@ -513,7 +513,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var searchVersionResult = VM.CreateRunCommand("dotnet", "workload", "search", "version")
                 .WithIsReadOnly(true)
                 .Execute(); ;
-            searchVersionResult.Should().Pass();
+            searchVersionResult.Should().PassWithoutWarning();
 
             //  Without source set up, there should be no workload sets found
             searchVersionResult.StdOut.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
@@ -527,7 +527,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             searchVersionResult = VM.CreateRunCommand("dotnet", "workload", "search", "version")
                 .WithIsReadOnly(true)
                 .Execute();
-            searchVersionResult.Should().Pass();
+            searchVersionResult.Should().PassWithoutWarning();
             var actualVersions = searchVersionResult.StdOut.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             actualVersions.Should().Equal(WorkloadSetVersion2, WorkloadSetVersion1);
 
@@ -537,7 +537,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute();
 
-            searchVersionResult.Should().Pass();
+            searchVersionResult.Should().PassWithoutWarning();
 
             var searchResultJson = JsonNode.Parse(searchVersionResult.StdOut);
             var searchResultWorkloadSet = WorkloadSet.FromDictionaryForJson(JsonSerializer.Deserialize<Dictionary<string, string>>(searchResultJson["manifestVersions"]), new SdkFeatureBand(SdkInstallerVersion));
@@ -546,7 +546,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews", "--version", WorkloadSetVersion2)
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             GetRollback().ManifestVersions.Should().BeEquivalentTo(searchResultWorkloadSet.ManifestVersions);
         }
@@ -558,7 +558,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result.StdOut;
         }
@@ -568,7 +568,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result.StdOut;
         }
@@ -580,7 +580,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithDescription($"Add {source} to NuGet.config")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
         }
     }
 }
