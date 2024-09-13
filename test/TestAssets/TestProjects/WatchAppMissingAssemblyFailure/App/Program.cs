@@ -14,6 +14,7 @@ while (true)
     lock (UpdateHandler.Guard)
     {
         Printer.Print();
+        Dep.Printer.Print();
     }
 
     Thread.Sleep(100);

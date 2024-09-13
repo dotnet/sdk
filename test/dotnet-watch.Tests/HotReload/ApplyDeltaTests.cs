@@ -133,12 +133,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertWaitingForChanges();
 
             var newSrc = /* lang=c#-test */"""
-                class DepSubType : Dep.DepType
+                namespace Dep;
+
+                public class DepType
                 {
                     int F() => 2;
                 }
 
-                class Printer
+                public class Printer
                 {
                     public static void Print()
                     {
