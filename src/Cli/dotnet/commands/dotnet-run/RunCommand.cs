@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Reflection;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -225,15 +226,18 @@ namespace Microsoft.DotNet.Tools.Run
 
         private ICommand GetTargetCommand()
         {
-            // TODO for MSBuild usage here: need to sync loggers (primarily binlog) used with this evaluation
-            var project = EvaluateProject(ProjectFileFullPath, RestoreArgs);
+            ILogger? binaryLogger = DetermineBinlogger(RestoreArgs, true);
+            var project = EvaluateProject(ProjectFileFullPath, RestoreArgs, binaryLogger);
+            binaryLogger?.Shutdown();
             ValidatePreconditions(project);
-            InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity);
+            binaryLogger = DetermineBinlogger(RestoreArgs, false);
+            InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, binaryLogger);
+            binaryLogger?.Shutdown();
             var runProperties = ReadRunPropertiesFromProject(project, Args);
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
 
-            static ProjectInstance EvaluateProject(string projectFilePath, string[] restoreArgs)
+            static ProjectInstance EvaluateProject(string projectFilePath, string[] restoreArgs, ILogger? binaryLogger)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -251,8 +255,8 @@ namespace Microsoft.DotNet.Tools.Run
                         globalProperties[key] = string.Join(";", values);
                     }
                 }
-                var project = new ProjectInstance(projectFilePath, globalProperties, null);
-                return project;
+                var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+                return collection.LoadProject(projectFilePath).CreateProjectInstance();
             }
 
             static void ValidatePreconditions(ProjectInstance project)
@@ -329,31 +333,47 @@ namespace Microsoft.DotNet.Tools.Run
                 return command;
             }
 
-            static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, VerbosityOptions? verbosity)
+            static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, VerbosityOptions? verbosity, ILogger? binaryLogger)
             {
                 // if the restoreArgs contain a `-bl` then let's probe it
                 List<ILogger> loggersForBuild = [
                     MakeTerminalLogger(verbosity)
                 ];
+                if (binaryLogger is not null)
+                {
+                    loggersForBuild.Add(binaryLogger);
+                }
+
+                if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
+                {
+                    throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
+                }
+            }
+
+            static ILogger? DetermineBinlogger(string[] restoreArgs, bool isRestore)
+            {
                 if (restoreArgs.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)) is string blArg)
                 {
                     if (blArg.Contains(':'))
                     {
                         // split and forward args
                         var split = blArg.Split(':', 2);
-                        loggersForBuild.Add(new BinaryLogger { Parameters = split[1] });
+                        var filename = split[1];
+                        if (filename.EndsWith(".binlog"))
+                        {
+                            filename = filename.Substring(0, filename.Length - ".binlog".Length);
+                            filename = filename + (isRestore ? "-restore" : "-build") + ".binlog";
+                        }
+                        return new BinaryLogger { Parameters = filename };
                     }
                     else
                     {
-                        // just the defaults
-                        loggersForBuild.Add(new BinaryLogger { Parameters = "{}.binlog" });
+                        // the same name will be used for the build and run-restore-exec steps, so we need to make sure they don't conflict
+                        var filename = "msbuild-dotnet-run" + (isRestore ? "-restore" : "-build") + ".binlog";
+                        return new BinaryLogger { Parameters = filename };
                     }
-                };
-
-                if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
-                {
-                    throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
                 }
+                return null;
             }
         }
 
