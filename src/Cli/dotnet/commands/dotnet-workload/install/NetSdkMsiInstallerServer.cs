@@ -1,15 +1,12 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
@@ -134,8 +131,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             // Best effort to verify that the server was not started indirectly or being spoofed.
             if ((ParentProcess == null) || (ParentProcess.StartTime > CurrentProcess.StartTime) ||
-                string.IsNullOrWhiteSpace(CurrentProcess.MainModule.FileName) ||
-                !string.Equals(ParentProcess.MainModule.FileName, CurrentProcess.MainModule.FileName, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(ParentProcess.MainModule.FileName, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
             {
                 throw new SecurityException(String.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
             }
@@ -154,7 +150,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 PipeAccessRights.Read | PipeAccessRights.Write | PipeAccessRights.Synchronize, AccessControlType.Allow));
 
             // Initialize the named pipe for dispatching commands. The name of the pipe is based off the server PID since
-            // the client knows this value and ensures both processes can generate the same name. 
+            // the client knows this value and ensures both processes can generate the same name.
             string pipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id);
             NamedPipeServerStream serverPipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message,
                 PipeOptions.None, 65535, 65535, pipeSecurity);

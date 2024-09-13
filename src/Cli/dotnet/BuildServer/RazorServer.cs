@@ -1,14 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.BuildServer
@@ -36,6 +30,14 @@ namespace Microsoft.DotNet.BuildServer
 
         public void Shutdown()
         {
+            if(!_fileSystem.File.Exists(PidFile.ServerPath.Value))
+            {
+                // The razor server path doesn't exist anymore so trying to shut it down would fail
+                // Ensure the pid file is cleaned up so we don't try to shut it down again
+                DeletePidFile();
+                return;
+            }
+
             var command = _commandFactory
                 .Create(
                     "exec",
@@ -60,6 +62,11 @@ namespace Microsoft.DotNet.BuildServer
 
             // After a successful shutdown, ensure the pid file is deleted
             // If the pid file was left behind due to a rude exit, this ensures we don't try to shut it down again
+            DeletePidFile();
+        }
+
+        void DeletePidFile()
+        {
             try
             {
                 if (_fileSystem.File.Exists(PidFile.Path.Value))
