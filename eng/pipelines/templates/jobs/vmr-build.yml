@@ -215,12 +215,6 @@ jobs:
           **/*.nupkg
         displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
-      - script: |
-          echo "*** DEBUG ***"
-          find $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts -type f
-        displayName: DEBUG Check the folder
-        workingDirectory: $(Build.StagingDirectory)
-
       - task: CopyFiles@2
         displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
         inputs:
@@ -329,11 +323,6 @@ jobs:
     - script: |
         set -ex
         df -h
-
-        echo "*** DEBUG ***"
-        if [[ -d "$(sourcesPath)/.packages" ]]; then
-          find $(sourcesPath)/.packages -type f
-        fi
 
         customEnvVars=""
         customBuildArgs="--ci --clean-while-building --prepareMachine"
