@@ -27,6 +27,11 @@
         <target state="translated">Użyj bieżącego środowiska uruchomieniowego jako docelowego środowiska uruchomieniowego.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoHttpCacheOptionDescription">
+        <source>Disable Http Caching for packages.</source>
+        <target state="new">Disable Http Caching for packages.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
         <target state="translated">SOURCE</target>

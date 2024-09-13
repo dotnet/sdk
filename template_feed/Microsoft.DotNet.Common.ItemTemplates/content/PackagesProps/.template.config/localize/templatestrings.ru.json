@@ -1,0 +1,7 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Файл Directory.Packages.props MSBuild",
+  "description": "Пустой файл Directory.Packages.props, который можно использовать для централизованного указания версии пакета",
+  "symbols/inherit/displayName": "Наследовать",
+  "symbols/inherit/description": "Если значение равно \"true\", добавляет импорт для ближайшего Directory.Packages.props в иерархии каталогов файловой системы. Directory.Packages.props не наследуется по умолчанию, поэтому это позволяет создать набор папок настроек по папкам."
+}
