@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -38,12 +39,14 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
     private readonly string _registryName;
     private readonly ILogger _logger;
+    private readonly RegistryMode _registryMode;
     private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
 
-    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger) : base(innerHandler)
+    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
     {
         _registryName = registryName;
         _logger = logger;
+        _registryMode = mode;
     }
 
     /// <summary>
@@ -156,14 +159,10 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
-        // Allow overrides for auth via environment variables
-        string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
-        string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass);
-
-        // fetch creds for the host
+        
         DockerCredentials? privateRepoCreds;
-
-        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        // Allow overrides for auth via environment variables
+        if (GetDockerCredentialsFromEnvironment(_registryMode) is (string credU, string credP))
         {
             privateRepoCreds = new DockerCredentials(credU, credP);
         }
@@ -193,6 +192,63 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         else
         {
             return null;
+        }
+    }
+
+    internal static (string credU, string credP)? TryGetCredentialsFromEnvVars(string unameVar, string passwordVar)
+    {
+        var credU = Environment.GetEnvironmentVariable(unameVar);
+        var credP = Environment.GetEnvironmentVariable(passwordVar);
+        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        {
+            return (credU, credP);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets docker credentials from the environment variables based on registry mode.
+    /// </summary>
+    internal static (string credU, string credP)? GetDockerCredentialsFromEnvironment(RegistryMode mode)
+    {
+        if (mode == RegistryMode.Push)
+        {
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PushHostObjectUser, ContainerHelpers.PushHostObjectPass) is (string, string) pushCreds)
+            {
+                return pushCreds;
+            }
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
+        }
+        else if (mode == RegistryMode.Pull)
+        {
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass);
+        }
+        else if (mode == RegistryMode.PullFromOutput)
+        {
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass) is (string, string) pullCreds)
+            {
+                return pullCreds;
+            }
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
+        }
+        else
+        {
+            throw new InvalidEnumArgumentException(nameof(mode), (int)mode, typeof(RegistryMode));
         }
     }
 
@@ -333,6 +389,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         int retryCount = 0;
+        List<Exception>? requestExceptions = null;
 
         while (retryCount < MaxRequestRetries)
         {
@@ -364,8 +421,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
+                requestExceptions ??= new();
+                requestExceptions.Add(e);
+
                 retryCount += 1;
-                _logger.LogInformation("Encountered a SocketException with message \"{message}\". Pausing before retry.", se.Message);
+                _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
                 await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
@@ -374,7 +434,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
         }
 
-        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)));
+        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)), new AggregateException(requestExceptions!));
     }
 
     [GeneratedRegex("(?<key>\\w+)=\"(?<value>[^\"]*)\"(?:,|$)")]

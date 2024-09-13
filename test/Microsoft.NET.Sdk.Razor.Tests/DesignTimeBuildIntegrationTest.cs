@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [Fact(Skip = "Skipping until https://github.com/dotnet/aspnetcore/issues/28825 is resolved.")]
+        [Fact]
         public void RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
         {
             var testAsset = "RazorSimpleMvc";

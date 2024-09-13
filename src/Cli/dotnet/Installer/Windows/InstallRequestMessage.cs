@@ -123,7 +123,15 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// The new mode to use: workloadset or loosemanifests
         /// </summary>
-        public bool UseWorkloadSets
+        public bool? UseWorkloadSets
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// The path to a global.json file that specified a workload set version
+        /// </summary>
+        public string GlobalJsonPath
         {
             get; set;
         }

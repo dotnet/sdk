@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Если вы хотели установить глобальное средство, добавьте в команду параметр "--global".
-Если вы хотите создать манифест, используйте команду "dotnet new tool-manifest", которая обычно выполняется в корневом каталоге репозитория.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Если вы хотели установить глобальный инструмент, добавьте "--global" в команду.
+Если вы хотите создать манифест, используйте флаг "--create-manifest-if-needed" с командой "dotnet tool install" или примените команду "dotnet new tool-manifest", которая обычно выполняется в корневом каталоге репозитория.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -91,6 +91,16 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
         <target state="translated">Разрешить накат средства .NET до более новых версий среды выполнения .NET, если целевая среда выполнения для средства не установлена.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -183,8 +193,8 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="needs-review-translation">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

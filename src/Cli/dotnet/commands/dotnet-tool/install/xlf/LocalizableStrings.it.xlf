@@ -58,9 +58,9 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Se si intendeva installare uno strumento globale, aggiungere `--global` al comando.
-Se si vuole creare un manifesto, usare `dotnet new tool-manifest`, in genere nella directory radice del repository.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Se si intende installare uno strumento globale, aggiungere '--global' al comando. 
+Se si vuole creare un manifesto, usare il flag '--create-manifest-if-needed' con il comando 'dotnet tool install' oppure 'dotnet new tool-manifest', in genere nella directory radice del repository.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -91,6 +91,16 @@ Se si vuole creare un manifesto, usare `dotnet new tool-manifest`, in genere nel
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
         <target state="translated">Consente a uno strumento .NET di eseguire il roll forward alle versioni più recenti del runtime .NET se il runtime di destinazione non è installato.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -183,8 +193,8 @@ Per altri motivi, inclusa l'aggiunta obbligatoria del prefisso microsoft ai nomi
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="needs-review-translation">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

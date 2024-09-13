@@ -117,8 +117,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.MSBuildSdk
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.PackageInstall.Tests", "test\Microsoft.DotNet.PackageInstall.Tests\Microsoft.DotNet.PackageInstall.Tests.csproj", "{3D20D19D-74FB-4A43-B78C-B0AF90A696A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.Utilities.Tests", "test\Microsoft.DotNet.Tools.Tests.Utilities.Tests\Microsoft.DotNet.Tools.Tests.Utilities.Tests.csproj", "{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "msbuild.Integration.Tests", "test\msbuild.Integration.Tests\msbuild.Integration.Tests.csproj", "{45281FB4-EAFA-4D62-84BA-47546C04D653}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelixTasks", "test\HelixTasks\HelixTasks.csproj", "{818165C4-6D22-4FA6-AAAF-DC66DA72450A}"
@@ -391,7 +389,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.ApiCompat.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.ApiCompat.Tests", "test\Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj", "{A9103B98-D888-4260-8A05-FA36F640698A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "src\Assets\TestPackages\dotnet-new\Microsoft.TemplateEngine.TestTemplates.csproj", "{C37EC61D-6A88-4C15-B371-A61F23EF9072}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "test\TestAssets\TestPackages\dotnet-new\Microsoft.TemplateEngine.TestTemplates.csproj", "{C37EC61D-6A88-4C15-B371-A61F23EF9072}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{06260DC7-BA64-42BE-B99C-6069A1C3E70E}"
 EndProject
@@ -488,6 +486,26 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format", "src\BuiltInTools\dotnet-format\dotnet-format.csproj", "{7382A1CB-AA9A-4136-A548-17D7A67C6B0C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{3FA6F1CB-295B-4414-B18F-93845917A8CD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks", "src\Installer\core-sdk-tasks\core-sdk-tasks.csproj", "{5593C59B-442B-4783-8527-74F6E41668D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Installer\finalizer\finalizer-build.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.csproj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdkResolver", "src\Installer\redist-installer\projects\SdkResolver.csproj", "{27E399C0-6F91-45D6-A63D-041DA41CCFDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator.csproj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WebTools.AspireService.Package", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.Package.csproj", "{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.WebTools.AspireService", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.shproj", "{94C8526E-DCC2-442F-9868-3DD0BA2688BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Sdk.Compilers.Toolset", "src\Microsoft.Net.Sdk.Compilers.Toolset\Microsoft.Net.Sdk.Compilers.Toolset.csproj", "{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -635,10 +653,6 @@ Global
 		{3D20D19D-74FB-4A43-B78C-B0AF90A696A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D20D19D-74FB-4A43-B78C-B0AF90A696A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D20D19D-74FB-4A43-B78C-B0AF90A696A0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{45281FB4-EAFA-4D62-84BA-47546C04D653}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{45281FB4-EAFA-4D62-84BA-47546C04D653}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45281FB4-EAFA-4D62-84BA-47546C04D653}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -907,6 +921,10 @@ Global
 		{FEA8B7B5-901B-4A3A-948F-7E5F54F09FF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEA8B7B5-901B-4A3A-948F-7E5F54F09FF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEA8B7B5-901B-4A3A-948F-7E5F54F09FF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36975025-857B-45F0-AB39-904B521A6713}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36975025-857B-45F0-AB39-904B521A6713}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36975025-857B-45F0-AB39-904B521A6713}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36975025-857B-45F0-AB39-904B521A6713}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -915,10 +933,38 @@ Global
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36975025-857B-45F0-AB39-904B521A6713}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36975025-857B-45F0-AB39-904B521A6713}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36975025-857B-45F0-AB39-904B521A6713}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36975025-857B-45F0-AB39-904B521A6713}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAADC193-BA41-449D-97CE-0EF82836046A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAADC193-BA41-449D-97CE-0EF82836046A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAADC193-BA41-449D-97CE-0EF82836046A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAADC193-BA41-449D-97CE-0EF82836046A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21C21975-84C1-4A24-8E21-F7EC790A4584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21C21975-84C1-4A24-8E21-F7EC790A4584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21C21975-84C1-4A24-8E21-F7EC790A4584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21C21975-84C1-4A24-8E21-F7EC790A4584}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -964,7 +1010,6 @@ Global
 		{C34FB893-2320-41A3-9D38-0061C22A6464} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{0AE2AB83-1F0D-4E04-9C8D-5C35CE97FDDC} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{3D20D19D-74FB-4A43-B78C-B0AF90A696A0} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{BE6B9618-2262-4FF7-B762-FB97A7A1A0B8} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{45281FB4-EAFA-4D62-84BA-47546C04D653} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{818165C4-6D22-4FA6-AAAF-DC66DA72450A} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{974F9450-8895-41D9-8328-D55AFF81A814} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
@@ -1081,13 +1126,23 @@ Global
 		{7DCA2BEC-B1E1-4F2B-952A-A26B5110FDA5} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{E54506B8-0B81-4FC4-99B5-5C67E19D4B09} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{FEA8B7B5-901B-4A3A-948F-7E5F54F09FF5} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{36975025-857B-45F0-AB39-904B521A6713} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{44E564E1-AE0D-4313-A4E9-CBF2109397E3} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 		{3AD322BF-405B-4A53-9858-51CF66E8509F} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{F6D8919A-CC7F-4D0D-9C54-BFD2F2380FB5} = {3AD322BF-405B-4A53-9858-51CF66E8509F}
 		{85A01ACB-CC90-45EF-8F6C-AFC2B9F31126} = {3AD322BF-405B-4A53-9858-51CF66E8509F}
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{D7495CE7-64E5-4715-9304-799A41EC1D71} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{36975025-857B-45F0-AB39-904B521A6713} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{3FA6F1CB-295B-4414-B18F-93845917A8CD} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
+		{5593C59B-442B-4783-8527-74F6E41668D9} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{32DA04FF-A951-43EA-B2FA-86A825009A97} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{FAADC193-BA41-449D-97CE-0EF82836046A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{27E399C0-6F91-45D6-A63D-041DA41CCFDF} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{0CBA5FB8-71A3-457A-89F3-E52B9602164A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{21C21975-84C1-4A24-8E21-F7EC790A4584} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{94C8526E-DCC2-442F-9868-3DD0BA2688BE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
@@ -1095,6 +1150,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
+		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5
 	EndGlobalSection

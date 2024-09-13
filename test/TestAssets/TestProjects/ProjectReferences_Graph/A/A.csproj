@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\B\B.csproj" />
+		<ProjectReference Include="..\F\F.csproj" />
+		<ProjectReference Include="..\W\W.csproj" Watch="false" />
+
+    	<Compile Include="..\Common.cs" Link="Common.cs" />
+	</ItemGroup>
+</Project>

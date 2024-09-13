@@ -1,11 +1,32 @@
-<Project Sdk="Microsoft.Build.Traversal">
+<Project Sdk="Microsoft.Build.Traversal" InitialTargets="PrintInfo">
+
+<!-- Default targets and parallelization -->
+ <ItemDefinitionGroup>
+    <ProjectReference>
+      <Test>false</Test>
+      <Publish>false</Publish>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+  </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ToolsDir)init-build.proj" BuildInParallel="false" />
-    <ProjectReference Include="$(RepoProjectsDir)$(RootRepo).proj" BuildInParallel="false" />
+    <!-- Pre-build: Init tools-->
+    <ProjectReference Include="$(RepositoryEngineeringDir)init-cross-build.proj"
+                      Condition="'$(BuildOS)' != 'windows' and '$(CrossBuild)' == 'true' and '$(ROOTFS_DIR)' == ''"
+                      BuildInParallel="true" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)init-poison.proj"
+                      Condition="'$(EnablePoison)' == 'true'"
+                      BuildInParallel="true" />
+    <ProjectReference Include="$(ToolsDir)tools.proj" BuildInParallel="true" />
+
+    <ProjectReference Include="$(RepoProjectsDir)$(RootRepo).proj" />
+
+    <!-- Post-build: Source-only validation, packaging and publishing -->
+    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)finish-source-only.proj" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-  <Target Name="PrintInfo" BeforeTargets="Build">
+  <Target Name="PrintInfo">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>
@@ -13,29 +34,9 @@
 
     <Message Text="Build Mode: $(BuildModeInfoText)" Importance="high" />
     <Message Text="Build Environment: $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
+    <Message Condition="'$(EnablePoison)' == 'true'" Text="Crossgen is disabled due to incompatibility with poison checks." Importance="high" />
   </Target>
 
-  <!-- Create a merge manifest from the individual repository manifest files. -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <Target Name="MergeAssetManifests" AfterTargets="Build">
-    <PropertyGroup>
-      <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
-    </ItemGroup>
-
-    <!-- It's OK for the VmrBuildNumber to be empty -->
-    <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
-      AssetManifest="@(RepoAssetManifest)" 
-      MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
-      VmrBuildNumber="$(BUILD_BUILDNUMBER)" />
-  </Target>
-
-  <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-
-  <!-- Intentionally below the import to appear at the end. -->
   <Target Name="LogBuildOutputFolders"
           AfterTargets="Build">
     <Message Importance="high" Text="Shipping packages are located in '$(ArtifactsShippingPackagesDir)'." />

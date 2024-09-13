@@ -74,7 +74,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             using var cancellationOnFailure = new CancellationTokenSource();
 
-            cancellationOnFailure.CancelAfter(s_timeout);
+            if (!Debugger.IsAttached)
+            {
+                cancellationOnFailure.CancelAfter(s_timeout);
+            }
 
             var failedLineCount = 0;
             while (!_source.Completion.IsCompleted && failedLineCount == 0)
@@ -132,6 +135,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         private void OnData(object sender, DataReceivedEventArgs args)
         {
             var line = args.Data ?? string.Empty;
+            if (line.StartsWith("\x1b]"))
+            {
+                // strip terminal logger progress indicators from line
+                line = line.StripTerminalLoggerProgressIndicators();
+            }
 
             WriteTestOutput($"{DateTime.Now}: post: '{line}'");
             _source.Post(line);

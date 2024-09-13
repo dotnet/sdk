@@ -11,7 +11,6 @@ Optional msbuild properties:
 - MsftSdkTarballPath
 - SmokeTestsCustomSourceBuiltPackagesPath
 - SmokeTestsExcludeOmniSharpTests
-- SmokeTestsIncludeArtifactsSizeTests
 - SmokeTestsLicenseScanPath
 - SmokeTestsPrereqsPath
 - SmokeTestsWarnOnLicenseScanDiffs

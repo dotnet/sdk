@@ -26,6 +26,9 @@
     -->
     <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
     <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true' and $(SignableShimRuntimeIdentifier.Contains('$(TargetRid)'))">$(TargetRid)</PackAsToolShimRuntimeIdentifiers>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>

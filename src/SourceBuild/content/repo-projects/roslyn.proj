@@ -12,7 +12,7 @@
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
     <!-- roslyn by default builds with desktop msbuild (xcopy-msbuild) -->
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>

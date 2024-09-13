@@ -35,7 +35,12 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
         private static readonly string _buildIdAttribute = "BuildId";
         private static readonly string _azureDevOpsBuildNumberAttribute = "AzureDevOpsBuildNumber";
-        private static readonly string[] _ignoredAttributes = [_buildIdAttribute, _azureDevOpsBuildNumberAttribute, "IsReleaseOnlyPackageVersion"];
+        private static readonly string[] _ignoredAttributes = [
+            _buildIdAttribute,
+            _azureDevOpsBuildNumberAttribute,
+            "IsReleaseOnlyPackageVersion",
+            "IsStable"
+            ];
 
         public override bool Execute()
         {

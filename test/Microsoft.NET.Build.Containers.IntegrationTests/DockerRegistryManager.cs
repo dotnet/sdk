@@ -15,10 +15,12 @@ public class DockerRegistryManager
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
     public const string Net8ImageTag = "8.0";
+    public const string Net9PreviewImageTag = "9.0-preview";
+    public const string RuntimeFrameworkVersion = "9.0.0-preview.3.24172.9";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8ImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
-    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net8ImageTag}";
-    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8ImageTag}";
+    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net9PreviewImageTag}";
+    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net9PreviewImageTag}";
     private static string? s_registryContainerId;
 
     internal class SameArchManifestPicker : IManifestPicker
@@ -44,8 +46,8 @@ public class DockerRegistryManager
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
 
-        var pullRegistry = new Registry(BaseImageSource, logger);
-        var pushRegistry = new Registry(LocalRegistry, logger);
+        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
+        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {
@@ -63,9 +65,9 @@ public class DockerRegistryManager
                 using var reader = new StringReader(processResult.StdOut!);
                 s_registryContainerId = reader.ReadLine();
 
-                EnsureRegistryLoaded(LocalRegistry, s_registryContainerId, logger, testOutput);
+                EnsureRegistryLoaded(new Uri($"http://{LocalRegistry}"), s_registryContainerId, logger, testOutput);
 
-                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag })
+                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag, Net9PreviewImageTag })
                 {
                     logger.LogInformation("Pulling image '{repo}/{image}:{tag}'.", BaseImageSource, RuntimeBaseImage, tag);
                     string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
@@ -117,13 +119,13 @@ public class DockerRegistryManager
         }
     }
 
-    private static void EnsureRegistryLoaded(string registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
+    private static void EnsureRegistryLoaded(Uri registryBaseUri, string? containerRegistryId, ILogger logger, ITestOutputHelper testOutput)
     {
         const int registryLoadMaxRetry = 10;
         const int registryLoadTimeout = 1000; //ms
 
         using HttpClient client = new();
-        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(ContainerHelpers.TryExpandRegistryToUri(registryBaseUri), "/v2/"));
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(registryBaseUri, "/v2/"));
 
         logger.LogInformation("Checking if the registry '{registry}' is available.", registryBaseUri);
 

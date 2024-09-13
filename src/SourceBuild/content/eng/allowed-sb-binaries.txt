@@ -3,6 +3,13 @@
 # This file is used by the Binary Tool to remove binaries from the VMR
 # If importing a file, include the relative path to the file
 
+# Well known non-checked in infrastructure
+artifacts/*/BinaryToolKit/
+.dotnet/
+.git/
+.packages/
+prereqs/packages/
+
 **/*.bmp
 **/*.doc
 **/*.docx
@@ -31,7 +38,6 @@ src/aspnetcore/src/**/Samples/**/*.woff*
 src/aspnetcore/src/Components/benchmarkapps/BlazingPizza.Server/wwwroot/css/font/quicksand-v8-latin-*.woff*
 src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files with a null bytes
 src/aspnetcore/src/ProjectTemplates/Web.ProjectTemplates/**/app.db
-src/aspnetcore/src/submodules/Node-Externals/cache/**/* # https://github.com/dotnet/source-build/issues/4161
 
 # fsharp
 src/fsharp/src/fsi/fsi.res # Icon
@@ -40,9 +46,6 @@ src/fsharp/src/fsi/fsi.res # Icon
 src/razor/**/SampleApp/**/fonts/**/*.eot
 src/razor/**/SampleApp/**/fonts/**/*.otf
 src/razor/**/SampleApp/**/fonts/**/*.woff
-
-# roslyn
-src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd
 
 # runtime
 src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessages.res # Icon

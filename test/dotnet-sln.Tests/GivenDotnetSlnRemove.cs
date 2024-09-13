@@ -637,7 +637,9 @@ EndGlobal
             using (var stream = new FileStream(Path.Combine(projectDirectory, "App.sln"), FileMode.Open))
             {
                 var bytes = new byte[preamble.Length];
+#pragma warning disable CA2022 // Avoid inexact read
                 stream.Read(bytes, 0, bytes.Length);
+#pragma warning restore CA2022 // Avoid inexact read
                 bytes.Should().BeEquivalentTo(preamble);
             }
         }

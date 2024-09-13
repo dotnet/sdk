@@ -4,13 +4,28 @@ schedules:
 - cron: "0 7 * * 1"
   displayName: Run on Mondays at 7am UTC
   branches:
+    # For releases branches only run on internal/release branches because that's where dependencies flow.
+    # Previews don't have internal/release branches so they must be run from non-internal release branches.
     include:
     - main
-    - release/*.0.1xx*
+    - release/*.0.1xx-preview*
+    - release/9.0.1xx
     - internal/release/*.0.1xx*
 
 pr: none
-trigger: none
+
+# Always trigger a run when changes are made to the license test implementation or baselines
+trigger: 
+  branches:
+    include:
+    - main
+    - release/*.0.1xx-preview*
+    - release/9.0.1xx
+    - internal/release/*.0.1xx*
+  paths:
+    include:
+    - test/Microsoft.DotNet.SourceBuild.SmokeTests/LicenseScanTests.cs
+    - test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
 
 parameters:
 # Provides a way to scan a specific repo. If not provided, all repos of the VMR will be scanned.
@@ -20,7 +35,10 @@ parameters:
   default: " " # Set it to an empty string to allow it be an optional parameter
 
 variables:
-  installerRoot: '$(Build.SourcesDirectory)/src/installer'
+  # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
+- group: DotNet-Source-Build-Bot-Secrets-MVP
+- name: sdkRoot
+  value: '$(Build.SourcesDirectory)/src/sdk'
 
 jobs:
 - job: Setup
@@ -30,7 +48,6 @@ jobs:
   steps:
   - script: |
       vmrSrcDir="$(Build.SourcesDirectory)/src"
-      
       # Builds an Azure DevOps matrix definition. Each entry in the matrix is a path,
       # allowing a job to be run for each src repo.
       matrix=""
@@ -76,11 +93,11 @@ jobs:
 
   - task: PipAuthenticate@1
     displayName: 'Pip Authenticate'
-    inputs: 
+    inputs:
       artifactFeeds: public/dotnet-public-pypi
       onlyAddExtraIndex: false
 
-  - script: $(installerRoot)/eng/install-scancode.sh
+  - script: $(sdkRoot)/eng/install-scancode.sh
     displayName: Install Scancode
 
   - script: >
@@ -90,13 +107,14 @@ jobs:
       --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
       --logger:'console;verbosity=detailed'
       -c Release
-      -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog 
+      -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog
       -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
       -clp:v=m
       /p:SmokeTestsLicenseScanPath=$(repoPath)
       /p:SmokeTestsWarnOnLicenseScanDiffs=false
       /p:TargetRid=linux-x64
       /p:PortableRid=linux-x64
+      /p:SkipPrepareSdkArchive=true
     displayName: Run Tests
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -136,8 +154,44 @@ jobs:
     continueOnError: true
     inputs:
       testRunner: vSTest
-      testResultsFiles: '*.trx'
-      searchFolder: $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
+
+- job: Publish_Test_Results_PR
+  dependsOn: LicenseScan
+  condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+  pool:
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals 1es-ubuntu-2004
+  variables:
+  - template: templates/variables/pipelines.yml
+  steps:
+
+  - script: |
+      source ./eng/common/tools.sh
+      InitializeDotNetCli true
+    displayName: Install .NET SDK
+    workingDirectory: $(Build.SourcesDirectory)
+
+  - template: templates/steps/download-pipeline-artifact.yml
+    parameters:
+      pipeline: $(SOURCE_BUILD_LICENSE_SCAN_PIPELINE_ID)
+      buildId: $(Build.BuildId)
+      artifact: ''
+      patterns: '**/Updated*'
+      displayName: Download Updated Test Files
+
+  - script: |
+      find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
+    displayName: Move Artifacts to root
+
+  - template: templates/steps/create-baseline-update-pr.yml
+    parameters:
+      pipeline: license
+      repo: dotnet/sdk
+      originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
+      updatedFilesDirectory: $(Pipeline.Workspace)/Artifacts
+      pullRequestTitle: Update Source-Build License Scan Baselines and Exclusions

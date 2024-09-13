@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 [Trait("Category", "SdkContent")]
 public class SdkContentTests : SdkTests
 {
+    private const string BaselineSubDir = nameof(SdkContentTests);
     private const string MsftSdkType = "msft";
     private const string SourceBuildSdkType = "sb";
     public static bool IncludeSdkContentTests => !string.IsNullOrWhiteSpace(Config.MsftSdkTarballPath) && !string.IsNullOrWhiteSpace(Config.SdkTarballPath);
@@ -38,16 +39,16 @@ public class SdkContentTests : SdkTests
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string sbFileListingFileName = "sbSdkFiles.txt";
-        ExclusionsHelper exclusionsHelper = new ExclusionsHelper("SdkFileDiffExclusions.txt");
+        ExclusionsHelper exclusionsHelper = new ExclusionsHelper("SdkFileDiffExclusions.txt", BaselineSubDir);
 
         WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true, MsftSdkType, exclusionsHelper);
         WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false, SourceBuildSdkType, exclusionsHelper);
 
+        exclusionsHelper.GenerateNewBaselineFile("FileList");
+        
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
-        BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
-
-        exclusionsHelper.GenerateNewBaselineFile("FileList");
+        BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs, BaselineSubDir);
     }
 
     [ConditionalFact(typeof(SdkContentTests), nameof(IncludeSdkContentTests))]
@@ -78,7 +79,7 @@ public class SdkContentTests : SdkTests
 
             string diff = BaselineHelper.DiffFiles(MsftVersionsFileName, SbVersionsFileName, OutputHelper);
             diff = RemoveDiffMarkers(diff);
-            BaselineHelper.CompareBaselineContents("MsftToSbSdkAssemblyVersions.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
+            BaselineHelper.CompareBaselineContents("MsftToSbSdkAssemblyVersions.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs, BaselineSubDir);
         }
         finally
         {
@@ -91,7 +92,7 @@ public class SdkContentTests : SdkTests
         // Remove any excluded files as long as SB SDK's file has the same or greater assembly version compared to the corresponding
         // file in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
         // that is valid for shipping.
-        ExclusionsHelper exclusionsHelper = new ExclusionsHelper("SdkAssemblyVersionDiffExclusions.txt");
+        ExclusionsHelper exclusionsHelper = new ExclusionsHelper("SdkAssemblyVersionDiffExclusions.txt", BaselineSubDir);
         string[] sbSdkFileArray = sbSdkAssemblyVersions.Keys.ToArray();
         for (int i = sbSdkFileArray.Length - 1; i >= 0; i--)
         {
@@ -174,7 +175,7 @@ public class SdkContentTests : SdkTests
 
     private Dictionary<string, Version?> GetSbSdkAssemblyVersions(string sbSdkPath)
     {
-        ExclusionsHelper exclusionsHelper = new("SdkFileDiffExclusions.txt");
+        ExclusionsHelper exclusionsHelper = new("SdkFileDiffExclusions.txt", BaselineSubDir);
         Dictionary<string, Version?> sbSdkAssemblyVersions = new();
         foreach (string file in Directory.EnumerateFiles(sbSdkPath, "*", SearchOption.AllDirectories))
         {
@@ -184,7 +185,8 @@ public class SdkContentTests : SdkTests
             {
                 AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
                 string relativePath = Path.GetRelativePath(sbSdkPath, file);
-                string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
+                string normalizedPath = BaselineHelper.RemoveRids(relativePath, isPortable: false);
+                normalizedPath = BaselineHelper.RemoveVersions(normalizedPath);
 
                 if(!exclusionsHelper.IsFileExcluded(normalizedPath, SourceBuildSdkType))
                 {

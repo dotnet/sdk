@@ -3,9 +3,7 @@ variables:
   value: internal
 - name: AZDO_ORG
   value: https://dev.azure.com/dnceng/
-- name: INSTALLER_OFFICIAL_CI_PIPELINE_ID
-  value: 286
-- name: INSTALLER_TARBALL_BUILD_CI_PIPELINE_ID
-  value: 1011
+- name: SDK_OFFICIAL_CI_PIPELINE_ID
+  value: 140
 - name: DOTNET_DOTNET_CI_PIPELINE_ID
   value: 1219

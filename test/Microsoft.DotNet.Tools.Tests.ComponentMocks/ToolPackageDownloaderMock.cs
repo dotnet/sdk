@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
                     rollbackDirectory = _toolDownloadDir.Value;
-                    
+
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
                         throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
@@ -121,7 +121,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         packageId.ToString(),
                         versionRange,
                         packageLocation.NugetConfig,
-                        packageLocation.RootConfigDirectory);
+                        packageLocation.RootConfigDirectory,
+                        packageLocation.SourceFeedOverrides);
 
                     var packageVersion = feedPackage.Version;
                     targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
@@ -180,10 +181,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                             PackagedShims = Array.Empty<FilePath>()
                         };
                     }
-                    else 
+                    else
                     {
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-                       
+
                         _fileSystem.Directory.CreateDirectory(packageRootDirectory.Value);
                         _fileSystem.Directory.Move(_toolDownloadDir.Value, packageDirectory.Value);
                         rollbackDirectory = packageDirectory.Value;
@@ -201,7 +202,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                                         version: version,
                                         packageDirectory: packageDirectory,
                                         warnings: warnings, packagedShims: packedShims, frameworks: frameworks);
-                    }                   
+                    }
                 },
                 rollback: () =>
                 {
@@ -214,7 +215,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         _fileSystem.Directory.Delete(packageRootDirectory.Value, false);
                     }
-                    
+
                 });
         }
 
@@ -222,12 +223,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string packageId,
             VersionRange versionRange,
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null)
+            DirectoryPath? rootConfigDirectory = null,
+            string[] sourceFeedOverrides = null)
         {
             var allPackages = _feeds
                 .Where(feed =>
                 {
-                    if (nugetConfig == null)
+                    if (sourceFeedOverrides is not null && sourceFeedOverrides.Length > 0)
+                    {
+                        return sourceFeedOverrides.Contains(feed.Uri);
+                    }
+                    else if (nugetConfig == null)
                     {
                         return SimulateNugetSearchNugetConfigAndMatch(
                             rootConfigDirectory,
@@ -298,6 +304,30 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         {
             return f.Type == MockFeedType.ImplicitAdditionalFeed
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
+        }
+
+        public NuGetVersion GetNuGetVersion(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange versionRange = null,
+            bool isGlobalTool = false)
+        {
+            versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
+
+            if (string.IsNullOrEmpty(packageId.ToString()))
+            {
+                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+            }
+
+            var feedPackage = GetPackage(
+                packageId.ToString(),
+                versionRange,
+                packageLocation.NugetConfig,
+                packageLocation.RootConfigDirectory,
+                packageLocation.SourceFeedOverrides);
+
+            return NuGetVersion.Parse(feedPackage.Version);
         }
 
         private class TestToolPackage : IToolPackage

@@ -34,6 +34,7 @@
     <ItemGroup>
       <OverlaySDK Include="$(_DotNetHiveRoot)/**/*" Exclude="$(_DotNetHiveRoot)sdk/**/*;$(_DotNetHiveRoot)templates/**/microsoft.dotnet.common.*.nupkg"/>
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledCliTools.props" />
+      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledMSBuildInformation.props" />
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/RuntimeIdentifierGraph.json" />
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/NETCoreSdkRuntimeIdentifierChain.txt" />
       <OverlaySdkFilesFromStage0 Include="$(Stage0IncludedWorkloadManifestsFile)" Condition="Exists('$(Stage0IncludedWorkloadManifestsFile)')"/>
@@ -56,7 +57,7 @@
 
     <Copy SourceFiles="@(OverlaySdkFilesFromStage0)"
           DestinationFiles="@(OverlaySdkFilesFromStage0->'$(SdkOutputDirectory)\%(RelativeDestination)\%(RecursiveDir)%(Filename)%(Extension)')"/>
-    
+
     <!-- If the stage 0 SDK doesn't have KnownWorkloadManifests.txt, then write a default version -->
     <WriteLinesToFile File="$(SdkOutputDirectory)\KnownWorkloadManifests.txt"
                       Lines="microsoft.net.sdk.android;microsoft.net.sdk.aspire;microsoft.net.sdk.ios;microsoft.net.sdk.maccatalyst;microsoft.net.sdk.macos;microsoft.net.sdk.maui;microsoft.net.sdk.tvos;microsoft.net.workload.mono.toolchain.current;microsoft.net.workload.emscripten.current;microsoft.net.workload.emscripten.net6;microsoft.net.workload.emscripten.net7;microsoft.net.workload.emscripten.net8;microsoft.net.workload.mono.toolchain.net6;microsoft.net.workload.mono.toolchain.net7;microsoft.net.workload.mono.toolchain.net8"/>
@@ -103,7 +104,7 @@
       <MonoToolchainCurrentWorkloadManifests Include="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\*\WorkloadManifest.targets" />
     </ItemGroup>
 
-    <OverrideWasmRuntimePackVersions Properties="@(WasmRuntimePackVersion)" 
+    <OverrideWasmRuntimePackVersions Properties="@(WasmRuntimePackVersion)"
       WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
   </Target>
 
@@ -121,8 +122,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <WorkloadManifestContent Include="$(RepoRoot)\src\Assets\TestWorkloads\manifests\**\*.*" />
-      <WorkloadPackContent Include="$(RepoRoot)\src\Assets\TestWorkloads\packs\**\*.*" />
+      <WorkloadManifestContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\manifests\**\*.*" />
+      <WorkloadPackContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\packs\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(WorkloadManifestContent)"

@@ -20,6 +20,8 @@ internal class ExclusionsHelper
 
     private readonly string _exclusionsFileName;
 
+    private readonly string _baselineSubDir;
+
     // Use this to narrow down the scope of exclusions to a specific category.
     // For instance, setting this to "test-templates" will consider 
     // "src/test-templates/exclusions.txt" but not "src/arcade/exclusions.txt".
@@ -29,7 +31,7 @@ internal class ExclusionsHelper
 
     private readonly Dictionary<string, HashSet<string>> _suffixToUnusedExclusions;
 
-    public ExclusionsHelper(string exclusionsFileName, string? exclusionRegexString = null)
+    public ExclusionsHelper(string exclusionsFileName, string baselineSubDir = "", string? exclusionRegexString = null)
     {
         if (exclusionsFileName is null)
         {
@@ -37,8 +39,9 @@ internal class ExclusionsHelper
         }
 
         _exclusionsFileName = exclusionsFileName;
+        _baselineSubDir = baselineSubDir;
         _exclusionRegex = string.IsNullOrWhiteSpace(exclusionRegexString) ? null : new Regex(exclusionRegexString);
-        _suffixToExclusions = ParseExclusionsFile(_exclusionsFileName);
+        _suffixToExclusions = ParseExclusionsFile();
         _suffixToUnusedExclusions = new Dictionary<string, HashSet<string>>(
             _suffixToExclusions.ToDictionary(pair => pair.Key, pair => new HashSet<string>(pair.Value)));
     }
@@ -55,15 +58,25 @@ internal class ExclusionsHelper
             (suffix != NullSuffix && CheckAndRemoveIfExcluded(filePath, NullSuffix));
     }
 
-    internal void GenerateNewBaselineFile(string? updatedFileTag = null)
+    /// <summary>
+    /// Generates a new baseline file with the exclusions that were used during the test run.
+    /// <param name="updatedFileTag">Optional tag to append to the updated file name.</param>
+    /// <param name="additionalLines">Optional additional lines to append to the updated file.</param>
+    /// </summary>
+    internal void GenerateNewBaselineFile(string? updatedFileTag = null, List<string>? additionalLines = null)
     {
-        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), _exclusionsFileName);
+        string exclusionsFilePath = BaselineHelper.GetBaselineFilePath(_exclusionsFileName, _baselineSubDir);
 
         string[] lines = File.ReadAllLines(exclusionsFilePath);
 
         var newLines = lines
             .Select(line => UpdateExclusionsLine(line))
             .Where(line => line is not null);
+
+        if (additionalLines is not null)
+        {
+            newLines = newLines.Concat(additionalLines);
+        }
 
         string updatedFileName = updatedFileTag is null
             ? $"Updated{_exclusionsFileName}"
@@ -90,9 +103,9 @@ internal class ExclusionsHelper
         return false;
     }
 
-    private Dictionary<string, HashSet<string>> ParseExclusionsFile(string exclusionsFileName)
+    private Dictionary<string, HashSet<string>> ParseExclusionsFile()
     {
-        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), exclusionsFileName);
+        string exclusionsFilePath = BaselineHelper.GetBaselineFilePath(_exclusionsFileName, _baselineSubDir);
         return File.ReadAllLines(exclusionsFilePath)
             .Select(line =>
             {

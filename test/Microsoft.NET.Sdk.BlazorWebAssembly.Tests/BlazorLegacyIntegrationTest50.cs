@@ -5,12 +5,9 @@ using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest50 : AspNetSdkBaselineTest
+    public class BlazorLegacyIntegrationTest50(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest50))
     {
-        public BlazorLegacyIntegrationTest50(ITestOutputHelper log) : base(log)
-        {
-        }
-
         [CoreMSBuildOnlyFact]
         public void Build50Hosted_Works()
         {
@@ -19,8 +16,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net5.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(testInstance, "Server");
-            build.Execute()
+            var build = CreateBuildCommand(testInstance, "Server");
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 
@@ -56,8 +53,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var targetFramework = "net5.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(testInstance, "Server");
-            publish.Execute()
+            var publish = CreatePublishCommand(testInstance, "Server");
+            ExecuteCommand(publish)
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

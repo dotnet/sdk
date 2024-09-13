@@ -11,7 +11,7 @@ parameters:
 - name: dotnetDotnetRunId
   type: string
 
-- name: includeArtifactsSize
+- name: publishTestResultsPr
   type: boolean
   default: false
 
@@ -38,17 +38,17 @@ jobs:
       
       echo "Dotnet-dotnet build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$dotnet_dotnet_build&view=results"
 
-      installer_sha=$(az pipelines build tag list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --build-id $dotnet_dotnet_build --query "[?contains(@, 'installer')]" --output tsv | sed "s,installer ,,g")
-      installer_build=$(az pipelines runs list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --pipeline-ids '$(INSTALLER_OFFICIAL_CI_PIPELINE_ID)' --query "[?sourceVersion == '$installer_sha'].id" --output tsv)
-      if [[ -z "$installer_build" ]]; then
-        echo "Could not find a build of installer for commit '$installer_sha'"
+      sdk_sha=$(az pipelines build tag list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --build-id $dotnet_dotnet_build --query "[?contains(@, 'sdk')]" --output tsv | sed "s,sdk ,,g")
+      sdk_build=$(az pipelines runs list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --pipeline-ids '$(SDK_OFFICIAL_CI_PIPELINE_ID)' --query "[?sourceVersion == '$sdk_sha'].id" --output tsv)
+      if [[ -z "$sdk_build" ]]; then
+        echo "Could not find a build of sdk for commit '$sdk_sha'"
         exit 1
       fi
 
-      echo "Installer build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$installer_build&view=results"
+      echo "Sdk build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$sdk_build&view=results"
 
-      echo "##vso[build.addbuildtag]installer-$installer_sha"
-      echo "##vso[task.setvariable variable=InstallerBuildId]$installer_build"
+      echo "##vso[build.addbuildtag]sdk $sdk_sha"
+      echo "##vso[task.setvariable variable=SdkBuildId]$sdk_build"
       echo "##vso[task.setvariable variable=DotnetDotnetBuildId]$dotnet_dotnet_build"
     displayName: Find associated builds
     name: Get_Build_Ids
@@ -64,14 +64,14 @@ jobs:
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Build SDK
 
   - template: ../steps/download-vmr-artifact.yml
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Built Artifacts
 
   - script: |
@@ -86,7 +86,7 @@ jobs:
       msft_sdk_tarball_name=$(find "$(Pipeline.Workspace)/Artifacts" -name "dotnet-sdk-*-$platform-${{ parameters.architecture }}.tar.gz" -exec basename {} \;)
 
       if [[ -z "$msft_sdk_tarball_name" ]]; then
-        echo "Microsoft SDK tarball does not exist in '$(Pipeline.Workspace)/Artifacts'. The associated build https://dev.azure.com/dnceng/internal/_build/results?buildId=$(InstallerBuildId) might have failed."
+        echo "Microsoft SDK tarball does not exist in '$(Pipeline.Workspace)/Artifacts'. The associated build https://dev.azure.com/dnceng/internal/_build/results?buildId=$(SdkBuildId) might have failed."
         exit 1
       fi
 
@@ -127,7 +127,6 @@ jobs:
       /p:SdkTarballPath=$(SdkTarballPath)
       /p:SourceBuiltArtifactsPath=$(SourceBuiltArtifactsPath)
       /p:SmokeTestsWarnOnSdkContentDiffs=false
-      /p:SmokeTestsIncludeArtifactsSizeTests=${{ parameters.includeArtifactsSize }}
       /p:TargetRid=${{ parameters.targetRid }}
       /p:PortableRid=$(Platform)-${{ parameters.architecture }}
     displayName: Run Tests
@@ -159,9 +158,18 @@ jobs:
     condition: succeededOrFailed()
     continueOnError: true
     inputs:
-      testRunner: vSTest
-      testResultsFiles: '*.trx'
-      searchFolder: $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
+
+  - ${{ if and(eq(parameters.publishTestResultsPr, 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))) }}:
+      - template: ../steps/create-baseline-update-pr.yml
+        parameters:
+          pipeline: sdk
+          repo: dotnet/sdk
+          originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
+          updatedFilesDirectory: $(Build.StagingDirectory)/BuildLogs
+          pullRequestTitle: Update Source-Build SDK Diff Tests Baselines and Exclusions

@@ -8,10 +8,11 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class DotNetWatchContext
     {
-        public required CommandLineOptions Options { get; init; }
+        public required GlobalOptions Options { get; init; }
         public required EnvironmentOptions EnvironmentOptions { get; init; }
         public required IReporter Reporter { get; init; }
-        public required LaunchSettingsProfile LaunchSettingsProfile { get; init; }
+
         public ProjectGraph? ProjectGraph { get; init; }
+        public required ProjectOptions RootProjectOptions { get; init; }
     }
 }

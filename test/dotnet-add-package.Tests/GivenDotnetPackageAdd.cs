@@ -55,6 +55,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
+            // disable implicit use of the Roslyn Toolset compiler package
+            testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 

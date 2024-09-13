@@ -13,6 +13,9 @@ src/arcade/src/Microsoft.DotNet.*.Tests/**/*
 src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/*.nupkg
 src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/.signature.p7s
 
+# aspire
+src/aspire/tests/Shared/TestCertificates/*.pfx
+
 # aspnetcore
 src/aspnetcore/src/submodules/MessagePack-CSharp/**/*.dll
 src/aspnetcore/src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar
@@ -34,6 +37,14 @@ src/cecil/symbols/**/Test/Resources/assemblies/*.exe
 src/cecil/symbols/**/Test/Resources/assemblies/*.pdb
 src/cecil/symbols/**/Test/Resources/assemblies/*.dll
 src/cecil/symbols/**/Test/Resources/assemblies/*.mdb
+
+# diagnostics
+src/diagnostics/src/tests/Microsoft.FileFormats.UnitTests/TestBinaries/**/*
+src/diagnostics/src/tests/Microsoft.SymbolStore.UnitTests/TestBinaries/**/*
+
+# efcore
+src/efcore/test/EFCore.Sqlite.FunctionalTests/northwind.db # https://github.com/dotnet/source-build/issues/4326
+src/efcore/benchmark/EFCore.Sqlite.Benchmarks/AdventureWorks2014.db # https://github.com/dotnet/source-build/issues/4326
 
 # fsharp
 src/fsharp/tests/**/*.resources
@@ -74,36 +85,39 @@ src/roslyn/src/Compilers/Test/Resources/Core/**/*.obj
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.dll
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.exe
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.Dll
+src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd
+src/roslyn/src/Workspaces/CoreTest/Resources/*
 src/roslyn/src/Workspaces/MSBuildTest/Resources/Dlls/*.dll
 src/roslyn/**/CodeAnalysisTest/**/*.res
 src/roslyn/**/CodeAnalysisTest/**/*.blah
 src/roslyn/**/CodeAnalysisTest/**/*.RES
 
 # runtime
-src/runtime/src/mono/mono/eglib/test/*.txt
-src/runtime/src/mono/mono/tests/exiting/*.out
-src/runtime/src/**/tests/**/*.res
-src/runtime/src/**/tests/**/*.resources
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/gRPC/grpc-dotnet/testassets/Certs/InteropTests/server1.pfx
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.mibc
-src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.nettrace
-src/runtime/src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/baselines/ReaderWriter_C14N_BaselineXML_Binary.xml
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/NetModule/*.mod
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/WinRT/Lib.winmd
-src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/Misc/CPPClassLibrary2.obj
-src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-256color
-src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
-src/runtime/src/mono/wasm/testassets/**/*.dat
-src/runtime/src/mono/wasm/testassets/**/*.o
 src/runtime/src/libraries/**/tests/**/*.dll
 src/runtime/src/libraries/**/tests/**/*.exe
 src/runtime/src/libraries/**/tests/**/*.pdb
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-256color
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/Misc/CPPClassLibrary2.obj
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/NetModule/*.mod
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/WinRT/Lib.winmd
+src/runtime/src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/baselines/ReaderWriter_C14N_BaselineXML_Binary.xml
+src/runtime/src/mono/mono/eglib/test/*.txt
+src/runtime/src/mono/mono/tests/exiting/*.out
+src/runtime/src/mono/wasm/testassets/**/*.dat
+src/runtime/src/mono/wasm/testassets/**/*.o
+src/runtime/src/native/external/LinuxTracepoints/TestOutput/EventHeaderInterceptorLE64.dat
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.mibc
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.nettrace
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/gRPC/grpc-dotnet/testassets/Certs/InteropTests/server1.pfx
+src/runtime/src/**/tests/**/*.res
+src/runtime/src/**/tests/**/*.resources
 
 # sdk
-src/sdk/src/Assets/TestProjects/**/*.dat
-src/sdk/src/Assets/TestProjects/**/*.cache
-src/sdk/src/Assets/TestProjects/**/*.tlb
-src/sdk/src/Assets/TestPackages/dotnet-new/nupkg_templates/*
+src/sdk/test/TestAssets/TestProjects/**/*.dat
+src/sdk/test/TestAssets/TestProjects/**/*.cache
+src/sdk/test/TestAssets/TestProjects/**/*.tlb
+src/sdk/test/TestAssets/TestPackages/dotnet-new/nupkg_templates/*
 src/sdk/test/Microsoft.DotNet.ShellShim.Tests/WpfBinaryTestAsssets/*.dll
 src/sdk/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Resources/*.zip
 

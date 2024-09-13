@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Tools.Common
         /// and continues to its parent until it fails. Returns whether it succeeded
         /// in deleting the file it was intended to delete.
         /// </summary>
-        public static bool DeleteFileAndEmptyParents(string path)
+        public static bool DeleteFileAndEmptyParents(string path, int maxDirectoriesToDelete = int.MaxValue)
         {
             if (!File.Exists(path))
             {
@@ -112,9 +112,13 @@ namespace Microsoft.DotNet.Tools.Common
             File.Delete(path);
             var dir = Path.GetDirectoryName(path);
 
-            while (!Directory.EnumerateFileSystemEntries(dir).Any())
+            int directoriesDeleted = 0;
+
+            while (!Directory.EnumerateFileSystemEntries(dir).Any() &&
+                directoriesDeleted < maxDirectoriesToDelete)
             {
                 Directory.Delete(dir);
+                directoriesDeleted++;
                 dir = Path.GetDirectoryName(dir);
             }
 

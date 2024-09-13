@@ -3,11 +3,13 @@
 
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -129,14 +131,64 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage($"Starting garbage collection.");
                 Log?.LogMessage($"Garbage Collection Mode: CleanAllPacks={cleanAllPacks}.");
 
-                var garbageCollector = new WorkloadGarbageCollector(DotNetHome, _sdkFeatureBand, RecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, new SetupLogReporter(Log));
-                garbageCollector.Collect();
+                var globalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(_sdkFeatureBand);
 
+                var garbageCollector = new WorkloadGarbageCollector(DotNetHome, _sdkFeatureBand, RecordRepository.GetInstalledWorkloads(_sdkFeatureBand),
+                    getResolverForWorkloadSet, globalJsonWorkloadSetVersions, new SetupLogReporter(Log));
+                garbageCollector.Collect();
 
                 IEnumerable<SdkFeatureBand> installedFeatureBands = GetInstalledFeatureBands(Log);
 
-                List<WorkloadManifestRecord> manifestsToRemove = new();
+                List<WorkloadSetRecord> workloadSetsToRemove = new();
+                var installedWorkloadSets = GetWorkloadSetRecords();
+                foreach (var workloadSetRecord in installedWorkloadSets)
+                {
+                    DependencyProvider depProvider = new DependencyProvider(workloadSetRecord.ProviderKeyName);
 
+                    (bool shouldBeInstalled, string reason) ShouldBeInstalled(SdkFeatureBand dependentFeatureBand)
+                    {
+                        if (!installedFeatureBands.Contains(dependentFeatureBand))
+                        {
+                            return (false, $"SDK feature band {dependentFeatureBand} does not match any installed feature bands.");
+                        }
+                        else if (dependentFeatureBand.Equals(_sdkFeatureBand))
+                        {
+                            if (garbageCollector.WorkloadSetsToKeep.Contains(workloadSetRecord.WorkloadSetVersion))
+                            {
+                                return (true, $"the workload set is still needed for SDK feature band {dependentFeatureBand}.");
+                            }
+                            else
+                            {
+                                return (false, $"the workload set is no longer needed for SDK feature band {dependentFeatureBand}.");
+                            }
+                        }
+                        else
+                        {
+                            return (true, $"the workload set may still be needed for SDK feature band {dependentFeatureBand}, which is different than the current SDK feature band of {_sdkFeatureBand}");
+                        }
+                    }
+
+                    Log?.LogMessage($"Evaluating dependents for workload set, dependent: {depProvider}, Version: {workloadSetRecord.WorkloadSetVersion}, Feature Band: {workloadSetRecord.WorkloadSetFeatureBand}");
+                    UpdateDependentReferenceCounts(depProvider, ShouldBeInstalled);
+
+                    // Recheck the registry to see if there are any remaining dependents. If not, we can
+                    // remove the workload set. We'll add it to the list and remove the installed workload set at the end.
+                    IEnumerable<string> remainingDependents = depProvider.Dependents;
+
+                    if (remainingDependents.Any())
+                    {
+                        Log?.LogMessage($"Workload set {workloadSetRecord.WorkloadSetVersion}/{workloadSetRecord.WorkloadSetFeatureBand} will not be removed because other dependents remain: {string.Join(", ", remainingDependents)}.");
+                    }
+                    else
+                    {
+                        workloadSetsToRemove.Add(workloadSetRecord);
+                        Log?.LogMessage($"Removing workload set {workloadSetRecord.WorkloadSetVersion}/{workloadSetRecord.WorkloadSetFeatureBand} as no dependents remain.");
+                    }
+                }
+
+                RemoveWorkloadSets(workloadSetsToRemove, offlineCache);
+
+                List<WorkloadManifestRecord> manifestsToRemove = new();
                 var installedWorkloadManifests = GetWorkloadManifestRecords();
                 foreach (var manifestRecord in installedWorkloadManifests)
                 {
@@ -258,58 +310,71 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
-        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
-        {
-            var pathToReturn = string.Empty;
-            context.Run(
-                action: () =>
-                {
-                    pathToReturn = ModifyWorkloadSet(advertisingPackagePath, InstallAction.Install);
-                },
-                rollback: () =>
-                {
-                    ModifyWorkloadSet(advertisingPackagePath, InstallAction.Uninstall);
-                });
-
-            return pathToReturn;
-        }
-
-        private string ModifyWorkloadSet(string advertisingPackagePath, InstallAction requestedAction)
+        public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
         {
             ReportPendingReboot();
 
-            // Resolve the package ID for the manifest payload package
-            var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
-            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-            string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
-            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion);
+            var (msi, msiPackageId, installationFolder) = GetWorkloadSetPayload(workloadSetVersion, offlineCache);
+
+            context.Run(
+                action: () =>
+                {
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+
+                    if (plannedAction == InstallAction.Install)
+                    {
+                        Elevate();
+
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                    }
+                },
+                rollback: () =>
+                {
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
+
+                    if (plannedAction == InstallAction.Uninstall)
+                    {
+                        Elevate();
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
+
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+                    }
+                });
+
+            return WorkloadSet.FromWorkloadSetFolder(installationFolder, workloadSetVersion, _sdkFeatureBand);
+        }
+
+        (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
+        {
+            SdkFeatureBand workloadSetFeatureBand;
+            string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+            string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
             // Retrieve the payload from the MSI package cache.
-            MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
-            VerifyPackage(msi);
-            DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-
-            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
-
-            if (plannedAction != InstallAction.None)
+            MsiPayload msi;
+            try
             {
-                Elevate();
-
-                ExecutePackage(msi, plannedAction, msiPackageId);
-
-                // Update the reference count against the MSI.
-                UpdateDependent(
-                    plannedAction == InstallAction.Uninstall ?
-                        InstallRequestType.RemoveDependent :
-                        InstallRequestType.AddDependent,
-                    msi.Manifest.ProviderKeyName,
-                    _dependent);
+                msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             }
+            //  Unwrap AggregateException caused by switch from async to sync
+            catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
+            {
+                throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
+            }
+            VerifyPackage(msi);
 
-            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            string installationFolder = Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+
+            return (msi, msiPackageId, installationFolder);
         }
 
         /// <summary>
@@ -363,7 +428,33 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private void RemoveWorkloadManifests(List<WorkloadManifestRecord> manifestToRemove, DirectoryPath? offlineCach)
+        private void RemoveWorkloadSets(List<WorkloadSetRecord> workloadSetsToRemove, DirectoryPath? offlineCache)
+        {
+            foreach (WorkloadSetRecord record in workloadSetsToRemove)
+            {
+                DetectState state = DetectPackage(record.ProductCode, out Version _);
+                if (state == DetectState.Present)
+                {
+                    string msiNuGetPackageId = $"Microsoft.NET.Workloads.{record.WorkloadSetFeatureBand}.Msi.{HostArchitecture}";
+                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.WorkloadSetPackageVersion, offlineCache);
+
+                    if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, workload set record: {record.ProductCode}.");
+                        string logFile = GetMsiLogName(record.ProductCode, InstallAction.Uninstall);
+                        uint error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
+                        ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
+                    }
+                    else
+                    {
+                        VerifyPackage(msi);
+                        ExecutePackage(msi, InstallAction.Uninstall, msiNuGetPackageId);
+                    }
+                }
+            }
+        }
+
+        private void RemoveWorkloadManifests(List<WorkloadManifestRecord> manifestToRemove, DirectoryPath? offlineCache)
         {
             foreach (WorkloadManifestRecord record in manifestToRemove)
             {
@@ -371,7 +462,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if (state == DetectState.Present)
                 {
                     string msiNuGetPackageId = $"{record.ManifestId}.Manifest-{record.ManifestFeatureBand}.Msi.{HostArchitecture}";
-                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.ManifestVersion, offlineCach);
+                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.ManifestVersion, offlineCache);
 
                     if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
                     {
@@ -451,18 +542,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
 
-        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
+        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             try
             {
                 transactionContext.Run(
                     action: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache, isRollback);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache);
                     },
                     rollback: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate.Reverse(), offlineCache: null, isRollback: true);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, action: InstallAction.Uninstall);
                     });
             }
             catch (Exception e)
@@ -472,14 +563,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false)
+        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, InstallAction action = InstallAction.Install)
         {
             ReportPendingReboot();
 
             // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
             // treat it as a special case and is different from the install failing and rolling that back, though depending where the install
             // failed, it may have removed the old product already.
-            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}, rollback: {isRollback}.");
+            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}.");
 
             // Resolve the package ID for the manifest payload package
             string msiPackageId = GetManifestPackageId(manifestUpdate.ManifestId, new SdkFeatureBand(manifestUpdate.NewFeatureBand)).ToString();
@@ -491,7 +582,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+            InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
 
             ExecutePackage(msi, plannedAction, msiPackageId);
 
@@ -619,6 +710,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 LogException(e);
                 throw;
             }
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
+        {
+            return WorkloadFileBasedInstall.GetWorkloadHistoryRecords(GetWorkloadHistoryDirectory(sdkFeatureBand.ToString()));
         }
 
         public void Shutdown()
@@ -1081,6 +1177,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
+        {
+            UpdateInstallMode(sdkFeatureBand, newMode);
+            string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
+        }
     }
 }

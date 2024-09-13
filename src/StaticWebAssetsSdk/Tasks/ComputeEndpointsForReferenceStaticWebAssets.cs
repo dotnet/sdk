@@ -42,6 +42,14 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 {
                     candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
 
+                    foreach (var property in candidateEndpoint.EndpointProperties)
+                    {
+                        if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
+                        {
+                            property.Value = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, property.Value, '/');
+                        }
+                    }
+
                     Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
 
                     endpoints.Add(candidateEndpoint);

@@ -3,124 +3,60 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.DotNet.SourceBuild.SmokeTests;
-public class Config : IDisposable
+namespace Microsoft.DotNet.UnifiedBuild.Tests;
+
+public class Config
 {
-    public string LogsDirectory { get; }
-    public string MsftSdkArchivePath { get; }
-    public string UbBuildVersion { get; }
-    public string PortableRid { get; }
-    public string UbSdkArchivePath { get; }
-    public string TargetRid { get; }
-    public string TargetArchitecture { get; }
-    public bool WarnOnSdkContentDiffs { get; }
-    public bool NoDiagnosticMessages { get; }
+    public static string PortableRid { get; } = GetRuntimeConfig(PortableRidSwitch);
+    const string PortableRidSwitch = RuntimeConfigSwitchPrefix + nameof(PortableRid);
 
-    string? _downloadedMsftSdkPath = null;
-    IMessageSink _sink;
+    public static string LogsDirectory { get; } = GetRuntimeConfig(LogsDirectorySwitch);
+    const string LogsDirectorySwitch = RuntimeConfigSwitchPrefix + nameof(LogsDirectory);
 
-    public Config(IMessageSink sink)
+    public static string TargetRid { get; } = GetRuntimeConfig(TargetRidSwitch);
+    const string TargetRidSwitch = RuntimeConfigSwitchPrefix + nameof(TargetRid);
+
+    public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
+
+    public static bool WarnOnContentDiffs { get; } = TryGetRuntimeConfig(WarnOnContentDiffsSwitch, out bool value) ? value : false;
+    const string WarnOnContentDiffsSwitch = RuntimeConfigSwitchPrefix + nameof(WarnOnContentDiffs);
+
+    public const string RuntimeConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
+
+    public static string DownloadCacheDirectory { get; } = Path.Combine(Config.LogsDirectory, "Microsoft.DotNet.UnifiedBuild.Tests", "DownloadCache");
+
+    public static string GetRuntimeConfig(string key)
     {
-        _sink = sink;
-        string? noDiagnosticMessages = (string?)AppContext.GetData(NoDiagnosticMessagesSwitch);
-        LogsDirectory = (string)(AppContext.GetData(LogsDirectorySwitch) ?? throw new InvalidOperationException("Logs directory must be specified"));
-        NoDiagnosticMessages = string.IsNullOrEmpty(noDiagnosticMessages) ? false : bool.Parse(noDiagnosticMessages);
-        UbBuildVersion = (string)(AppContext.GetData(BuildVersionSwitch) ?? throw new InvalidOperationException("Unified Build version must be specified"));
-        TargetRid = (string)(AppContext.GetData(TargetRidSwitch) ?? throw new InvalidOperationException("Target RID must be specified"));
-        PortableRid = (string)(AppContext.GetData(PortableRidSwitch) ?? throw new InvalidOperationException("Portable RID must be specified"));
-        UbSdkArchivePath = (string)(AppContext.GetData(UbSdkArchivePathSwitch) ?? throw new InvalidOperationException("Unified Build SDK archive path must be specified"));
-        TargetArchitecture = TargetRid.Split('-')[1];
-        WarnOnSdkContentDiffs = bool.Parse((string)(AppContext.GetData(WarnOnSdkContentDiffsSwitch) ?? "false"));
-        MsftSdkArchivePath = (string)AppContext.GetData(MsftSdkArchivePathSwitch)!;
-        if (string.IsNullOrEmpty(MsftSdkArchivePath))
-        {
-            MsftSdkArchivePath = DownloadMsftSdkArchive().Result;
-        }
-        else {
-            LogMessage($"Skipping downloading latest SDK. Using provided sdk archive: '{MsftSdkArchivePath}'");
-        }
-        LogMessage($$"""
-            Test config values:
-            {{nameof(LogsDirectory)}}='{{LogsDirectory}}'
-            {{nameof(UbBuildVersion)}}='{{UbBuildVersion}}'
-            {{nameof(TargetRid)}}='{{TargetRid}}'
-            {{nameof(PortableRid)}}='{{PortableRid}}'
-            {{nameof(UbSdkArchivePath)}}='{{UbSdkArchivePath}}'
-            {{nameof(TargetArchitecture)}}='{{TargetArchitecture}}'
-            {{nameof(WarnOnSdkContentDiffs)}}='{{WarnOnSdkContentDiffs}}'
-            {{nameof(MsftSdkArchivePath)}}='{{MsftSdkArchivePath}}'
-            {{nameof(NoDiagnosticMessages)}}='{{NoDiagnosticMessages}}'
-            """);
+        return TryGetRuntimeConfig(key, out string? value) ? value : throw new InvalidOperationException($"Runtime config setting '{key}' must be specified");
     }
 
-    const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
-    const string LogsDirectorySwitch = ConfigSwitchPrefix + nameof(LogsDirectory);
-    const string BuildVersionSwitch = ConfigSwitchPrefix + nameof(UbBuildVersion);
-    const string TargetRidSwitch = ConfigSwitchPrefix + nameof(TargetRid);
-    const string PortableRidSwitch = ConfigSwitchPrefix + nameof(PortableRid);
-    const string UbSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(UbSdkArchivePath);
-    const string MsftSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(MsftSdkArchivePath);
-    const string WarnOnSdkContentDiffsSwitch = ConfigSwitchPrefix + nameof(WarnOnSdkContentDiffs);
-    const string NoDiagnosticMessagesSwitch = ConfigSwitchPrefix + nameof(NoDiagnosticMessages);
-
-    static string GetArchiveExtension(string path)
+    public static bool TryGetRuntimeConfig(string key, out bool value)
     {
-        if (path.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
-            return ".zip";
-        if (path.EndsWith(".tar.gz", StringComparison.InvariantCultureIgnoreCase))
-            return ".tar.gz";
-        throw new InvalidOperationException($"Path does not have a valid archive extenions: '{path}'");
+        string? rawValue = (string?)AppContext.GetData(key);
+        if (string.IsNullOrEmpty(rawValue))
+        {
+            value = default!;
+            return false;
+        }
+        value = bool.Parse(rawValue);
+        return true;
     }
 
-    public async Task<string> DownloadMsftSdkArchive()
+    public static bool TryGetRuntimeConfig(string key, [NotNullWhen(true)] out string? value)
     {
-        var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
-        var channel = UbBuildVersion[..5] + "xx";
-        var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
-        LogMessage($"Downloading latest sdk from '{akaMsUrl}'");
-        var redirectResponse = await client.GetAsync(akaMsUrl);
-        // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
-        if (redirectResponse.StatusCode != HttpStatusCode.Moved)
+        value = (string?)AppContext.GetData(key);
+        if (string.IsNullOrEmpty(value))
         {
-            throw new InvalidOperationException($"Could not find download link for Microsoft built sdk at '{akaMsUrl}'");
+            return false;
         }
-        var closestUrl = redirectResponse.Headers.Location!.ToString();
-        LogMessage($"Redirected to '{closestUrl}'");
-        HttpResponseMessage packageResponse = await client.GetAsync(closestUrl);
-        var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
-        _downloadedMsftSdkPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + Path.GetFileName(packageUriPath));
-        LogMessage($"Downloading to '{_downloadedMsftSdkPath}'");
-        using (var file = File.Create(_downloadedMsftSdkPath))
-        {
-            await packageResponse.Content.CopyToAsync(file);
-        }
-        return _downloadedMsftSdkPath;
-    }
-
-    private void LogMessage(string message)
-    {
-        if (NoDiagnosticMessages)
-            return;
-        if (_sink is null)
-            throw new InvalidOperationException("Cannot log message without a message sink");
-
-        _sink.OnMessage(new DiagnosticMessage(message));
-    }
-
-    public void Dispose()
-    {
-        if (_downloadedMsftSdkPath != null)
-        {
-            File.Delete(_downloadedMsftSdkPath);
-        }
+        return true;
     }
 }

@@ -16,7 +16,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
@@ -52,7 +59,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    doc.Root.Add(itemGroup);
+                });
 
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
@@ -74,18 +87,28 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        doc.Root.Add(itemGroup);
+                    }
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
 
             // Make sure the main project exists

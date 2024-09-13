@@ -12,7 +12,9 @@ usage()
   echo "Common settings:"
   echo "  --binaryLog                     Create MSBuild binary log (short: -bl)"
   echo "  --configuration <value>         Build configuration: 'Debug' or 'Release' (short: -c)"
+  echo "  --rid, --target-rid <value>     Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
   echo "  --verbosity <value>             Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
+  echo "  --with-system-libs <libs>       Use system versions of these libraries. Combine with a plus. eg brotli+libunwind+rapidjson+zlib"
   echo ""
 
   echo "Actions:"
@@ -32,8 +34,12 @@ usage()
   echo "  --with-sdk <DIR>                Use the SDK in the specified directory for bootstrapping"
   echo ""
 
+  echo "Non-source-only settings:"
+  echo "  --build-repo-tests              Build repository tests"
+  echo "  --dev                           Use -dev or -ci versioning instead of .NET official build versions"
+
+
   echo "Advanced settings:"
-  echo "  --build-repo-tests              Build repository tests. May not be supported with --source-only"
   echo "  --ci                            Set when running on CI server"
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
@@ -82,8 +88,11 @@ packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
+use_dev_versioning=false
+target_rid=
+system_libs=
 
-properties=''
+properties=()
 while [[ $# > 0 ]]; do
   opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
@@ -93,6 +102,14 @@ while [[ $# > 0 ]]; do
       ;;
     -configuration|-c)
       configuration=$2
+      shift
+      ;;
+    -rid|-target-rid)
+      target_rid=$2
+      shift
+      ;;
+    -with-system-libs)
+      system_libs=$2
       shift
       ;;
     -verbosity|-v)
@@ -115,13 +132,13 @@ while [[ $# > 0 ]]; do
     # Source-only settings
     -source-only|-source-build|-so|-sb)
       sourceOnly=true
-      properties="$properties /p:DotNetBuildSourceOnly=true"
+      properties+=( "/p:DotNetBuildSourceOnly=true" )
       ;;
     -online)
-      properties="$properties /p:DotNetBuildWithOnlineFeeds=true"
+      properties+=( "/p:DotNetBuildWithOnlineFeeds=true" )
       ;;
     -poison)
-      properties="$properties /p:EnablePoison=true"
+      properties+=( "/p:EnablePoison=true" )
       ;;
     -release-manifest)
       releaseManifest="$2"
@@ -157,14 +174,14 @@ while [[ $# > 0 ]]; do
       ;;
 
     # Advanced settings
-    -build-tests)
-      properties="$properties /p:DotNetBuildTests=true"
+    -build-repo-tests)
+      properties+=( "/p:DotNetBuildTests=true" )
       ;;
     -ci)
       ci=true
       ;;
     -clean-while-building|-cwb)
-      properties="$properties /p:CleanWhileBuilding=true"
+      properties+=( "/p:CleanWhileBuilding=true" )
       ;;
     -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
@@ -173,10 +190,13 @@ while [[ $# > 0 ]]; do
       prepare_machine=true
       ;;
     -use-mono-runtime)
-      properties="$properties /p:SourceBuildUseMonoRuntime=true"
+      properties+=( "/p:SourceBuildUseMonoRuntime=true" )
+      ;;
+    -dev)
+      use_dev_versioning=true
       ;;
     *)
-      properties="$properties $1"
+      properties+=( "$1" )
       ;;
   esac
 
@@ -187,6 +207,10 @@ if [[ "$ci" == true ]]; then
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
   fi
+fi
+
+if [[ "$use_dev_versioning" == true && "$sourceOnly" != true ]]; then
+  properties+=( "/p:UseOfficialBuildVersioning=false" )
 fi
 
 # Never use the global nuget cache folder
@@ -201,6 +225,8 @@ targets="/t:Build"
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
   targets="$targets;VSTest"
+  # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
+  export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
 fi
 
 function Build {
@@ -222,19 +248,24 @@ function Build {
       $targets \
       $bl \
       /p:Configuration=$configuration \
-      $properties
+      "${properties[@]}"
 
     ExitWithExitCode 0
 
   else
 
     if [ "$ci" == "true" ]; then
-      properties="$properties /p:ContinuousIntegrationBuild=true"
+      properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
 
     if [ "$test" != "true" ]; then
+      initSourceOnlyBinaryLog=""
+      if [[ "$binary_log" == true ]]; then
+        initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
+      fi
+
       "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolsetPackages,BuildMSBuildSdkResolver $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
     fi
@@ -247,7 +278,7 @@ function Build {
       bl="/bl:\"$log_dir/Build.binlog\""
     fi
 
-    "$CLI_ROOT/dotnet" msbuild --restore "$project" $bl $targets $properties
+    "$CLI_ROOT/dotnet" msbuild --restore "$project" $bl $targets "${properties[@]}"
   fi
 }
 
@@ -263,6 +294,12 @@ fi
 source $scriptroot/eng/common/native/init-os-and-arch.sh
 source $scriptroot/eng/common/native/init-distro-rid.sh
 initDistroRidGlobal "$os" "$arch" ""
+if [[ -n "$target_rid" ]]; then
+  properties+=( "/p:TargetRid=$target_rid" )
+fi
+if [[ -n "$system_libs" ]]; then
+  properties+=( "/p:UseSystemLibs=$system_libs" )
+fi
 
 # Source-only settings
 if [[ "$sourceOnly" == "true" ]]; then
@@ -314,9 +351,9 @@ if [[ "$sourceOnly" == "true" ]]; then
   # Support custom source built package locations
   if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
     if [ "$test" == "true" ]; then
-      properties="$properties /p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+      properties+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     else
-      properties="$properties /p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+      properties+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     fi
   fi
 
@@ -348,7 +385,7 @@ if [[ "$sourceOnly" == "true" ]]; then
     packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
   elif [ -d "$packagesArchiveDir" ]; then
     sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
-    if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
+    if [ -f "${packagesPreviouslySourceBuiltDir}PackageVersions.props" ]; then
       packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
     elif [ -f "$sourceBuiltArchive" ]; then
       tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
@@ -358,8 +395,9 @@ if [[ "$sourceOnly" == "true" ]]; then
 
   if [ ! -f "$packageVersionsPath" ]; then
     echo "Cannot find PackagesVersions.props.  Debugging info:"
-    echo "  Attempted archive path: $packagesArchiveDir"
     echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
+    echo "  Attempted previously-source-built path: ${packagesPreviouslySourceBuiltDir}PackageVersions.props"
+    echo "  Attempted archive path: $packagesArchiveDir"
     exit 1
   fi
 

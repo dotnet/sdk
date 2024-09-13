@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
             _toolInstaller =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
-                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), isNuGetTool: true);
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), shouldUsePackageSourceMapping: true);
         }
 
         [Fact]
@@ -182,9 +182,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -203,9 +203,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]

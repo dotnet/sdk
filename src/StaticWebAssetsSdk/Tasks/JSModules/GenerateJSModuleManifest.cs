@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Execute()
         {
-            var modules = JsModules.Select(StaticWebAsset.FromTaskItem).Select(s => s.ComputeTargetPath("", '/')).ToArray();
+            var modules = StaticWebAssetEndpoint.FromItemGroup(JsModules).Select(s => s.Route).ToArray();
             Array.Sort(modules, StringComparer.Ordinal);
 
             PersistModules(modules);

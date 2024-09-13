@@ -1,10 +1,10 @@
-# This yml is used by these pipelines and triggers: 
+# This yml is used by these pipelines and triggers:
 # NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
 #
 # - dotnet-source-build (public)
 #   https://dev.azure.com/dnceng-public/public/_build?definitionId=240
 #   - PR: ultralite build
-#   - CI: release/* only, every batched commit, full build
+#   - CI: release/*, every batched commit, full build
 #   - Schedule: main only, full build
 #
 # - dotnet-unified-build (public)
@@ -21,13 +21,13 @@
 #
 # - dotnet-source-build-lite (internal)
 #   https://dev.azure.com/dnceng/internal/_build?definitionId=1299
-#   - PR: release/* and main, lite build, on-demand trigger
+#   - PR: release/* and main only, lite build, on-demand trigger
 #   - CI: main only, every batched commit, lite build
 #
 # - dotnet-unified-build (internal)
 #   https://dev.azure.com/dnceng/internal/_build?definitionId=1330
 #   - PR: lite build
-#   - CI: release/*, internal/release/* and main, every batched commit, full build
+#   - CI: release/*, internal/release/* and main only, every batched commit, full build
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
@@ -61,6 +61,10 @@ extends:
         image: 1es-windows-2022
         os: windows
 
+      # Spotbugs is failing the Windows builds: https://github.com/dotnet/dnceng/issues/2740
+      spotBugs:
+        enabled: false
+
       codeql:
         compiled:
           enabled: true
@@ -75,7 +79,7 @@ extends:
     - ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       - template: /eng/pipelines/templates/stages/vmr-scan.yml@self
 
-    - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml@self
+    - template: /src/sdk/eng/pipelines/templates/stages/vmr-build.yml@self
       parameters:
         isBuiltFromVmr: true
         isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}

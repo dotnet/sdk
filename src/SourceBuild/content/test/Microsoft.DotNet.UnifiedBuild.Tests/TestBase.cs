@@ -2,23 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.SourceBuild.SmokeTests;
+namespace Microsoft.DotNet.UnifiedBuild.Tests;
 
-public abstract class TestBase : IClassFixture<Config>
+public abstract class TestBase
 {
-    protected readonly Config Config;
-
     public ITestOutputHelper OutputHelper { get; }
 
-    public TestBase(ITestOutputHelper outputHelper, Config config)
+    public TestBase(ITestOutputHelper outputHelper)
     {
         OutputHelper = outputHelper;
-        Config = config;
-
         if (!Directory.Exists(Config.LogsDirectory))
         {
             Directory.CreateDirectory(Config.LogsDirectory);

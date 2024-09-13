@@ -105,10 +105,11 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
                 var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+                testProject.AdditionalProperties["PublishTrimmed"] = "true";
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + trimMode);
 
                 var publishCommand = new PublishCommand(testAsset);
-                publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}", "/p:SuppressTrimAnalysisWarnings=true")
+                publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:TrimMode={trimMode}", "/p:SuppressTrimAnalysisWarnings=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("warning IL2075")
                     .And.NotHaveStdOutContaining("warning IL2026");
@@ -891,8 +892,8 @@ namespace Microsoft.NET.Publish.Tests
                 expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
-                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.AmbientValueAttribute.AmbientValueAttribute(Type, String): Using member 'System.ComponentModel.AmbientValueAttribute.<.ctor>g__TypeDescriptorGetConverter|1_0(Type)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. AmbientValueAttribute usage of TypeConverter is not compatible with trimming.",
-                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): Using member 'System.ComponentModel.DefaultValueAttribute.<.ctor>g__TryConvertFromInvariantString|4_0(Type, String, Object&)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. DefaultValueAttribute usage of TypeConverter is not compatible with trimming."
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.AmbientValueAttribute.AmbientValueAttribute(Type, String): Using member",
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): Using member"
                 });
             }
 

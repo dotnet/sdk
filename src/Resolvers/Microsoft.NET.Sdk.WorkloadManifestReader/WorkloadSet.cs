@@ -5,13 +5,7 @@
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
-
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-#endif
-
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -73,16 +67,51 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadSet FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-#if USE_SYSTEM_TEXT_JSON
             var jsonSerializerOptions = new JsonSerializerOptions()
             {
                 AllowTrailingCommas = true,
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
             return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
-#else
-            return FromDictionaryForJson(JsonConvert.DeserializeObject<IDictionary<string, string>>(json)!, defaultFeatureBand);
-#endif
+        }
+
+        public static WorkloadSet FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
+        {
+            WorkloadSet? workloadSet = null;
+            foreach (var jsonFile in Directory.GetFiles(path, "*.workloadset.json"))
+            {
+                var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), defaultFeatureBand);
+                if (workloadSet == null)
+                {
+                    workloadSet = newWorkloadSet;
+                }
+                else
+                {
+                    //  If there are multiple workloadset.json files, merge them
+                    foreach (var kvp in newWorkloadSet.ManifestVersions)
+                    {
+                        if (workloadSet.ManifestVersions.ContainsKey(kvp.Key))
+                        {
+                            throw new InvalidOperationException($"Workload set files in {path} defined the same manifest ({kvp.Key}) multiple times");
+                        }
+                        workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+
+            if (workloadSet == null)
+            {
+                throw new InvalidOperationException("No workload set information found in: " + path);
+            }
+
+            if (File.Exists(Path.Combine(path, "baseline.workloadset.json")))
+            {
+                workloadSet.IsBaselineWorkloadSet = true;
+            }
+
+            workloadSet.Version = workloadSetVersion;
+
+            return workloadSet;
         }
 
         public Dictionary<string, string> ToDictionaryForJson()
@@ -93,13 +122,49 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ToJson()
         {
-#if USE_SYSTEM_TEXT_JSON
             var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
-#else
-            var json = JsonConvert.SerializeObject(ToDictionaryForJson(), Formatting.Indented);
-#endif
             return json;
         }
 
+        //  Corresponding method for opposite direction is in WorkloadManifestUpdater, as its implementation depends on NuGetVersion,
+        //  which we'd like to avoid adding as a dependency here.
+        public static string WorkloadSetVersionToWorkloadSetPackageVersion(string setVersion, out SdkFeatureBand sdkFeatureBand)
+        {
+            string[] sections = setVersion.Split(new char[] { '-', '+' }, 2);
+            string versionCore = sections[0];
+            string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
+
+            string[] coreComponents = versionCore.Split('.');
+            string major = coreComponents[0];
+            string minor = coreComponents[1];
+            string patch = coreComponents[2];
+
+            string packageVersion = $"{major}.{patch}.";
+            if (coreComponents.Length == 3)
+            {
+                //  No workload set patch version
+                packageVersion += "0";
+
+                //  Use preview specifier (if any) from workload set version as part of SDK feature band
+                sdkFeatureBand = new SdkFeatureBand(setVersion);
+            }
+            else
+            {
+                //  Workload set version has workload patch version (ie 4 components)
+                packageVersion += coreComponents[3];
+
+                //  Don't include any preview specifiers in SDK feature band
+                sdkFeatureBand = new SdkFeatureBand($"{major}.{minor}.{patch}");
+            }
+
+            if (preReleaseOrBuild != null)
+            {
+                //  Figure out if we split on a '-' or '+'
+                char separator = setVersion[sections[0].Length];
+                packageVersion += separator + preReleaseOrBuild;
+            }
+
+            return packageVersion;
+        }
     }
 }

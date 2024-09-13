@@ -9,7 +9,7 @@ What this means:
 In the VMR, you can find:
 - source files of [each product repository](#list-of-components) which are mirrored inside of their respective directories under [`src/`](https://github.com/dotnet/dotnet/tree/main/src),
 - tooling that enables [building the whole .NET product from source](https://github.com/dotnet/source-build) on Linux platforms,
-- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/patches), applied on top of the original code to make the build possible,
+- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/sdk/src/SourceBuild/patches), applied on top of the original code to make the build possible,
 - *[in future]* E2E tests for the whole .NET product.
 
 Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx`).
@@ -55,7 +55,7 @@ More details on this process:
 - [Synchronization Based on Declared Dependencies](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#synchronization-based-on-declared-dependencies)
 - [Moving Code and Dependencies between the VMR and Development Repos](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#moving-code-and-dependencies-between-the-vmr-and-development-repos)
 
-We expect the code flow to start working both ways in the .NET 9 timeframe.
+We expect the code flow to start working both ways at the completion of the Unified Build project.
 See the [Unified Build roadmap](src/arcade/Documentation/UnifiedBuild/Roadmap.md) for more details.
 
 ### Contribution
@@ -142,7 +142,7 @@ You can also build the repository using a Docker image which has the required pr
 The example below creates a Docker volume named `vmr` and clones and builds the VMR there.
 
 ```sh
-docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
+docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 git clone https://github.com/dotnet/dotnet .
 
 # - Microsoft based build
@@ -152,7 +152,7 @@ git clone https://github.com/dotnet/dotnet .
 ./prep-source-build.sh && ./build.sh -sb --clean-while-building
 
 mkdir -p $HOME/.dotnet
-tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.9-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 ```
 
@@ -173,7 +173,7 @@ Alternatively, you can also provide a manifest file where this information can b
 
 Sometimes you want to make a change in a repository and test that change in the VMR. You could of course make the change in the VMR directly (locally, as the VMR is read-only for now) but in case it's already available in your repository, you can synchronize it into the VMR (again locally).
 
-To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [vmr-sync.sh](src/installer/eng/vmr-sync.sh) or [vmr-sync.ps1](src/installer/eng/vmr-sync.ps1) script to pull your changes in. Please refer to the documentation in the script for more details.
+To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [vmr-sync.sh](src/sdk/eng/vmr-sync.sh) or [vmr-sync.ps1](src/sdk/eng/vmr-sync.ps1) script to pull your changes in. Please refer to the documentation in the script for more details.
 
 ## List of components
 

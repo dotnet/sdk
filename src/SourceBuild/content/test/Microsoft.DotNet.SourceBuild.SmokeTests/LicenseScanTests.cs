@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </remarks>
 public class LicenseScanTests : TestBase
 {
-    private const string BaselineSubDir = "licenses";
+    private const string BaselineSubDir = nameof(LicenseScanTests);
 
     private static readonly string[] s_allowedLicenseExpressions = new string[]
     {
@@ -73,11 +73,13 @@ public class LicenseScanTests : TestBase
         "ietf", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/ietf.LICENSE
         "gpl-2.0-plus WITH autoconf-simple-exception-2.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-2.0-plus_with_autoconf-simple-exception-2.0_8.RULE
         "gpl-2.0 WITH gcc-linking-exception-2.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-2.0_with_gcc-linking-exception-2.0_6.RULE
+        "gpl-3.0-plus WITH bison-exception-2.2", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/rules/gpl-3.0-plus_with_bison-exception-2.2_7.RULE
         "isc", // https://opensource.org/license/isc-license-txt/
         "iso-8879", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/iso-8879.LICENSE
         "lgpl-2.0-plus", // https://opensource.org/license/lgpl-2-0/
         "lgpl-2.1", // https://opensource.org/license/lgpl-2-1/
         "lgpl-2.1-plus", // https://opensource.org/license/lgpl-2-1/
+        "lgpl-3.0", // https://opensource.org/license/lgpl-3-0/
         "lzma-sdk-9.22", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/lzma-sdk-9.22.LICENSE
         "mit", // https://opensource.org/license/mit/
         "mit-addition", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-addition.LICENSE
@@ -91,6 +93,7 @@ public class LicenseScanTests : TestBase
         "object-form-exception-to-mit", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/object-form-exception-to-mit.LICENSE
         "ofl-1.1", // https://opensource.org/license/ofl-1-1/
         "osf-1990", // https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#HP_Variant
+        "pcre2-exception", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/pcre2-exception.LICENSE
         "public-domain", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain.LICENSE
         "public-domain-disclaimer", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/public-domain-disclaimer.LICENSE
         "python", // https://opensource.org/license/python-2-0/
@@ -131,7 +134,7 @@ public class LicenseScanTests : TestBase
         Assert.NotNull(Config.LicenseScanPath);
 
         // Indicates how long until a timeout occurs for scanning a given file
-        const int FileScanTimeoutSeconds = 240;
+        const int FileScanTimeoutSeconds = 300;
 
         string scancodeResultsPath = Path.Combine(Config.LogsDirectory, "scancode-results.json");
 
@@ -188,7 +191,7 @@ public class LicenseScanTests : TestBase
         // In other words, the baseline will be fully representative of the licenses that apply to the files that are listed there.
 
         // We only care about the license expressions that are in the target repo.
-        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", _targetRepo);
+        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, "^" + Regex.Escape(_relativeRepoPath) + "/");
 
         for (int i = scancodeResults.Files.Count - 1; i >= 0; i--)
         {

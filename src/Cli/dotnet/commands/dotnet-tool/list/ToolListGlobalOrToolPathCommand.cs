@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             return 0;
         }
 
-        private IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
+        public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
         {
             return _createToolPackageStore(toolPath).EnumeratePackages()
                 .Where((p) => PackageHasCommands(p) && PackageIdMatches(p, packageId))

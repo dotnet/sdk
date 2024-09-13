@@ -10,23 +10,23 @@
 {
     // Location within the VMR where the source-build patches are stored
     // These patches are applied on top of the code synchronized into the VMR
-    "patchesPath": "src/installer/src/SourceBuild/patches",
+    "patchesPath": "src/sdk/src/SourceBuild/patches",
 
-    "sourceMappingsPath": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+    "sourceMappingsPath": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
 
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
     "additionalMappings": [
         {
-            "source": "src/installer/src/SourceBuild/content",
+            "source": "src/sdk/src/SourceBuild/content",
             "destination": ""
         },
         {
-            "source": "src/installer/eng/common",
+            "source": "src/sdk/eng/common",
             "destination": "eng/common"
         },
         {
-            "source": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+            "source": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
             "destination": "src"
         }
     ],
@@ -58,7 +58,7 @@
             "defaultRemote": "https://github.com/dotnet/aspnetcore",
             "exclude": [
                 // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
-                "src/Installers/Windows/AspNetCoreModule-Setup/*"
+                "src/Installers/Windows/AspNetCoreModule-Setup/**/*"
             ]
         },
         {
@@ -78,20 +78,16 @@
             "defaultRemote": "https://github.com/dotnet/diagnostics"
         },
         {
+            "name": "efcore",
+            "defaultRemote": "https://github.com/dotnet/efcore"
+        },
+        {
             "name": "emsdk",
             "defaultRemote": "https://github.com/dotnet/emsdk"
         },
         {
             "name": "fsharp",
             "defaultRemote": "https://github.com/dotnet/fsharp"
-        },
-        {
-            "name": "installer",
-            "defaultRemote": "https://github.com/dotnet/installer",
-            "exclude": [
-                // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
-                "src/SourceBuild/content/**/*"
-            ]
         },
         {
             "name": "msbuild",
@@ -124,7 +120,11 @@
         },
         {
             "name": "sdk",
-            "defaultRemote": "https://github.com/dotnet/sdk"
+            "defaultRemote": "https://github.com/dotnet/sdk",
+            "exclude": [
+              // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
+              "src/SourceBuild/content/**/*"
+            ]
         },
         {
             "name": "source-build-externals",
@@ -180,7 +180,7 @@
             // TODO: Remove the xliff-tasks mapping once the synchronization flags it as unused
             // We no longer synchronize it but we can't remove it yet until
             // it disappears from all of the Version.Details.xml files.
-            // https://github.com/dotnet/installer/issues/17661
+            // https://github.com/dotnet/source-build/issues/4359
             "name": "xliff-tasks",
             "defaultRemote": "https://github.com/dotnet/xliff-tasks",
             "ignoreDefaults": true,
@@ -199,7 +199,11 @@
         },
         {
             "name": "wpf",
-            "defaultRemote": "https://github.com/dotnet/wpf"
+            "defaultRemote": "https://github.com/dotnet/wpf",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4590
+                "src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Resources/ColorProfiles/sRGB.icm"
+            ]
         },
         {
             "name": "windowsdesktop",

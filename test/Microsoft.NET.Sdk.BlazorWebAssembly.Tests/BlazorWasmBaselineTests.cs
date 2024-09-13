@@ -5,12 +5,8 @@ using Microsoft.NET.Sdk.Razor.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorWasmBaselineTests : AspNetSdkBaselineTest
+    public class BlazorWasmBaselineTests(ITestOutputHelper log, bool generateBaselines) : AspNetSdkBaselineTest(log, generateBaselines)
     {
-        public BlazorWasmBaselineTests(ITestOutputHelper log, bool generateBaselines) : base(log, generateBaselines)
-        {
-        }
-
         protected override string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         protected override string ComputeBaselineFolder() =>

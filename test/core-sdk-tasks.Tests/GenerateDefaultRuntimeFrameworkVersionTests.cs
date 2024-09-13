@@ -1,10 +1,8 @@
-﻿using FluentAssertions;
-using Xunit;
-using Microsoft.DotNet.Cli.Build;
+﻿using Microsoft.DotNet.Cli.Build;
 
-namespace EndToEnd
+namespace Microsoft.CoreSdkTasks.Tests
 {
-    public class GenerateDefaultRuntimeFrameworkVersionTests
+    public class GenerateDefaultRuntimeFrameworkVersionTests(ITestOutputHelper log) : SdkTest(log)
     {
         [Theory]
         [InlineData("3.0.0-rtm", "3.0.0-rtm")]

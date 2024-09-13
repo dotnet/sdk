@@ -186,7 +186,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyTheory(Skip = "https://github.com/dotnet/sdk/pull/29009")]
+        [WindowsOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
@@ -400,7 +400,7 @@ namespace Microsoft.NET.Build.Tests
             };
             if (useWindowsSDKPreview != null)
             {
-                testProject.AdditionalProperties["UsewindowsSdkPreview"] = useWindowsSDKPreview.Value.ToString();
+                testProject.AdditionalProperties["UseWindowsSdkPreview"] = useWindowsSDKPreview.Value.ToString();
             }
             if (!string.IsNullOrEmpty(windowsSdkPackageVersion))
             {
@@ -451,6 +451,144 @@ namespace Microsoft.NET.Build.Tests
             string referencedWindowsSdkVersion = GetReferencedWindowsSdkVersion(testAsset);
             referencedWindowsSdkVersion.Should().Be(expectedWindowsSdkPackageVersion);
 
+        }
+
+        [WindowsOnlyFact]
+        public void ItWarnsWhenBuildingAProjectWithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1219");
+        }
+
+        [WindowsOnlyFact]
+        public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "netstandard2.0"
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1220");
+        }
+
+        [WindowsOnlyFact]
+        public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
+        {
+            TestProject testProjectA = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProjectA.AdditionalProperties["UseUwp"] = "true";
+
+            TestProject testProjectB = new()
+            {
+                Name = "B",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0"
+            };
+            testProjectB.ReferencedProjects.Add(testProjectA);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectB);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1218");
+        }
+
+        [WindowsOnlyFact]
+        public void ItFailsToBuildWhenReferencingWindowsUIXamlTypesWithoutUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0",
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                        using System;
+
+                        Console.WriteLine(typeof(global::WinRT.IInspectable)); // WinRT.Runtime
+                        Console.WriteLine(typeof(global::Windows.UI.Core.CoreWindow)); // Microsoft.Windows.SDK.NET
+                        Console.WriteLine(typeof(global::Windows.UI.Xaml.Window)); // Microsoft.Windows.UI.Xaml
+                    """
+                }
+            };
+
+            // Temporary until new projections flow to tests
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("CS0234");
+        }
+
+        [WindowsOnlyFact]
+        public void ItBuildsWhenReferencingWindowsUIXamlTypesWithUseUwpProperty()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net9.0-windows10.0.22621.0",
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                        using System;
+
+                        Console.WriteLine(typeof(global::WinRT.IInspectable)); // WinRT.Runtime
+                        Console.WriteLine(typeof(global::Windows.UI.Core.CoreWindow)); // Microsoft.Windows.SDK.NET
+                        Console.WriteLine(typeof(global::Windows.UI.Xaml.Window)); // Microsoft.Windows.UI.Xaml
+                    """
+                }
+            };
+            testProject.AdditionalProperties["UseUwp"] = "true";
+
+            // Temporary until new projections flow to tests
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
         }
 
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)

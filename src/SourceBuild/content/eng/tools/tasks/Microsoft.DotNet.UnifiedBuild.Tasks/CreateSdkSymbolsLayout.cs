@@ -78,48 +78,24 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             foreach (string file in Directory.GetFiles(SdkLayoutPath, "*", SearchOption.AllDirectories))
             {
-                if (file.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) &&
-                    !file.EndsWith(".resources.dll", StringComparison.InvariantCultureIgnoreCase))
+                if (PdbUtilities.FileInSdkLayoutRequiresAPdb(file, out string guid))
                 {
-                    string guid = string.Empty;
-                    using var pdbStream = File.OpenRead(file);
-                    using var peReader = new PEReader(pdbStream);
-                    try
+                    string debugId = GetDebugId(guid, file);
+                    if (!allPdbGuids.ContainsKey(debugId))
                     {
-                        // Check if pdb is embedded
-                        if (peReader.ReadDebugDirectory().Any(entry => entry.Type == DebugDirectoryEntryType.EmbeddedPortablePdb))
-                        {
-                            continue;
-                        }
-
-                        var debugDirectory = peReader.ReadDebugDirectory().First(entry => entry.Type == DebugDirectoryEntryType.CodeView);
-                        var codeViewData = peReader.ReadCodeViewDebugDirectoryData(debugDirectory);
-                        guid = $"{codeViewData.Guid.ToString("N").Replace("-", string.Empty)}";
+                        filesWithoutPDBs.Add(file.Substring(SdkLayoutPath.Length + 1));
                     }
-                    catch (Exception e) when (e is BadImageFormatException || e is InvalidOperationException)
+                    else
                     {
-                        // Ignore binaries without debug info
-                        continue;
-                    }
+                        // Copy matching pdb to symbols path, preserving sdk binary's hierarchy
+                        string sourcePath = (string)allPdbGuids[debugId]!;
+                        string fileRelativePath = file.Substring(SdkLayoutPath.Length);
+                        string destinationPath =
+                            Path.Combine(SdkSymbolsLayoutPath, fileRelativePath)
+                                .Replace(Path.GetFileName(file), Path.GetFileName(sourcePath));
 
-                    if (guid != string.Empty)
-                    {
-                        string debugId = GetDebugId(guid, file);
-                        if (!allPdbGuids.ContainsKey(debugId))
-                        {
-                            filesWithoutPDBs.Add(file.Substring(SdkLayoutPath.Length + 1));
-                        }
-                        else
-                        {
-                            // Copy matching pdb to symbols path, preserving sdk binary's hierarchy
-                            string sourcePath = (string)allPdbGuids[debugId]!;
-                            string destinationPath =
-                                file.Replace(SdkLayoutPath, SdkSymbolsLayoutPath)
-                                    .Replace(Path.GetFileName(file), Path.GetFileName(sourcePath));
-
-                            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-                            File.Copy(sourcePath, destinationPath, true);
-                        }
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                        File.Copy(sourcePath, destinationPath, true);
                     }
                 }
             }

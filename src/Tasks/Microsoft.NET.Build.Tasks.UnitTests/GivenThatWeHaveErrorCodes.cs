@@ -28,6 +28,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1041,
             1062,
             1066,
+            1092,
             1101,
             1108,
             1180,

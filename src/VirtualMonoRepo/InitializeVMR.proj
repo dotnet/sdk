@@ -35,7 +35,7 @@
   </Target>
 
   <Target Name="InitializeRepoAndDependentsRecursive">
-    <!-- Get installer's SHA if not passed in -->
+    <!-- Get sdk's SHA if not passed in -->
     <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" WorkingDirectory="$(RepoRoot)" Condition=" '$(TargetRevision)' == '' ">
       <Output TaskParameter="ConsoleOutput" ItemName="RootRepoCommitSha" />
     </Exec>
@@ -45,19 +45,19 @@
       <TargetRevision Condition=" '$(TargetRevision)' == '' ">@(RootRepoCommitSha)</TargetRevision>
     </PropertyGroup>
 
-    <Message Text="--> Initializing individual repos recursively. Starting from installer / $(TargetRevision)" Importance="High" />
+    <Message Text="--> Initializing individual repos recursively. Starting from sdk / $(TargetRevision)" Importance="High" />
 
-    <!-- We are hardcoding the package version for the root repo (installer), since there
+    <!-- We are hardcoding the package version for the root repo (sdk), since there
          isn't a Version.Details.xml file to read it from.
          See https://github.com/dotnet/source-build/issues/2250 -->
     <VirtualMonoRepo_Initialize
-      Repository="installer"
+      Repository="sdk"
       Revision="$(TargetRevision)"
       PackageVersion="8.0.100"
       Recursive="true"
       VmrPath="$(VmrDir)"
       TmpPath="$(TmpDir)"
-      InstallerPath="$(RepoRoot)"
+      SdkPath="$(RepoRoot)"
       ComponentTemplatePath="$(MSBuildThisFileDirectory)/Component.template.md"
       TpnTemplatePath="$(MSBuildThisFileDirectory)/THIRD-PARTY-NOTICES.template.txt"
       SourceMappingsPath="$(MSBuildThisFileDirectory)/source-mappings.json" />

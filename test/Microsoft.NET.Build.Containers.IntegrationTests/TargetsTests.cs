@@ -7,26 +7,50 @@ using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
+[Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
-    [InlineData("SelfContained", true, "/app/foo.exe")]
-    [InlineData("SelfContained", false, "dotnet", "/app/foo.dll")]
-    [InlineData("PublishSelfContained", true, "/app/foo.exe")]
-    [InlineData("PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
-    public void CanDeferEntrypoint(string selfContainedPropertyName, bool selfContainedPropertyValue, params string[] entrypointArgs)
+    [MemberData(nameof(ContainerAppCommands))]
+    public void CanDeferContainerAppCommand(
+        string os,
+        string prop,
+        bool value,
+        params string[] expectedAppCommandArgs)
     {
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
-            [selfContainedPropertyName] = selfContainedPropertyValue.ToString()
-        }, projectName: $"{nameof(CanDeferEntrypoint)}_{selfContainedPropertyName}_{selfContainedPropertyValue}_{string.Join("_", entrypointArgs)}");
+            [prop] = value.ToString(),
+            [ContainerRuntimeIdentifier] = $"{os}-x64",
+
+        }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
-        Assert.True(project.Build(ComputeContainerConfig));
-        var computedEntrypointArgs = project.GetItems(ContainerEntrypoint).Select(i => i.EvaluatedInclude).ToArray();
-        foreach (var (First, Second) in entrypointArgs.Zip(computedEntrypointArgs))
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
+        instance.Build([ ComputeContainerConfig ], []);
+        var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
+
+        // The test was not testing anything previously, as the list returned was zero length,
+        // and the Zip didn't yield any results.
+        // So, to make sure we actually test something, we check that we actually get the expected collection.
+        computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
+    }
+
+
+    public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
+    {
+        char s = Path.DirectorySeparatorChar;
+        return new TheoryData<string, string, bool, string[]>
         {
-            Assert.Equal(First, Second);
-        }
+            { "win", "SelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "SelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "win", "PublishSelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "PublishSelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "linux", "SelfContained", true, ["/app/foo"] },
+            { "linux", "SelfContained", false, ["dotnet", "/app/foo.dll"] },
+            { "linux", "PublishSelfContained", true, ["/app/foo"] },
+            { "linux", "PublishSelfContained", false, ["dotnet", "/app/foo.dll"] },
+        };
     }
 
     [Fact]
@@ -322,6 +346,9 @@ public class TargetsTests
     [InlineData("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
     [InlineData("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
     [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
     [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
@@ -382,13 +409,13 @@ public class TargetsTests
     }
 
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
     public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
-            ["NetCoreSdkVersion"] = "8.0.100",
+            ["NetCoreSdkVersion"] = "8.0.300",
             ["TargetFrameworkVersion"] = "v8.0",
             [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
@@ -403,13 +430,13 @@ public class TargetsTests
     }
 
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
     public void TrimmedAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
-            ["NetCoreSdkVersion"] = "8.0.100",
+            ["NetCoreSdkVersion"] = "8.0.300",
             ["TargetFrameworkVersion"] = "v8.0",
             [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
@@ -424,13 +451,13 @@ public class TargetsTests
     }
 
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
     [Theory]
     public void TrimmedAppsWithoutCulturesGetbaseImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
-            ["NetCoreSdkVersion"] = "8.0.100",
+            ["NetCoreSdkVersion"] = "8.0.300",
             ["TargetFrameworkVersion"] = "v8.0",
             [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
@@ -449,16 +476,16 @@ public class TargetsTests
     [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
     [InlineData(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
 
-    [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
-    [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
-    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-aot")]
-    [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-noble-chiseled-aot")]
+    [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
     public void TheBigMatrixOfTrimmingInference(bool trimmed, bool aot, string rid, bool invariant, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
-            ["NetCoreSdkVersion"] = "8.0.100",
+            ["NetCoreSdkVersion"] = "8.0.300",
             ["TargetFrameworkVersion"] = "v8.0",
             [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),

@@ -133,7 +133,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/36160")]
+    [DockerAvailableFact()]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -145,7 +145,7 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.NextTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -153,7 +153,7 @@ public class CreateNewImageTests
 
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64")
+        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64", $"/p:RuntimeFrameworkVersion={DockerRegistryManager.RuntimeFrameworkVersion}")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -162,7 +162,7 @@ public class CreateNewImageTests
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         pcp.BuildEngine = buildEngine;
 
-        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net8ImageTag}";
+        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net9PreviewImageTag}";
         pcp.ContainerRegistry = "";
         pcp.ContainerRepository = "dotnet/envvarvalidation";
         pcp.ContainerImageTag = "latest";
@@ -175,7 +175,7 @@ public class CreateNewImageTests
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
         Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
-        Assert.Equal(DockerRegistryManager.Net8ImageTag, pcp.ParsedContainerTag);
+        Assert.Equal(DockerRegistryManager.Net9PreviewImageTag, pcp.ParsedContainerTag);
         Assert.Single(pcp.NewContainerEnvironmentVariables);
         Assert.Equal("Foo", pcp.NewContainerEnvironmentVariables[0].GetMetadata("Value"));
 
@@ -191,7 +191,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.NextTargetFramework, "linux-x64");
+        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework, "linux-x64");
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
@@ -226,7 +226,7 @@ public class CreateNewImageTests
         var logger = loggerFactory.CreateLogger(nameof(CreateNewImage_RootlessBaseImage));
 
         // Build a rootless base runtime image.
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,

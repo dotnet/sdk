@@ -8,11 +8,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.SourceBuild.SmokeTests
+namespace Microsoft.DotNet.UnifiedBuild.Tests
 {
     internal class BaselineHelper
     {
@@ -20,26 +21,6 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         private const string SemanticVersionPlaceholderMatchingPattern = "*.*.*"; // wildcard pattern used to match on the version represented by the placeholder
         private const string NonSemanticVersionPlaceholder = "x.y";
         private const string NonSemanticVersionPlaceholderMatchingPattern = "*.*"; // wildcard pattern used to match on the version represented by the placeholder
-
-        public static void CompareEntries(string baselineFileName, IOrderedEnumerable<string> actualEntries)
-        {
-            IEnumerable<string> baseline = File.ReadAllLines(GetBaselineFilePath(baselineFileName));
-            string[] missingEntries = actualEntries.Except(baseline).ToArray();
-            string[] extraEntries = baseline.Except(actualEntries).ToArray();
-
-            string? message = null;
-            if (missingEntries.Length > 0)
-            {
-                message = $"Missing entries in '{baselineFileName}' baseline: {Environment.NewLine}{string.Join(Environment.NewLine, missingEntries)}{Environment.NewLine}{Environment.NewLine}";
-            }
-
-            if (extraEntries.Length > 0)
-            {
-                message += $"Extra entries in '{baselineFileName}' baseline: {Environment.NewLine}{string.Join(Environment.NewLine, extraEntries)}{Environment.NewLine}{Environment.NewLine}";
-            }
-
-            Assert.Null(message);
-        }
 
         public static void CompareBaselineContents(string baselineFileName, string actualContents, string logsDirectory, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
         {
@@ -53,32 +34,46 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static void CompareFiles(string expectedFilePath, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
-            string baselineFileText = File.ReadAllText(expectedFilePath).Trim();
+            string? message = null;
+            string prefix = warnOnDiffs ? "##vso[task.logissue type=warning;]" : string.Empty;
             string actualFileText = File.ReadAllText(actualFilePath).Trim();
 
-            string? message = null;
-
-            if (baselineFileText != actualFileText)
+            if (!File.Exists(expectedFilePath))
             {
-                // Retrieve a diff in order to provide a UX which calls out the diffs.
-                string diff = DiffFiles(expectedFilePath, actualFilePath, outputHelper);
-                string prefix = warnOnDiffs ? "##vso[task.logissue type=warning;]" : string.Empty;
-                message = $"{Environment.NewLine}{prefix}Expected file '{expectedFilePath}' does not match actual file '{actualFilePath}`.  {Environment.NewLine}"
-                    + $"{diff}{Environment.NewLine}";
-
-                if (warnOnDiffs)
+                // Assume no diffs expected if file isn't present
+                if (!string.IsNullOrWhiteSpace(actualFileText))
                 {
-                    outputHelper.WriteLine(message);
-                    outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+                    message = $"""
+
+                        {prefix}Baseline file '{expectedFilePath}' was not found, so no differences were expected, but differences found:
+
+                        {actualFileText}
+                        """;
+                }
+            }
+            else
+            {
+                string baselineFileText = File.ReadAllText(expectedFilePath).Trim();
+                if (baselineFileText != actualFileText)
+                {
+                    // Retrieve a diff in order to provide a UX which calls out the diffs.
+                    string diff = DiffFiles(expectedFilePath, actualFilePath, outputHelper);
+                    message = $"{Environment.NewLine}{prefix}Expected file '{expectedFilePath}' does not match actual file '{actualFilePath}`.  {Environment.NewLine}"
+                        + $"{diff}{Environment.NewLine}";
                 }
             }
 
-            if (!warnOnDiffs)
+            if (message is null)
+                return;
+
+            if (warnOnDiffs)
             {
-                if (message is not null)
-                {
-                    Assert.Fail(message);
-                }
+                outputHelper.WriteLine(message);
+                outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+            }
+            else
+            {
+                Assert.Fail(message);
             }
         }
 

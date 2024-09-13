@@ -36,6 +36,7 @@ mode='validate'
 logLevel='Debug'
 propsDir=''
 packagesDir=''
+restoreSources=''
 dotnetSdk=$defaultDotnetSdk
 
 positional_args=()
@@ -114,10 +115,9 @@ function ParseBinaryArgs
     # Check the packages directory
     if [ -z "$packagesDir" ]; then
         # Use dotnet-public and dotnet-libraries feeds as the default packages source feeds
-        export ARTIFACTS_PATH="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json;https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries/nuget/v3/index.json"
+        restoreSources="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries/nuget/v3/index.json"
     else
-        packagesDir=$(realpath ${packagesDir})
-        export ARTIFACTS_PATH=$packagesDir
+        restoreSources=$(realpath ${packagesDir})
     fi
 }
 
@@ -125,7 +125,7 @@ function RunBinaryTool
 {
   targetDir="$REPO_ROOT"
   outputDir="$REPO_ROOT/artifacts/log/binary-report"
-  BinaryToolCommand=""$dotnetSdk/dotnet" run --project "$BINARY_TOOL" -c Release "$mode" "$targetDir" -o "$outputDir" -ab "$allowedBinariesFile" -l "$logLevel""
+  BinaryToolCommand=""$dotnetSdk/dotnet" run --project "$BINARY_TOOL" -c Release --property:RestoreSources="$restoreSources" "$mode" "$targetDir" -o "$outputDir" -ab "$allowedBinariesFile" -l "$logLevel""
 
   if [ -n "$packagesDir" ]; then
     BinaryToolCommand=""$BinaryToolCommand" -p CustomPackageVersionsProps="$packagesDir/PackageVersions.props""

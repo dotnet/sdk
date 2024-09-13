@@ -20,6 +20,7 @@
         <PackageType>Template</PackageType>
         <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
         <NoWarn>$(NoWarn);NU1507</NoWarn>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Remove="Microsoft.NETCore.App" />
