@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var newSrc = /* lang=c#-test */"""
                 using System;
 
-                public class Dep
+                public class DepType
                 {
                     int F() => 1;
                 }

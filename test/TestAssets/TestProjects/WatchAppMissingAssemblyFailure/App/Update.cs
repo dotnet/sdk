@@ -1,6 +1,6 @@
 using System;
 
-public class Dep
+public class DepType
 {
     int F() => 1;
 }
