@@ -149,12 +149,12 @@ namespace Microsoft.DotNet.Tools.MSBuild
                 case BuildcheckRunEventName:
                     TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
                         toBeHashed: Array.Empty<string>(),
-                        toBeMeasured: new[] { "RulesCount", "CustomRulesCount", "ViolationsCount", "TotalRuntimeInMilliseconds" });
+                        toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
                     break;
                 case BuildcheckRuleStatsEventName:
                     TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
                         toBeHashed: new[] { "RuleId", "CheckFriendlyName" },
-                        toBeMeasured: new[] { "DefaultSeverityId", "ViolationMessagesCount", "ViolationWarningsCount", "ViolationErrorsCount", "TotalRuntimeInMilliseconds" });
+                        toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
                     break;
                 // Pass through events that don't need special handling
                 case SdkTaskBaseCatchExceptionTelemetryEventName:
