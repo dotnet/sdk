@@ -133,33 +133,17 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertWaitingForChanges();
 
             var newSrc = /* lang=c#-test */"""
-                namespace Dep;
+                using System;
 
-                public class DepType
+                public class Dep
                 {
-                    int F() => 2;
+                    int F() => 1;
                 }
 
                 public class Printer
                 {
                     public static void Print()
-                    {
-                        Console.WriteLine("Changed!");
-                    }
-                }
-
-                public static class UpdateHandler
-                {
-                    // Lock to avoid the updated Print method executing concurrently with the update handler.
-                    public static object Guard = new object();
-
-                    public static void UpdateApplication(Type[] types)
-                    {
-                        lock (Guard)
-                        {
-                            Console.WriteLine($"Dep Updated types: {(types == null ? "<null>" : types.Length == 0 ? "<empty>" : string.Join(",", types.Select(t => t.Name)))}");
-                        }
-                    }
+                        => Console.WriteLine("Updated!");
                 }
                 """;
 

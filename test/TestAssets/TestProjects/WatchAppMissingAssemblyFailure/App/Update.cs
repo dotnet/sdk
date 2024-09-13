@@ -1,13 +1,12 @@
 using System;
 
-class DepSubType : Dep.DepType
+public class Dep
 {
     int F() => 1;
 }
 
-class Printer
+public class Printer
 {
     public static void Print()
         => Console.WriteLine("Hello!");
 }
-

@@ -2,7 +2,10 @@
 using System.Reflection.Metadata;
 
 [assembly: MetadataUpdateHandler(typeof(UpdateHandler))]
-[assembly: MetadataUpdateHandler(typeof(Dep.UpdateHandler))]
+
+// This attribute is not causing Dep.dll to be loaded, but enough
+// to cause the HotReloadAgent to fail on getting custom attributes.
+[assembly: Dep2.Test()]
 
 // delete the dependency dll to cause load failure of DepSubType
 var depPath = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location!)!, "Dep.dll");
@@ -14,7 +17,6 @@ while (true)
     lock (UpdateHandler.Guard)
     {
         Printer.Print();
-        Dep.Printer.Print();
     }
 
     Thread.Sleep(100);
