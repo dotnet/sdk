@@ -351,9 +351,9 @@ namespace Microsoft.DotNet.Tools.Run
             static FacadeLogger? DetermineBinlogger(string[] restoreArgs)
             {
 
-                BinaryLogger? binaryLogger = null;
+                List<BinaryLogger> binaryLoggers = new();
 
-                if (restoreArgs.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)) is string blArg)
+                foreach (var blArg in restoreArgs.Where(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (blArg.Contains(':'))
                     {
@@ -365,31 +365,31 @@ namespace Microsoft.DotNet.Tools.Run
                             filename = filename.Substring(0, filename.Length - ".binlog".Length);
                             filename = filename + "-dotnet-run" + ".binlog";
                         }
-                        binaryLogger = new BinaryLogger { Parameters = filename };
+                        binaryLoggers.Add(new BinaryLogger { Parameters = filename });
                     }
                     else
                     {
                         // the same name will be used for the build and run-restore-exec steps, so we need to make sure they don't conflict
                         var filename = "msbuild-dotnet-run" + ".binlog";
-                        binaryLogger = new BinaryLogger { Parameters = filename };
+                        binaryLoggers.Add(new BinaryLogger { Parameters = filename });
                     }
                 }
 
                 // this binaryLogger needs to be used for both evaluation and execution, so we need to only call it with a single IEventSource across
                 // both of those phases.
                 // We need a custom logger to handle this, because the MSBuild API for evaluation and execution calls logger Initialize and Shutdown methods, so will not allow us to do this.
-                if (binaryLogger is not null)
+                if (binaryLoggers.Count > 0)
                 {
-                    var fakeLogger = ConfigureDispatcher(binaryLogger);
+                    var fakeLogger = ConfigureDispatcher(binaryLoggers);
 
                     return fakeLogger;
                 }
                 return null;
             }
 
-            static FacadeLogger ConfigureDispatcher(BinaryLogger binaryLogger)
+            static FacadeLogger ConfigureDispatcher(List<BinaryLogger> binaryLoggers)
             {
-                var dispatcher = new PersistentDispatcher(binaryLogger);
+                var dispatcher = new PersistentDispatcher(binaryLoggers);
                 return new FacadeLogger(dispatcher);
             }
         }
@@ -404,12 +404,15 @@ namespace Microsoft.DotNet.Tools.Run
         /// <param name="innerLogger"></param>
         private class PersistentDispatcher : EventArgsDispatcher, IEventSource4
         {
-            private BinaryLogger innerLogger;
+            private List<BinaryLogger> innerLoggers;
 
-            public PersistentDispatcher(BinaryLogger innerLogger)
+            public PersistentDispatcher(List<BinaryLogger> innerLoggers)
             {
-                this.innerLogger = innerLogger;
-                innerLogger.Initialize(this);
+                this.innerLoggers = innerLoggers;
+                foreach (var logger in innerLoggers)
+                {
+                    logger.Initialize(this);
+                }
             }
             public event TelemetryEventHandler TelemetryLogged { add { } remove { } }
 
@@ -420,7 +423,10 @@ namespace Microsoft.DotNet.Tools.Run
 
             public void Destroy()
             {
-                innerLogger.Shutdown();
+                foreach (var innerLogger in innerLoggers)
+                {
+                    innerLogger.Shutdown();
+                }
             }
         }
 
