@@ -77,7 +77,7 @@ Bunun nedeni şunlardan biri olabilir:
       </trans-unit>
       <trans-unit id="DotNetSdkInfoLabel">
         <source>.NET SDK (reflecting any global.json):</source>
-        <target state="translated">.NET SDK (varsa global.json dosyasını yansıtır):</target>
+        <target state="needs-review-translation">.NET SDK:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotNetRuntimeInfoLabel">

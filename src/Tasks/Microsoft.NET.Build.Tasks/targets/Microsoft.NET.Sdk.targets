@@ -100,9 +100,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AvailablePlatforms>$(AvailablePlatforms),ARM64</AvailablePlatforms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.8.1'))">
+    <AvailablePlatforms>$(AvailablePlatforms),ARM64</AvailablePlatforms>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Turn off support for metadata updates in non-Debug builds by default. -->
     <MetadataUpdaterSupport Condition="'$(MetadataUpdaterSupport)' == '' and '$(Configuration)' != 'Debug'">false</MetadataUpdaterSupport>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Turn off IncludeProjectsNotInAssetsFileInDepsFile by default. -->
+    <IncludeProjectsNotInAssetsFileInDepsFile Condition="'$(IncludeProjectsNotInAssetsFileInDepsFile)' == ''">false</IncludeProjectsNotInAssetsFileInDepsFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -193,7 +202,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ResolvedRuntimeTargetsFiles="@(RuntimeTargetsCopyLocalItems)"
                       IsSelfContained="$(SelfContained)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
-                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"/>
+                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                      IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"/>
 
     <ItemGroup>
       <!-- Do this in an ItemGroup instead of as an output parameter of the GenerateDepsFile task so that it still gets added to the item set
@@ -1107,7 +1117,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ValidateCommandLineProperties"
           AfterTargets="_CheckForInvalidConfigurationAndPlatform" >
 
-    <NETSdkWarning Condition="'$(_CommandLineDefinedSelfContained)' != 'true' and
+    <NETSdkWarning Condition="'$(_SelfContainedWasSpecified)' != 'true' and
                    '$(_CommandLineDefinedRuntimeIdentifier)' == 'true' and
                    '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))"
