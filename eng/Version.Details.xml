@@ -250,22 +250,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0fbd81404d1f211572387498474063bc6f407f0f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24463.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24464.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eec034c9f91fa68778c7760a049d7975fe0d7207</Sha>
+      <Sha>f3fa5befc067ee25547762410bb3abe959d525ca</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24463.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24464.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eec034c9f91fa68778c7760a049d7975fe0d7207</Sha>
+      <Sha>f3fa5befc067ee25547762410bb3abe959d525ca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24463.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24464.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eec034c9f91fa68778c7760a049d7975fe0d7207</Sha>
+      <Sha>f3fa5befc067ee25547762410bb3abe959d525ca</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24463.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24464.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eec034c9f91fa68778c7760a049d7975fe0d7207</Sha>
+      <Sha>f3fa5befc067ee25547762410bb3abe959d525ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.24462.12" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
