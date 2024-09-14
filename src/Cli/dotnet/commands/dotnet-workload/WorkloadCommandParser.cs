@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
-            reporter ??= Cli.Utils.Reporter.Output;
+            reporter ??= Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
             if (showVersion)
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
             }
 
-            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.DotnetPath), "default.json")).UseWorkloadSets;
+            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets;
             var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
             reporter.WriteLine(string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetPath).ToString(),align}"
+                reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
                 );
                 reporter.WriteLine("");
             }
@@ -130,6 +130,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(WorkloadCleanCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadConfigCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadHistoryCommandParser.GetCommand());
 
             command.Validators.Add(commandResult =>
             {

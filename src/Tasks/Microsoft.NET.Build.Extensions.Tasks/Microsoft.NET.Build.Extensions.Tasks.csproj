@@ -100,6 +100,8 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GetTargetPath" />
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>
