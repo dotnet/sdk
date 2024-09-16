@@ -81,6 +81,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($" Workload version: {GetWorkloadsVersion()}");
                 
                 WriteUpdateModeAndAnyError(indent: " ");
+                reporter.WriteLine();
             }
 
             if (installedWorkloads.Count == 0)
