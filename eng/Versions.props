@@ -176,18 +176,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.12.0-rc.99</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.12.0-rc.99</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.12.0-rc.99</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.12.0-rc.99</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.12.0-rc.99</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.12.0-rc.99</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-rc.99</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.12.0-rc.99</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.12.0-rc.99</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.12.0-rc.99</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.12.0-rc.99</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.12.0-rc.99</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.12.0-rc.106</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.12.0-rc.106</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.12.0-rc.106</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.12.0-rc.106</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.12.0-rc.106</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.12.0-rc.106</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.0-rc.106</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.12.0-rc.106</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.12.0-rc.106</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.12.0-rc.106</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.12.0-rc.106</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.12.0-rc.106</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
@@ -234,7 +234,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>12.9.100-beta.24462.2</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>12.9.100-beta.24463.5</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
@@ -265,9 +265,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24461.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24461.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24461.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24465.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24465.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24465.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
