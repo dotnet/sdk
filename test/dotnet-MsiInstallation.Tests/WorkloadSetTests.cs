@@ -92,6 +92,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
 
+            var expectedMessage = "Workloads are configured to install and update using workload versions, but none were found. Run \"dotnet workload restore\" to install a workload version.";
+
+            GetDotnetInfo().Should().Contain(expectedMessage)
+                .And.NotContain("(not installed)");
+            GetDotnetWorkloadInfo().Should().Contain(expectedMessage)
+                .And.NotContain("(not installed)");
+
             GetUpdateMode().Should().Be("workload-set");
         }
 
@@ -262,7 +269,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             VM.WriteFile("C:\\SdkTesting\\global.json", @$"{{""sdk"":{{""workloadVersion"":""{versionToUpdateTo}""}}}}").Execute().Should().PassWithoutWarning();
 
-            GetWorkloadVersion(SdkTestingDirectory).Should().Be(versionToUpdateTo);
+            GetWorkloadVersion(SdkTestingDirectory).Should().Be(versionToUpdateTo + " (not installed)");
+            GetDotnetInfo(SdkTestingDirectory).Should().Contain("Workload version:  " + versionToUpdateTo + " (not installed)")
+                .And.Contain($@"Workload version {versionToUpdateTo}, which was specified in C:\SdkTesting\global.json, was not found");
+            GetDotnetWorkloadInfo(SdkTestingDirectory).Should().Contain("Workload version: " + versionToUpdateTo + " (not installed)")
+                .And.Contain($@"Workload version {versionToUpdateTo}, which was specified in C:\SdkTesting\global.json, was not found");
 
             // The version should have changed but not yet the manifests. Since we expect both, getting the rollback should fail.
             var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
@@ -562,6 +573,31 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return result.StdOut;
         }
+
+        string GetDotnetInfo(string workingDirectory = null)
+        {
+            var result = VM.CreateRunCommand("dotnet", "--info")
+                .WithWorkingDirectory(workingDirectory)
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().PassWithoutWarning();
+
+            return result.StdOut;
+        }
+
+        string GetDotnetWorkloadInfo(string workingDirectory = null)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "--info")
+                .WithWorkingDirectory(workingDirectory)
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().PassWithoutWarning();
+
+            return result.StdOut;
+        }
+
         string GetUpdateMode()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "config", "--update-mode")
