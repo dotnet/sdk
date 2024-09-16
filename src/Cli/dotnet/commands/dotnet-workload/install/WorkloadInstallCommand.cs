@@ -122,7 +122,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndVersion,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
             }
-            else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson)
+            else if ((_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson) &&
+                !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
+                                    //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
             {
                 throw new GracefulException(string.Format(LocalizableStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
