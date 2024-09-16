@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TestApplicationActionQueue _actionQueue;
         private Task _namedPipeConnectionLoop;
-        private string[] _args;
+        private List<string> _args;
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli
                 });
             }
 
-            _args = [.. parseResult.UnmatchedTokens];
+            _args = new List<string>(parseResult.UnmatchedTokens);
             _msBuildConnectionHandler = new(_args, _actionQueue);
             _testModulesFilterHandler = new(_args, _actionQueue);
             _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));

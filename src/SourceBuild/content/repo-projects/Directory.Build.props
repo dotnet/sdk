@@ -165,8 +165,9 @@
     <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" Condition="'$(NuGetConfigFile)' != ''" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EnvironmentVariables Include="DotNetBuildFromSource=true" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  <ItemGroup  Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <EnvironmentVariables Include="DotNetBuildFromSource=true" />
+    <EnvironmentVariables Include="NuGetAudit=false" Condition="'$(DotNetBuildWithOnlineFeeds)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
