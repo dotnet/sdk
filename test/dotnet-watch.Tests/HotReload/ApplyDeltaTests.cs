@@ -120,5 +120,42 @@ namespace Microsoft.DotNet.Watcher.Tests
             //UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
             //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
         }
+
+        // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
+        [CoreMSBuildOnlyFact]
+        public async Task HandleMissingAssemblyFailure()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
+                .WithSource();
+
+            App.Start(testAsset, [], "App");
+
+            await App.AssertWaitingForChanges();
+
+            var newSrc = /* lang=c#-test */"""
+                using System;
+
+                public class DepType
+                {
+                    int F() => 1;
+                }
+
+                public class Printer
+                {
+                    public static void Print()
+                        => Console.WriteLine("Updated!");
+                }
+                """;
+
+            // Delete all files in testAsset.Path named Dep.dll
+            foreach (var depDll in Directory.GetFiles(testAsset.Path, "Dep2.dll", SearchOption.AllDirectories))
+            {
+                File.Delete(depDll);
+            }
+
+            File.WriteAllText(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
+
+            await App.AssertOutputLineStartsWith("Updated types: Printer");
+        }
     }
 }
