@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         if (!ToolPackageInstance.IsToolPackage(package.Nuspec.Xml))
                         {
-                            throw new ToolPackageException(string.Format(NuGetPackageDownloader.LocalizableStrings.NotATool, packageId));
+                            throw new GracefulException(string.Format(NuGetPackageDownloader.LocalizableStrings.NotATool, packageId));
                         }
 
                         if (isGlobalTool)

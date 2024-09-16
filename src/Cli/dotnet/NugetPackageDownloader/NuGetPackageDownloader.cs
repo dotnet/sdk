@@ -111,12 +111,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                     if (!ToolPackageInstance.IsToolPackage(doc))
                     {
-                        throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                        throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
                     }
                 }
                 else
                 {
-                    throw new ToolPackageException(string.Format(LocalizableStrings.NotATool, packageId));
+                    throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
                 }
             }
 
