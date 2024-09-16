@@ -38,8 +38,12 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Get device Id from Windows registry
-                deviceId = Registry.GetValue(@"HKEY_CURRENT_USER\SOFTWARE\Microsoft\DeveloperTools", "deviceid", null) as string;
+                // Get device Id from Windows registry matching the OS architecture
+                RegistryView registryView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+                using (var key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, registryView).OpenSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                {
+                    deviceId = key?.GetValue("deviceid") as string;
+                }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -77,10 +81,17 @@ namespace Microsoft.DotNet.Cli.Telemetry
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Cache device Id in Windows registry
-                using (var key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default).CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                // Cache device Id in Windows registry matching the OS architecture
+                RegistryView registryView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
+                using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, registryView))
                 {
-                    key.SetValue("deviceid", deviceId);
+                    using(var key = baseKey.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                    {
+                        if (key != null)
+                        {
+                          key.SetValue("deviceid", deviceId);
+                        }
+                    }
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
