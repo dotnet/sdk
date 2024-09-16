@@ -18,10 +18,6 @@
       custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
     -->
     <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)sourcebuild $(FlagParameterPrefix)tfm $(NetCurrent) /p:SourceBuildBootstrapTfm=$(NetCurrent)</BuildArgs>
-        
-    <!-- See https://github.com/dotnet/source-build/issues/4603. 
-    Should be removed with https://github.com/dotnet/fsharp/issues/17713 -->
-    <NoWarn Condition="'$(DotNetBuildSourceOnly)' == 'true'">FS0064</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
