@@ -6,6 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.Localization;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -243,21 +244,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public (string? version, string? error) GetWorkloadVersion()
+        public WorkloadVersionInfo GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
             {
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
                 // If this came from --info or workload --version, the error won't be thrown, but we should still
                 // suggest running `dotnet workload restore` to the user.
-                return (_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
+                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return (_workloadSet.Version, null);
+                return new WorkloadVersionInfo(_workloadSet.Version);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
@@ -280,7 +281,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return ($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", shouldRestoreMessage);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", null, UpdateModeMessage: shouldRestoreMessage);
             }
         }
 

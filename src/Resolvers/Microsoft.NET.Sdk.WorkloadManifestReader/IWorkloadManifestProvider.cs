@@ -14,8 +14,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         string GetSdkFeatureBand();
 
-        (string? version, string? error) GetWorkloadVersion();
+        WorkloadVersionInfo GetWorkloadVersion();
 
         Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
+
+        public readonly record struct WorkloadVersionInfo(string Version, string? VersionNotInstalledMessage = null, string? UpdateModeMessage = null);
     }
 }
