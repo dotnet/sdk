@@ -180,14 +180,20 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             Debug.Assert(bearerAuthInfo is not null);
 
-            var authenticationValueAndDuration = await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
-            if (authenticationValueAndDuration is not null)
+            // Obtain a Bearer token, when the credentials are:
+            // - an identity token: use it for OAuth
+            // - a username/password: use them for Basic auth, and fall back to OAuth
+
+            if (string.IsNullOrWhiteSpace(privateRepoCreds.IdentityToken))
             {
-                return authenticationValueAndDuration;
+                var authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
+                if (authenticationValueAndDuration is not null)
+                {
+                    return authenticationValueAndDuration;
+                }
             }
 
-            authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
-            return authenticationValueAndDuration;
+            return await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -293,8 +299,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (!postResponse.IsSuccessStatusCode)
         {
             await postResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
-            //return null to try HTTP GET instead
-            return null;
+            return null; // try next method
         }
         _logger.LogTrace("Received '{statuscode}'.", postResponse.StatusCode);
         TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
@@ -318,9 +323,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     {
         // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
         // even though the overall Scheme we're authenticating for is Bearer
-        var header = privateRepoCreds.Username == "<token>"
-                        ? new AuthenticationHeaderValue(BearerAuthScheme, privateRepoCreds.Password)
-                        : new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+        var header = new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
         var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
 
         _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
@@ -340,7 +343,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
         if (!tokenResponse.IsSuccessStatusCode)
         {
-            throw new UnableToAccessRepositoryException(_registryName);
+            await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
+            return null; // try next method
         }
 
         TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
@@ -412,7 +416,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                         request.Headers.Authorization = authHeader;
                         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                     }
-                    return response;
+
+                    throw new UnableToAccessRepositoryException(_registryName);
                 }
                 else
                 {
