@@ -478,7 +478,7 @@
       </trans-unit>
       <trans-unit id="ILLinkFailed">
         <source>NETSDK1144: Optimizing assemblies for size failed.</source>
-        <target state="needs-review-translation">NETSDK1144: не удалось оптимизировать сборки под размер. Оптимизацию можно отключить, установив значение false для свойства PublishTrimmed.</target>
+        <target state="new">NETSDK1144: Optimizing assemblies for size failed.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
@@ -1093,7 +1093,7 @@ You may need to build the project on another operating system or architecture, o
       <trans-unit id="WorkloadNotInstalled">
         <source>NETSDK1147: To build this project, the following workloads must be installed: {0}
 To install these workloads, run the following command: dotnet workload restore</source>
-        <target state="needs-review-translation">NETSDK1147: для сборки этого проекта необходимо установить следующие рабочие нагрузки: {0}
+        <target state="translated">NETSDK1147: для сборки этого проекта необходимо установить следующие рабочие нагрузки: {0}
 Чтобы установить эти рабочие нагрузки, выполните следующую команду: dotnet workload restore</target>
         <note>{StrBegin="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
