@@ -48,7 +48,7 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">Solo se puede especificar un proyecto a la vez mediante la opción '-p'.</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">No compile el proyecto antes de ejecutarlo. Implica --no-restore.</target>
+        <target state="translated">No compile el proyecto antes de ejecutarlo. Implica --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ El valor actual de {1} es "{2}".</target>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Advertencia NETSDK1174: La abreviatura de -p para --project está en desuso. Use --project.</target>
+        <target state="translated">Advertencia NETSDK1174: La abreviatura de -p para --project está en desuso. Use --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

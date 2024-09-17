@@ -48,7 +48,7 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">Jednocześnie można określić tylko jeden projekt przy użyciu opcji „-p”.</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">Nie kompiluj tego projektu przed uruchomieniem. Powoduje przyjęcie, że podano parametr --no-restore.</target>
+        <target state="translated">Nie kompiluj tego projektu przed uruchomieniem. Powoduje przyjęcie, że podano parametr --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ Bieżący element {1}: „{2}”.</target>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Ostrzeżenie NETSDK1174: Skrót -p dla polecenia --project jest przestarzały. Użyj polecenia --project.</target>
+        <target state="translated">Ostrzeżenie NETSDK1174: Skrót -p dla polecenia --project jest przestarzały. Użyj polecenia --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

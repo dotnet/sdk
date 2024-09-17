@@ -48,7 +48,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">使用 `-p` 選項時，一次只能指定一個專案。</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">請勿在執行之前建置專案。提示: -no-restore.</target>
+        <target state="new">Do not build the project before running. Implies --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ The current {1} is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
+        <target state="translated">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

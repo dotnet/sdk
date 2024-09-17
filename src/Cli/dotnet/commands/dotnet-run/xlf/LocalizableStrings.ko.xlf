@@ -48,7 +48,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">'-p' 옵션을 사용하여 한 번에 하나의 프로젝트만 지정할 수 있습니다.</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">실행하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
+        <target state="new">Do not build the project before running. Implies --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ The current {1} is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
+        <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

@@ -48,7 +48,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">С помощью параметра "-p" можно указать только один проект за раз.</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
+        <target state="translated">Сборка проекта перед запуском не выполняется. Подразумевает --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ The current {1} is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Предупреждение NETSDK1174: сокращение "-p" для "--project" не рекомендуется. Используйте "--project".</target>
+        <target state="translated">Предупреждение NETSDK1174: сокращение "-p" для "--project" не рекомендуется. Используйте "--project".</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

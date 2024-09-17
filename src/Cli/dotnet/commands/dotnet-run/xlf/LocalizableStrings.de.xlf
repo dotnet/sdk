@@ -48,7 +48,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">Mithilfe der Option „-p“ kann jeweils nur ein Projekt angegeben werden.</target>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -78,7 +78,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">Erstellt das Projekt nicht vor der Ausführung. Impliziert "--no-restore".</target>
+        <target state="translated">Erstellt das Projekt nicht vor der Ausführung. Impliziert "--no-restore".</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,7 +138,7 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den Outp
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
+        <target state="translated">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
