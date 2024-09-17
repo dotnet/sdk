@@ -78,6 +78,11 @@ Quando usado junto com testes controlados por dados, o comportamento do tempo li
 Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigurationDescription">
+        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
+        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -121,6 +126,11 @@ Exemplos:
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not execute an implicit restore.</source>
         <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectDescription">
+        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSettingsFile">
