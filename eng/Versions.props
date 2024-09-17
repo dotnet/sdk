@@ -73,7 +73,7 @@
     <SystemCompositionHostingPackageVersion>8.0.0</SystemCompositionHostingPackageVersion>
     <SystemCompositionRuntimePackageVersion>8.0.0</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>8.0.0</SystemCompositionTypedPartsPackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>8.0.1</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>8.0.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>8.0.1</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemDrawingCommonPackageVersion>8.0.7</SystemDrawingCommonPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>8.0.1</SystemSecurityCryptographyPkcsPackageVersion>
