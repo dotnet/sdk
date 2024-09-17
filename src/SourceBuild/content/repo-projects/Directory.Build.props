@@ -13,7 +13,7 @@
     <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
   </PropertyGroup>
 
-  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)')" />
+  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(UseOfficialBuildVersioning)' != 'false'" />
 
   <PropertyGroup>
     <!-- Fake, to satisfy the SDK. -->
@@ -84,6 +84,7 @@
     <!-- Pass locations for assets -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
+    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -136,19 +137,6 @@
          See https://github.com/dotnet/source-build/issues/541 -->
     <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
 
-  </ItemGroup>
-
-  <!--
-    Apply official build versioning to match Microsoft build. These are based on build date, so
-    need to be parsed from Maestro++ auto-update and passed through.
-  -->
-  <ItemGroup Condition="'$(UseOfficialBuildVersioning)' != 'false'">
-    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
-    <EnvironmentVariables Include="BUILD_BUILDNUMBER=$(OfficialBuildId)" />
-
-    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
-    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
-    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
   </ItemGroup>
 
   <ItemGroup>
