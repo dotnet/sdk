@@ -39,8 +39,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Get device Id from Windows registry matching the OS architecture
-                RegistryView registryView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
-                using (var key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, registryView).OpenSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                using (var key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
                 {
                     deviceId = key?.GetValue("deviceid") as string;
                 }
@@ -82,8 +81,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Cache device Id in Windows registry matching the OS architecture
-                RegistryView registryView = Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32;
-                using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, registryView))
+                using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
                 {
                     using(var key = baseKey.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
                     {
