@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
-        <target state="translated">没有为此功能安装工作负载。若要更新更早的 SDK 版本安装的工作负载，请包括 “--from-previous-sdk” 选项。</target>
+        <target state="translated">没有为此功能带安装工作负载。若要使用更早的 SDK 版本更新已安装的工作负载，请包括“the --from-previous-sdk”选项。</target>
         <note />
       </trans-unit>
       <trans-unit id="RollBackFailedMessage">
