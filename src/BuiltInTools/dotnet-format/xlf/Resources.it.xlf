@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting">
         <source>A list of relative file or folder paths to exclude from formatting.</source>
-        <target state="translated">Elenco di percorsi relativi di file o cartelle da escludere dalla formattazione.</target>
+        <target state="new">A list of relative file or folder paths to exclude from formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty">
         <source>A list of relative file or folder paths to include in formatting. All files are formatted if empty.</source>
-        <target state="translated">Elenco di percorsi relativi di file o cartelle da includere nella formattazione. Se è vuoto, tutti i file vengono formattati.</target>
+        <target state="new">A list of relative file or folder paths to include in formatting. All files are formatted if empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used">
         <source>A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</source>
-        <target state="translated">Percorso di un file di soluzione, un file di progetto o una cartella contenente una soluzione o un file di progetto. Se non si specifica alcun percorso, viene usata la directory corrente.</target>
+        <target state="new">A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
-        <target state="translated">Accetta un percorso file che, se specificato, produrrà un report JSON nella directory specificata.</target>
+        <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_json_report_in_the_given_directory">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="Analysis_complete_in_0ms.">
         <source>Analysis complete in {0}ms.</source>
-        <target state="translated">L'analisi è stata completata in {0} ms.</target>
+        <target state="new">Analysis complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Analyzer_Reference">
         <source>Analyzer Reference</source>
-        <target state="translated">Riferimento ad analizzatore</target>
+        <target state="new">Analyzer Reference</target>
         <note />
       </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">In '{0}' sono stati trovati sia un file di progetto che un file di soluzione MSBuild. Per specificare quello desiderato, usare l'argomento &lt;workspace&gt;.</target>
+        <target state="new">Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_when_fixing_style">
@@ -74,22 +74,22 @@
       </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
-        <target state="translated">Stile codice</target>
+        <target state="new">Code Style</target>
         <note />
       </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
-        <target state="translated">Completata in {0} ms.</target>
+        <target state="new">Complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">In '{0}' non è stato possibile trovare alcun file di progetto o di soluzione MSBuild. Per specificare quello desiderato, usare l'argomento &lt;workspace&gt;.</target>
+        <target state="new">Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects">
         <source>Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</source>
-        <target state="translated">Non è stato possibile formattare '{0}'. Il formato supporta attualmente solo progetti C# e Visual Basic.</target>
+        <target state="new">Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</target>
         <note />
       </trans-unit>
       <trans-unit id="Delete_0_characters">
@@ -99,12 +99,12 @@
       </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
-        <target state="translated">Determinazione della diagnostica...</target>
+        <target state="new">Determining diagnostics...</target>
         <note />
       </trans-unit>
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
-        <target state="translated">Determinazione dei file formattabili.</target>
+        <target state="new">Determining formattable files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
@@ -114,47 +114,47 @@
       </trans-unit>
       <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">
         <source>Failed to apply code fix {0} for {1}: {2}</source>
-        <target state="translated">Non è stato possibile applicare la correzione del codice {0} per {1}: {2}</target>
+        <target state="new">Failed to apply code fix {0} for {1}: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
-        <target state="translated">Non è stato possibile salvare le modifiche di formattazione.</target>
+        <target state="new">Failed to save formatting changes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_end_of_line_marker">
         <source>Fix end of line marker.</source>
-        <target state="translated">Correggere il marcatore di fine riga.</target>
+        <target state="new">Fix end of line marker.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_file_encoding">
         <source>Fix file encoding.</source>
-        <target state="translated">Correggere la codifica dei file.</target>
+        <target state="new">Fix file encoding.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_final_newline">
         <source>Fix final newline.</source>
-        <target state="translated">Correggere il carattere di nuova riga finale.</target>
+        <target state="new">Fix final newline.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_imports_ordering">
         <source>Fix imports ordering.</source>
-        <target state="translated">Correggere l'ordinamento delle importazioni.</target>
+        <target state="new">Fix imports ordering.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
-        <target state="translated">Correggere la formattazione degli spazi vuoti.</target>
+        <target state="new">Fix whitespace formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fixing_diagnostics">
         <source>Fixing diagnostics...</source>
-        <target state="translated">Correzione della diagnostica...</target>
+        <target state="new">Fixing diagnostics...</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">
         <source>Format complete in {0}ms.</source>
-        <target state="translated">La formattazione è stata completata in {0} ms.</target>
+        <target state="new">Format complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_files_generated_by_the_SDK">
@@ -169,27 +169,27 @@
       </trans-unit>
       <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted">
         <source>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</source>
-        <target state="translated">Formatta i file senza salvare le modifiche nel disco. Termina con un codice di uscita diverso da zero se sono stati formattati file.</target>
+        <target state="new">Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatted_0_of_1_files">
         <source>Formatted {0} of {1} files.</source>
-        <target state="translated">Sono stati formattati {0} di {1} file.</target>
+        <target state="new">Formatted {0} of {1} files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_file_0">
         <source>Formatting code file '{0}'.</source>
-        <target state="translated">Formattazione del file di codice '{0}'.</target>
+        <target state="new">Formatting code file '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_files_in_workspace_0">
         <source>Formatting code files in workspace '{0}'.</source>
-        <target state="translated">Formattazione del file di codice nell'area di lavoro '{0}'.</target>
+        <target state="new">Formatting code files in workspace '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Include_generated_code_files_in_formatting_operations">
         <source>Include generated code files in formatting operations.</source>
-        <target state="translated">Includere i file del codice generato nelle operazioni di formattazione.</target>
+        <target state="new">Include generated code files in formatting operations.</target>
         <note />
       </trans-unit>
       <trans-unit id="Insert_0">
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
-        <target state="translated">Caricamento dell'area di lavoro.</target>
+        <target state="new">Loading workspace.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_all_project_or_solution_load_information_to_a_binary_log_file">
@@ -209,12 +209,12 @@
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">In '{0}' sono stati trovati più file di progetto MSBuild. Per specificare quello desiderato, usare l'argomento &lt;workspace&gt;.</target>
+        <target state="new">Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">In '{0}' sono stati trovati più file di soluzione MSBuild. Per specificare quello desiderato, usare l'argomento &lt;workspace&gt;.</target>
+        <target state="new">Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Project_0_is_using_configuration_from_1">
@@ -244,12 +244,12 @@
       </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
-        <target state="translated">Esegue gli analizzatori di terze parti e applica le correzioni.</target>
+        <target state="new">Run 3rd party analyzers and apply fixes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Run_code_style_analyzers_and_apply_fixes">
         <source>Run code style analyzers and apply fixes.</source>
-        <target state="translated">Esegue gli analizzatori degli stili di codice e applica le correzioni.</target>
+        <target state="new">Run code style analyzers and apply fixes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Run_whitespace_formatting">
@@ -264,7 +264,7 @@
       </trans-unit>
       <trans-unit id="Running_0_analysis">
         <source>Running {0} analysis.</source>
-        <target state="translated">Esecuzione dell'analisi {0}.</target>
+        <target state="new">Running {0} analysis.</target>
         <note />
       </trans-unit>
       <trans-unit id="Running_0_analyzers_on_1">
@@ -274,32 +274,32 @@
       </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
-        <target state="translated">Esecuzione dei formattatori.</target>
+        <target state="new">Running formatters.</target>
         <note />
       </trans-unit>
       <trans-unit id="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic">
         <source>Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</source>
-        <target state="translated">Consente di impostare il livello di dettaglio. I valori consentiti sono q[uiet], m[inimal], n[ormal], d[etailed] e diag[nostic]</target>
+        <target state="new">Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</target>
         <note />
       </trans-unit>
       <trans-unit id="Skipping_referenced_project_0">
         <source>Skipping referenced project '{0}'.</source>
-        <target state="translated">Il progetto di riferimento '{0}' verrà ignorato.</target>
+        <target state="new">Skipping referenced project '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">File di progetto o di soluzione su cui intervenire. Se non si specifica un file, il comando ne cercherà uno nella directory corrente.</target>
+        <target state="new">The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
         <source>PROJECT | SOLUTION</source>
-        <target state="translated">PROJECT | SOLUTION</target>
+        <target state="new">PROJECT | SOLUTION</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
         <source>Solution {0} has no projects</source>
-        <target state="translated">La soluzione {0} non contiene progetti</target>
+        <target state="new">Solution {0} has no projects</target>
         <note />
       </trans-unit>
       <trans-unit id="Standard_input_used_multiple_times">
@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
         <source>The dotnet CLI version is '{0}'.</source>
-        <target state="translated">La versione dell'interfaccia della riga di comando di dotnet è '{0}'.</target>
+        <target state="new">The dotnet CLI version is '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_dotnet_format_version_is_0">
@@ -329,12 +329,12 @@
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
-        <target state="translated">Il file '{0}' non sembra essere un file di progetto o di soluzione valido.</target>
+        <target state="new">The file '{0}' does not appear to be a valid project or solution file.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
         <source>The project file '{0}' does not exist.</source>
-        <target state="translated">Il file di progetto '{0}' non esiste.</target>
+        <target state="new">The project file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error">
@@ -344,12 +344,12 @@
       </trans-unit>
       <trans-unit id="The_solution_file_0_does_not_exist">
         <source>The solution file '{0}' does not exist.</source>
-        <target state="translated">Il file di soluzione '{0}' non esiste.</target>
+        <target state="new">The solution file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
-        <target state="translated">Il file di codice '{0}' è stato formattato.</target>
+        <target state="new">Formatted code file '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution">
         <source>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</source>
-        <target state="translated">Non è possibile correggere {0}. La correzione del codice {1} non supporta l'opzione Correggi tutti nella soluzione.</target>
+        <target state="new">Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation">
@@ -374,22 +374,22 @@
       </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
-        <target state="translated">Non è possibile individuare MSBuild. Assicurarsi che .NET SDK sia stato installato con il programma di installazione ufficiale.</target>
+        <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
         <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <target state="translated">Non è possibile individuare l'interfaccia della riga di comando di dotnet. Assicurarsi che sia indicata in PATH.</target>
+        <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
-        <target state="translated">Non è possibile organizzare le importazioni per '{0}'. Il documento è troppo complesso.</target>
+        <target state="new">Unable to organize imports for '{0}'. The document is too complex.</target>
         <note />
       </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
         <source>Using MSBuild.exe located in '{0}'.</source>
-        <target state="translated">Verrà usata la versione di MSBuild.exe disponibile in '{0}'.</target>
+        <target state="new">Using MSBuild.exe located in '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted">
@@ -399,17 +399,17 @@
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
-        <target state="translated">Sono stati rilevati avvisi durante il caricamento dell'area di lavoro. Impostare l'opzione del livello di dettaglio su 'diagnostic' per registrare gli avvisi.</target>
+        <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
         <note />
       </trans-unit>
       <trans-unit id="Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files">
         <source>Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</source>
-        <target state="translated">Indica se considerare l'argomento `&lt;workspace&gt;` come una semplice cartella di file.</target>
+        <target state="new">Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">
         <source>Writing formatting report to: '{0}'.</source>
-        <target state="translated">Scrittura del report di formattazione in: '{0}'.</target>
+        <target state="new">Writing formatting report to: '{0}'.</target>
         <note />
       </trans-unit>
     </body>

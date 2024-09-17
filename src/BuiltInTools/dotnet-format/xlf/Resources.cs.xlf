@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting">
         <source>A list of relative file or folder paths to exclude from formatting.</source>
-        <target state="translated">Seznam relativních cest k souborům nebo složkám, které se nemají formátovat</target>
+        <target state="new">A list of relative file or folder paths to exclude from formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty">
         <source>A list of relative file or folder paths to include in formatting. All files are formatted if empty.</source>
-        <target state="translated">Seznam relativních cest k souborům nebo složkám, které se mají formátovat. Pokud bude seznam prázdný, budou se formátovat všechny soubory.</target>
+        <target state="new">A list of relative file or folder paths to include in formatting. All files are formatted if empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used">
         <source>A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</source>
-        <target state="translated">Cesta k souboru řešení, souboru projektu nebo složce obsahující soubor řešení nebo projektu. Pokud cesta není zadaná, použije se aktuální adresář.</target>
+        <target state="new">A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</target>
         <note />
       </trans-unit>
       <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
-        <target state="translated">Přijímá cestu k souboru. Pokud se zadá, vytvoří se v daném adresáři sestava JSON.</target>
+        <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_json_report_in_the_given_directory">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="Analysis_complete_in_0ms.">
         <source>Analysis complete in {0}ms.</source>
-        <target state="translated">Analýza se dokončila za {0} ms.</target>
+        <target state="new">Analysis complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Analyzer_Reference">
         <source>Analyzer Reference</source>
-        <target state="translated">Odkaz na analyzátor</target>
+        <target state="new">Analyzer Reference</target>
         <note />
       </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">{0} obsahuje jak soubor projektu MSBuild, tak soubor řešení. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
+        <target state="new">Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_when_fixing_style">
@@ -74,22 +74,22 @@
       </trans-unit>
       <trans-unit id="Code_Style">
         <source>Code Style</source>
-        <target state="translated">Styl kódu</target>
+        <target state="new">Code Style</target>
         <note />
       </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
-        <target state="translated">Dokončeno za {0} ms</target>
+        <target state="new">Complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">V adresáři {0} nešlo najít soubor projektu MSBuild nebo soubor řešení. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
+        <target state="new">Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects">
         <source>Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</source>
-        <target state="translated">{0} nejde formátovat. Formátovat jde v současné době jenom projekty v jazycích C# a Visual Basic.</target>
+        <target state="new">Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</target>
         <note />
       </trans-unit>
       <trans-unit id="Delete_0_characters">
@@ -99,12 +99,12 @@
       </trans-unit>
       <trans-unit id="Determining_diagnostics">
         <source>Determining diagnostics...</source>
-        <target state="translated">Zjišťuje se diagnostika...</target>
+        <target state="new">Determining diagnostics...</target>
         <note />
       </trans-unit>
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
-        <target state="translated">Určují se soubory, které se dají formátovat.</target>
+        <target state="new">Determining formattable files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Doesnt_execute_an_implicit_restore_before_formatting">
@@ -114,47 +114,47 @@
       </trans-unit>
       <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">
         <source>Failed to apply code fix {0} for {1}: {2}</source>
-        <target state="translated">Nepovedlo se použít opravu kódu {0} pro {1}: {2}</target>
+        <target state="new">Failed to apply code fix {0} for {1}: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
-        <target state="translated">Nepodařilo se uložit změny formátování.</target>
+        <target state="new">Failed to save formatting changes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_end_of_line_marker">
         <source>Fix end of line marker.</source>
-        <target state="translated">Opravte značku konce řádku.</target>
+        <target state="new">Fix end of line marker.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_file_encoding">
         <source>Fix file encoding.</source>
-        <target state="translated">Opravte kódování souboru.</target>
+        <target state="new">Fix file encoding.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_final_newline">
         <source>Fix final newline.</source>
-        <target state="translated">Opravte odřádkování na konci.</target>
+        <target state="new">Fix final newline.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_imports_ordering">
         <source>Fix imports ordering.</source>
-        <target state="translated">Opravte pořadí importů.</target>
+        <target state="new">Fix imports ordering.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
-        <target state="translated">Opravte formátování prázdných znaků.</target>
+        <target state="new">Fix whitespace formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fixing_diagnostics">
         <source>Fixing diagnostics...</source>
-        <target state="translated">Opravuje se diagnostika...</target>
+        <target state="new">Fixing diagnostics...</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">
         <source>Format complete in {0}ms.</source>
-        <target state="translated">Formátování se dokončilo za {0} ms.</target>
+        <target state="new">Format complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_files_generated_by_the_SDK">
@@ -169,27 +169,27 @@
       </trans-unit>
       <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted">
         <source>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</source>
-        <target state="translated">Formátuje soubory bez toho, aby se změny ukládaly na disk. Pokud se nějaké soubory naformátovaly, ukončí se s nenulovým ukončovacím kódem.</target>
+        <target state="new">Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatted_0_of_1_files">
         <source>Formatted {0} of {1} files.</source>
-        <target state="translated">Naformátovali jsme {0} z {1} souborů.</target>
+        <target state="new">Formatted {0} of {1} files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_file_0">
         <source>Formatting code file '{0}'.</source>
-        <target state="translated">Formátuje se soubor kódu {0}.</target>
+        <target state="new">Formatting code file '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_files_in_workspace_0">
         <source>Formatting code files in workspace '{0}'.</source>
-        <target state="translated">Formátují se soubory kódu v pracovním prostoru {0}.</target>
+        <target state="new">Formatting code files in workspace '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Include_generated_code_files_in_formatting_operations">
         <source>Include generated code files in formatting operations.</source>
-        <target state="translated">Zahrňte do operací formátování vygenerované soubory kódu.</target>
+        <target state="new">Include generated code files in formatting operations.</target>
         <note />
       </trans-unit>
       <trans-unit id="Insert_0">
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
-        <target state="translated">Načítá se pracovní prostor.</target>
+        <target state="new">Loading workspace.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_all_project_or_solution_load_information_to_a_binary_log_file">
@@ -209,12 +209,12 @@
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">{0} obsahuje více souborů projektů MSBuild. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
+        <target state="new">Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
         <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
-        <target state="translated">{0} obsahuje více souborů řešení MSBuild. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
+        <target state="new">Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Project_0_is_using_configuration_from_1">
@@ -244,12 +244,12 @@
       </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
-        <target state="translated">Spustit analyzátory třetích stran a použít opravy</target>
+        <target state="new">Run 3rd party analyzers and apply fixes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Run_code_style_analyzers_and_apply_fixes">
         <source>Run code style analyzers and apply fixes.</source>
-        <target state="translated">Spustit analyzátory stylu kódu a použít opravy</target>
+        <target state="new">Run code style analyzers and apply fixes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Run_whitespace_formatting">
@@ -264,7 +264,7 @@
       </trans-unit>
       <trans-unit id="Running_0_analysis">
         <source>Running {0} analysis.</source>
-        <target state="translated">Probíhá analýza {0}.</target>
+        <target state="new">Running {0} analysis.</target>
         <note />
       </trans-unit>
       <trans-unit id="Running_0_analyzers_on_1">
@@ -274,22 +274,22 @@
       </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
-        <target state="translated">Spouští se formátování.</target>
+        <target state="new">Running formatters.</target>
         <note />
       </trans-unit>
       <trans-unit id="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic">
         <source>Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</source>
-        <target state="translated">Nastavte úroveň podrobností. Povolené hodnoty jsou: q[uiet], m[inimal], n[ormal], d[etailed] a diag[nostic]</target>
+        <target state="new">Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</target>
         <note />
       </trans-unit>
       <trans-unit id="Skipping_referenced_project_0">
         <source>Skipping referenced project '{0}'.</source>
-        <target state="translated">Přeskočí se odkazovaný projekt {0}.</target>
+        <target state="new">Skipping referenced project '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">Soubor projektu nebo řešení, se kterým se má operace provést. Pokud soubor není zadaný, příkaz ho bude hledat v aktuálním adresáři.</target>
+        <target state="new">The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
         <source>Solution {0} has no projects</source>
-        <target state="translated">Řešení {0} nemá žádné projekty.</target>
+        <target state="new">Solution {0} has no projects</target>
         <note />
       </trans-unit>
       <trans-unit id="Standard_input_used_multiple_times">
@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
         <source>The dotnet CLI version is '{0}'.</source>
-        <target state="translated">Verze .NET CLI je {0}.</target>
+        <target state="new">The dotnet CLI version is '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_dotnet_format_version_is_0">
@@ -329,12 +329,12 @@
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
-        <target state="translated">Soubor {0} zřejmě není platný soubor projektu nebo řešení.</target>
+        <target state="new">The file '{0}' does not appear to be a valid project or solution file.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
         <source>The project file '{0}' does not exist.</source>
-        <target state="translated">Soubor projektu {0} neexistuje.</target>
+        <target state="new">The project file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error">
@@ -344,12 +344,12 @@
       </trans-unit>
       <trans-unit id="The_solution_file_0_does_not_exist">
         <source>The solution file '{0}' does not exist.</source>
-        <target state="translated">Soubor řešení {0} neexistuje.</target>
+        <target state="new">The solution file '{0}' does not exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
-        <target state="translated">Naformátoval se soubor kódu {0}.</target>
+        <target state="new">Formatted code file '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution">
         <source>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</source>
-        <target state="translated">Nepovedlo se opravit {0}. Oprava kódu {1} nepodporuje možnost Opravit vše v řešení.</target>
+        <target state="new">Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation">
@@ -374,22 +374,22 @@
       </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
-        <target state="translated">Nepovedlo se najít MSBuild. Ujistěte se, že se sada .NET SDK nainstalovala pomocí oficiálního instalačního programu.</target>
+        <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
         <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <target state="translated">Nepovedlo se najít .NET CLI. Ujistěte se, že se nachází v proměnné PATH.</target>
+        <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
-        <target state="translated">Nepovedlo se uspořádat importy pro {0}. Dokument je příliš složitý.</target>
+        <target state="new">Unable to organize imports for '{0}'. The document is too complex.</target>
         <note />
       </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
         <source>Using MSBuild.exe located in '{0}'.</source>
-        <target state="translated">Používá se MSBuild.exe umístěný v {0}.</target>
+        <target state="new">Using MSBuild.exe located in '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted">
@@ -399,17 +399,17 @@
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
-        <target state="translated">Při načítání pracovního prostoru se vygenerovala upozornění. Pokud chcete upozornění protokolovat, nastavte možnost verbosity na úroveň diagnostic.</target>
+        <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
         <note />
       </trans-unit>
       <trans-unit id="Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files">
         <source>Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</source>
-        <target state="translated">Určuje, jestli se má argument &lt;workspace&gt; považovat za jednoduchou složku souborů.</target>
+        <target state="new">Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">
         <source>Writing formatting report to: '{0}'.</source>
-        <target state="translated">Sestava formátování se zapisuje do {0}.</target>
+        <target state="new">Writing formatting report to: '{0}'.</target>
         <note />
       </trans-unit>
     </body>
