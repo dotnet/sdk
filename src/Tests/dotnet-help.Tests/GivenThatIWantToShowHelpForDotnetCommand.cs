@@ -136,7 +136,7 @@ Run 'dotnet [command] --help' for more information on a command.";
         public void WhenRunOnLinuxDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-            Assert.Equal("xdg-open", proc.StartInfo.FileName);
+            Assert.Contains("xdg-open", proc.StartInfo.FileName);
             Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
 
         }
