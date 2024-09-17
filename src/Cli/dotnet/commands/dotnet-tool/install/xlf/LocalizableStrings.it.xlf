@@ -194,7 +194,7 @@ Per altri motivi, inclusa l'aggiunta obbligatoria del prefisso microsoft ai nomi
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="new">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">
