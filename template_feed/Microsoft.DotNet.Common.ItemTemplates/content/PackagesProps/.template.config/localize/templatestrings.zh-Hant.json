@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "MSBuild Directory.Packages.props 檔案",
-  "description": "空的 Directory.Packages.props 檔案，可用來集中指定包版本",
-  "symbols/inherit/displayName": "繼承",
-  "symbols/inherit/description": "若為 True，則會為檔案系統目錄階層中最近的 Directory.Packages.props 新增 Import。Directory.Build.targets 預設不會繼承，因此這麼做可讓您建置一組按資料夾的自訂項目。"
+  "name": "MSBuild Directory.Packages.props file",
+  "description": "An empty Directory.Packages.props file which can be used to specify package versions centrally",
+  "symbols/inherit/displayName": "Inherit",
+  "symbols/inherit/description": "If true, adds an Import for the closest Directory.Packages.props in the file system directory hierarchy. Directory.Packages.props don't inherit by default, so doing this allows you to build up a set of customizations folder-by-folder."
 }
