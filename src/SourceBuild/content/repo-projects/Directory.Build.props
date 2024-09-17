@@ -13,9 +13,7 @@
     <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(UseOfficialBuildVersioning)' != 'false'" />
-  </PropertyGroup>
+  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(UseOfficialBuildVersioning)' != 'false'" />
 
   <PropertyGroup>
     <!-- Fake, to satisfy the SDK. -->
