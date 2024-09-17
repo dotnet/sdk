@@ -33,9 +33,9 @@
     <VersionFeature21>30</VersionFeature21>
     <VersionFeature31>32</VersionFeature31>
     <VersionFeature50>17</VersionFeature50>
-    <VersionFeature60>33</VersionFeature60>
+    <VersionFeature60>35</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
-    <VersionFeature80>8</VersionFeature80>
+    <VersionFeature80>10</VersionFeature80>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
