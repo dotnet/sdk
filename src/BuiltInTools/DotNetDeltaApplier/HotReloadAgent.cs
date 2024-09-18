@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.HotReload
             var handlerActions = new UpdateHandlerActions();
             foreach (var assembly in sortedAssemblies)
             {
-                foreach (var attr in assembly.GetCustomAttributesData())
+                foreach (var attr in TryGetCustomAttributesData(assembly))
                 {
                     // Look up the attribute by name rather than by type. This would allow netstandard targeting libraries to
                     // define their own copy without having to cross-compile.
@@ -104,6 +104,25 @@ namespace Microsoft.Extensions.HotReload
             }
 
             return handlerActions;
+        }
+
+        private IList<CustomAttributeData> TryGetCustomAttributesData(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetCustomAttributesData();
+            }
+            catch (Exception e)
+            {
+                // In cross-platform scenarios, such as debugging in VS through WSL, Roslyn
+                // runs on Windows, and the agent runs on Linux. Assemblies accessible to Windows
+                // may not be available or loaded on linux (such as WPF's assemblies).
+                // In such case, we can ignore the assemblies and continue enumerating handlers for
+                // the rest of the assemblies of current domain.
+                _log($"'{assembly.FullName}' is not loaded ({e.Message})");
+
+                return new List<CustomAttributeData>();
+            }
         }
 
         internal void GetHandlerActions(UpdateHandlerActions handlerActions, Type handlerType)
@@ -252,15 +271,21 @@ namespace Microsoft.Extensions.HotReload
                     continue;
                 }
 
-                var assemblyTypes = assembly.GetTypes();
-
                 foreach (var updatedType in delta.UpdatedTypes)
                 {
-                    var type = assemblyTypes.FirstOrDefault(t => t.MetadataToken == updatedType);
-                    if (type != null)
+                    // Must be a TypeDef.
+                    Debug.Assert(updatedType >> 24 == 0x02);
+
+                    // The type has to be in the manifest module since Hot Reload does not support multi-module assemblies:
+                    try
                     {
+                        var type = assembly.ManifestModule.ResolveType(updatedType);
                         types ??= new();
                         types.Add(type);
+                    }
+                    catch (Exception e)
+                    {
+                        _log($"Failed to load type 0x{updatedType:X8}: {e.Message}");
                     }
                 }
             }
