@@ -53,7 +53,7 @@
       <Sha>d1f65c27d9bd28bd141af39d4509d387199cc0bd</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest-9.0.100" Version="9.0.0">
+    <Dependency Name="Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest-9.0.100" Version="9.0.0-rtm.24467.13">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d1f65c27d9bd28bd141af39d4509d387199cc0bd</Sha>
     </Dependency>
