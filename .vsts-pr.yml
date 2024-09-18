@@ -62,6 +62,7 @@ stages:
   ############### SOURCE BUILD ###############
   - template: /eng/common/templates/job/source-build.yml
     parameters:
+      enableInternalSources: true
       platform:
         name: Managed
         container: centosStream9
