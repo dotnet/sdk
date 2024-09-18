@@ -71,18 +71,19 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (header.Scheme is not null)
         {
             scheme = header.Scheme;
-            var keyValues = ParseBearerArgs(header.Parameter);
-            if (keyValues is null)
-            {
-                return false;
-            }
 
             if (header.Scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
             {
-                return TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo);
+                bearerAuthInfo = null;
+                return true;
             }
             else if (header.Scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
             {
+                var keyValues = ParseBearerArgs(header.Parameter);
+                if (keyValues is null)
+                {
+                    return false;
+                }
                 return TryParseBearerAuthInfo(keyValues, out bearerAuthInfo);
             }
             else
@@ -108,12 +109,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 authInfo = null;
                 return false;
             }
-        }
-
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo)
-        {
-            authInfo = null;
-            return true;
         }
 
         static Dictionary<string, string>? ParseBearerArgs(string? bearerHeaderArgs)
@@ -159,7 +154,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
-        
         DockerCredentials? privateRepoCreds;
         // Allow overrides for auth via environment variables
         if (GetDockerCredentialsFromEnvironment(_registryMode) is (string credU, string credP))
@@ -311,8 +305,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         else
         {
             _logger.LogTrace(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
-            // logging and returning null to try HTTP GET instead
-            return null;
+            return null; // try next method
         }
     }
 
