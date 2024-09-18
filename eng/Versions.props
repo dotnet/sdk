@@ -363,11 +363,11 @@
     <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>9.0.0-rc.2.24464.3</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
-    <EmscriptenWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</EmscriptenWorkloadFeatureBand>
+    <EmscriptenWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-(rtm|[A-z]*[\.]*\d*)`))</EmscriptenWorkloadFeatureBand>
     <!-- Workloads from dotnet/runtime use MicrosoftNETCoreAppRefPackageVersion because it has a stable name that does not include the full feature band -->
     <MonoWorkloadManifestVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MonoWorkloadManifestVersion>
     <!-- mono workload prerelease version band must match the runtime feature band -->
-    <MonoWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(MonoWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</MonoWorkloadFeatureBand>
+    <MonoWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(MonoWorkloadManifestVersion), `-(rtm|[A-z]*[\.]*\d*)`))</MonoWorkloadFeatureBand>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies for VMR initialization">
     <!-- These two MicrosoftBuild versions are required to build VMR initialization tasks -->
