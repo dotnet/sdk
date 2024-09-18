@@ -53,6 +53,10 @@
       <Sha>d1f65c27d9bd28bd141af39d4509d387199cc0bd</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
+    <Dependency Name="Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest-9.0.100" Version="9.0.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>d1f65c27d9bd28bd141af39d4509d387199cc0bd</Sha>
+    </Dependency>
     <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
     <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
@@ -60,10 +64,6 @@
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rc.2.24464.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>c3d83d0ea894e5ee537bfc591fd48e06af8d9166</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100" Version="9.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>c3d83d0ea894e5ee537bfc591fd48e06af8d9166</Sha>
     </Dependency>
