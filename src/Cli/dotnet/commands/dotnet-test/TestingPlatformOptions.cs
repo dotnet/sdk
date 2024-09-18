@@ -51,5 +51,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdConfigurationDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> ProjectOption = new("--project")
+        {
+            Description = LocalizableStrings.CmdProjectDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
     }
 }

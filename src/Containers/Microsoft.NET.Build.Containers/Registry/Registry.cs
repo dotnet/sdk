@@ -534,7 +534,6 @@ internal sealed class Registry
     {
         private readonly IRegistryAPI? _registryApi;
         private readonly RegistryMode? _mode;
-
         public RegistryApiFactory(IRegistryAPI registryApi)
         {
             _registryApi = registryApi;

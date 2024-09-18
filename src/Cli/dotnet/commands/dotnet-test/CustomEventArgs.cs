@@ -1,43 +1,46 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test;
-
 namespace Microsoft.DotNet.Cli
 {
-    internal class HandshakeInfoArgs : EventArgs
+    internal class HandshakeArgs : EventArgs
     {
-        public HandshakeInfo HandshakeInfo { get; set; }
+        public Handshake Handshake { get; set; }
     }
 
     internal class HelpEventArgs : EventArgs
     {
-        public CommandLineOptionMessages CommandLineOptionMessages { get; set; }
+        public string ModulePath { get; set; }
+
+        public CommandLineOption[] CommandLineOptions { get; set; }
     }
 
     internal class DiscoveredTestEventArgs : EventArgs
     {
-        public DiscoveredTestMessage DiscoveredTestMessage { get; set; }
+        public string ExecutionId { get; set; }
+
+        public DiscoveredTest[] DiscoveredTests { get; set; }
     }
 
-    internal class SuccessfulTestResultEventArgs : EventArgs
+    internal class TestResultEventArgs : EventArgs
     {
-        public SuccessfulTestResultMessage SuccessfulTestResultMessage { get; set; }
+        public string ExecutionId { get; set; }
+
+        public SuccessfulTestResult[] SuccessfulTestResults { get; set; }
+
+        public FailedTestResult[] FailedTestResults { get; set; }
     }
 
-    internal class FailedTestResultEventArgs : EventArgs
+    internal class FileArtifactEventArgs : EventArgs
     {
-        public FailedTestResultMessage FailedTestResultMessage { get; set; }
-    }
+        public string ExecutionId { get; set; }
 
-    internal class FileArtifactInfoEventArgs : EventArgs
-    {
-        public FileArtifactInfo FileArtifactInfo { get; set; }
+        public FileArtifact[] FileArtifacts { get; set; }
     }
 
     internal class SessionEventArgs : EventArgs
     {
-        public TestSessionEvent SessionEvent { get; set; }
+        public TestSession SessionEvent { get; set; }
     }
 
     internal class ErrorEventArgs : EventArgs

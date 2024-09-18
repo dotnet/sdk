@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed class ModuleSerializer : BaseSerializer, INamedPipeSerializer
+    internal sealed class ModuleMessageSerializer : BaseSerializer, INamedPipeSerializer
     {
         public int Id => ModuleFieldsId.MessagesSerializerId;
 
@@ -12,14 +12,14 @@ namespace Microsoft.DotNet.Tools.Test
             string modulePath = ReadString(stream);
             string projectPath = ReadString(stream);
             string targetFramework = ReadString(stream);
-            return new Module(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim());
+            return new ModuleMessage(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim());
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
         {
-            WriteString(stream, ((Module)objectToSerialize).DLLPath);
-            WriteString(stream, ((Module)objectToSerialize).ProjectPath);
-            WriteString(stream, ((Module)objectToSerialize).TargetFramework);
+            WriteString(stream, ((ModuleMessage)objectToSerialize).DLLPath);
+            WriteString(stream, ((ModuleMessage)objectToSerialize).ProjectPath);
+            WriteString(stream, ((ModuleMessage)objectToSerialize).TargetFramework);
         }
     }
 }

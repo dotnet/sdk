@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
         private TerminalTestReporter _output;
         private TestApplicationActionQueue _actionQueue;
         private Task _namedPipeConnectionLoop;
-        private string[] _args;
+        private List<string> _args;
         private Dictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
@@ -50,6 +50,12 @@ namespace Microsoft.DotNet.Cli
                 degreeOfParallelism = Environment.ProcessorCount;
 
             bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+
+            if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
+            {
+                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
+            }
+
             BuiltInOptions builtInOptions = new(
                 parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
                 parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
@@ -75,7 +81,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.HelpRequested += OnHelpRequested;
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Created += OnTestApplicationCreated;
+                    testApp.Run += OnTestApplicationRun;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
@@ -87,22 +93,21 @@ namespace Microsoft.DotNet.Cli
             {
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
-                    testApp.HandshakeInfoReceived += OnHandshakeInfoReceived;
-                    testApp.DiscoveredTestReceived += OnDiscoveredTestReceived;
-                    testApp.SuccessfulTestResultReceived += OnTestResultReceived;
-                    testApp.FailedTestResultReceived += OnTestResultReceived;
-                    testApp.FileArtifactInfoReceived += OnFileArtifactInfoReceived;
+                    testApp.HandshakeReceived += OnHandshakeReceived;
+                    testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
+                    testApp.TestResultsReceived += OnTestResultsReceived;
+                    testApp.FileArtifactsReceived += OnFileArtifactsReceived;
                     testApp.SessionEventReceived += OnSessionEventReceived;
                     testApp.ErrorReceived += OnErrorReceived;
                     testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Created += OnTestApplicationCreated;
+                    testApp.Run += OnTestApplicationRun;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
                 });
             }
 
-            _args = [.. parseResult.UnmatchedTokens];
+            _args = new List<string>(parseResult.UnmatchedTokens);
             _msBuildConnectionHandler = new(_args, _actionQueue);
             _testModulesFilterHandler = new(_args, _actionQueue);
             _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
@@ -150,7 +155,7 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private void OnHandshakeInfoReceived(object sender, HandshakeInfoArgs args)
+        private void OnHandshakeReceived(object sender, HandshakeArgs args)
         {
             var testApplication = (TestApplication)sender;
             var executionId = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.ExecutionId];
@@ -165,26 +170,31 @@ namespace Microsoft.DotNet.Cli
                 return;
             }
 
-            var handshakeInfo = args.HandshakeInfo;
+            var handshake = args.Handshake;
 
-            foreach (var property in handshakeInfo.Properties)
+            foreach (var property in handshake.Properties)
             {
                 VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
             }
         }
 
-        private void OnDiscoveredTestReceived(object sender, DiscoveredTestEventArgs args)
+        private void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
         {
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
             }
 
-            var successfulTestResultMessage = args.DiscoveredTestMessage;
-            VSTestTrace.SafeWriteTrace(() => $"DiscoveredTestMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, {successfulTestResultMessage.ExecutionId}");
+            var discoveredTestMessages = args.DiscoveredTests;
+
+            VSTestTrace.SafeWriteTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
+            foreach (DiscoveredTest discoveredTestMessage in discoveredTestMessages)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+            }
         }
 
-        private void OnTestResultReceived(object sender, EventArgs args)
+        private void OnTestResultsReceived(object sender, TestResultEventArgs args)
         {
             if (args is SuccessfulTestResultEventArgs success)
             {
@@ -222,32 +232,37 @@ namespace Microsoft.DotNet.Cli
                 return;
             }
 
-            if (args is SuccessfulTestResultEventArgs successfulTestResultEventArgs)
+            VSTestTrace.SafeWriteTrace(() => $"TestResults Execution Id: {args.ExecutionId}");
+
+            foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
             {
-                var successfulTestResultMessage = successfulTestResultEventArgs.SuccessfulTestResultMessage;
-                VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {successfulTestResultMessage.Uid}, {successfulTestResultMessage.DisplayName}, " +
-                $"{successfulTestResultMessage.State}, {successfulTestResultMessage.Reason}, {successfulTestResultMessage.SessionUid}, {successfulTestResultMessage.ExecutionId}");
+                VSTestTrace.SafeWriteTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
+                $"{successfulTestResult.State}, {successfulTestResult.Reason}, {successfulTestResult.SessionUid}");
             }
-            else if (args is FailedTestResultEventArgs failedTestResultEventArgs)
+
+            foreach (FailedTestResult failedTestResult in args.FailedTestResults)
             {
-                var failedTestResultMessage = failedTestResultEventArgs.FailedTestResultMessage;
-                VSTestTrace.SafeWriteTrace(() => $"TestResultMessage: {failedTestResultMessage.Uid}, {failedTestResultMessage.DisplayName}, " +
-                $"{failedTestResultMessage.State}, {failedTestResultMessage.Reason}, {failedTestResultMessage.ErrorMessage}," +
-                $" {failedTestResultMessage.ErrorStackTrace}, {failedTestResultMessage.SessionUid}, {failedTestResultMessage.ExecutionId}");
+                VSTestTrace.SafeWriteTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
+                $"{failedTestResult.State}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
+                $" {failedTestResult.ErrorStackTrace}, {failedTestResult.SessionUid}");
             }
         }
 
-        private void OnFileArtifactInfoReceived(object sender, FileArtifactInfoEventArgs args)
+        private void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
         {
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
             }
 
-            var fileArtifactInfo = args.FileArtifactInfo;
-            VSTestTrace.SafeWriteTrace(() => $"FileArtifactInfo: {fileArtifactInfo.FullPath}, {fileArtifactInfo.DisplayName}, " +
-                $"{fileArtifactInfo.Description}, {fileArtifactInfo.TestUid}, {fileArtifactInfo.TestDisplayName}, " +
-                $"{fileArtifactInfo.SessionUid}, {fileArtifactInfo.ExecutionId}");
+            VSTestTrace.SafeWriteTrace(() => $"FileArtifactMessages Execution Id: {args.ExecutionId}");
+
+            foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"FileArtifacr: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
+                $"{fileArtifactMessage.SessionUid}");
+            }
         }
 
         private void OnSessionEventReceived(object sender, SessionEventArgs args)
@@ -299,7 +314,7 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private void OnTestApplicationCreated(object sender, EventArgs args)
+        private void OnTestApplicationRun(object sender, EventArgs args)
         {
             TestApplication testApp = sender as TestApplication;
             _testApplications.Add(testApp);

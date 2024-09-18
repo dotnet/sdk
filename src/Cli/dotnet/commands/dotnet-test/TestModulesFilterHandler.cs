@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Cli
 {
     internal sealed class TestModulesFilterHandler
     {
-        private readonly string[] _args;
+        private readonly List<string> _args;
 
         private readonly TestApplicationActionQueue _actionQueue;
 
-        public TestModulesFilterHandler(string[] args, TestApplicationActionQueue actionQueue)
+        public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue)
         {
             _args = args;
             _actionQueue = actionQueue;
@@ -53,7 +53,6 @@ namespace Microsoft.DotNet.Cli
                 var testApp = new TestApplication(new Module(testModule, null, null), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
-                testApp.OnCreated();
             }
 
             return true;

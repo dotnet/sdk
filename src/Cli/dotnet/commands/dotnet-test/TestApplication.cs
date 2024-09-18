@@ -11,8 +11,8 @@ namespace Microsoft.DotNet.Cli
     internal sealed class TestApplication : IDisposable
     {
         private readonly Module _module;
+        private readonly List<string> _args;
 
-        private readonly string[] _args;
         private readonly List<string> _outputData = [];
         private readonly List<string> _errorData = [];
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
@@ -22,21 +22,20 @@ namespace Microsoft.DotNet.Cli
         private Task _namedPipeConnectionLoop;
         private ConcurrentDictionary<string, string> _executionIds = [];
 
-        public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
+        public event EventHandler<HandshakeArgs> HandshakeReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
-        public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestReceived;
-        public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
-        public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
-        public event EventHandler<FileArtifactInfoEventArgs> FileArtifactInfoReceived;
+        public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestsReceived;
+        public event EventHandler<TestResultEventArgs> TestResultsReceived;
+        public event EventHandler<FileArtifactEventArgs> FileArtifactsReceived;
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
-        public event EventHandler<EventArgs> Created;
+        public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
         public Module Module => _module;
 
-        public TestApplication(Module module, string[] args)
+        public TestApplication(Module module, List<string> args)
         {
             _module = module;
             _args = args;
@@ -49,11 +48,12 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
         {
+            Run?.Invoke(this, EventArgs.Empty);
+
             if (!ModulePathExists())
             {
                 return 1;
             }
-
             bool isDll = _module.DLLPath.EndsWith(".dll");
             ProcessStartInfo processStartInfo = new()
             {
@@ -101,12 +101,12 @@ namespace Microsoft.DotNet.Cli
             {
                 switch (request)
                 {
-                    case HandshakeInfo handshakeInfo:
-                        if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ModulePath, out string value))
+                    case HandshakeMessage handshakeMessage:
+                        if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
                         {
-                            OnHandshakeInfo(handshakeInfo);
+                            OnHandshakeMessage(handshakeMessage);
 
-                            return Task.FromResult((IResponse)CreateHandshakeInfo(GetSupportedProtocolVersion(handshakeInfo)));
+                            return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
                         }
                         break;
 
@@ -114,20 +114,16 @@ namespace Microsoft.DotNet.Cli
                         OnCommandLineOptionMessages(commandLineOptionMessages);
                         break;
 
-                    case DiscoveredTestMessage discoveredTestMessage:
-                        OnDiscoveredTestMessage(discoveredTestMessage);
+                    case DiscoveredTestMessages discoveredTestMessages:
+                        OnDiscoveredTestMessages(discoveredTestMessages);
                         break;
 
-                    case SuccessfulTestResultMessage successfulTestResultMessage:
-                        OnSuccessfulTestResultMessage(successfulTestResultMessage);
+                    case TestResultMessages testResultMessages:
+                        OnTestResultMessages(testResultMessages);
                         break;
 
-                    case FailedTestResultMessage failedTestResultMessage:
-                        OnFailedTestResultMessage(failedTestResultMessage);
-                        break;
-
-                    case FileArtifactInfo fileArtifactInfo:
-                        OnFileArtifactInfo(fileArtifactInfo);
+                    case FileArtifactMessages fileArtifactMessages:
+                        OnFileArtifactMessages(fileArtifactMessages);
                         break;
 
                     case TestSessionEvent sessionEvent:
@@ -160,9 +156,9 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
-        private static string GetSupportedProtocolVersion(HandshakeInfo handshakeInfo)
+        private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
         {
-            handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.SupportedProtocolVersions, out string protocolVersions);
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions);
 
             string version = string.Empty;
             if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
@@ -173,14 +169,14 @@ namespace Microsoft.DotNet.Cli
             return version;
         }
 
-        private static HandshakeInfo CreateHandshakeInfo(string version) =>
+        private static HandshakeMessage CreateHandshakeMessage(string version) =>
             new(new Dictionary<byte, string>
             {
-                { HandshakeInfoPropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
-                { HandshakeInfoPropertyNames.Architecture, RuntimeInformation.OSArchitecture.ToString() },
-                { HandshakeInfoPropertyNames.Framework, RuntimeInformation.FrameworkDescription },
-                { HandshakeInfoPropertyNames.OS, RuntimeInformation.OSDescription },
-                { HandshakeInfoPropertyNames.SupportedProtocolVersions, version }
+                { HandshakeMessagePropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+                { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
+                { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
+                { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
+                { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
             });
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
@@ -264,7 +260,7 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($" {CliConstants.ParametersSeparator} ");
 
-            builder.Append(_args.Length != 0
+            builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
@@ -282,7 +278,7 @@ namespace Microsoft.DotNet.Cli
                 builder.Append($"exec {_module.DLLPath} ");
             }
 
-            builder.Append(_args.Length != 0
+            builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
@@ -305,49 +301,48 @@ namespace Microsoft.DotNet.Cli
             return builder.ToString();
         }
 
-        public void OnHandshakeInfo(HandshakeInfo handshakeInfo)
+        public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
         {
-            if (handshakeInfo.Properties.TryGetValue(HandshakeInfoPropertyNames.ExecutionId, out string executionId))
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
                 AddExecutionId(executionId);
                 ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DLLPath, ExecutionId = executionId });
             }
-            HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { HandshakeInfo = handshakeInfo });
+            HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
 
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
-            HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
+            HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
         }
 
-        internal void OnDiscoveredTestMessage(DiscoveredTestMessage discoveredTestMessage)
+        internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
         {
-            DiscoveredTestReceived?.Invoke(this, new DiscoveredTestEventArgs { DiscoveredTestMessage = discoveredTestMessage });
+            DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
+            {
+                ExecutionId = discoveredTestMessages.ExecutionId,
+                DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
+            });
         }
 
-        internal void OnSuccessfulTestResultMessage(SuccessfulTestResultMessage successfulTestResultMessage)
+        internal void OnTestResultMessages(TestResultMessages testResultMessage)
         {
-            SuccessfulTestResultReceived?.Invoke(this, new SuccessfulTestResultEventArgs { SuccessfulTestResultMessage = successfulTestResultMessage });
+            TestResultsReceived?.Invoke(this, new TestResultEventArgs
+            {
+                ExecutionId = testResultMessage.ExecutionId,
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.SessionUid)).ToArray()
+            });
         }
 
-        internal void OnFailedTestResultMessage(FailedTestResultMessage failedTestResultMessage)
+        internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         {
-            FailedTestResultReceived?.Invoke(this, new FailedTestResultEventArgs { FailedTestResultMessage = failedTestResultMessage });
-        }
-
-        internal void OnFileArtifactInfo(FileArtifactInfo fileArtifactInfo)
-        {
-            FileArtifactInfoReceived?.Invoke(this, new FileArtifactInfoEventArgs { FileArtifactInfo = fileArtifactInfo });
+            FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs { FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray() });
         }
 
         internal void OnSessionEvent(TestSessionEvent sessionEvent)
         {
-            SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = sessionEvent });
-        }
-
-        internal void OnCreated()
-        {
-            Created?.Invoke(this, EventArgs.Empty);
+            SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = new TestSession(sessionEvent.SessionType, sessionEvent.SessionUid, sessionEvent.ExecutionId) });
         }
 
         public override string ToString()

@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli
         internal const byte TestSessionEnd = 1;
     }
 
-    internal static class HandshakeInfoPropertyNames
+    internal static class HandshakeMessagePropertyNames
     {
         internal const byte PID = 0;
         internal const byte Architecture = 1;
