@@ -547,6 +547,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_ComObjectDescriptorSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
