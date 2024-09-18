@@ -158,9 +158,9 @@ namespace Microsoft.DotNet.Cli
         private void OnHandshakeReceived(object sender, HandshakeArgs args)
         {
             var testApplication = (TestApplication)sender;
-            var executionId = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.ExecutionId];
-            var arch = args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Architecture]?.ToLower();
-            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.HandshakeInfo.Properties[HandshakeInfoPropertyNames.Framework]);
+            var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
             (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
@@ -196,13 +196,14 @@ namespace Microsoft.DotNet.Cli
 
         private void OnTestResultsReceived(object sender, TestResultEventArgs args)
         {
-            if (args is SuccessfulTestResultEventArgs success)
+            foreach (var testResult in args.SuccessfulTestResults)
             {
+
                 var testApp = (TestApplication)sender;
                 var appInfo = _executions[testApp];
                 // TODO: timespan for duration
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                    success.SuccessfulTestResultMessage.DisplayName,
+                    testResult.DisplayName,
                     TestOutcome.Passed,
                     TimeSpan.FromSeconds(1),
                     errorMessage: null,
@@ -210,19 +211,21 @@ namespace Microsoft.DotNet.Cli
                     expected: null,
                     actual: null);
             }
-            else if (args is FailedTestResultEventArgs failed)
+
+            foreach (var testResult in args.FailedTestResults)
             {
+
                 var testApp = (TestApplication)sender;
                 // TODO: timespan for duration
                 // TODO: expected
                 // TODO: actual
                 var appInfo = _executions[testApp];
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                    failed.FailedTestResultMessage.DisplayName,
+                    testResult.DisplayName,
                     TestOutcome.Fail,
                     TimeSpan.FromSeconds(1),
-                    errorMessage: failed.FailedTestResultMessage.ErrorMessage,
-                    errorStackTrace: failed.FailedTestResultMessage.ErrorStackTrace,
+                    errorMessage: testResult.ErrorMessage,
+                    errorStackTrace: testResult.ErrorStackTrace,
                     expected: null, actual: null);
             }
 
