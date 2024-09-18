@@ -142,6 +142,11 @@
         <target state="translated">CONTAINER1008: nie można pobrać poświadczeń dla „{0}”: {1}</target>
         <note>{StrBegin="CONTAINER1008: "}</note>
       </trans-unit>
+      <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
+        <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
+        <target state="translated">CONTAINER2030: Funkcja GenerateLabels była wyłączona, ale funkcja GenerateDigestLabel była włączona — etykieta skrótu nie zostanie utworzona.</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
+      </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Nie wykryto obiektu hosta.</target>

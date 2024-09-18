@@ -2,10 +2,20 @@
 const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -> string!
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
-static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]! entrypointArgs, string![]! defaultArgs, string![]! appCommand, string![]! appCommandArgs, string! appCommandInstruction, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localRegistry, string? containerUser, string? archiveOutputPath, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputedContainerBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
-Microsoft.NET.Build.Containers.ContainerBuilder
 Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
@@ -63,6 +73,8 @@ Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.GetDigest() -> string!
+Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> string?
+Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.ManifestLayer>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
@@ -111,14 +123,15 @@ override Microsoft.NET.Build.Containers.Port.GetHashCode() -> int
 Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputedBaseImageTag.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputeDotnetBaseImageAndTag() -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.set -> void
+override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
@@ -181,6 +194,10 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
@@ -202,7 +219,6 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProp
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerImage.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag.get -> string!
-override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.Execute() -> bool
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Execute() -> bool
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
@@ -242,12 +258,6 @@ Microsoft.NET.Build.Containers.ManifestLayer.Equals(Microsoft.NET.Build.Containe
 ~override Microsoft.NET.Build.Containers.Descriptor.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ManifestLayer.Deconstruct(out string! mediaType, out long size, out string! digest, out string![]? urls) -> void
 Microsoft.NET.Build.Containers.Descriptor.Equals(Microsoft.NET.Build.Containers.Descriptor other) -> bool
-~override Microsoft.NET.Build.Containers.ManifestV2.ToString() -> string
-static Microsoft.NET.Build.Containers.ManifestV2.operator !=(Microsoft.NET.Build.Containers.ManifestV2 left, Microsoft.NET.Build.Containers.ManifestV2 right) -> bool
-static Microsoft.NET.Build.Containers.ManifestV2.operator ==(Microsoft.NET.Build.Containers.ManifestV2 left, Microsoft.NET.Build.Containers.ManifestV2 right) -> bool
-override Microsoft.NET.Build.Containers.ManifestV2.GetHashCode() -> int
-~override Microsoft.NET.Build.Containers.ManifestV2.Equals(object obj) -> bool
-Microsoft.NET.Build.Containers.ManifestV2.Equals(Microsoft.NET.Build.Containers.ManifestV2 other) -> bool
 ~override Microsoft.NET.Build.Containers.ManifestListV2.ToString() -> string
 static Microsoft.NET.Build.Containers.ManifestListV2.operator !=(Microsoft.NET.Build.Containers.ManifestListV2 left, Microsoft.NET.Build.Containers.ManifestListV2 right) -> bool
 static Microsoft.NET.Build.Containers.ManifestListV2.operator ==(Microsoft.NET.Build.Containers.ManifestListV2 left, Microsoft.NET.Build.Containers.ManifestListV2 right) -> bool
