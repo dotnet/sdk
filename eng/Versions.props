@@ -366,7 +366,7 @@
     <EmscriptenWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</EmscriptenWorkloadFeatureBand>
     <!-- Workloads from dotnet/runtime use MicrosoftNETCoreAppRefPackageVersion because it has a stable name that does not include the full feature band -->
     <MicrosoftNETWorkloadMonoToolchainCurrentManifest90100PackageVersion>9.0.0</MicrosoftNETWorkloadMonoToolchainCurrentManifest90100PackageVersion>
-    <MonoWorkloadManifestVersion>$(MicrosoftNETWorkloadMonoToolchainCurrentManifest90100PackagVersion)</MonoWorkloadManifestVersion>
+    <MonoWorkloadManifestVersion>$(MicrosoftNETWorkloadMonoToolchainCurrentManifest90100PackageVersion)</MonoWorkloadManifestVersion>
     <!-- mono workload prerelease version band must match the runtime feature band -->
     <MonoWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(MonoWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</MonoWorkloadFeatureBand>
   </PropertyGroup>
