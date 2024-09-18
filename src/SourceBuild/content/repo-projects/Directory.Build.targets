@@ -517,7 +517,7 @@
     <ItemGroup>
       <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.log" />
       <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.binlog" />
-      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/**/*usage.xml" />
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
     </ItemGroup>
 
     <!-- Move the build logs -->
