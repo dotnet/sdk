@@ -354,7 +354,7 @@ namespace Microsoft.DotNet.Watcher
             string GetMessage(IReadOnlyList<ChangedFile> items, ChangeKind kind)
                 => items is [{Item: var item }]
                     ? GetSingularMessage(kind) + ": " + GetRelativeFilePath(item.FilePath)
-                    : GetPlurarMessage(kind) + ": " + string.Join(", ", items.Select(f => GetRelativeFilePath(f.Item.FilePath)));
+                    : GetPluralMessage(kind) + ": " + string.Join(", ", items.Select(f => GetRelativeFilePath(f.Item.FilePath)));
 
             static string GetSingularMessage(ChangeKind kind)
                 => kind switch
@@ -365,7 +365,7 @@ namespace Microsoft.DotNet.Watcher
                     _ => throw new InvalidOperationException()
                 };
 
-            static string GetPlurarMessage(ChangeKind kind)
+            static string GetPluralMessage(ChangeKind kind)
                 => kind switch
                 {
                     ChangeKind.Update => "Files updated",
