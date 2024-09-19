@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.CommandFactory
                 LocalizableStrings.GeneratingDepsJson,
                 depsPath));
 
-            var tempDepsFile = Path.GetTempFileName();
+            var tempDepsFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             var args = new List<string>();
 
