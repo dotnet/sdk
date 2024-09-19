@@ -22,8 +22,17 @@ internal class IncrementalMSBuildWorkspace : Workspace
     {
         WorkspaceFailed += (_sender, diag) =>
         {
-            // Errors reported here are not fatal, an exception would be thrown for fatal issues.
-            reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
+            var message = $"msbuild: {diag.Diagnostic}";
+            switch (diag.Diagnostic.Kind)
+            {
+                case WorkspaceDiagnosticKind.Warning:
+                    reporter.Warn(message, "⚠");
+                    break;
+
+                case WorkspaceDiagnosticKind.Failure:
+                    reporter.Error(message, "❌");
+                    break;
+            }
         };
 
         _reporter = reporter;
