@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
                 try
                 {
                     // Create a Dependency Graph file for the project
-                    tempDgFilePath = Path.GetTempFileName();
+                    tempDgFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 }
                 catch (IOException ioex)
                 {
