@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         // Virtual for testing.
         public virtual async ValueTask<EvaluationResult?> TryCreateAsync(CancellationToken cancellationToken)
         {
-            var watchList = Path.GetTempFileName();
+            var watchList = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
                 var projectDir = Path.GetDirectoryName(rootProjectFile);
