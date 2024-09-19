@@ -99,7 +99,7 @@ They\[cq]re stored in the same way as global tools: an executable binary with th
 .SS Local tools
 .PP
 Local tools are stored in the NuGet global directory, whatever you\[cq]ve set that to be.
-There are shim files in \f[V]$HOME/.dotnet/toolResolverCache\f[R] for each local tool that point to where the tools are within that location.
+There are shim files in \f[V]$HOME/.dotnet/toolResolverCache\f[R] for each local tool that point to where the tools are within that location (this path can be overridden with the \f[V]DOTNET_TOOLS_RESOLVER_CACHE_FOLDER\f[R] environment variable).
 .PP
 References to local tools are added to a \f[I]dotnet-tools.json\f[R] file in a \f[I].config\f[R] directory under the current directory.
 If a manifest file doesn\[cq]t exist yet, create it by using the \f[V]--create-manifest-if-needed\f[R] option or by running the following command:
