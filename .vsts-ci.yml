@@ -70,7 +70,7 @@ extends:
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian11Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
       fedora39:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
       ubuntu2204:
