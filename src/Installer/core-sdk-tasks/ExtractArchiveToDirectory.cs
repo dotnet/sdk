@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 Log.LogMessage($"Creating Directory {DestinationDirectory}");
                 Directory.CreateDirectory(DestinationDirectory);
             }
-            
+
             return retVal;
         }
 
@@ -88,13 +88,22 @@ namespace Microsoft.DotNet.Build.Tasks
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
-                                    if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
+                                    var fullDestinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entry.FullName));
+                                    if (!fullDestinationPath.StartsWith(Path.GetFullPath(DestinationDirectory), StringComparison.Ordinal))
                                     {
-                                        Directory.CreateDirectory(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName)));
+                                        Log.LogMessage($"Warning: Skipping invalid entry {entry.FullName} (potential zip slip attack)");
+                                        continue;
                                     }
 
-                                    Log.LogMessage(Path.GetDirectoryName(entry.FullName));
-                                    entry.ExtractToFile(Path.Combine(loc, entry.FullName));
+                                    var directoryPath = Path.GetDirectoryName(fullDestinationPath);
+                                    if (!Directory.Exists(directoryPath))
+                                    {
+                                        Directory.CreateDirectory(directoryPath);
+                                    }
+
+                                    // Log the directory path and extract the file
+                                    Log.LogMessage(directoryPath);
+                                    entry.ExtractToFile(fullDestinationPath, overwrite: true);
                                 }
                             }
                         }
