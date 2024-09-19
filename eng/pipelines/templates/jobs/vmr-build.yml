@@ -215,20 +215,22 @@ jobs:
           **/*.nupkg
         displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
-      - task: CopyFiles@2
-        displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
-        inputs:
-          SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
-          Contents: '*.tar.gz'
-          TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+      - ${{ eq(parameters.buildSourceOnly, true) }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
+            Contents: '*.tar.gz'
+            TargetFolder: $(sourcesPath)/prereqs/packages/archive/
 
-      - task: CopyFiles@2
-        displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
-        inputs:
-          SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
-          Contents: '**/*.nupkg'
-          OverWrite: false
-          TargetFolder: $(sourcesPath)/artifacts/packages/
+      - ${{ else }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
+            Contents: '**/*.nupkg'
+            OverWrite: false
+            TargetFolder: $(sourcesPath)/artifacts/packages/
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
