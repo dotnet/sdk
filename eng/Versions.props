@@ -158,6 +158,7 @@
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-rc.1.24414.5</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>9.0.0-rc.1.24414.5</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24414.5</SystemWindowsExtensionsPackageVersion>
+    <SystemIOHashingPackageVersion>9.0.0-rc.1.24414.5</SystemIOHashingPackageVersion>
     <SystemFormatsAsn1Version>9.0.0-rc.1.24414.5</SystemFormatsAsn1Version>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
          Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
