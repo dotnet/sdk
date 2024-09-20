@@ -464,6 +464,10 @@ jobs:
         CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
         CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
+        if (Test-Path "src/**/artifacts/sb/prebuilt-report/") {
+            CopyWithRelativeFolders "src/**/artifacts/sb/prebuilt-report/" $targetFolder "*"
+        }
+
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
             echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
@@ -517,6 +521,10 @@ jobs:
 
         find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
+
+        if [ $(find src/**/artifacts/sb/prebuilt-report/ -type d | wc -l) -gt 0 ]; then
+          find src/**/artifacts/sb/prebuilt-report/ -type f -exec rsync -R {} -t ${targetFolder} \;
+        fi
 
         # check if we have assets to publish
         if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then
