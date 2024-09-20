@@ -157,5 +157,112 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
+
+        [Theory]
+        [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
+        [InlineData(false)]
+        public async Task RenameSourceFile(bool useMove)
+        {
+            Logger.WriteLine("RenameSourceFile started");
+
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+            var oldFilePath = Path.Combine(dependencyDir, "Foo.cs");
+            var newFilePath = Path.Combine(dependencyDir, "Renamed.cs");
+
+            var source = """
+                using System;
+                using System.IO;
+                using System.Runtime.CompilerServices;
+
+                public class Lib
+                {
+                    public static void Print() => PrintFileName();
+
+                    public static void PrintFileName([CallerFilePathAttribute] string filePath = null)
+                    {
+                        Console.WriteLine($"> {Path.GetFileName(filePath)}");
+                    }
+                }
+                """;
+
+            File.WriteAllText(oldFilePath, source);
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+
+            // rename the file:
+            if (useMove)
+            {
+                File.Move(oldFilePath, newFilePath);
+            }
+            else
+            {
+                File.Delete(oldFilePath);
+                File.WriteAllText(newFilePath, source);
+            }
+
+            Logger.WriteLine($"Renamed '{oldFilePath}' to '{newFilePath}'.");
+
+            await App.AssertOutputLineStartsWith("> Renamed.cs");
+        }
+
+        [Theory]
+        [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
+        [InlineData(false)]
+        public async Task RenameDirectory(bool useMove)
+        {
+            Logger.WriteLine("RenameSourceFile started");
+
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+            var oldSubdir = Path.Combine(dependencyDir, "Subdir");
+            var newSubdir = Path.Combine(dependencyDir, "NewSubdir");
+
+            var source = """
+                using System;
+                using System.IO;
+                using System.Runtime.CompilerServices;
+
+                public class Lib
+                {
+                    public static void Print() => PrintDirectoryName();
+
+                    public static void PrintDirectoryName([CallerFilePathAttribute] string filePath = null)
+                    {
+                        Console.WriteLine($"> {Path.GetFileName(Path.GetDirectoryName(filePath))}");
+                    }
+                }
+                """;
+
+            File.Delete(Path.Combine(dependencyDir, "Foo.cs"));
+            Directory.CreateDirectory(oldSubdir);
+            File.WriteAllText(Path.Combine(oldSubdir, "Foo.cs"), source);
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+
+            // rename the directory:
+            if (useMove)
+            {
+                Directory.Move(oldSubdir, newSubdir);
+            }
+            else
+            {
+                Directory.Delete(oldSubdir, recursive: true);
+                Directory.CreateDirectory(newSubdir);
+                File.WriteAllText(Path.Combine(newSubdir, "Foo.cs"), source);
+            }
+
+            Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
+
+            await App.AssertOutputLineStartsWith("> NewSubdir");
+        }
     }
 }
