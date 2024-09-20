@@ -1095,7 +1095,7 @@ Może być konieczne skompilowanie projektu w innym systemie operacyjnym lub arc
 To install these workloads, run the following command: dotnet workload restore</source>
         <target state="needs-review-translation">NETSDK1147: aby utworzyć ten projekt, muszą być zainstalowane następujące pakiety robocze: {0}
 Aby zainstalować te pakiety robocze, uruchom następujące polecenie: dotnet workload restore</target>
-        <note>{StrBegins="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>
