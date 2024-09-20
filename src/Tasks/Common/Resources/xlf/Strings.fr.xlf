@@ -1095,7 +1095,7 @@ Vous devrez peut-être générer le projet sur un autre système d’exploitatio
 To install these workloads, run the following command: dotnet workload restore</source>
         <target state="needs-review-translation">NETSDK1147: pour générer ce projet, les charges de travail suivantes doivent être installées : {0}
 Pour installer ces charges de travail, exécutez la commande suivante : restauration de la charge de travail de dotnet.</target>
-        <note>{StrBegins="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>

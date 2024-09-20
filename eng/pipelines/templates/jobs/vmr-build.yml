@@ -70,10 +70,10 @@ parameters:
   type: boolean
   default: false
 
-# Name of a previous job (from the same template as this) whose output will be used to build this job
+# Name of previous job(s) (from the same template as this) whose output will be used to build this job
 # The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
 - name: reuseBuildArtifactsFrom
-  type: string
+  type: object
   default: ''
 
 # Allow downloading artifacts from the internet during the build
@@ -120,7 +120,7 @@ jobs:
     # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
     # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
     condition: succeededOrFailed()
-    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}
+    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -205,20 +205,32 @@ jobs:
       displayName: Export VMR sources
       workingDirectory: $(Build.StagingDirectory)
 
-  - ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
-    - download: current
-      artifact: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}_Artifacts
-      patterns: |
-        **/Private.SourceBuilt.Artifacts.*.tar.gz
-        **/dotnet-sdk-*.tar.gz
-      displayName: Download Previous Build
+  - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
+    - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
+      - download: current
+        artifact: ${{ reuseBuildArtifacts }}_Artifacts
+        patterns: |
+          **/Private.SourceBuilt.Artifacts.*.tar.gz
+          **/dotnet-sdk-*.tar.gz
+          **/*.nupkg
+        displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
-    - task: CopyFiles@2
-      displayName: Copy Previous Build
-      inputs:
-        SourceFolder: $(Pipeline.Workspace)/${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}_Artifacts/assets/Release
-        Contents: '*.tar.gz'
-        TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+      - ${{ eq(parameters.buildSourceOnly, true) }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
+            Contents: '*.tar.gz'
+            TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+
+      - ${{ else }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
+            Contents: '**/*.nupkg'
+            OverWrite: false
+            TargetFolder: $(sourcesPath)/artifacts/packages/
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
@@ -293,7 +305,7 @@ jobs:
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
-          elif [[ -n '${{ parameters.reuseBuildArtifactsFrom }}' ]]; then
+          elif [[ '${{ length(parameters.reuseBuildArtifactsFrom) }}' -gt '0' ]]; then
             customPrepArgs="${customPrepArgs} --no-sdk --no-artifacts"
             prepSdk=false
           fi
