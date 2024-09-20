@@ -153,6 +153,7 @@ src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
 src/runtime/src/native/external/zlib-ng/cmake/detect-arch.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-coverage.cmake|other-permissive,tsl-2020,unknown-license-reference
+src/runtime/src/native/external/zlib-ng/cmake/detect-intrinsics.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-sanitizer.cmake|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
 
