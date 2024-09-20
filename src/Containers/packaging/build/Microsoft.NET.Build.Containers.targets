@@ -34,20 +34,13 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
-      <ContainerRuntimeIdentifiers Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
-
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
-
-    <ItemGroup>
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifiers)' == ''" />
-    </ItemGroup>
 
     <ComputeDotnetBaseImageAndTag
       UserBaseImage="$(ContainerBaseImage)"
@@ -58,13 +51,13 @@
       IsAotPublished="$(PublishAot)"
       IsTrimmed="$(PublishTrimmed)"
       UsesInvariantGlobalization="$(InvariantGlobalization)"
-      TargetRuntimeIdentifiers="@(_TargetRuntimeIdentifiers)"
+      TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
       ContainerFamily="$(ContainerFamily)">
         <Output TaskParameter="ComputedContainerBaseImage" PropertyName="ContainerBaseImage" />
     </ComputeDotnetBaseImageAndTag>
   </Target>
 
-  <Target Name="ComputeContainerImageTag" DependsOnTargets="ComputeContainerBaseImage">
+  <Target Name="ComputeContainerImageTag">
     <PropertyGroup Label="VS defaults">
       <!-- PublishImageTag is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerImageTag Condition="'$(PublishImageTag)' != ''">$(PublishImageTag)</ContainerImageTag>
@@ -76,7 +69,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="ComputeContainerConfig">
+  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
     <PropertyGroup Label="VS defaults">
       <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
@@ -305,15 +298,7 @@
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
       <_InnerBuild
         Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="
-          ContainerRuntimeIdentifier=%(_rids.Identity);
-          ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity);
-          ContainerBaseImage=$(ContainerBaseImage);
-          _ContainerIsUsingMicrosoftDefaultImages=$(_ContainerIsUsingMicrosoftDefaultImages);
-          _ContainerIsTargetingNet8TFM=$(_ContainerIsTargetingNet8TFM);
-          ContainerUser=$(ContainerUser);
-          
-        "/>
+        AdditionalProperties="ContainerRuntimeIdentifier=%(_rids.Identity);ContainerImageTag=$(ContainerImageTag)-%(_rids.Identity)"/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
