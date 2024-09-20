@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
   Add one or more projects to a solution file.
 
 Usage:
-  dotnet sln <SLN_FILE> add [<PROJECT_PATH>...] [options]
+  dotnet solution <SLN_FILE> add [<PROJECT_PATH>...] [options]
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
@@ -1347,7 +1347,7 @@ EndGlobal
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
                 string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, "App.sln") + Environment.NewLine
                 + CommonLocalizableStrings.DidYouMean + Environment.NewLine
-                + $"  dotnet sln App.sln add {arguments} Lib {projectArg}"
+                + $"  dotnet solution App.sln add {arguments} Lib {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
