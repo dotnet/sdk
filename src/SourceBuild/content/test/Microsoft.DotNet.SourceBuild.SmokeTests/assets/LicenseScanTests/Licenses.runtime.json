@@ -1,6 +1,10 @@
 {
   "files": [
     {
+      "path": "src/native/external/zlib-ng/cmake/detect-intrinsics.cmake",
+      "detected_license_expression": "zlib AND unknown-license-reference"
+    },
+    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
