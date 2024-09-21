@@ -45,6 +45,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "remove",
                 "restore",
                 "run",
+                "sln",
                 "solution",
                 "store",
                 "test",
