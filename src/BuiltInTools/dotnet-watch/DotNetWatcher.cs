@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watcher
 
             var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
 
-            FileItem? changedFile = null;
+            ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(Context, RootFileSetFactory);
             await using var browserConnector = new BrowserConnector(Context);
 
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watcher
 
                 var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, processExitedSource: null, combinedCancellationSource.Token);
 
-                Task<FileItem?> fileSetTask;
+                Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
 
                 while (true)
@@ -94,9 +94,9 @@ namespace Microsoft.DotNet.Watcher
                     fileSetTask = fileSetWatcher.GetChangedFileAsync(startedWatching: null, combinedCancellationSource.Token);
                     finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
-                    if (staticFileHandler != null && finishedTask == fileSetTask && fileSetTask.Result is FileItem fileItem)
+                    if (staticFileHandler != null && finishedTask == fileSetTask && fileSetTask.Result.HasValue)
                     {
-                        if (await staticFileHandler.HandleFileChangesAsync([fileItem], combinedCancellationSource.Token))
+                        if (await staticFileHandler.HandleFileChangesAsync([fileSetTask.Result.Value], combinedCancellationSource.Token))
                         {
                             // We're able to handle the file change event without doing a full-rebuild.
                             continue;
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Watcher
                     Debug.Assert(finishedTask == fileSetTask);
                     changedFile = fileSetTask.Result;
                     Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
-                    Context.Reporter.Output($"File changed: {changedFile.Value.FilePath}");
+                    Context.Reporter.Output($"File changed: {changedFile.Value.Item.FilePath}");
                 }
             }
         }
