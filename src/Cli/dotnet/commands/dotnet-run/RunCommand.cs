@@ -92,13 +92,8 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private void AttemptToLaunchBrowser(ProjectLaunchSettingsModel? launchSettings)
+        private static void AttemptToLaunchBrowser(ProjectLaunchSettingsModel launchSettings)
         {
-            if (launchSettings == null)
-            {
-                return;
-            }
-
             if (launchSettings.LaunchBrowser == false ||
                 string.IsNullOrWhiteSpace(launchSettings.LaunchUrl) ||
                 string.IsNullOrWhiteSpace(launchSettings.ApplicationUrl))
