@@ -566,7 +566,6 @@
       <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
       <DirsToDeleteWithTrailingSeparator Remove="$(BuildLogsDir)" />
       <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />
-      <DirsToDeleteWithTrailingSeparator Remove="$(PrebuiltReportsDir)" />
     </ItemGroup>
 
     <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
