@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="Command">
         <source>Command</source>
-        <target state="new">Command</target>
+        <target state="translated">Befehl</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
-        <target state="new">Shows a history of workload installation actions.</target>
+        <target state="translated">Zeigt einen Verlauf der Workloadinstallationsaktionen an.</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
-        <target state="new">Date</target>
+        <target state="translated">Datum</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
-        <target state="new">Global.json Version</target>
+        <target state="translated">Global.json Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
-        <target state="new">Id</target>
+        <target state="translated">ID</target>
         <note />
       </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
-        <target state="new">No workload history found</target>
+        <target state="translated">Kein Workloadverlauf gefunden</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
-        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <target state="translated">Zeilen mit nicht protokollierten Änderungen stellen Änderungen von anderen Aktionen als .NET CLI-Workloadbefehlen dar. In der Regel stellt dies ein Update für das .NET SDK oder für Visual Studio dar.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">Workloadversion</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
-        <target state="new">Workloads</target>
+        <target state="translated">Workloads</target>
         <note />
       </trans-unit>
     </body>
