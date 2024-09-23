@@ -44,6 +44,11 @@
         <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">正在跳过 NuGet 包签名验证。</target>
