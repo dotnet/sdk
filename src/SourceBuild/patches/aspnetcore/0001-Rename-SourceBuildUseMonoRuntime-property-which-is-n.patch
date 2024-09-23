@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jo Shields <joshield@microsoft.com>
+Date: Mon, 23 Sep 2024 10:11:07 -0400
+Subject: [PATCH] Rename SourceBuildUseMonoRuntime property, which is not SB
+ specific
+
+This is a coordinated cross-repo change, and might break the build until
+all four PRs are merged. The other three are:
+
+Ref: https://github.com/dotnet/source-build/issues/4165
+---
+ eng/DotNetBuild.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 8f6e67aba6..b4a0935104 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -64,7 +64,7 @@
+           BeforeTargets="GetSourceBuildCommandConfiguration">
+ 
+     <PropertyGroup>
+-      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 
