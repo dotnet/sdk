@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "MSBuild Directory.Packages.props file",
-  "description": "An empty Directory.Packages.props file which can be used to specify package versions centrally",
-  "symbols/inherit/displayName": "Inherit",
-  "symbols/inherit/description": "If true, adds an Import for the closest Directory.Packages.props in the file system directory hierarchy. Directory.Packages.props don't inherit by default, so doing this allows you to build up a set of customizations folder-by-folder."
+  "name": "Plik Directory.Packages.props platformy MSBuild",
+  "description": "Pusty plik Directory.Packages.props, którego można użyć do centralnego określenia wersji pakietu",
+  "symbols/inherit/displayName": "Dziedzicz",
+  "symbols/inherit/description": "Jeśli ma wartość true, dodaje import dla najbliższego pliku Directory.Packages.props w hierarchii katalogów systemu plików. Plik Directory.Packages.props nie dziedziczy domyślnie, więc pozwala to na utworzenie zestawu dostosowań dla każdego folderu z osobna."
 }
