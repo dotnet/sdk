@@ -656,5 +656,9 @@
       <Sha>d304c5f6f15bcd4f34f1841b33870cfab88e6937</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.IO.Redist" Version="6.0.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
