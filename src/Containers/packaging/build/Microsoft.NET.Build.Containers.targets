@@ -348,10 +348,11 @@
     </MSBuild>
 
     <PropertyGroup>
-      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' != ''">true</_SkipCreateImageIndex>
+      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
+      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' == ''">true</_SkipCreateImageIndex>
     </PropertyGroup>
 
-    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'true' "
+    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
                       ManifestsInfo="@(_GeneratedManifestsInfo)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
@@ -359,7 +360,7 @@
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
 
-    <Message Condition="'$(_SkipCreateImageIndex)' == 'true' "
+    <Message Condition="'$(_SkipCreateImageIndex)' == 'false' "
              Importance="high"
              Text="GeneratedImageIndex: $(GeneratedImageIndex)" />
   </Target>
