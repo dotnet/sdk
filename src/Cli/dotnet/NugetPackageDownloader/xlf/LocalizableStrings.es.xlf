@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="new">{0} is not found in NuGet feeds {1}.</target>
+        <target state="translated">No se encuentra {0} en las fuentes de NuGet {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NotATool">
         <source>Package {0} is not a .NET tool.</source>
-        <target state="new">Package {0} is not a .NET tool.</target>
+        <target state="translated">El paquete {0} no es una herramienta de .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
