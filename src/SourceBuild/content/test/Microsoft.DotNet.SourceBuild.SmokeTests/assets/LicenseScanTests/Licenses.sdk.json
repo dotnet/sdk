@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/SourceBuild/patches/fsharp/0001-Fix17713-Reverting-PR-17649-Make-the-interaction-bet.patch",
+      "detected_license_expression": "unknown-license-reference"
+    }
+  ]
+}
