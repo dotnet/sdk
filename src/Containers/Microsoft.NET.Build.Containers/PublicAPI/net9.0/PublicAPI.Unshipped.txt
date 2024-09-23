@@ -72,6 +72,15 @@ Microsoft.NET.Build.Containers.ManifestListV2.mediaType.get -> string!
 Microsoft.NET.Build.Containers.ManifestListV2.mediaType.set -> void
 Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1
+Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1() -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1(int schemaVersion, string! mediaType, Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.manifests.get -> Microsoft.NET.Build.Containers.PlatformSpecificManifest[]!
+Microsoft.NET.Build.Containers.ImageIndexV1.manifests.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.mediaType.get -> string!
+Microsoft.NET.Build.Containers.ImageIndexV1.mediaType.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.get -> int
+Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
@@ -269,3 +278,10 @@ override Microsoft.NET.Build.Containers.ManifestListV2.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.ManifestListV2.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ManifestListV2.Equals(Microsoft.NET.Build.Containers.ManifestListV2 other) -> bool
 Microsoft.NET.Build.Containers.ManifestListV2.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
+~override Microsoft.NET.Build.Containers.ImageIndexV1.ToString() -> string
+static Microsoft.NET.Build.Containers.ImageIndexV1.operator !=(Microsoft.NET.Build.Containers.ImageIndexV1 left, Microsoft.NET.Build.Containers.ImageIndexV1 right) -> bool
+static Microsoft.NET.Build.Containers.ImageIndexV1.operator ==(Microsoft.NET.Build.Containers.ImageIndexV1 left, Microsoft.NET.Build.Containers.ImageIndexV1 right) -> bool
+override Microsoft.NET.Build.Containers.ImageIndexV1.GetHashCode() -> int
+~override Microsoft.NET.Build.Containers.ImageIndexV1.Equals(object obj) -> bool
+Microsoft.NET.Build.Containers.ImageIndexV1.Equals(Microsoft.NET.Build.Containers.ImageIndexV1 other) -> bool
+Microsoft.NET.Build.Containers.ImageIndexV1.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
