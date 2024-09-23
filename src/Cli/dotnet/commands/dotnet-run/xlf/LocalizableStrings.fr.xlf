@@ -61,6 +61,11 @@ faites en sorte que les noms de profil soient distincts.</target>
         <target state="translated">Génération...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
+        <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
+        <target state="new">Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</target>
+        <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
         <target state="translated">La build a échoué. Corrigez les erreurs de la build et réexécutez-la.</target>
@@ -136,6 +141,11 @@ Le {1} actuel est '{2}'.</target>
         <target state="needs-review-translation">AVERTISSEMENT NETSDK1174 : l’abréviation de-p pour--Project est déconseillée. Veuillez utiliser--Project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
+        <source>'{0}' is not a valid project file.</source>
+        <target state="new">'{0}' is not a valid project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
         <target state="translated">Utilisation des paramètres de lancement à partir de {0}...</target>
@@ -173,11 +183,6 @@ Le {1} actuel est '{2}'.</target>
 {0}</source>
         <target state="translated">Une erreur s'est produite durant la lecture de launchSettings.json.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandSpecifiecFileIsNotAValidProject">
-        <source>'{0}' is not a valid project file.</source>
-        <target state="translated">'{0}' n'est pas un fichier projet valide.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigurationOptionDescription">

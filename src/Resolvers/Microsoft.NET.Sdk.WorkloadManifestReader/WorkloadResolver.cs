@@ -115,7 +115,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
         }
 
-        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
         private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
         {
@@ -778,7 +778,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(_sdkFeatureBand + ".2");
         }
     }
 

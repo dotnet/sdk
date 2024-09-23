@@ -1064,7 +1064,7 @@ namespace ProjectNameWithSpaces
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()
@@ -1072,10 +1072,11 @@ namespace ProjectNameWithSpaces
                 Name = "ProjA",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041"
             };
-            //  Use a previous version of the Microsoft.Windows.SDK.NET.Ref package, to
-            //  simulate the scenario where a project is compiling against a library from NuGet
-            //  which was built with a more recent SDK version.
-            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.6-preview";
+            // We're specifically setting a newer version of the Windows SDK projections package
+            // in 'testProjectA' than the one set for 'testProjectB', to simulate the scenario
+            // where a project is compiling against a library from NuGet which was built with
+            // a more recent SDK version.
+            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.38";
             testProjectA.SourceFiles.Add("ProjA.cs", @"namespace ProjA
 {
     public class ProjAClass
@@ -1089,6 +1090,10 @@ namespace ProjectNameWithSpaces
                 Name = "ProjB",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041",
             };
+
+            // Temporary until new projections flow to tests
+            testProjectB.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.39";
+
             testProjectB.SourceFiles.Add("ProjB.cs", @"namespace ProjB
 {
     public class ProjBClass

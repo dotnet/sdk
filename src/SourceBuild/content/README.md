@@ -55,7 +55,7 @@ More details on this process:
 - [Synchronization Based on Declared Dependencies](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#synchronization-based-on-declared-dependencies)
 - [Moving Code and Dependencies between the VMR and Development Repos](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#moving-code-and-dependencies-between-the-vmr-and-development-repos)
 
-We expect the code flow to start working both ways in the .NET 9 timeframe.
+We expect the code flow to start working both ways at the completion of the Unified Build project.
 See the [Unified Build roadmap](src/arcade/Documentation/UnifiedBuild/Roadmap.md) for more details.
 
 ### Contribution

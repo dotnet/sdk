@@ -3,6 +3,7 @@
 <Project>
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)\dotnet-MsiInstallation.Tests.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

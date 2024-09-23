@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="ManifestDoesNotExist">
         <source>No manifest with ID {0} exists.</source>
-        <target state="new">No manifest with ID {0} exists.</target>
+        <target state="translated">Neexistuje žádný manifest s ID {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
@@ -115,6 +115,11 @@
       <trans-unit id="RedirectWorkloadHasOtherKeys">
         <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
         <target state="translated">Přesměrování úlohy {0} má jiné klíče než redirect-to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">

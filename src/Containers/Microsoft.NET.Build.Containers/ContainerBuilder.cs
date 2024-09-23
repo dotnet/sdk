@@ -45,7 +45,8 @@ internal static class ContainerBuilder
         logger.LogTrace("Trace logging: enabled.");
 
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger);
+        RegistryMode sourceRegistryMode = baseRegistry.Equals(outputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
