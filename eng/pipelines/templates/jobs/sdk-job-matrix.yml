@@ -28,7 +28,7 @@ parameters:
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
   - categoryName: ContainerBased
-    container: ubuntu2204
+    container: ubuntu2204DebPkg
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     # Skipping all container-based testing for now.
