@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.Build.Traversal">
+
+    <PropertyGroup>
+      <TargetFramework>$(NetCurrent)</TargetFramework>
+    </PropertyGroup>
+  
+    <ItemGroup>
+      <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" BuildInParallel="true" />
+    </ItemGroup>
+
+    <Target Name="BuildTasksProject">
+      <MSBuild Projects="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" Targets="Build" />
+    </Target>
+
+    <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+    
+    <Target Name="JoinVerticals" DependsOnTargets="BuildTasksProject" >
+      <Error Condition="'$(MainVertical)' == ''" Text="MainVertical is not set." />
+      <Error Condition="'$(VerticalManifestsPath)' == ''" Text="VerticalManifestsPath is not set." />
+      <Error Condition="'$(BuildId)' == ''" Text="BuildId is not set." />
+      <Error Condition="'$(AzureDevOpsBaseUri)' == ''" Text="AzureDevOpsBaseUri is not set." />
+      <Error Condition="'$(AzureDevOpsProject)' == ''" Text="AzureDevOpsProject is not set." />
+      <Error Condition="'$(MainVerticalArtifactsFolder)' == ''" Text="MainVerticalArtifactsFolder is not set." />
+      <Error Condition="'$(OutputFolder)' == ''" Text="OutputFolder is not set." />
+  
+      <ItemGroup>
+        <VerticalManifest Include="$(VerticalManifestsPath)\*.xml"/>
+      </ItemGroup>
+  
+      <Message Importance="High" Text="Joining verticals $(VerticalSubSet)" Condition="'$(VerticalSubSet)' != ''"/>
+      <Message Importance="High" Text="VerticalSubSet not set, joining all verticals @(VerticalManifest)" Condition="'$(VerticalSubSet)' == ''"/>
+  
+      <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->
+      <Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals 
+        VerticalManifest="@(VerticalManifest)"
+        MainVertical="$(MainVertical)"
+        BuildId="$(BuildId)"
+        AzureDevOpsToken="$(AzureDevOpsToken)"
+        AzureDevOpsBaseUri="$(AzureDevOpsBaseUri)"
+        AzureDevOpsProject="$(AzureDevOpsProject)"
+        MainVerticalArtifactsFolder="$(MainVerticalArtifactsFolder)"
+        OutputFolder="$(OutputFolder)"
+        VerticalSubSet="$(VerticalSubSet)" />
+    </Target>
+  
+  </Project>

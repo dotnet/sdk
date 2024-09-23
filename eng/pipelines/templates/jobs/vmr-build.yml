@@ -172,6 +172,12 @@ jobs:
       displayName: Publish Artifacts
       sbomEnabled: true
 
+    - output: buildArtifacts
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
+      ArtifactName: VerticalManifests
+      displayName: Publish Vertical Manifest
+      sbomEnabled: false
+
     - ${{ if not(parameters.isBuiltFromVmr) }}:
       - output: pipelineArtifact
         displayName: Upload failed patches
@@ -270,7 +276,7 @@ jobs:
     - script: |
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
       env:
@@ -281,7 +287,7 @@ jobs:
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -379,6 +385,8 @@ jobs:
           extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
         fi
 
+        extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
         # Only use Docker when a container is specified
@@ -453,6 +461,8 @@ jobs:
           if [[ -n "${{ parameters.targetRid }}" ]]; then
             customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
           fi
+
+          extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
@@ -595,6 +605,19 @@ jobs:
       TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
     displayName: Copy artifacts to Artifact Staging Directory
 
+  - ${{ if eq(parameters.targetOS, 'windows') }}:
+    - powershell: |
+        $sourcePath = "$(sourcesPath)/artifacts/VerticalManifest.xml"
+        $targetPath = "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
+        New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/manifests" -Force | Out-Null
+        Copy-Item $sourcePath -Destination $targetPath -Force
+      displayName: Copy vertical manifest to Artifact Staging Directory
+  - ${{ else }}:
+    - script: |
+        mkdir -p "$(Build.ArtifactStagingDirectory)/manifests"
+        cp "$(sourcesPath)/artifacts/VerticalManifest.xml" "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
+      displayName: Copy vertical manifest to Artifact Staging Directory
+
   # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
   - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
     - task: CopyFiles@2
@@ -608,3 +631,10 @@ jobs:
       artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       continueOnError: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
+        ArtifactName: VerticalManifests
+      displayName: Publish Vertical Manifest
+      condition: succeededOrFailed()
