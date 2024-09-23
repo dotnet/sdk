@@ -80,7 +80,8 @@ namespace Microsoft.DotNet.Tools.Run
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-                AttemptToLaunchBrowser(launchSettings);
+                if (launchSettings is not null)
+                    AttemptToLaunchBrowser(launchSettings);
 
                 return launchSettingsCommand.Execute().ExitCode;
             }
