@@ -511,6 +511,19 @@
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
+  <Target Name="MoveDotNetBuildLogs"
+        Condition="'$(IsUtilityProject)' != 'true' and
+                    Exists('$(ProjectDirectory)artifacts')">
+    <ItemGroup>
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+    </ItemGroup>
+
+    <!-- Move the prebuilt reports -->
+    <Move SourceFiles="@(PrebuiltReportsToMove)"
+          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          Condition="'@(PrebuiltReportsToMove)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
@@ -531,14 +544,12 @@
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
       <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
-      <PrebuiltReportsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'prebuilt-report'))</PrebuiltReportsDir>
     </PropertyGroup>
 
     <ItemGroup>
       <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.log" />
       <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.binlog" />
       <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/**/project.assets.json" />
-      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
     </ItemGroup>
 
     <!-- Make a copy of the build logs & project.assets.json files -->
@@ -548,11 +559,6 @@
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
           Condition="'@(ObjFilesToCopy)' != ''" />
-
-    <!-- Move the prebuilt reports -->
-    <Move SourceFiles="@(PrebuiltReportsToMove)"
-          DestinationFolder="$(PrebuiltReportsDir)"
-          Condition="'@(PrebuiltReportsToMove)' != ''" />
 
     <ItemGroup>
       <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(ProjectDirectory)artifacts'))" />
@@ -634,6 +640,7 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
+    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="Test">
