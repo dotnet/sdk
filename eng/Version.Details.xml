@@ -371,14 +371,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24409.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24474.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>0b1b52e10bf70c53ed9fc63da52281b7d10ddd48</Sha>
+      <Sha>743a517a123a8616389eb6726ec9835a3a1a3876</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24409.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24474.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>0b1b52e10bf70c53ed9fc63da52281b7d10ddd48</Sha>
+      <Sha>743a517a123a8616389eb6726ec9835a3a1a3876</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
