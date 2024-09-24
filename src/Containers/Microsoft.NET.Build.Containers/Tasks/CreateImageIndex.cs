@@ -96,6 +96,9 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         var registry = new Registry(OutputRegistry, logger, RegistryMode.Push);
 
-        await registry.PushAsync(Repository, ImageTag, manifestList, cancellationToken).ConfigureAwait(false);
+        foreach (var tag in ImageTags)
+        {
+            await registry.PushAsync(Repository, tag, manifestList, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

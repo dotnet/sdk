@@ -29,7 +29,7 @@ partial class CreateImageIndex
     /// The tag to associate with the new image index (manifest list).
     /// </summary>
     [Required]
-    public string ImageTag { get; set; }
+    public string[] ImageTags { get; set; }
 
     /// <summary>
     /// The generated image index (manifest list) in JSON format.
@@ -42,7 +42,7 @@ partial class CreateImageIndex
         ManifestsInfo = Array.Empty<ITaskItem>();
         OutputRegistry = string.Empty;
         Repository = string.Empty;
-        ImageTag = string.Empty;
+        ImageTags = Array.Empty<string>();
         GeneratedImageIndex = string.Empty;
     }
 }

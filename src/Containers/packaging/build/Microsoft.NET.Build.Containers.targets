@@ -242,7 +242,8 @@
 
   <Target Name="_ParseParametersForPublishingSingleContainer">
     <ItemGroup>
-      <ContainerImageTags Include="$(_ContainerImageTags)-$(ContainerRuntimeIdentifier)"/>
+      <OriginalImageTags Include="$(_ContainerImageTags)"/>
+      <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
       <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
       <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
       <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
@@ -356,7 +357,7 @@
                       ManifestsInfo="@(_GeneratedManifestsInfo)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
-                      ImageTag="$(ContainerImageTag)">
+                      ImageTags="@(ContainerImageTags)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
 
