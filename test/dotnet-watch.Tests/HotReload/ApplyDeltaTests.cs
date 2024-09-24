@@ -99,6 +99,89 @@ namespace Microsoft.DotNet.Watcher.Tests
         }
 
         [Fact]
+        public async Task MetadataUpdateHandler_NoActions()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
+
+            await App.AssertOutputLineStartsWith("Updated");
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task MetadataUpdateHandler_Exception(bool verbose)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                    public static void ClearCache(Type[] types) => throw new System.InvalidOperationException("Bug!");
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            if (!verbose)
+            {
+                // remove default --verbose arg
+                App.DotnetWatchArgs.Clear();
+            }
+
+            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
+
+            if (verbose)
+            {
+                await App.AssertOutputLineStartsWith("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
+            }
+            else
+            {
+                // shouldn't see any agent messages:
+                await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, failure: line => line.Contains("🕵️"));
+            }
+
+            await App.AssertOutputLineStartsWith("   at AppUpdateHandler.ClearCache(Type[] types)");
+
+            await App.AssertOutputLineStartsWith("Updated");
+        }
+
+        [Fact]
         public async Task BlazorWasm()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
