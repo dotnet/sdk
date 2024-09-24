@@ -487,22 +487,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24463.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24470.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8c08d889b3c0b3f19398faceaccd74d0f184a3fb</Sha>
+      <Sha>ff79f814c1cd7bcc9902fb713fe016e6534418b4</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24463.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24470.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8c08d889b3c0b3f19398faceaccd74d0f184a3fb</Sha>
+      <Sha>ff79f814c1cd7bcc9902fb713fe016e6534418b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.24463.3">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.24470.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8c08d889b3c0b3f19398faceaccd74d0f184a3fb</Sha>
+      <Sha>ff79f814c1cd7bcc9902fb713fe016e6534418b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.24463.3">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.24470.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8c08d889b3c0b3f19398faceaccd74d0f184a3fb</Sha>
+      <Sha>ff79f814c1cd7bcc9902fb713fe016e6534418b4</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
