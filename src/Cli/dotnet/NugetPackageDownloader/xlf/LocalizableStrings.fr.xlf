@@ -37,6 +37,11 @@
         <target state="needs-review-translation">{0} est introuvable dans les flux NuGet {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">La vérification de la signature du package NuGet est ignorée.</target>

@@ -593,6 +593,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="new">NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded but it is needed because your MSBuild and SDK versions are mismatched. Ensure version {0} of the package is available in your NuGet source feeds and then run NuGet package restore from Visual Studio or MSBuild.</target>
         <note>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"} {0} is a NuGet package version and should not be translated.</note>
       </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetRootEmpty">
+        <source>NETSDK1221: NuGetPackageRoot property is empty so package Microsoft.Net.Sdk.Compilers.Toolset cannot be used but it is recommended because your MSBuild and SDK versions are mismatched. Ensure you are building with '/restore /t:Build' and not '/t:Restore;Build'.</source>
+        <target state="new">NETSDK1221: NuGetPackageRoot property is empty so package Microsoft.Net.Sdk.Compilers.Toolset cannot be used but it is recommended because your MSBuild and SDK versions are mismatched. Ensure you are building with '/restore /t:Build' and not '/t:Restore;Build'.</target>
+        <note>{StrBegin="NETSDK1221: "}{Locked="NuGetPackageRoot"}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="'/restore /t:Build'"}{Locked="'/t:Restore;Build'"}</note>
+      </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
         <source>NETSDK1061: The project was restored using {0} version {1}, but with current settings, version {2} would be used instead. To resolve this issue, make sure the same settings are used for restore and for subsequent operations such as build or publish. Typically this issue can occur if the RuntimeIdentifier property is set during build or publish but not during restore. For more information, see https://aka.ms/dotnet-runtime-patch-selection.</source>
         <target state="translated">NETSDK1061: {0} 버전 {1}을(를) 사용하여 프로젝트가 복원되었지만, 현재 설정에서는 버전 {2}을(를) 대신 사용합니다. 이 문제를 해결하려면 복원 및 후속 작업(예: 빌드 또는 게시)에 동일한 설정을 사용해야 합니다. 일반적으로 이 문제는 RuntimeIdentifier 속성이 빌드 또는 게시 중에 설정되었지만, 복원 중에는 설정되지 않은 경우에 발생할 수 있습니다. 자세한 내용은 https://aka.ms/dotnet-runtime-patch-selection을 참조하세요.</target>
@@ -1018,6 +1023,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: .NET의 미리 보기 버전을 사용하고 있습니다. 참조: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
+      <trans-unit id="UsingPreviewUseUwpFeature">
+        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
+        <target state="new">NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</target>
+        <note>{StrBegin="NETSDK1219: "}</note>
+      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="translated">NETSDK1131: {0}을(를) 대상으로 지정하는 경우 WinMDExp로 관리형 Windows 메타데이터 구성 요소를 생성하는 것은 지원되지 않습니다.</target>
@@ -1058,6 +1068,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1148: 참조된 어셈블리가 최신 버전의 Microsoft.Windows.SDK.NET.dll을 사용하여 컴파일되었습니다. 이 어셈블리를 참조하려면 최신 .NET SDK로 업데이트하세요.</target>
         <note>{StrBegin="NETSDK1148: "}</note>
       </trans-unit>
+      <trans-unit id="WindowsSDKXamlInvalidTfm">
+        <source>NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</source>
+        <target state="new">NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</target>
+        <note>{StrBegin="NETSDK1220: "}</note>
+      </trans-unit>
+      <trans-unit id="WindowsSDKXamlMissingUseUwpProperty">
+        <source>NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
+        <target state="new">NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</target>
+        <note>{StrBegin="NETSDK1218: "}</note>
+      </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1202: '{0}' 워크로드는 지원되지 않으며 향후 보안 업데이트를 받지 않습니다. 지원 정책에 대한 자세한 내용은 {1}을(를) 참조하세요.</target>
@@ -1073,9 +1093,9 @@ You may need to build the project on another operating system or architecture, o
       <trans-unit id="WorkloadNotInstalled">
         <source>NETSDK1147: To build this project, the following workloads must be installed: {0}
 To install these workloads, run the following command: dotnet workload restore</source>
-        <target state="translated">NETSDK1147: 이 프로젝트를 빌드하려면 다음 워크로드를 설치해야 합니다. {0}
+        <target state="needs-review-translation">NETSDK1147: 이 프로젝트를 빌드하려면 다음 워크로드를 설치해야 합니다. {0}
  이러한 워크로드를 설치하려면 dotnet workload restore 명령을 실행합니다.</target>
-        <note>{StrBegin="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegin="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>

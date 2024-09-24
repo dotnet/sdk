@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndVersion">
         <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
-        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <target state="translated">Možnosti {0} a {1} nelze použít společně.  Jednu z možností odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
+        <target state="translated">Možnost {0} se nedá použít, pokud je v global.json zadaná verze úlohy.  Odeberte možnost {0} nebo odeberte element workloadVersion z {1}.</target>
         <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">Kontrolují se aktualizované manifesty úloh.</target>
+        <target state="translated">Kontroluje se aktualizovaná verze úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -50,6 +50,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Probíhá odinstalace sady funkcí {0} verze {1}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="new">Deleting workload version {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -94,7 +99,7 @@
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadSet">
         <source>Failed to install workload version {0}: {1}</source>
-        <target state="new">Failed to install workload version {0}: {1}</target>
+        <target state="translated">Nepovedlo se nainstalovat verzi úlohy {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">

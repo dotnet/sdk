@@ -592,35 +592,6 @@ public static class Program
             Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
 
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("=")]
-        public void PublishRelease_does_recognize_undefined_property(string propertySuffix)
-        {
-            string tfm = ToolsetInfo.CurrentTargetFramework;
-            var testProject = new TestProject()
-            {
-                IsExe = true,
-                TargetFrameworks = tfm
-            };
-
-            testProject.RecordProperties("SelfContained");
-            testProject.RecordProperties("PublishAot");
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            new DotnetPublishCommand(Log)
-                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, MethodBase.GetCurrentMethod().Name))
-                .Execute(("-p:SelfContained" + propertySuffix))
-                .Should()
-                .Pass();
-
-            var properties = testProject.GetPropertyValues(testAsset.TestRoot, configuration: "Release", targetFramework: tfm);
-
-            Assert.Equal("", properties["SelfContained"]);
-            Assert.Equal("", properties["PublishAot"]);
-        }
-
         [Theory]
         [InlineData("true")]
         [InlineData("false")]

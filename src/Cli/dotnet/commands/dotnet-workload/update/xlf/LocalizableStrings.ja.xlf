@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CannotCombineOptions">
         <source>Cannot use the {0} and {1} options together.</source>
-        <target state="new">Cannot use the {0} and {1} options together.</target>
+        <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">

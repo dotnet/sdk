@@ -35,7 +35,7 @@ public class RegistryTests : IDisposable
     public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
-        Registry registry = new(registryName, logger);
+        Registry registry = new(registryName, logger, RegistryMode.Push);
         Assert.Equal(isECR, registry.IsGoogleArtifactRegistry);
     }
 
@@ -43,7 +43,7 @@ public class RegistryTests : IDisposable
     public void DockerIoAlias()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(DockerIoAlias));
-        Registry registry = new("docker.io", logger);
+        Registry registry = new("docker.io", logger, RegistryMode.Push);
         Assert.True(registry.IsDockerHub);
         Assert.Equal("docker.io", registry.RegistryName);
         Assert.Equal("registry-1.docker.io", registry.BaseUri.Host);
@@ -462,7 +462,7 @@ public class RegistryTests : IDisposable
         {
             IsInsecure = isInsecureRegistry
         };
-        Registry registry = new(registryUri, logger, settings: settings);
+        Registry registry = new(registryUri, logger, RegistryMode.Pull, settings: settings);
 
         // Make a request.
         Task getManifest = registry.GetImageManifestAsync(repositoryName: "dotnet/runtime", reference: "latest", runtimeIdentifier: "linux-x64", manifestPicker: null!, cancellationToken: default!);

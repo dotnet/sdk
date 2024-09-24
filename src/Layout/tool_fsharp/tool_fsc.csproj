@@ -17,10 +17,7 @@
     <PropertyGroup>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-        <FSharpTfm>net8.0</FSharpTfm>
-        <!-- In full product source-only mode, fsharp currently builds net9.0. In repo source-only modes, non VMR builds, or MSFT VMR builds,
-             it's net8.0. -->
-        <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">net9.0</FSharpTfm>
+        <FSharpTfm>net9.0</FSharpTfm>
     </PropertyGroup>
     <ItemGroup>
         <ResolvedFileToPublish
