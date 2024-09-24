@@ -57,6 +57,11 @@
         <target state="translated">CONTAINER1001: Falha ao carregar o blob usando {0}; código de status recebido '{1}'.</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
+      <trans-unit id="BuildingImageIndex">
+        <source>Building image index '{0}' on top of manifests : '{1}'.</source>
+        <target state="new">Building image index '{0}' on top of manifests : '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
         <target state="translated">Imagem enviada '{0}' para {1}.</target>
@@ -150,6 +155,11 @@
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Nenhum objeto de host detectado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndexUploadedToRegistry">
+        <source>Pushed image index '{0}' to registry '{1}'.</source>
+        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">

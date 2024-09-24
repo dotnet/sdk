@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.NET.Build.Containers.Resources;
 using NuGet.Protocol;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -43,11 +45,14 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         try
         {
-            var manifestList = GenerateImageIndex();
+            using MSBuildLoggerProvider loggerProvider = new(Log);
+            ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+            ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
+            var manifestList = GenerateImageIndex(logger);
             GeneratedImageIndex = manifestList.ToJson();
 
-            await PushToRemoteRegistry(manifestList, cancellationToken);
+            await PushToRemoteRegistry(manifestList, logger, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -57,7 +62,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         return !Log.HasLoggedErrors;
     }
 
-    private ManifestListV2 GenerateImageIndex()
+    private ManifestListV2 GenerateImageIndex(ILogger logger)
     {
         var manifests = new PlatformSpecificManifest[ManifestsInfo.Length];
 
@@ -79,6 +84,8 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             manifests[i] = manifest;
         }
 
+        logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), manifests.ToJson());
+
         return new ManifestListV2
         {
             schemaVersion = 2,
@@ -87,18 +94,20 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         };
     }
 
-    private async Task PushToRemoteRegistry(ManifestListV2 manifestList, CancellationToken cancellationToken)
+    private async Task PushToRemoteRegistry(ManifestListV2 manifestList, ILogger logger, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        Debug.Assert(ImageTags.Length > 0);
+        var registry = new Registry(OutputRegistry, logger, RegistryMode.Push);   
+        await registry.PushAsync(Repository, ImageTags, manifestList, cancellationToken).ConfigureAwait(false);
+        logger.LogInformation(Strings.ImageIndexUploadedToRegistry, GetRepositoryAndTagsString(), OutputRegistry);
+    }
 
-        using MSBuildLoggerProvider loggerProvider = new(Log);
-        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
-        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
-        var registry = new Registry(OutputRegistry, logger, RegistryMode.Push);
+    private string? _repositoryAndTagsString = null;
 
-        foreach (var tag in ImageTags)
-        {
-            await registry.PushAsync(Repository, tag, manifestList, cancellationToken).ConfigureAwait(false);
-        }
+    private string GetRepositoryAndTagsString()
+    {
+        _repositoryAndTagsString ??= $"{Repository}:{string.Join(", ", ImageTags)}";
+        return _repositoryAndTagsString;
     }
 }

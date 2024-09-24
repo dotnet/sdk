@@ -360,10 +360,6 @@
                       ImageTags="@(ContainerImageTags)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
-
-    <Message Condition="'$(_SkipCreateImageIndex)' == 'false' "
-             Importance="high"
-             Text="GeneratedImageIndex: $(GeneratedImageIndex)" />
   </Target>
 
   <Target Name="PublishContainer"
