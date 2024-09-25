@@ -172,6 +172,7 @@ jobs:
       displayName: Publish Artifacts
       sbomEnabled: true
 
+    # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - output: buildArtifacts
       PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
       ArtifactName: VerticalManifests
@@ -632,6 +633,7 @@ jobs:
       displayName: Publish Artifacts
       continueOnError: true
 
+    # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
