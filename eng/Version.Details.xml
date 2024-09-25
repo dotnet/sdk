@@ -43,9 +43,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b5833d2cd22f474485f74696609f6a6c3617cd15</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.IO.Hashing" Version="10.0.0-alpha.1.24471.6">
+    <Dependency Name="System.IO.Hashing" Version="10.0.0-alpha.1.24472.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>bbe61b99c797fa405aa2272e38fdec0cf044d78f</Sha>
+      <Sha>b5833d2cd22f474485f74696609f6a6c3617cd15</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="10.0.0-alpha.1.24472.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
