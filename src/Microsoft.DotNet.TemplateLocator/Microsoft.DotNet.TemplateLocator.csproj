@@ -18,6 +18,8 @@
 
     <!--https://github.com/NuGet/Home/issues/3891#issuecomment-377319939-->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!-- This project references the sdk resolver, which requires the hostxfr for multiple arches on windows. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">

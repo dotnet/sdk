@@ -18,6 +18,8 @@
 
     <!--https://github.com/NuGet/Home/issues/3891#issuecomment-377319939-->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!-- This project requires the hostfxr from x86, x64 and arm64 when building on windows. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

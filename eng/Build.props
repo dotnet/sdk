@@ -6,4 +6,11 @@
     <ProjectToBuild Include="$(RepoRoot)src/VirtualMonoRepo/InitializeVMR.proj" BuildInParallel="false" />
   </ItemGroup>
 
+  <!-- Do not populate ProjectToBuild except when we are explicitly in a non-default pass (pass 1, DotNetBuildPass == '')
+       so that we get the arcade defaults for what to build. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' != ''">
+    <ProjectToBuild Include="$(RepoRoot)src/Resolvers/Microsoft.DotNet.SdkResolver/Microsoft.DotNet.SdkResolver.csproj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src/Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.csproj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" DotNetBuildPass="2" />
+  </ItemGroup>
 </Project>
