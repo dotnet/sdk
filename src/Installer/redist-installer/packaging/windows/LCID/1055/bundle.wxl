@@ -4,10 +4,10 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/yükleme | /onarım | /kaldırma | /düzen [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
-   veya paketin tam bir yerel kopyasını dizinde oluşturur. '/kurulum' varsayılandır.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
+   veya paketin tam bir yerel kopyasını dizinde oluşturur. '/install' varsayılandır.
 
-/pasif | /sessis - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve 
+/passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve 
  istem olmadan
    görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
 
