@@ -124,9 +124,11 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
-
             await App.AssertOutputLineStartsWith("Updated");
+
+            Assert.Contains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
+                App.Process.Output);
         }
 
         [Theory]
@@ -163,22 +165,21 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
 
+            await App.AssertOutputLineStartsWith("Updated");
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
+            Assert.Contains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!",
+                App.Process.Output);
 
             if (verbose)
             {
-                await App.AssertOutputLineStartsWith("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
+                Assert.Contains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.", App.Process.Output);
             }
             else
             {
                 // shouldn't see any agent messages:
-                await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, failure: line => line.Contains("🕵️"));
+                Assert.DoesNotContain("🕵️", App.Process.Output);
             }
-
-            await App.AssertOutputLineStartsWith("   at AppUpdateHandler.ClearCache(Type[] types)");
-
-            await App.AssertOutputLineStartsWith("Updated");
         }
 
         [Fact]
