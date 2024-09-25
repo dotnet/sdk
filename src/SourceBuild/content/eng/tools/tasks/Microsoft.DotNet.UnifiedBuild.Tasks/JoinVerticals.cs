@@ -24,10 +24,9 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     public required ITaskItem[] VerticalManifest { get; init; }
 
     /// <summary>
-    /// Optional subset of the Verticals we want to join, separated by ;
+    /// Optional subset of the Verticals to exclude from the join
     /// </summary>
-    /// <example>Windows_x64;Windows_x86</example>
-    public string? VerticalSubSet { get; set; }
+    public required ITaskItem[] ExcludedVerticals { get; set; }
 
     /// <summary>
     /// Name of the main vertical that we'll take all artifacts from
@@ -89,22 +88,9 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     {
         List<XDocument> verticalManifests = VerticalManifest.Select(xmlPath => XDocument.Load(xmlPath.ItemSpec)).ToList();
 
-        if (!string.IsNullOrEmpty(VerticalSubSet))
-        {
-            var verticalSubSet = VerticalSubSet.Split(';');
-            verticalManifests = verticalManifests.Where(manifest => verticalSubSet.Contains(GetRequiredRootAttribute(manifest, _verticalNameAttribute))).ToList();
-        }
-
         // Find the main manifest, and remove it from the list
         XDocument mainVerticalManifest = verticalManifests.FirstOrDefault(manifest => GetRequiredRootAttribute(manifest, _verticalNameAttribute) == MainVertical)
             ?? throw new ArgumentException($"Couldn't find main vertical manifest {MainVertical} in vertical manifest list");
-
-        int removed = verticalManifests.RemoveAll(manifest => GetRequiredRootAttribute(manifest, _verticalNameAttribute) == MainVertical);
-
-        if (removed > 1)
-        {
-            throw new ArgumentException($"Found more than one main vertical manifest {MainVertical} in vertical manifest list");
-        }
 
         if (!Directory.Exists(MainVerticalArtifactsFolder))
         {
@@ -125,6 +111,18 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         foreach (XDocument verticalManifest in verticalManifests)
         {
             string verticalName = GetRequiredRootAttribute(verticalManifest, _verticalNameAttribute);
+
+            // We already processed the main vertical
+            if (verticalName == MainVertical)
+            {
+                continue;
+            }
+
+            if (ExcludedVerticals.Any(v => v.ItemSpec == verticalName))
+            {
+                Log.LogMessage(MessageImportance.High, $"Excluding {verticalName} from the join");
+                continue;
+            }
 
             addedPackageIds = AddMissingElements(packageElements, verticalManifest, _packageElementName);
             addedBlobIds = AddMissingElements(blobElements, verticalManifest, _blobElementName);

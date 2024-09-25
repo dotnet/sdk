@@ -25,10 +25,20 @@
   
       <ItemGroup>
         <VerticalManifest Include="$(VerticalManifestsPath)\*.xml"/>
+        <ExcludedVerticals Include="
+          AzureLinux_x64_Cross_Mono_arm;
+          AzureLinux_x64_Cross_Mono_arm64;
+          AzureLinux_x64_Cross_Mono_x64;
+          AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT_arm64;
+          AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT_x64;
+          AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT_arm64;
+          AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT_x64;
+          OSX_Mono_arm64;
+          OSX_Mono_x64;
+          OSX_ShortStack_Mono_LLVMJIT_x64;
+          Windows_Mono_x64;
+          Windows_Mono_x86" />
       </ItemGroup>
-  
-      <Message Importance="High" Text="Joining verticals $(VerticalSubSet)" Condition="'$(VerticalSubSet)' != ''"/>
-      <Message Importance="High" Text="VerticalSubSet not set, joining all verticals @(VerticalManifest)" Condition="'$(VerticalSubSet)' == ''"/>
   
       <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->
       <Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals 
@@ -40,7 +50,7 @@
         AzureDevOpsProject="$(AzureDevOpsProject)"
         MainVerticalArtifactsFolder="$(MainVerticalArtifactsFolder)"
         OutputFolder="$(OutputFolder)"
-        VerticalSubSet="$(VerticalSubSet)" />
+        ExcludedVerticals="@(ExcludedVerticals)" />
     </Target>
   
   </Project>

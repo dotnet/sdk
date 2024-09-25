@@ -104,6 +104,8 @@ public class AzureDevOpsClient : IDisposable
 
         var getManifestUrl = $"build/builds/{buildId}/artifacts?artifactName={artifactName}&fileId={artifactId}&fileName={artifactName}&api-version={_azureDevOpsApiVersion}";
 
+        _logger.LogMessage(MessageImportance.High, $"Getting {artifactName} artifact manifest");
+
         try
         {
             using HttpResponseMessage httpResponse = await ExecuteApiCallWithRetry(getManifestUrl, retryCount);
@@ -124,7 +126,7 @@ public class AzureDevOpsClient : IDisposable
     {
         string relativeUrl = $"build/builds/{buildId}/artifacts?artifactName={artifactName}&api-version={_azureDevOpsApiVersion}";
         
-        _logger.LogMessage(MessageImportance.High, $"Getting download link from {relativeUrl}");
+        _logger.LogMessage(MessageImportance.High, $"Getting {artifactName} metadata from {relativeUrl}");
 
         try
         {
