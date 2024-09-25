@@ -5,7 +5,7 @@
   <PropertyGroup Label="Repo version information">
     <VersionMajor>9</VersionMajor>
     <VersionMinor>0</VersionMinor>
-    <VersionSDKMinor>1</VersionSDKMinor>
+    <VersionSDKMinor>2</VersionSDKMinor>
     <VersionFeature>00</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
@@ -19,10 +19,10 @@
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <!-- Calculate prerelease label -->
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">rc</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">preview</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and $(VersionPrefix.EndsWith('00'))">rtm</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and !$(VersionPrefix.EndsWith('00'))">servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">2</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">0</PreReleaseVersionIteration>
     <!-- In source-build the version of the compiler must be same or newer than the version of the
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
@@ -111,7 +111,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-rtm.24473.2</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-rc.1.24451.1</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/test-templates -->
@@ -122,54 +122,54 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-rtm.24473.2</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rtm.24473.2</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-rtm.24473.2</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETHostModelVersion>9.0.0-rtm.24473.2</MicrosoftNETHostModelVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftNETILLinkTasksPackageVersion>9.0.0-rtm.24473.2</MicrosoftNETILLinkTasksPackageVersion>
-    <SystemServiceProcessServiceControllerVersion>9.0.0-rtm.24473.2</SystemServiceProcessServiceControllerVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-rc.1.24431.7</MicrosoftNETCoreAppRefPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24431.7</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-rc.1.24431.7</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETHostModelVersion>9.0.0-rc.1.24431.7</MicrosoftNETHostModelVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftNETILLinkTasksPackageVersion>9.0.0-rc.1.24431.7</MicrosoftNETILLinkTasksPackageVersion>
+    <SystemServiceProcessServiceControllerVersion>9.0.0-rc.1.24431.7</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-rtm.24473.2</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-rtm.24473.2</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-rtm.24473.2</MicrosoftNETCoreAppHostwinx64PackageVersion>
-    <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-rtm.24473.2</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-rtm.24473.2</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftWin32SystemEventsPackageVersion>9.0.0-rtm.24473.2</MicrosoftWin32SystemEventsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-rc.1.24431.7</MicrosoftNETCorePlatformsPackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-rc.1.24431.7</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
+    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-rc.1.24431.7</MicrosoftNETCoreAppHostwinx64PackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-rc.1.24431.7</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-rc.1.24431.7</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>9.0.0-rc.1.24431.7</MicrosoftWin32SystemEventsPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
-    <SystemCodeDomPackageVersion>9.0.0-rtm.24473.2</SystemCodeDomPackageVersion>
+    <SystemCodeDomPackageVersion>9.0.0-rc.1.24431.7</SystemCodeDomPackageVersion>
     <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
-    <SystemCompositionAttributedModelPackageVersion>9.0.0-rtm.24473.2</SystemCompositionAttributedModelPackageVersion>
-    <SystemCompositionConventionPackageVersion>9.0.0-rtm.24473.2</SystemCompositionConventionPackageVersion>
-    <SystemCompositionHostingPackageVersion>9.0.0-rtm.24473.2</SystemCompositionHostingPackageVersion>
-    <SystemCompositionRuntimePackageVersion>9.0.0-rtm.24473.2</SystemCompositionRuntimePackageVersion>
-    <SystemCompositionTypedPartsPackageVersion>9.0.0-rtm.24473.2</SystemCompositionTypedPartsPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-rtm.24473.2</SystemConfigurationConfigurationManagerPackageVersion>
-    <SystemReflectionMetadataLoadContextVersion>9.0.0-rtm.24473.2</SystemReflectionMetadataLoadContextVersion>
+    <SystemCompositionAttributedModelPackageVersion>9.0.0-rc.1.24431.7</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>9.0.0-rc.1.24431.7</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>9.0.0-rc.1.24431.7</SystemCompositionHostingPackageVersion>
+    <SystemCompositionRuntimePackageVersion>9.0.0-rc.1.24431.7</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>9.0.0-rc.1.24431.7</SystemCompositionTypedPartsPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-rc.1.24431.7</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemReflectionMetadataLoadContextVersion>9.0.0-rc.1.24431.7</SystemReflectionMetadataLoadContextVersion>
     <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsPackageVersion>9.0.0-rtm.24473.2</SystemResourcesExtensionsPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-rtm.24473.2</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-rtm.24473.2</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>9.0.0-rtm.24473.2</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>9.0.0-rtm.24473.2</SystemSecurityPermissionsPackageVersion>
-    <SystemTextEncodingCodePagesPackageVersion>9.0.0-rtm.24473.2</SystemTextEncodingCodePagesPackageVersion>
-    <SystemTextJsonPackageVersion>9.0.0-rtm.24473.2</SystemTextJsonPackageVersion>
+    <SystemResourcesExtensionsPackageVersion>9.0.0-rc.1.24431.7</SystemResourcesExtensionsPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-rc.1.24431.7</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-rc.1.24431.7</SystemSecurityCryptographyProtectedDataPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>9.0.0-rc.1.24431.7</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>9.0.0-rc.1.24431.7</SystemSecurityPermissionsPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>9.0.0-rc.1.24431.7</SystemTextEncodingCodePagesPackageVersion>
+    <SystemTextJsonPackageVersion>9.0.0-rc.1.24431.7</SystemTextJsonPackageVersion>
     <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
     <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>9.0.0-rtm.24473.2</SystemWindowsExtensionsPackageVersion>
-    <SystemFormatsAsn1Version>9.0.0-rtm.24473.2</SystemFormatsAsn1Version>
+    <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24431.7</SystemWindowsExtensionsPackageVersion>
+    <SystemFormatsAsn1Version>9.0.0-rc.1.24431.7</SystemFormatsAsn1Version>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-rtm.24474.6</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-rtm.24474.6</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0-rtm.24474.6</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0-rtm.24474.6</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24452.1</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-rc.1.24452.1</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0-rc.1.24452.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0-rc.1.24452.1</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -246,19 +246,19 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftAspNetCoreAppRefInternalPackageVersion>9.0.0-rtm.24473.16</MicrosoftAspNetCoreAppRefInternalPackageVersion>
-    <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rtm.24473.16</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
-    <dotnetdevcertsPackageVersion>9.0.0-rtm.24473.16</dotnetdevcertsPackageVersion>
-    <dotnetuserjwtsPackageVersion>9.0.0-rtm.24473.16</dotnetuserjwtsPackageVersion>
-    <dotnetusersecretsPackageVersion>9.0.0-rtm.24473.16</dotnetusersecretsPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftAspNetCoreAppRefInternalPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreAppRefInternalPackageVersion>
+    <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24452.1</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
+    <dotnetdevcertsPackageVersion>9.0.0-rc.1.24452.1</dotnetdevcertsPackageVersion>
+    <dotnetuserjwtsPackageVersion>9.0.0-rc.1.24452.1</dotnetuserjwtsPackageVersion>
+    <dotnetusersecretsPackageVersion>9.0.0-rc.1.24452.1</dotnetusersecretsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
@@ -268,8 +268,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-rtm.24474.2</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-rtm.24474.2</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-rc.1.24451.10</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-rc.1.24451.10</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Runtime and Apphost aliases">
     <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
@@ -360,7 +360,7 @@
     <XamarinMacOSWorkloadManifestVersion>14.2.9714-net9-p6</XamarinMacOSWorkloadManifestVersion>
     <XamarinTvOSWorkloadManifestVersion>17.2.9714-net9-p6</XamarinTvOSWorkloadManifestVersion>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>9.0.0-rtm.24469.1</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>9.0.0-rc.1.24430.3</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportPackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>9.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-(?!rtm)[A-z]*[\.]*\d*`))</EmscriptenWorkloadFeatureBand>
