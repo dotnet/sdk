@@ -1,0 +1,68 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Publish.OneDeploy.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="OneDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
+  <UsingTask TaskName="CreatePackageFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
+  <UsingTask TaskName="GetPassword" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
+
+  <PropertyGroup>
+    <_DotNetPublishFiles>
+      OneDeploy;
+    </_DotNetPublishFiles>
+  </PropertyGroup>
+
+  <!--
+  ***********************************************************************************************
+  TARGET : CreatePackageFile
+  ***********************************************************************************************
+ -->
+
+  <Target Name="CreatePackageFile">
+    <MakeDir Directories="$(PublishIntermediateTempPath)" 
+      Condition="!Exists('$(PublishIntermediateTempPath)')" />
+
+    <CreatePackageFile
+      ContentToPackage="$(PublishIntermediateOutputPath)"
+      ProjectName="$(MSBuildProjectName)"
+      IntermediateTempPath="$(PublishIntermediateTempPath)">
+      <Output TaskParameter="CreatedPackageFilePath" PropertyName="PackagedPublishContentsPath"/>
+    </CreatePackageFile>
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  TARGET : OneDeploy
+  ***********************************************************************************************
+ -->
+
+  <Target Name="OneDeploy" DependsOnTargets="CreatePackageFile">
+    <PropertyGroup>
+      <OneDeployUserAgent Condition="'$(VisualStudioVersion)' == ''">WebSdk</OneDeployUserAgent>
+      <OneDeployUserAgent Condition="'$(VisualStudioVersion)' != ''">WebSdk_VisualStudio_$(VisualStudioVersion)</OneDeployUserAgent>
+    </PropertyGroup>
+
+    <GetPassword
+       EncryptedPassword ="$(EncryptedPassword)"
+       Condition="'$(Password)' == '' And '$(IsGetPasswordEnabled)' == 'true'">
+      <Output TaskParameter="ClearPassword" PropertyName="Password"/>
+    </GetPassword>
+
+    <OneDeploy
+      FileToPublishPath="$(PackagedPublishContentsPath)"
+      PublishUrl="$(PublishUrl)"
+      Username="$(UserName)"
+      Password="$(Password)"
+      UserAgentVersion="$(OneDeployUserAgent)"
+      WebJobName="$(WebJobName)"
+      WebJobType="$(WebJobType)" />
+  </Target>
+
+</Project>
