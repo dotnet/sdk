@@ -18,6 +18,9 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem ProjectFullPath { get; set; }
 
+        [Required]
+        public ITaskItem TargetFramework { get; set; }
+
         public override bool Execute()
         {
             try
@@ -26,11 +29,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 NamedPipeClient dotnetTestPipeClient = new(GetTestsProjectPipeName.ItemSpec);
 
-                dotnetTestPipeClient.RegisterSerializer(new ModuleSerializer(), typeof(Module));
+                dotnetTestPipeClient.RegisterSerializer(new ModuleMessageSerializer(), typeof(ModuleMessage));
                 dotnetTestPipeClient.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
 
                 dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
-                dotnetTestPipeClient.RequestReplyAsync<Module, VoidResponse>(new Module(TargetPath.ItemSpec, ProjectFullPath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.RequestReplyAsync<ModuleMessage, VoidResponse>(new ModuleMessage(TargetPath.ItemSpec, ProjectFullPath.ItemSpec, TargetFramework.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
