@@ -628,14 +628,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Build"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
+      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
@@ -677,10 +679,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(StaticWebAsset)"
+      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
