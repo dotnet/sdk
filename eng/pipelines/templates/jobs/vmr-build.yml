@@ -215,7 +215,7 @@ jobs:
           **/*.nupkg
         displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
-      - ${{ eq(parameters.buildSourceOnly, 'true') }}:
+      - ${{ if eq(parameters.buildSourceOnly, true) }}:
         - task: CopyFiles@2
           displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
           inputs:
