@@ -315,8 +315,7 @@
   </Target>
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
-    <Error Code="CONTAINERS0667"
-      Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
+    <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
       Condition="'$(ContainerArchiveOutputPath)' != '' and 
                  !$(ContainerArchiveOutputPath.EndsWith('/')) and 
                  !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
