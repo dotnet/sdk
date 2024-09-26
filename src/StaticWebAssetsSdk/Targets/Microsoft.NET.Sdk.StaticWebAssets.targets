@@ -672,10 +672,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(StaticWebAsset)"
+      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
