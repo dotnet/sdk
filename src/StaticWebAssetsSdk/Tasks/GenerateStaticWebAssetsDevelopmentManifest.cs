@@ -33,8 +33,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public string ManifestPath { get; set; }
 
+        [Required]
+        public string CacheFilePath { get; set; }
+
         public override bool Execute()
         {
+            if (File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+            {
+                Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+                return true;
+            }
+
             try
             {
                 if (Assets.Length == 0 && DiscoveryPatterns.Length == 0)
