@@ -291,7 +291,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ResolveCompressedAssets>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
       <_StaticWebAssetExcludedFromPack Include="@(_CompressedStaticWebAssets)" />
     </ItemGroup>
 
