@@ -628,14 +628,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Build"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
+      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
