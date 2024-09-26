@@ -398,14 +398,14 @@
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>cc2eee2a404793ac377fb3f42d94c8efdf16ff3c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24453.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24475.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c2a9df9c1867454039a1223cef1c090359e33646</Sha>
+      <Sha>64dae9d400dad838cc361214128882bfaac512de</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24453.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24475.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c2a9df9c1867454039a1223cef1c090359e33646</Sha>
+      <Sha>64dae9d400dad838cc361214128882bfaac512de</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.24473.1">
