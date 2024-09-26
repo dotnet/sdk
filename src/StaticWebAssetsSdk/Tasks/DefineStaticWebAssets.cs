@@ -181,11 +181,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     // the asset.
                     var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
                     var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
-                    var file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
+                    FileInfo file = null;
                     switch ((fingerprint, integrity))
                     {
                         case (null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
+                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
                             (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
                             break;
                         case (null, not null):
@@ -194,17 +195,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             break;
                         case (not null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
+                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
                             integrity = StaticWebAsset.ComputeIntegrity(file);
                             break;
                     }
 
-                    // Record the FileLength and LastWriteTimeUtc for the asset so that we don't have to read it again on other tasks
-                    // we'll flow this information to them
-                    assetDetails.Add(new TaskItem(file.FullName, new Dictionary<string, string>
+                    if (file != null)
                     {
-                        ["FileLength"] = file.Length.ToString(CultureInfo.InvariantCulture),
-                        ["LastWriteTimeUtc"] = file.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture),
-                    }));
+                        // Record the FileLength and LastWriteTimeUtc for the asset so that we don't have to read it again on other tasks
+                        // we'll flow this information to them
+                        assetDetails.Add(new TaskItem(file.FullName, new Dictionary<string, string>
+                        {
+                            ["FileLength"] = file.Length.ToString(CultureInfo.InvariantCulture),
+                            ["LastWriteTimeUtc"] = file.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture),
+                        }));
+                    }
 
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
