@@ -43,9 +43,6 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(DotNetBuildPass)' == ''">
     <RepositoryReference Include="aspire" />
     <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="command-line-api" />
