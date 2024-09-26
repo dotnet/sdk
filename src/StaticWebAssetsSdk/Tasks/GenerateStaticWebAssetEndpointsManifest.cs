@@ -60,7 +60,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 Endpoints = [.. filteredEndpoints]
             };
 
-            this.PersistFileIfChanged(manifest, ManifestPath);
+            this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
         }
         catch (Exception ex)
         {
