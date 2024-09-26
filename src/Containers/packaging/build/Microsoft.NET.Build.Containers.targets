@@ -253,6 +253,10 @@
       <ContainerPort Include="$(_ContainerPort)"/>
       <ContainerEnvironmentVariables Include="$(_ContainerEnvironmentVariables)"/>
     </ItemGroup>
+    <PropertyGroup>
+      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
+      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
+    </PropertyGroup>
   </Target>
 
   <Target Name="_PublishSingleContainer"
@@ -311,6 +315,13 @@
   </Target>
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
+    <Error Code="CONTAINERS0667"
+      Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
+      Condition="'$(ContainerArchiveOutputPath)' != '' and 
+                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
+                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
+                 $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
+    
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
