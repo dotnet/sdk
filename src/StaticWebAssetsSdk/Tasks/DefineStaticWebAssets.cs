@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -87,9 +88,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             try
             {
-                var results = new List<ITaskItem>();
-                var copyCandidates = new List<ITaskItem>();
-                var assetDetails = new List<ITaskItem>();
+                var results = new ConcurrentBag<ITaskItem>();
+                var copyCandidates = new ConcurrentBag<ITaskItem>();
+                var assetDetails = new ConcurrentBag<ITaskItem>();
 
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
@@ -97,8 +98,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
                 var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
                 Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
-
-                for (var i = 0; i < CandidateAssets.Length; i++)
+                var loopResult = Parallel.For(0, CandidateAssets.Length, (i, parallelLoopState) =>
                 {
                     var candidate = CandidateAssets[i];
                     var relativePathCandidate = string.Empty;
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             if (!match.HasMatches)
                             {
                                 Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, RelativePathPattern);
-                                continue;
+                                return;
                             }
 
                             Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Files.Single().Stem);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                                 relativePathCandidate,
                                 RelativePathFilter);
 
-                            continue;
+                            return;
                         }
                     }
 
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
                     {
-                        break;
+                        parallelLoopState.Break();
                     }
 
                     var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
@@ -259,16 +259,31 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                     asset.Normalize();
                     var item = asset.ToTaskItem();
-                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
-                    {
-                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
-                        UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
-                    }
-
                     results.Add(item);
+                });
+
+                if (!loopResult.IsCompleted)
+                {
+                    return false;
                 }
 
                 Assets = [.. results];
+
+                for (int i = 0; i < Assets.Length; i++)
+                {
+                    var item = Assets[i];
+                    var asset = StaticWebAsset.FromTaskItem(item);
+                    var shouldCopyToPublishDirectory = !string.Equals(
+                        item.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)),
+                        StaticWebAsset.AssetCopyOptions.Never,
+                        StringComparison.Ordinal);
+                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
+                    {
+                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), !shouldCopyToPublishDirectory ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
+                        UpdateAssetKindIfNecessary(assetsByRelativePath, item.GetMetadata(nameof(StaticWebAsset.RelativePath)), item);
+                    }
+                }
+
                 CopyCandidates = [.. copyCandidates];
                 AssetDetails = [.. assetDetails];
             }
