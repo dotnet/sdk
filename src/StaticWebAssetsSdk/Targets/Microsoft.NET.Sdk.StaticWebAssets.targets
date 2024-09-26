@@ -639,6 +639,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
+      <_CachedBuildStaticWebAssets Condition="'@(_CachedBuildStaticWebAssets)' == ''" Include="@(StaticWebAsset)" />
+      <_CachedBuildStaticWebAssetEndpoints Condition="'@(_CachedBuildStaticWebAssetEndpoints)' == ''" Include="@(StaticWebAssetEndpoint)" />
+      <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)' == ''" Include="@(StaticWebAssetProjectConfiguration)" />
+      <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'@(_CachedBuildStaticWebAssetDiscoveryPatterns)' == ''" Include="@(StaticWebAssetDiscoveryPattern)" />
+    </ItemGroup>
+
+    <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
