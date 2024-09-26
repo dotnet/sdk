@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     // is case insensitive.
     public class GenerateStaticWebAssetsDevelopmentManifest : Task
     {
+        private static readonly char[] _separator = ['/'];
+        
         [Required]
         public string Source { get; set; }
 
@@ -62,10 +64,32 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             IEnumerable<StaticWebAssetsDiscoveryPattern> discoveryPatterns)
         {
             var assetsWithPathSegments = ComputeManifestAssets(assets).ToArray();
+            Array.Sort(assetsWithPathSegments);
 
             var discoveryPatternsByBasePath = discoveryPatterns
                 .GroupBy(p => p.HasSourceId(Source) ? "" : p.BasePath,
-                 (key, values) => (key.Split(new[] { '/' }, options: StringSplitOptions.RemoveEmptyEntries), values));
+                 (key, values) =>
+                    (key.Split(_separator, options: StringSplitOptions.RemoveEmptyEntries),
+                    values.OrderBy(id => id.ContentRoot).ThenBy(id => id.Pattern).ToArray())).ToArray();
+
+            Array.Sort(discoveryPatternsByBasePath, (x, y) =>
+            {
+                var lengthResult = x.Item1.Length.CompareTo(y.Item1.Length);
+                if (lengthResult != 0)
+                {
+                    return lengthResult;
+                }
+                for (var i = 0; i < x.Item1.Length; i++)
+                {
+                    var comparison = x.Item1[i].CompareTo(y.Item1[i]);
+                    if (comparison != 0)
+                    {
+                        return comparison;
+                    }
+                }
+
+                return 0;
+            });
 
             var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
             return manifest;
@@ -133,7 +157,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private StaticWebAssetsDevelopmentManifest CreateManifest(
             SegmentsAssetPair[] assetsWithPathSegments,
-            IEnumerable<(string[], IEnumerable<StaticWebAssetsDiscoveryPattern> values)> discoveryPatternsByBasePath)
+            (string[], StaticWebAssetsDiscoveryPattern[] values)[] discoveryPatternsByBasePath)
         {
             var contentRootIndex = new Dictionary<string, int>();
             var root = new StaticWebAssetNode() { };
@@ -326,17 +350,38 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             public StaticWebAssetPattern[] Patterns { get; set; }
         }
 
-        private struct SegmentsAssetPair
+        private struct SegmentsAssetPair : IComparable<SegmentsAssetPair>
         {
+            private static readonly char[] separator = ['/'];
+
             public SegmentsAssetPair(string path, StaticWebAsset asset)
             {
-                PathSegments = path.Split(new[] { '/' }, options: StringSplitOptions.RemoveEmptyEntries);
+                PathSegments = path.Split(separator, options: StringSplitOptions.RemoveEmptyEntries);
                 Asset = asset;
             }
 
             public string[] PathSegments { get; }
 
             public StaticWebAsset Asset { get; }
+
+            public int CompareTo(SegmentsAssetPair other)
+            {
+                if (PathSegments.Length != other.PathSegments.Length)
+                {
+                    return PathSegments.Length.CompareTo(other.PathSegments.Length);
+                }
+
+                for (var i = 0; i < PathSegments.Length; i++)
+                {
+                    var comparison = PathSegments[i].CompareTo(other.PathSegments[i]);
+                    if (comparison != 0)
+                    {
+                        return comparison;
+                    }
+                }
+
+                return 0;
+            }
 
             public void Deconstruct(out string[] segments, out StaticWebAsset asset)
             {
