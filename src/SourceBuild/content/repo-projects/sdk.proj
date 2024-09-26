@@ -41,7 +41,7 @@
     <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildPass)' != ''">
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="aspire" />
     <RepositoryReference Include="aspnetcore" />
