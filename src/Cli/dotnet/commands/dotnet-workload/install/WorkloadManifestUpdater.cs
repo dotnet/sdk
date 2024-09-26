@@ -157,10 +157,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         //  depends on NuGetVersion
         public static string WorkloadSetPackageVersionToWorkloadSetVersion(SdkFeatureBand sdkFeatureBand, string packageVersion)
         {
-            var nugetVersion = new NuGetVersion(packageVersion);
-            var patch = nugetVersion.Patch > 0 ? $".{nugetVersion.Patch}" : string.Empty;
-            var release = string.IsNullOrWhiteSpace(nugetVersion.Release) ? string.Empty : $"-{nugetVersion.Release}";
-            return $"{sdkFeatureBand.Major}.{sdkFeatureBand.Minor}.{nugetVersion.Minor}{patch}{release}";
+            return WorkloadSetVersion.FromWorkloadSetPackageVersion(sdkFeatureBand, packageVersion);
         }
 
         public static void AdvertiseWorkloadUpdates()

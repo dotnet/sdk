@@ -6,6 +6,7 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 using System.Text.Json;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -130,47 +131,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         //  which we'd like to avoid adding as a dependency here.
         public static string WorkloadSetVersionToWorkloadSetPackageVersion(string setVersion, out SdkFeatureBand sdkFeatureBand)
         {
-            string[] sections = setVersion.Split(new char[] { '-', '+' }, 2);
-            string versionCore = sections[0];
-            string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
-
-            string[] coreComponents = versionCore.Split('.');
-            string major = coreComponents[0];
-            string minor = coreComponents[1];
-            string patch = coreComponents[2];
-
-            string packageVersion = $"{major}.{patch}.";
-            if (coreComponents.Length == 3)
-            {
-                //  No workload set patch version
-                packageVersion += "0";
-
-                //  Use preview specifier (if any) from workload set version as part of SDK feature band
-                sdkFeatureBand = new SdkFeatureBand(setVersion);
-            }
-            else
-            {
-                //  Workload set version has workload patch version (ie 4 components)
-                packageVersion += coreComponents[3];
-
-                //  Don't include any preview specifiers in SDK feature band
-                sdkFeatureBand = new SdkFeatureBand($"{major}.{minor}.{patch}");
-            }
-
-            if (preReleaseOrBuild != null)
-            {
-                //  Figure out if we split on a '-' or '+'
-                char separator = setVersion[sections[0].Length];
-                packageVersion += separator + preReleaseOrBuild;
-            }
-
-            return packageVersion;
+            var ret = WorkloadSetVersion.ToWorkloadSetPackageVersion(setVersion, out var band);
+            sdkFeatureBand = band;
+            return ret;
         }
 
         public static SdkFeatureBand GetWorkloadSetFeatureBand(string setVersion)
         {
-            WorkloadSetVersionToWorkloadSetPackageVersion(setVersion, out SdkFeatureBand sdkFeatureBand);
-            return sdkFeatureBand;
+            return WorkloadSetVersion.GetFeatureBand(setVersion);
         }
     }
 }
