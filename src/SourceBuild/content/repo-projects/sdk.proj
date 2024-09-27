@@ -25,6 +25,9 @@
     <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
 
+    <!-- Pass through DotNetBuildPass due to conditional behaviour for this project on join points -->
+    <BuildArgs Condition="'$(DotNetBuildPass)' != ''">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
+
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
     <!-- sdk always wants to build portable on FreeBSD -->
     <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>

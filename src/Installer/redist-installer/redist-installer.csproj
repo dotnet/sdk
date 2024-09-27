@@ -19,12 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <!--
-      These two projects reference assets from multiple architectures, so they can't be built until we have a join point job that can pull assets from multiple legs.
-      https://github.com/dotnet/source-build/issues/4336
-    -->
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildPass)' >= '2'" />
+    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildPass)' >= '2'" />
   </ItemGroup>
 
   <ItemGroup>
