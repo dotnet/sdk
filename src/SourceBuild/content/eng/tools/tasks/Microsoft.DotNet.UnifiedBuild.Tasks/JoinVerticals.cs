@@ -209,6 +209,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         if (matchingFilePaths.Count() > 1)
         {
+            // Picking the first one until https://github.com/dotnet/source-build/issues/4596 is resolved
             if (manifestFile.Contains("productVersion.txt"))
             {
                 fileItem = matchingFilePaths.First();
