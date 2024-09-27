@@ -4,14 +4,14 @@
   <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
   <String Id="HelpHeader">Setup-Hilfe</String>
-  <String Id="HelpText">/installieren | /reparieren | /deinstallieren | /Layout [\[]„Verzeichnis“[\]] – installiert, repariert, deinstalliert
-   oder erstellt eine vollständige lokale Kopie des Bündels im Verzeichnis. „/installieren“ ist die Standardeinstellung.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]„Verzeichnis“[\]] – installiert, repariert, deinstalliert
+   oder erstellt eine vollständige lokale Kopie des Bündels im Verzeichnis. „/install“ ist die Standardeinstellung.
 
-/passiv | /ruhig – Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen an oder zeigt weder eine Benutzeroberfläche noch
+/passive | /quiet – Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen an oder zeigt weder eine Benutzeroberfläche noch
    Eingabeaufforderungen an. Standardmäßig werden die Benutzeroberfläche und alle Eingabeaufforderungen angezeigt.
 
 /norestart – Unterdrückt alle Neustartversuche. Standardmäßig wird die Benutzeroberfläche vor dem Neustart aufgefordert.
-/protokollieren [\[]"log.txt"[\]] – Protokolliert eine bestimmte Datei. Standardmäßig wird eine Protokolldatei in %TEMP% erstellt.</String>
+/log [\[]"log.txt"[\]] – Protokolliert eine bestimmte Datei. Standardmäßig wird eine Protokolldatei in %TEMP% erstellt.</String>
   <String Id="HelpCloseButton">S&amp;chließen</String>
   <String Id="InstallAcceptCheckbox">Ich &amp;stimme den Bedingungen des Lizenzvertrags zu</String>
   <String Id="InstallOptionsButton">&amp;Optionen</String>
