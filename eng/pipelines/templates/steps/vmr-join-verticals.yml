@@ -15,7 +15,7 @@ steps:
 - task: DownloadBuildArtifacts@1
   inputs:
     artifactName: 'VerticalManifests'
-    downloadPath: $(Build.ArtifactStagingDirectory)/VerticalManifests
+    downloadPath: $(Build.ArtifactStagingDirectory)
     checkDownloadedFiles: true
 
 - task: DownloadPipelineArtifact@2
