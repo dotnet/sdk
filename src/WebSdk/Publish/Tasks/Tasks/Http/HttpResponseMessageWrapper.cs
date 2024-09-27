@@ -25,13 +25,17 @@ internal class HttpResponseMessageWrapper : IHttpResponse
     /// <inheritdoc/>
     public async Task<Stream> GetResponseBodyAsync()
     {
-        return await _responseBodyTask.Value;
+        return _responseBodyTask.Value is not null
+            ? await _responseBodyTask.Value
+            : null;
     }
 
     /// <inheritdoc/>
     public IEnumerable<string> GetHeader(string name)
     {
-        if (_message.Headers.TryGetValues(name, out IEnumerable<string> values))
+        if (_message is not null
+            && _message.Headers is not null
+            && _message.Headers.TryGetValues(name, out IEnumerable<string> values))
         {
             return values;
         }
@@ -41,6 +45,8 @@ internal class HttpResponseMessageWrapper : IHttpResponse
 
     private Task<Stream> GetResponseStream()
     {
-        return _message.Content.ReadAsStreamAsync();
+        return _message is not null && _message.Content is not null
+            ? _message.Content.ReadAsStreamAsync()
+            : null;
     }
 }

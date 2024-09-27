@@ -53,7 +53,7 @@ public partial class OneDeployTests
         }
         else
         {
-            var failedDeployMsg = string.Format(Resources.ONEDEPLOY_FailedDeployRequest, publishUri.AbsoluteUri, statusCode, PutErrorResponseMessage);
+            var failedDeployMsg = string.Format(Resources.ONEDEPLOY_FailedDeployRequest_With_ResponseText, publishUri.AbsoluteUri, statusCode, PutErrorResponseMessage);
             taskLoggerMock.Setup(l => l.LogError(failedDeployMsg));
         }
 
@@ -125,14 +125,18 @@ public partial class OneDeployTests
         // PostAsync()
         httpClientMock
             .Setup(hc => hc.PostAsync(OneDeployUri, It.IsAny<StreamContent>()))
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadRequest));
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadGateway)
+                {
+                    Content = new StringContent(PutErrorResponseMessage)
+                }
+            );
 
         var deploymentStatusServiceMock = new Mock<IDeploymentStatusService<DeploymentResponse>>();
 
         // set messages to log
         var taskLoggerMock = new Mock<ITaskLogger>();
         taskLoggerMock.Setup(l => l.LogMessage(Build.Framework.MessageImportance.High, string.Format(Resources.ONEDEPLOY_PublishingOneDeploy, FileToPublish, OneDeployUri.AbsoluteUri.ToString())));
-        taskLoggerMock.Setup(l => l.LogError(string.Format(Resources.ONEDEPLOY_FailedDeployRequest, OneDeployUri.AbsoluteUri.ToString(), HttpStatusCode.BadRequest)));
+        taskLoggerMock.Setup(l => l.LogError(string.Format(Resources.ONEDEPLOY_FailedDeployRequest_With_ResponseText, OneDeployUri.AbsoluteUri, HttpStatusCode.BadGateway, PutErrorResponseMessage)));
 
         var oneDeployTask = new OneDeploy(taskLoggerMock.Object);
 
