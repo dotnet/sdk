@@ -12,10 +12,10 @@ parameters:
   default: $(Build.ArtifactStagingDirectory)/artifacts
 
 steps:
-- task: DownloadPipelineArtifact@2
+- task: DownloadBuildArtifacts@1
   inputs:
     artifactName: 'VerticalManifests'
-    targetPath: $(Build.ArtifactStagingDirectory)/VerticalManifests
+    downloadPath: $(Build.ArtifactStagingDirectory)/VerticalManifests
     checkDownloadedFiles: true
 
 - task: DownloadPipelineArtifact@2
