@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Fri, 27 Sep 2024 14:54:14 -0700
+Subject: [PATCH] Make dotnet-ef build properly on Linux.
+
+ Backport: https://github.com/dotnet/efcore/pull/34781
+
+ Due to a bug (https://github.com/dotnet/msbuild/issues/10715) the pack target for
+ dotnet-ef does not work on Linux. The publish output is dropped from the
+ package. Work around with a replacement for * for now.
+
+---
+ src/dotnet-ef/dotnet-ef.csproj | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/dotnet-ef/dotnet-ef.csproj b/src/dotnet-ef/dotnet-ef.csproj
+index c4bd4eeb60..9d55e8c550 100644
+--- a/src/dotnet-ef/dotnet-ef.csproj
++++ b/src/dotnet-ef/dotnet-ef.csproj
+@@ -84,7 +84,8 @@ dotnet ef database update
+       <NuspecProperty Include="targetFramework=$(TargetFramework)" />
+ 
+       <NuspecProperty Include="SettingsFile=$(_ToolsSettingsFilePath)" />
+-      <NuspecProperty Include="Output=$(PublishDir)**\*" />
++      <!-- https://github.com/dotnet/msbuild/issues/10715. %2A replaces * working around an issue building Linux. -->
++      <NuspecProperty Include="Output=$(PublishDir)%2A%2A/%2A" />
+       <NuspecProperty Include="OutputBinary=..\..\artifacts\bin\ef\$(Configuration)\netcoreapp2.0\ef.dll" />
+       <NuspecProperty Include="OutputRuntimeConfig=..\..\artifacts\bin\ef\$(Configuration)\netcoreapp2.0\ef.runtimeconfig.json" />
+       <NuspecProperty Include="OutputSymbol=..\..\artifacts\bin\ef\$(Configuration)\netcoreapp2.0\ef.pdb" />
