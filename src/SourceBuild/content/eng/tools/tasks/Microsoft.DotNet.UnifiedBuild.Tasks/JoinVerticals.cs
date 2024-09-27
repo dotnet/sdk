@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Xml.Linq;
 using static Microsoft.DotNet.UnifiedBuild.Tasks.AzureDevOpsClient;
 using Task = System.Threading.Tasks.Task;
@@ -77,7 +78,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
     public override bool Execute()
     {
-        ExecuteAsync().Wait();
+        ExecuteAsync().GetAwaiter().GetResult();
         return !Log.HasLoggedErrors;
     }
 
@@ -104,6 +105,9 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _packagesFolderName), Path.Combine(OutputFolder, _packagesFolderName));
         CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _assetsFolderName), Path.Combine(OutputFolder, _assetsFolderName));
 
+        using var clientThrottle = new SemaphoreSlim(16, 16);
+        List<Task> downloadTasks = new();
+        
         foreach (XDocument verticalManifest in verticalManifests)
         {
             string verticalName = GetRequiredRootAttribute(verticalManifest, _verticalNameAttribute);
@@ -119,13 +123,17 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
             if (addedPackageIds.Count > 0 || addedBlobIds.Count > 0)
             {
-                await DownloadArtifactFiles(
-                    BuildId,
-                    $"{verticalName}{_artifactNameSuffix}",
-                    addedPackageIds,
-                    addedBlobIds);
+                downloadTasks.Add(
+                    DownloadArtifactFiles(
+                        BuildId,
+                        $"{verticalName}{_artifactNameSuffix}",
+                        addedPackageIds,
+                        addedBlobIds,
+                        clientThrottle));
             }
         }
+
+        await Task.WhenAll(downloadTasks);
 
         // Create MergedManifest.xml
         // taking the attributes from the main manifest
@@ -158,23 +166,33 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         string buildId,
         string artifactName,
         List<string> packageFileNames,
-        List<string> assetFileNames)
+        List<string> assetFileNames,
+        SemaphoreSlim clientThrottle)
     {
         string packagesOutputPath = Path.Combine(OutputFolder, _packagesFolderName);
         string assetsOutputPath = Path.Combine(OutputFolder, _assetsFolderName);
 
         using AzureDevOpsClient azureDevOpsClient = new(AzureDevOpsToken, AzureDevOpsBaseUri, AzureDevOpsProject, Log);
 
-        ArtifactFiles filesInformation = await azureDevOpsClient.GetArtifactFilesInformation(buildId, artifactName, _retryCount);
-
-        foreach (var package in packageFileNames)
+        try
         {
-            await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, package, packagesOutputPath);
+            await clientThrottle.WaitAsync();
+
+            ArtifactFiles filesInformation = await azureDevOpsClient.GetArtifactFilesInformation(buildId, artifactName, _retryCount);
+
+            foreach (var package in packageFileNames)
+            {
+                await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, package, packagesOutputPath);
+            }
+
+            foreach (var asset in assetFileNames)
+            {
+                await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, asset, assetsOutputPath);
+            }
         }
-
-        foreach (var asset in assetFileNames)
+        finally
         {
-            await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, asset, assetsOutputPath);
+            clientThrottle.Release();
         }
     }
 
