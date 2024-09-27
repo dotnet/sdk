@@ -153,13 +153,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        //  Corresponding method for opposite direction is in WorkloadSet class.  This version is kept here as implementation
-        //  depends on NuGetVersion
-        public static string WorkloadSetPackageVersionToWorkloadSetVersion(SdkFeatureBand sdkFeatureBand, string packageVersion)
-        {
-            return WorkloadSetVersion.FromWorkloadSetPackageVersion(sdkFeatureBand, packageVersion);
-        }
-
         public static void AdvertiseWorkloadUpdates()
         {
             try
@@ -359,7 +352,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
                     }
 
-                    var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(band, downloadedPackageVersion.ToString());
+                    var workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(band, downloadedPackageVersion.ToString());
                     File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
                 }
 

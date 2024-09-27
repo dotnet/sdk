@@ -12,6 +12,7 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
 using Microsoft.TemplateEngine.Edge.Constraints;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [MemberData(nameof(WorkloadVersionsData))]
         public void TestWorkloadSetVersionParsing(string workloadSetVersion, string expectedFeatureBand, string expectedPackageVersion)
         {
-            string packageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand featureBand);
+            string packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand featureBand);
 
             packageVersion.Should().Be(expectedPackageVersion);
             featureBand.Should().Be(new SdkFeatureBand(expectedFeatureBand));
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [MemberData(nameof(WorkloadVersionsData))]
         public void TestWorkloadSetPackageVersionParsing(string expectedWorkloadSetVersion, string packageFeatureBand, string packageVersion)
         {
-            string workloadSetVersion = WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(new SdkFeatureBand(packageFeatureBand), packageVersion);
+            string workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(new SdkFeatureBand(packageFeatureBand), packageVersion);
 
             workloadSetVersion.Should().Be(expectedWorkloadSetVersion);
         }

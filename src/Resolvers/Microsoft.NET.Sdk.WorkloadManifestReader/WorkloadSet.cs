@@ -126,19 +126,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
             return json;
         }
-
-        //  Corresponding method for opposite direction is in WorkloadManifestUpdater, as its implementation depends on NuGetVersion,
-        //  which we'd like to avoid adding as a dependency here.
-        public static string WorkloadSetVersionToWorkloadSetPackageVersion(string setVersion, out SdkFeatureBand sdkFeatureBand)
-        {
-            var ret = WorkloadSetVersion.ToWorkloadSetPackageVersion(setVersion, out var band);
-            sdkFeatureBand = band;
-            return ret;
-        }
-
-        public static SdkFeatureBand GetWorkloadSetFeatureBand(string setVersion)
-        {
-            return WorkloadSetVersion.GetFeatureBand(setVersion);
-        }
     }
 }
