@@ -238,7 +238,7 @@ internal static class HttpClientExtensions
     {
         var responseText = string.Empty;
 
-        if (response is not null || cancellationToken.IsCancellationRequested)
+        if (response is null || cancellationToken.IsCancellationRequested)
         {
             return responseText;
         }
