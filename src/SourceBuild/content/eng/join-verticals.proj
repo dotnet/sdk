@@ -14,7 +14,7 @@
 
     <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
     
-    <Target Name="JoinVerticals" DependsOnTargets="BuildTasksProject" >
+    <Target Name="JoinVerticals" DependsOnTargets="BuildTasksProject" AfterTargets="BuildTasksProject" >
       <Error Condition="'$(MainVertical)' == ''" Text="MainVertical is not set." />
       <Error Condition="'$(VerticalManifestsPath)' == ''" Text="VerticalManifestsPath is not set." />
       <Error Condition="'$(BuildId)' == ''" Text="BuildId is not set." />
@@ -24,20 +24,9 @@
       <Error Condition="'$(OutputFolder)' == ''" Text="OutputFolder is not set." />
   
       <ItemGroup>
-        <VerticalManifest Include="$(VerticalManifestsPath)\*.xml"/>
-        <ExcludedVerticals Include="
-          AzureLinux_x64_Cross_Mono_arm;
-          AzureLinux_x64_Cross_Mono_arm64;
-          AzureLinux_x64_Cross_Mono_x64;
-          AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT_arm64;
-          AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT_x64;
-          AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT_arm64;
-          AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT_x64;
-          OSX_Mono_arm64;
-          OSX_Mono_x64;
-          OSX_ShortStack_Mono_LLVMJIT_x64;
-          Windows_Mono_x64;
-          Windows_Mono_x86" />
+        <VerticalManifest 
+          Include="$(VerticalManifestsPath)\*.xml"
+          Exclude="$(VerticalManifestsPath)\*Mono*.xml;$(VerticalManifestsPath)\*Pgo*.xml;$(VerticalManifestsPath)\*Shortstack*.xml;$(VerticalManifestsPath)\*DevVersions*.xml" />
       </ItemGroup>
   
       <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->
@@ -49,8 +38,7 @@
         AzureDevOpsBaseUri="$(AzureDevOpsBaseUri)"
         AzureDevOpsProject="$(AzureDevOpsProject)"
         MainVerticalArtifactsFolder="$(MainVerticalArtifactsFolder)"
-        OutputFolder="$(OutputFolder)"
-        ExcludedVerticals="@(ExcludedVerticals)" />
+        OutputFolder="$(OutputFolder)" />
     </Target>
   
   </Project>

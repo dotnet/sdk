@@ -24,11 +24,6 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     public required ITaskItem[] VerticalManifest { get; init; }
 
     /// <summary>
-    /// Optional subset of the Verticals to exclude from the join
-    /// </summary>
-    public required ITaskItem[] ExcludedVerticals { get; set; }
-
-    /// <summary>
     /// Name of the main vertical that we'll take all artifacts from
     /// </summary>
     [Required]
@@ -78,6 +73,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _packagesFolderName = "packages";
     private const int _retryCount = 10;
 
+    private Dictionary<string, List<string>> duplicatedItems = new();
+
     public override bool Execute()
     {
         ExecuteAsync().Wait();
@@ -88,7 +85,6 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     {
         List<XDocument> verticalManifests = VerticalManifest.Select(xmlPath => XDocument.Load(xmlPath.ItemSpec)).ToList();
 
-        // Find the main manifest, and remove it from the list
         XDocument mainVerticalManifest = verticalManifests.FirstOrDefault(manifest => GetRequiredRootAttribute(manifest, _verticalNameAttribute) == MainVertical)
             ?? throw new ArgumentException($"Couldn't find main vertical manifest {MainVertical} in vertical manifest list");
 
@@ -99,8 +95,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         string mainVerticalName = GetRequiredRootAttribute(mainVerticalManifest, _verticalNameAttribute);
 
-        Dictionary<string, XElement> packageElements = [];
-        Dictionary<string, XElement> blobElements = [];
+        Dictionary<string, AddedElement> packageElements = [];
+        Dictionary<string, AddedElement> blobElements = [];
 
         List<string> addedPackageIds = AddMissingElements(packageElements, mainVerticalManifest, _packageElementName);
         List<string> addedBlobIds = AddMissingElements(blobElements, mainVerticalManifest, _blobElementName);
@@ -115,12 +111,6 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             // We already processed the main vertical
             if (verticalName == MainVertical)
             {
-                continue;
-            }
-
-            if (ExcludedVerticals.Any(v => v.ItemSpec == verticalName))
-            {
-                Log.LogMessage(MessageImportance.High, $"Excluding {verticalName} from the join");
                 continue;
             }
 
@@ -147,10 +137,17 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         XDocument mergedManifest = new(new XElement(
             mainManifestRoot.Name,
             mainManifestRoot.Attributes(),
-            packageElements.Values.OrderBy(elem => elem.Attribute(_idAttribute)?.Value),
-            blobElements.Values.OrderBy(elem => elem.Attribute(_idAttribute)?.Value)));
+            packageElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value),
+            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)));
 
         File.WriteAllText(manifestOutputPath, mergedManifest.ToString());
+
+        Log.LogMessage(MessageImportance.High, $"### Duplicate items found in the following verticals: ###");
+
+        foreach (var item in duplicatedItems)
+        {
+            Log.LogMessage(MessageImportance.High, $"Item: {item.Key} -- Produced by: {string.Join(", ", item.Value)}");
+        }
     }
 
     /// <summary>
@@ -251,7 +248,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     /// Find the artifacts from the vertical manifest that are not already in the dictionary and add them
     /// Return a list of the added artifact ids
     /// </summary>
-    private List<string> AddMissingElements(Dictionary<string, XElement> addedArtifacts, XDocument verticalManifest, string elementName)
+    private List<string> AddMissingElements(Dictionary<string, AddedElement> addedArtifacts, XDocument verticalManifest, string elementName)
     {
         List<string> addedFiles = [];
 
@@ -262,7 +259,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             string elementId = artifactElement.Attribute(_idAttribute)?.Value 
                 ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
 
-            if (addedArtifacts.TryAdd(elementId, artifactElement))
+            if (addedArtifacts.TryAdd(elementId, new AddedElement(verticalName, artifactElement)))
             {
                 if (elementName == _packageElementName)
                 {
@@ -275,6 +272,17 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
                 addedFiles.Add(elementId);
                 Log.LogMessage(MessageImportance.High, $"Taking {elementName} '{elementId}' from '{verticalName}'");
             }
+            else
+            {
+                AddedElement previouslyAddedArtifact = addedArtifacts[elementId];
+                if (previouslyAddedArtifact.VerticalName != MainVertical)
+                {
+                    if (!duplicatedItems.TryAdd(elementId, new List<string> { verticalName, previouslyAddedArtifact.VerticalName }))
+                    {
+                        duplicatedItems[elementId].Add(verticalName);
+                    }
+                }
+            }
         }
 
         return addedFiles;
@@ -285,4 +293,6 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         return document.Root?.Attribute(attributeName)?.Value 
             ?? throw new ArgumentException($"Required attribute '{attributeName}' not found in root element.");
     }
+
+    private record AddedElement(string VerticalName, XElement Element);
 }
