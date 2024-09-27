@@ -19,8 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildPass)' >= '2'" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildPass)' >= '2'" />
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
+    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
