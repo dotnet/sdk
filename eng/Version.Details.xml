@@ -87,53 +87,53 @@
       <Sha>fea15fbd1fdb509ee69db79420c6cc10044b6b09</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.100-beta.24466.6">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.100-beta.24476.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>3044166cd923167204853d1d9f975bc26864f86f</Sha>
+      <Sha>44f5feb139081471b412d623c5f138634f861748</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.100-beta.24466.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.100-beta.24476.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>3044166cd923167204853d1d9f975bc26864f86f</Sha>
+      <Sha>44f5feb139081471b412d623c5f138634f861748</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.12.0-3.24473.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.13.0-1.24476.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
+      <Sha>926a1d540c510a105d5836ed2d7329dc0113be5d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-rc.1.24414.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -143,74 +143,74 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>42af9fe6ddd7c3f9cde04ac003bf97509881873b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.0-rc.116">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Commands" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Common" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Configuration" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Credentials" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Frameworks" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.LibraryModel" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.ProjectModel" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Protocol" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Packaging" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Versioning" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="6.12.0-rc.116">
+    <Dependency Name="NuGet.Localization" Version="6.12.0-rc.120">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>1e0115a608073be2ad615201be30b93dd628300d</Sha>
+      <Sha>675e8a81acb53958e40dc21be5f562d00239a449</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.12.0-preview-24453-04">
       <Uri>https://github.com/microsoft/vstest</Uri>
@@ -325,22 +325,22 @@
       <Sha>42af9fe6ddd7c3f9cde04ac003bf97509881873b</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24473.6">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24476.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3e0da42f82553178744daf61795b51326084251f</Sha>
+      <Sha>4b1b541ed34e34b4b91202871f661879dabb4f55</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24473.6">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24476.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3e0da42f82553178744daf61795b51326084251f</Sha>
+      <Sha>4b1b541ed34e34b4b91202871f661879dabb4f55</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24473.6">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24476.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3e0da42f82553178744daf61795b51326084251f</Sha>
+      <Sha>4b1b541ed34e34b4b91202871f661879dabb4f55</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24473.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24476.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3e0da42f82553178744daf61795b51326084251f</Sha>
+      <Sha>4b1b541ed34e34b4b91202871f661879dabb4f55</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-rc.1.24414.4">
@@ -379,14 +379,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24474.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24477.4">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>743a517a123a8616389eb6726ec9835a3a1a3876</Sha>
+      <Sha>a78f0dcb1aed49fabe0b40a1898eac76747bacd6</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24474.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24477.4">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>743a517a123a8616389eb6726ec9835a3a1a3876</Sha>
+      <Sha>a78f0dcb1aed49fabe0b40a1898eac76747bacd6</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
@@ -398,28 +398,28 @@
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>cc2eee2a404793ac377fb3f42d94c8efdf16ff3c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24453.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c2a9df9c1867454039a1223cef1c090359e33646</Sha>
+      <Sha>4ddd8113a29852380b7b929117bfe67f401ac320</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24453.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c2a9df9c1867454039a1223cef1c090359e33646</Sha>
+      <Sha>4ddd8113a29852380b7b929117bfe67f401ac320</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.24473.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>8d4f432d69c3c996163e022189ee8c1af4f640e0</Sha>
+      <Sha>1d3c176f7c3ae64484f3d2bd6688505802850dfa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24473.1">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24476.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>8d4f432d69c3c996163e022189ee8c1af4f640e0</Sha>
+      <Sha>1d3c176f7c3ae64484f3d2bd6688505802850dfa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24473.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24476.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>8d4f432d69c3c996163e022189ee8c1af4f640e0</Sha>
+      <Sha>1d3c176f7c3ae64484f3d2bd6688505802850dfa</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24324.3">
@@ -460,34 +460,34 @@
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
       <Sha>57d7baec5f331a145174d0e8f00d7bbfdf2b77d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24473.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24474.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>402965a6a951fd19f0055ba8174deb3d0c17501f</Sha>
+      <Sha>9700a2bfe76f993dbeb34439d4fe320c31182b2a</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
@@ -631,14 +631,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24423.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>f1715bf842371d15ecb5fc52d7dc87ab2e47df30</Sha>
+      <Sha>b7ce67571aff209313584ed0ee34f714270099dd</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="10.0.0-preview.24423.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="10.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>f1715bf842371d15ecb5fc52d7dc87ab2e47df30</Sha>
+      <Sha>b7ce67571aff209313584ed0ee34f714270099dd</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
