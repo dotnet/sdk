@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
 
         public static readonly string CommandName = "solution";
-        public static readonly string[] CommandAliases = ["sln"];
+        public static readonly string CommandAlias = "sln";
         public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(LocalizableStrings.SolutionArgumentName)
         {
             HelpName = LocalizableStrings.SolutionArgumentName,
@@ -31,10 +31,7 @@ namespace Microsoft.DotNet.Cli
         {
             DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.AppFullName);
 
-            for (int i = 0; i < CommandAliases.Length; i++)
-            {
-                command.Aliases.Add(CommandAliases[i]);
-            }
+            command.Aliases.Add(CommandAlias);
 
             command.Arguments.Add(SlnArgument);
             command.Subcommands.Add(SlnAddParser.GetCommand());
