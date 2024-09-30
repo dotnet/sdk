@@ -83,7 +83,6 @@ src/fsharp/setup/resources/eula/*.rtf
 src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 
 # False positive
-src/msbuild/documentation/specs/BuildCheck/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
 
 #
