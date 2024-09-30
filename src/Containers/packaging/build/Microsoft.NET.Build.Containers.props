@@ -11,6 +11,7 @@
         <ContainerizeFolder>$(MSBuildThisFileDirectory)..\$(ContainerizeFolderName)\</ContainerizeFolder>
         <!--Reference to the assembly which contains the MSBuild Task-->
         <ContainerCustomTasksAssembly Condition="'$(ContainerCustomTasksAssembly)' == ''">$(ContainerCustomTasksFolder)$(MSBuildThisFileName).dll</ContainerCustomTasksAssembly>
+        <_ContainersTargetsDir>$(MSBuildThisFileDirectory)</_ContainersTargetsDir>
     </PropertyGroup>
 
     <!--Register our custom task-->
