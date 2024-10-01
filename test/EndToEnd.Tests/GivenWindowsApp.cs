@@ -14,7 +14,8 @@ namespace EndToEnd.Tests
         [InlineData("10.0.20348.0")]
         [InlineData("10.0.22000.0")]
         [InlineData("10.0.22621.0")]
-        [InlineData("10.0.26100.0")]
+        // Skipped due to: https://github.com/dotnet/sdk/pull/42090/files#r1680016439
+        //[InlineData("10.0.26100.0")]
         [InlineData("10.0.22621.0", "34")]
         public void ItCanBuildAndRun(string targetPlatformVersion, string packageVersion = "")
         {
