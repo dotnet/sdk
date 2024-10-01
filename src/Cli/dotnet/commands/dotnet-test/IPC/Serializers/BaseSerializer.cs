@@ -57,10 +57,9 @@ internal abstract class BaseSerializer
         }
     }
 
-    protected static void WriteSize<T>(Stream stream)
-        where T : struct
+    protected static void WriteSize(Stream stream)
     {
-        int sizeInBytes = GetSize<T>();
+        int sizeInBytes = GetSize<int>();
         Span<byte> len = stackalloc byte[sizeof(int)];
 
         if (BitConverter.TryWriteBytes(len, sizeInBytes))
@@ -155,10 +154,9 @@ internal abstract class BaseSerializer
         stream.Write(len, 0, len.Length);
     }
 
-    protected static void WriteSize<T>(Stream stream)
-        where T : struct
+    protected static void WriteSize(Stream stream)
     {
-        int sizeInBytes = GetSize<T>();
+        int sizeInBytes = GetSize<int>();
         byte[] len = BitConverter.GetBytes(sizeInBytes);
         stream.Write(len, 0, sizeInBytes);
     }
@@ -260,7 +258,7 @@ internal abstract class BaseSerializer
         }
 
         WriteShort(stream, id);
-        WriteSize<bool>(stream);
+        WriteSize(stream);
         WriteBool(stream, value.Value);
     }
 
@@ -272,7 +270,7 @@ internal abstract class BaseSerializer
         }
 
         WriteShort(stream, id);
-        WriteSize<bool>(stream);
+        WriteSize(stream);
         WriteByte(stream, value.Value);
     }
 
