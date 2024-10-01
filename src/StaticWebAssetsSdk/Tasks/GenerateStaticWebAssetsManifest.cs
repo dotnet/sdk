@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
@@ -10,15 +9,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     public class GenerateStaticWebAssetsManifest : Task
     {
-        // Since the manifest is only used at development time, it's ok for it to use the relaxed
-        // json escaping (which is also what MVC uses by default) and to produce indented output
-        // since that makes it easier to inspect the manifest when necessary.
-        private static readonly JsonSerializerOptions ManifestSerializationOptions = new()
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            WriteIndented = true
-        };
-
         [Required]
         public string Source { get; set; }
 
@@ -126,7 +116,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
         {
-            var data = JsonSerializer.SerializeToUtf8Bytes(manifest, ManifestSerializationOptions);
+            var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
             var fileExists = File.Exists(ManifestPath);
             var existingManifestHash = fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
 
