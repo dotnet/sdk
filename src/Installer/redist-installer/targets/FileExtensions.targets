@@ -1,0 +1,33 @@
+<Project>
+
+  <Target Name="SetupFileExtensions" DependsOnTargets="GetCurrentRuntimeInformation">
+    <PropertyGroup>
+      <ArchiveExtension>.tar.gz</ArchiveExtension>
+      <ArchiveExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.zip</ArchiveExtension>
+
+      <InstallerExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.msi</InstallerExtension>
+      <InstallerExtension Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">.pkg</InstallerExtension>
+      <InstallerExtension Condition=" '$(IsDebianBaseDistro)' == 'true' ">.deb</InstallerExtension>
+      <InstallerExtension Condition=" '$(IsRPMBasedDistro)' == true ">.rpm</InstallerExtension>
+
+      <BundleExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.exe</BundleExtension>
+      <BundleExtension Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">$(InstallerExtension)</BundleExtension>
+      <BundleExtension Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(InstallerExtension)</BundleExtension>
+      <BundleExtension Condition=" '$(IsRPMBasedDistro)' == true ">$(InstallerExtension)</BundleExtension>
+
+      <DynamicLibPrefix>lib</DynamicLibPrefix>
+      <DynamicLibPrefix Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) "></DynamicLibPrefix>
+
+      <DynamicLibExtension>.so</DynamicLibExtension>
+      <DynamicLibExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.dll</DynamicLibExtension>
+      <DynamicLibExtension Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">.dylib</DynamicLibExtension>
+
+      <ExeExtension>.exe</ExeExtension>
+      <ExeExtension Condition=" !$([MSBuild]::IsOSPlatform('WINDOWS')) "></ExeExtension>
+
+      <PlatformScriptExtension>.sh</PlatformScriptExtension>
+      <PlatformScriptExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.ps1</PlatformScriptExtension>
+    </PropertyGroup>
+  </Target>
+
+</Project>
