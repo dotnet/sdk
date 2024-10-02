@@ -135,13 +135,14 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.24501.14">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10 -->
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.24476.3" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>03a9832f53a9dd12cc7815596dd78fcee8c29f4a</Sha>
+      <Sha>e4ca1fd805c3857109bf67c4fee579e10db50113</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.24501.14">
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.24476.3" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>03a9832f53a9dd12cc7815596dd78fcee8c29f4a</Sha>
+      <Sha>e4ca1fd805c3857109bf67c4fee579e10db50113</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.0-rc.116">
       <Uri>https://github.com/nuget/nuget.client</Uri>
