@@ -171,9 +171,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24501.1</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24501.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24501.1</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24501.2</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24501.2</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24501.2</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -272,8 +272,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-alpha.1.24480.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-alpha.1.24480.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-alpha.1.24501.2</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-alpha.1.24501.2</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Runtime and Apphost aliases">
     <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
