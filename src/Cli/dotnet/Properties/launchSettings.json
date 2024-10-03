@@ -1,7 +1,8 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "test S:\\c\\openapi-extensions\\tests\\OpenApi.Extensions.Tests\\MartinCostello.OpenApi.Extensions.Tests.csproj --configuration Release --tl:off -bl"
     }
   }
 }
