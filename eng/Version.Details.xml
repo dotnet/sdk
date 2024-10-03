@@ -585,9 +585,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="10.0.0-alpha.1.24476.2">
+    <Dependency Name="System.Security.Permissions" Version="9.0.0-rc.1.24431.7" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
+      <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->

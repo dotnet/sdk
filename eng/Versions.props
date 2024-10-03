@@ -157,7 +157,7 @@
     <SystemSecurityCryptographyPkcsPackageVersion>10.0.0-alpha.1.24476.2</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>10.0.0-alpha.1.24476.2</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>10.0.0-alpha.1.24476.2</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>10.0.0-alpha.1.24476.2</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>9.0.0-rc.1.24431.7</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>10.0.0-alpha.1.24476.2</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>10.0.0-alpha.1.24476.2</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.0-rc.1.24431.7</SystemWindowsExtensionsPackageVersion>
