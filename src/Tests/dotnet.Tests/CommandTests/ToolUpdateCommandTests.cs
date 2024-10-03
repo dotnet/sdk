@@ -81,5 +81,54 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
+
+        [Fact]
+        public void WhenRunWithAllAndVersionShowErrorMessage()
+        {
+            var result =
+                Parser.Instance.Parse(
+                    $"dotnet tool update --all --version 1.0.0");
+
+            var toolUpdateCommand = new ToolUpdateCommand(
+                result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateToolCommandInvalidAllAndVersion, "--all --version")
+                );
+        }
+
+        [Fact]
+        public void WhenRunWithoutAllOrPackageIdShowErrorMessage()
+        {
+            var result = Parser.Instance.Parse($"dotnet tool update");
+
+            var toolUpdateCommand = new ToolUpdateCommand(result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                    LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId
+                );
+        }
+
+        [Fact]
+        public void WhenRunWithBothAllAndPackageIdShowErrorMessage()
+        {
+            var result = Parser.Instance.Parse($"dotnet tool update packageId --all");
+
+            var toolUpdateCommand = new ToolUpdateCommand(result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                    LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId
+                );
+        }
     }
 }
