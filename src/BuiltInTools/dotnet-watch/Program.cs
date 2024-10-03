@@ -159,8 +159,15 @@ namespace Microsoft.DotNet.Watcher
             var projectGraph = TryReadProject(rootProjectOptions, reporter);
             if (projectGraph != null)
             {
+                var rootProject = projectGraph.GraphRoots.Single();
+
                 // use normalized MSBuild path so that we can index into the ProjectGraph
-                rootProjectOptions = rootProjectOptions with { ProjectPath = projectGraph.GraphRoots.Single().ProjectInstance.FullPath };
+                rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
+
+                if (rootProject.GetCapabilities().Contains("Aspire"))
+                {
+                    runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
+                }
             }
 
             var fileSetFactory = new MSBuildFileSetFactory(
