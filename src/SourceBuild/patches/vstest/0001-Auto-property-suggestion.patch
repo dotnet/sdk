@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 3 Oct 2024 19:13:43 +0000
+Subject: [PATCH] Auto property suggestion
+
+Backport: https://github.com/microsoft/vstest/pull/10365
+---
+ .editorconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/.editorconfig b/.editorconfig
+index b78e7a35b..39f9dc14c 100644
+--- a/.editorconfig
++++ b/.editorconfig
+@@ -105,8 +105,8 @@ dotnet_style_prefer_compound_assignment = true:warning  # not default, default i
+ dotnet_diagnostic.IDE0074.severity = warning            # not default, set in accordance to previous setting
+ 
+ # IDE0032: Use auto property
+-dotnet_style_prefer_auto_properties = true:warning  # not default, default is true:suggestion, increased severity to ensure it is used
+-dotnet_diagnostic.IDE0032.severity = warning        # not default, set in accordance to previous setting
++dotnet_style_prefer_auto_properties = true:suggestion  # not default, default is true:suggestion, increased severity to ensure it is used
++dotnet_diagnostic.IDE0032.severity = suggestion        # not default, set in accordance to previous setting
+ 
+ # Field preferences
+ dotnet_style_readonly_field = true:warning
