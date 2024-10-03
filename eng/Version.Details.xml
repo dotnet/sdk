@@ -135,14 +135,17 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>5ef52ae33a88c3ae0d3a037054cb66ea7eaaf902</Sha>
     </Dependency>
-    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10 -->
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.24476.3" Pinned="true">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-rc.1.24452.1" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e4ca1fd805c3857109bf67c4fee579e10db50113</Sha>
+      <Sha>280c613963a1768b810d09f32c998fe4490855e9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.24476.3" Pinned="true">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rc.1.24452.1" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e4ca1fd805c3857109bf67c4fee579e10db50113</Sha>
+      <Sha>280c613963a1768b810d09f32c998fe4490855e9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.0-rc.116">
       <Uri>https://github.com/nuget/nuget.client</Uri>
@@ -251,9 +254,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
     </Dependency>
-    <Dependency Name="System.Resources.Extensions" Version="10.0.0-alpha.1.24476.2">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <Dependency Name="System.Resources.Extensions" Version="9.0.0-rc.1.24431.7" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
+      <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24501.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
@@ -584,9 +589,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
     </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="10.0.0-alpha.1.24476.2">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <Dependency Name="System.Windows.Extensions" Version="9.0.0-rc.1.24431.7" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
+      <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -620,9 +627,11 @@
       <Sha>7e8b8f4f321c8671aa01b53567d31aaa4950706f</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.Reflection.MetadataLoadContext" Version="10.0.0-alpha.1.24476.2">
+    <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-rc.1.24431.7" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
+      <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24367.3">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
