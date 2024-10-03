@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -36,7 +37,7 @@ internal sealed class ImageConfig
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
 
     internal string Architecture => _architecture;
-    internal string Os => _os;
+    internal string OS => _os;
 
     public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
     public HashSet<Port> Ports => _exposedPorts;

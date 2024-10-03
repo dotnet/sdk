@@ -11,7 +11,7 @@ partial class CreateImageIndex
     /// Manifests to include in the image index.
     /// </summary>
     [Required]
-    public ITaskItem[] ManifestsInfo { get; set; }
+    public ITaskItem[] GeneratedContainers { get; set; }
 
     /// <summary>
     /// The registry to push the image index to.
@@ -39,7 +39,7 @@ partial class CreateImageIndex
 
     public CreateImageIndex()
     {
-        ManifestsInfo = Array.Empty<ITaskItem>();
+        GeneratedContainers = Array.Empty<ITaskItem>();
         OutputRegistry = string.Empty;
         Repository = string.Empty;
         ImageTags = Array.Empty<string>();

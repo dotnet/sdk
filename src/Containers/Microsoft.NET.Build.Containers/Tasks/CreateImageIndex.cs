@@ -64,27 +64,33 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
     private ManifestListV2 GenerateImageIndex(ILogger logger)
     {
-        var manifests = new PlatformSpecificManifest[ManifestsInfo.Length];
+        var manifests = new PlatformSpecificManifest[GeneratedContainers.Length];
 
-        for (int i = 0; i < ManifestsInfo.Length; i++)
+        for (int i = 0; i < GeneratedContainers.Length; i++)
         {
-            var image = ManifestsInfo[i];
+            var image = GeneratedContainers[i];
+
+            var generatedManifestStr = image.GetMetadata("Manifest");
+            var generatedManifest = generatedManifestStr.FromJson<ManifestV2>();
+            var generatedConfig = new ImageConfig(image.GetMetadata("Configuration"));
 
             var manifest = new PlatformSpecificManifest
             {
-                mediaType = SchemaTypes.DockerManifestV2,
-                size = long.Parse(image.GetMetadata("ManifestLength")),
+                mediaType = generatedManifest.MediaType,
+                size = generatedManifestStr.Length,
                 digest = image.GetMetadata("Digest"),
                 platform = new PlatformInformation
                 {
-                    architecture = image.GetMetadata("Architecture"),
-                    os = image.GetMetadata("OS")
+                    architecture = generatedConfig.Architecture,
+                    os = generatedConfig.OS
                 }
             };
             manifests[i] = manifest;
         }
 
         logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), manifests.ToJson());
+
+        // TODO: set manifest list mediaType depending on other manifests mediaType
 
         return new ManifestListV2
         {

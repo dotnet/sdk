@@ -34,16 +34,6 @@ internal readonly struct BuiltImage
     internal required ManifestV2 Manifest { get; init; }
 
     /// <summary>
-    /// Gets image architecture.
-    /// </summary>
-    internal required string Architecture { get; init; }
-
-    /// <summary>
-    /// Gets image OS.
-    /// </summary>
-    internal required string OS { get; init; }
-
-    /// <summary>
     /// Gets layers descriptors.
     /// </summary>
     internal IEnumerable<Descriptor> LayerDescriptors

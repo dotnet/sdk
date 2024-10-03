@@ -26,8 +26,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.get ->
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTags.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ManifestsInfo.get -> Microsoft.Build.Framework.ITaskItem![]!
-Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ManifestsInfo.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedContainers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedContainers.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!
@@ -189,10 +189,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.get
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerArchitecture.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerArchitecture.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerOS.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerOS.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!

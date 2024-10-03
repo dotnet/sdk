@@ -261,7 +261,7 @@
   </Target>
 
   <Target Name="_PublishSingleContainer"
-          Returns="@(GeneratedManifestInfo)">
+          Returns="@(GeneratedContainers)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -301,17 +301,16 @@
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
-      <Output TaskParameter="GeneratedContainerArchitecture" PropertyName="GeneratedContainerArchitecture" />
-      <Output TaskParameter="GeneratedContainerOS" PropertyName="GeneratedContainerOS" />
     </CreateNewImage>
 
     <ItemGroup>
-      <GeneratedManifestInfo Include="ManifestInfo">
-        <ManifestLength>$(GeneratedContainerManifest.Length)</ManifestLength>
+      <GeneratedContainers Include="GeneratedContainer">
+        <Manifest>$(GeneratedContainerManifest)</Manifest>
+        <Configuration>$(GeneratedContainerConfiguration)</Configuration>
         <Digest>$(GeneratedContainerDigest)</Digest>
-        <Architecture>$(GeneratedContainerArchitecture)</Architecture>
-        <OS>$(GeneratedContainerOS)</OS>
-      </GeneratedManifestInfo>
+        <ArchiveOutputPath>$(GeneratedArchiveOutputPath)</ArchiveOutputPath>
+        <ContainerNames>@(GeneratedContainerName)</ContainerNames>
+      </GeneratedContainers>
     </ItemGroup>
   </Target>
 
@@ -356,7 +355,7 @@
         Projects="@(_InnerBuild)"
         Targets="_ParseParametersForPublishingSingleContainer;_PublishSingleContainer"
         BuildInParallel="true">
-        <Output TaskParameter="TargetOutputs" ItemName="_GeneratedManifestsInfo" />
+        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
     </MSBuild>
 
     <PropertyGroup>
@@ -365,7 +364,7 @@
     </PropertyGroup>
 
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
-                      ManifestsInfo="@(_GeneratedManifestsInfo)"
+                      GeneratedContainers="@(GeneratedContainers)"
                       OutputRegistry="$(ContainerRegistry)"
                       Repository="$(ContainerRepository)"
                       ImageTags="@(ContainerImageTags)">
