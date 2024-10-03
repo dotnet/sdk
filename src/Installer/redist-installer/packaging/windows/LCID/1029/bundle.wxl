@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
   <String Id="HelpHeader">Nápověda nastavení</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] – nainstaluje, opraví, odinstaluje
+  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] – nainstaluje, opraví, odinstaluje
  nebo vytvoří úplnou místní kopii sady prostředků v adresáři. /install je výchozí hodnota.
 
 /passive | /quiet – zobrazí minimální uživatelské rozhraní bez výzev nebo nezobrazí žádné uživatelské rozhraní a
