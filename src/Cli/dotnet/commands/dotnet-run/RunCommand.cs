@@ -102,8 +102,8 @@ namespace Microsoft.DotNet.Tools.Run
                 return;
             }
 
-            string[] launchUrls = launchSettings
-                            .ApplicationUrl.Split(';');
+            string[] launchUrls = launchSettings.ApplicationUrl
+                .Split(';', StringSplitOptions.RemoveEmptyEntries);
 
             if (!launchUrls.Any())
             {
