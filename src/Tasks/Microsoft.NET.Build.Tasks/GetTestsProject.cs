@@ -3,6 +3,7 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.NET.Build.Tasks
@@ -21,6 +22,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem TargetFramework { get; set; }
 
+        public ITaskItem RunSettingsFilePath { get; set; } = new TaskItem(string.Empty);
+
         public override bool Execute()
         {
             try
@@ -33,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
                 dotnetTestPipeClient.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
 
                 dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
-                dotnetTestPipeClient.RequestReplyAsync<ModuleMessage, VoidResponse>(new ModuleMessage(TargetPath.ItemSpec, ProjectFullPath.ItemSpec, TargetFramework.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.RequestReplyAsync<ModuleMessage, VoidResponse>(new ModuleMessage(TargetPath.ItemSpec, ProjectFullPath.ItemSpec, TargetFramework.ItemSpec, RunSettingsFilePath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
