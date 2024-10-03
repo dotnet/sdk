@@ -166,5 +166,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             return packageVersion;
         }
+
+        public static SdkFeatureBand GetWorkloadSetFeatureBand(string setVersion)
+        {
+            WorkloadSetVersionToWorkloadSetPackageVersion(setVersion, out SdkFeatureBand sdkFeatureBand);
+            return sdkFeatureBand;
+        }
     }
 }
