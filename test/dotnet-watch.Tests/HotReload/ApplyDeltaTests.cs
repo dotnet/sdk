@@ -378,6 +378,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
                 .WithSource();
 
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "aspire", "--include-previews"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
             App.Start(testAsset, [], relativeProjectDirectory: "WatchAspire.AppHost");
 
