@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
+        <target state="translated">搜尋一或多個套件來源以尋找符合搜尋字詞的套件。如果未指定來源，則會使用 NuGet.Config 中定義的所有來源。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileArgumentName">
+        <source>ConfigFile</source>
+        <target state="translated">ConfigFile</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileDescription">
+        <source>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</source>
+        <target state="translated">NuGet 組態檔。若已指定，則只會使用此檔案中的設定。若未指定，則會使用目前目錄中的組態檔階層。如需詳細資訊，請參閱 https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior (機器翻譯)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExactMatchDescription">
+        <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
+        <target state="translated">要求搜尋字詞與套件名稱完全相符。導致忽略 `--take` 和 `--skip` 選項。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatArgumentName">
+        <source>Format</source>
+        <target state="translated">格式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatDescription">
+        <source>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</source>
+        <target state="translated">依此格式化輸出。可以是 `table` 或 `json`。預設值為 `table`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="translated">停止並等候使用者輸入或動作 (例如: 完成驗證)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Include prerelease packages.</source>
+        <target state="translated">包含發行前版本封裝。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SearchTerm</source>
+        <target state="translated">SearchTerm</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
+        <target state="translated">搜尋字詞以篩選封裝名稱、描述和標籤。作為常值使用。範例: 'dotnet package search some.package'。另請參閱 `--exact-match`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="translated">跳過</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>Number of results to skip, to allow pagination. Default 0.</source>
+        <target state="translated">要略過以允許分頁的結果數目。預設 0。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceArgumentName">
+        <source>Source</source>
+        <target state="translated">來源</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceDescription">
+        <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
+        <target state="translated">要搜尋的封裝來源。您可以傳遞多個 `--source` 選項來搜尋多個封裝來源。範例: `--source https://api.nuget.org/v3/index.json`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="translated">接受</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>Number of results to return. Default 20.</source>
+        <target state="translated">要傳回的結果數。預設 20。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityArgumentName">
+        <source>Verbosity</source>
+        <target state="translated">詳細程度</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityDescription">
+        <source>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</source>
+        <target state="translated">在輸出中顯示此詳細資料量: `normal`、`minimal`、`detailed`。預設為 `normal`</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
