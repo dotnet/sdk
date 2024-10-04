@@ -322,6 +322,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
+        public void DotnetInfoWithGlobalJson()
+        {
+            InstallSdk();
+
+            //  Install a workload before setting up global.json.  Commands like "dotnet workload --info" were previously crashing if global.json specified a workload set that wasn't installed
+            InstallWorkload("aspire", skipManifestUpdate: true);
+
+            SetupWorkloadSetInGlobalJson(out _);
+        }
+
+        [Fact]
         public void InstallWithGlobalJsonAndSkipManifestUpdate()
         {
             SetupWorkloadSetInGlobalJson(out var originalRollback);
