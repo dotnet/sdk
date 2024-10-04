@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
@@ -79,12 +80,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Output]
         public ITaskItem[] CopyCandidates { get; set; }
 
+        [Output]
+        public ITaskItem[] AssetDetails { get; set; }
+
         public override bool Execute()
         {
             try
             {
                 var results = new List<ITaskItem>();
                 var copyCandidates = new List<ITaskItem>();
+                var assetDetails = new List<ITaskItem>();
 
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
@@ -176,11 +181,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     // the asset.
                     var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
                     var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
+                    FileInfo file = null;
                     switch ((fingerprint, integrity))
                     {
                         case (null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
-                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(candidate.ItemSpec, originalItemSpec));
+                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
+                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
                             break;
                         case (null, not null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);
@@ -188,8 +195,20 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             break;
                         case (not null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
-                            integrity = StaticWebAsset.ComputeIntegrity(candidate.ItemSpec, originalItemSpec);
+                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
+                            integrity = StaticWebAsset.ComputeIntegrity(file);
                             break;
+                    }
+
+                    if (file != null)
+                    {
+                        // Record the FileLength and LastWriteTimeUtc for the asset so that we don't have to read it again on other tasks
+                        // we'll flow this information to them
+                        assetDetails.Add(new TaskItem(file.FullName, new Dictionary<string, string>
+                        {
+                            ["FileLength"] = file.Length.ToString(CultureInfo.InvariantCulture),
+                            ["LastWriteTimeUtc"] = file.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture),
+                        }));
                     }
 
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
@@ -251,6 +270,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 Assets = [.. results];
                 CopyCandidates = [.. copyCandidates];
+                AssetDetails = [.. assetDetails];
             }
             catch (Exception ex)
             {
