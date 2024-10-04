@@ -170,7 +170,7 @@
 
   <ItemGroup  Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <EnvironmentVariables Include="DotNetBuildFromSource=true" />
-    <EnvironmentVariables Include="NuGetAudit=false" Condition="'$(DotNetBuildWithOnlineFeeds)' != 'true'" />
+    <EnvironmentVariables Include="NuGetAudit=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
