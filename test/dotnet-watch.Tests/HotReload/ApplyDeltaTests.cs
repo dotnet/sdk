@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42920")]
         public async Task BlazorWasm()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
