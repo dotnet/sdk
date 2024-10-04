@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Workloads.Workload;
+using WorkloadSetVersionUtil = Microsoft.DotNet.Workloads.Workload.WorkloadSetVersion;
 
 namespace Microsoft.DotNet.Cli.Build
 {
@@ -19,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Build
 
         public override bool Execute()
         {
-            WorkloadSetFeatureBand = Microsoft.DotNet.Workloads.Workload.WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion).ToString();
+            WorkloadSetFeatureBand = WorkloadSetVersionUtil.GetFeatureBand(WorkloadSetVersion).ToString();
             return true;
         }
     }
