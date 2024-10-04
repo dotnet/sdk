@@ -387,7 +387,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.Equal(0, result.ExitCode);
 
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
-            App.Start(testAsset, [], relativeProjectDirectory: "WatchAspire.AppHost");
+            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost");
 
             await App.AssertWaitingForChanges();
 
