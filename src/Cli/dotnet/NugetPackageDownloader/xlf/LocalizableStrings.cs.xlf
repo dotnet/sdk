@@ -37,11 +37,6 @@
         <target state="needs-review-translation">Balíček {0} se nenašel v informačních kanálech NuGet {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="new">Package {0} is not a .NET tool.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Přeskakuje se ověření podpisu balíčku NuGet.</target>
