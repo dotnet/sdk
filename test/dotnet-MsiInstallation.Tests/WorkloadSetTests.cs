@@ -56,6 +56,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var newRollback = GetRollback();
             newRollback.ManifestVersions.Should().NotBeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
+
+            //  A second workload update command should not try to install any updates
+            CreateInstallingCommand("dotnet", "workload", "update")
+                .Execute().Should().PassWithoutWarning()
+                .And.HaveStdOutContaining("No workload update found")
+                .And.NotHaveStdOutContaining("Installing workload version");
+
         }
 
         [Fact]
@@ -296,6 +303,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.GetRemoteDirectory(workloadSet1Path).Should().NotExist();
         }
 
+        //  Note: this may fail due to https://github.com/dotnet/sdk/issues/43876
         [Fact]
         public void FinalizerUninstallsWorkloadSets()
         {
