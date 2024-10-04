@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
 
@@ -19,9 +19,9 @@ namespace Microsoft.NET.TestFramework.Commands
         {
         }
 
-        public override DirectoryInfo GetOutputDirectory(string targetFramework = "netcoreapp1.0", string configuration = "Debug", string runtimeIdentifier = "")
+        public override DirectoryInfo GetOutputDirectory(string targetFramework = "netcoreapp1.0", string configuration = "Debug", string runtimeIdentifier = "", string platformIdentifier = "")
         {
-            string output = Path.Combine(ProjectRootPath, "bin", BuildRelativeOutputPath(targetFramework, configuration, runtimeIdentifier));
+            string output = Path.Combine(ProjectRootPath, "bin", BuildRelativeOutputPath(targetFramework, configuration, runtimeIdentifier, platformIdentifier));
             return new DirectoryInfo(output);
         }
 
@@ -30,14 +30,14 @@ namespace Microsoft.NET.TestFramework.Commands
             return Path.Combine(GetOutputDirectory().FullName, $"{appName}.dll");
         }
 
-        private string BuildRelativeOutputPath(string targetFramework, string configuration, string runtimeIdentifier)
+        private string BuildRelativeOutputPath(string targetFramework, string configuration, string runtimeIdentifier, string platformIdentifier)
         {
             if (runtimeIdentifier.Length == 0)
             {
                 runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             }
             string arch = runtimeIdentifier.Substring(runtimeIdentifier.LastIndexOf("-") + 1);
-            return Path.Combine(configuration, arch, targetFramework, PublishSubfolderName);
+            return Path.Combine(platformIdentifier, configuration, arch, targetFramework, PublishSubfolderName);
         }
     }
 }

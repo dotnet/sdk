@@ -1,10 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -15,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// so that the next process will receive the same string[] args
         /// 
         /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+        /// https://docs.microsoft.com/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -34,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// so that the next process will receive the same string[] args
         /// 
         /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+        /// https://docs.microsoft.com/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -53,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// so that the next process will receive the same string[] args
         /// 
         /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+        /// https://docs.microsoft.com/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -75,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// be to do this only for cmd metacharacters.
         /// 
         /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+        /// https://docs.microsoft.com/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -157,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// be to do this only for cmd metacharacters.
         /// 
         /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+        /// https://docs.microsoft.com/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>

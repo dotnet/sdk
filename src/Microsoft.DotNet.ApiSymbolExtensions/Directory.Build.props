@@ -1,0 +1,6 @@
+<Project>
+
+  <!-- Re-use APICompat's build props file which defines the correct CodeAnalysis version. -->
+  <Import Project="..\ApiCompat\Directory.Build.props" />
+
+</Project>

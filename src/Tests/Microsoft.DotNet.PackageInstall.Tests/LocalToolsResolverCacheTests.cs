@@ -1,22 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -113,8 +103,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoredCommands[1].Name),
                 out RestoredCommand tool2).Should().BeTrue();
 
-            tool1.ShouldBeEquivalentTo(restoredCommands[0]);
-            tool2.ShouldBeEquivalentTo(restoredCommands[1]);
+            tool1.Should().BeEquivalentTo(restoredCommands[0]);
+            tool2.Should().BeEquivalentTo(restoredCommands[1]);
         }
 
         [Fact]
@@ -153,8 +143,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 out RestoredCommand tool2);
 
 
-            tool1.ShouldBeEquivalentTo(restoredCommands[0]);
-            tool2.ShouldBeEquivalentTo(restoredCommands[1]);
+            tool1.Should().BeEquivalentTo(restoredCommands[0]);
+            tool2.Should().BeEquivalentTo(restoredCommands[1]);
         }
 
         [Fact]
@@ -209,7 +199,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             loadSuccess.Should().BeTrue();
 
-            loadedResolverCache.ShouldBeEquivalentTo(restoredCommandsV1[0]);
+            loadedResolverCache.Should().BeEquivalentTo(restoredCommandsV1[0]);
         }
 
         [Fact]
@@ -273,9 +263,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoredCommandsNewer[1].Name),
                 out RestoredCommand tool2Newer);
 
-            tool1.ShouldBeEquivalentTo(restoredCommands[0]);
-            tool1Newer.ShouldBeEquivalentTo(restoredCommandsNewer[0]);
-            tool2Newer.ShouldBeEquivalentTo(restoredCommandsNewer[1]);
+            tool1.Should().BeEquivalentTo(restoredCommands[0]);
+            tool1Newer.Should().BeEquivalentTo(restoredCommandsNewer[0]);
+            tool2Newer.Should().BeEquivalentTo(restoredCommandsNewer[1]);
         }
 
         [Fact]
@@ -350,7 +340,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoredCommands[0].Name),
                 out RestoredCommand restoredCommand);
 
-            restoredCommand.ShouldBeEquivalentTo(restoredCommands[0]);
+            restoredCommand.Should().BeEquivalentTo(restoredCommands[0]);
         }
 
         private static void WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
