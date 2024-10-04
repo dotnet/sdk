@@ -317,10 +317,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.24501.6</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetSignToolVersion>10.0.0-beta.24501.6</MicrosoftDotNetSignToolVersion>
-    <MicrosoftDotNetXliffTasksVersion>10.0.0-beta.24501.6</MicrosoftDotNetXliffTasksVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>10.0.0-beta.24501.6</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.24503.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetSignToolVersion>10.0.0-beta.24503.1</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetXliffTasksVersion>10.0.0-beta.24503.1</MicrosoftDotNetXliffTasksVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>10.0.0-beta.24503.1</MicrosoftDotNetXUnitExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
