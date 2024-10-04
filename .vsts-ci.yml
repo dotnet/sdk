@@ -180,7 +180,7 @@ extends:
             agentOs: Darwin
             pool:
               name: Azure Pipelines
-              image: macOS-latest
+              image: macos-13
               os: macOS
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: OSX.1200.Amd64.Open
