@@ -205,10 +205,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(WorkloadSetVersion2, out var sdkFeatureBand);
 
-            //  Rename latest workload set so it won't be installed
             VM.CreateActionGroup($"Disable {WorkloadSetVersion2}",
-                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak"),
-                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak"))
+                    VM.CreateRunCommand("cmd", "/c", "mkdir", @"c:\SdkTesting\DisabledWorkloadSets"),
+                    VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"),
+                    VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"))
                 .Execute().Should().PassWithoutWarning();
 
             CreateInstallingCommand("dotnet", "workload", "update")
@@ -218,8 +218,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             //  Bring latest workload set version back, so installing workload should update to it
             VM.CreateActionGroup($"Enable {WorkloadSetVersion2}",
-                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg"),
-                    VM.CreateRunCommand("cmd", "/c", "ren", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.bak", $"Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg"))
+                    VM.CreateRunCommand("cmd", "/c", "move", @"c:\SdkTesting\DisabledWorkloadSets\*.nupkg", @"c:\SdkTesting\WorkloadSets"))
                 .Execute().Should().PassWithoutWarning();
 
             InstallWorkload("aspire", skipManifestUpdate: false);
@@ -227,14 +226,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
-        [Fact]
+        [Fact(Skip = "Not Implemented")]
         public void WorkloadSetInstallationRecordIsWrittenCorrectly()
         {
             //  Should the workload set version or the package version be used in the registry?
             throw new NotImplementedException();
         }
 
-        [Fact]
+        [Fact(Skip = "Not Implemented")]
         public void TurnOffWorkloadSetUpdateMode()
         {
             //  If you have a workload set installed and then turn off workload set update mode, what should happen?
@@ -319,6 +318,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.GetRemoteDirectory(workloadSetPath).Should().NotExist();
         }
 
+        //  Note: this may fail for rtm-branded non-stabilized SDKs: https://github.com/dotnet/sdk/issues/43890
         [Fact]
         public void WorkloadSearchVersion()
         {
