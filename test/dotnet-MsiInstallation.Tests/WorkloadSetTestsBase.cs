@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             _testWorkloadSetVersions = new Lazy<Dictionary<string, string>>(() =>
             {
                 string remoteFilePath = @"c:\SdkTesting\workloadsets\testworkloadsetversions.json";
-                var versionsFile = VM.GetRemoteFile(remoteFilePath);
+                var versionsFile = VM.GetRemoteFile(remoteFilePath, mustExist: true);
                 if (!versionsFile.Exists)
                 {
                     throw new FileNotFoundException($"Could not find file {remoteFilePath} on VM");

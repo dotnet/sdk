@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting", mustExist: true);
 
                     string installerPrefix = "dotnet-sdk-";
                     string installerSuffix = "-win-x64.exe";
