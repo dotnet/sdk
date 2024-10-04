@@ -37,11 +37,6 @@
         <target state="translated">{0} non è stato trovato nei feed NuGet {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="translated">Il pacchetto {0} non è uno strumento .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">La verifica della firma del pacchetto NuGet verrà ignorata.</target>

@@ -37,11 +37,6 @@
         <target state="translated">Nie znaleziono pakietu {0} w kanałach informacyjnych pakietu NuGet {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="translated">Pakiet {0} nie jest narzędziem platformy .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Pomijanie weryfikacji podpisu pakietu NuGet.</target>

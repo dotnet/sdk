@@ -37,11 +37,6 @@
         <target state="translated">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="translated">Paket {0} ist kein .NET-Tool.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Die Überprüfung der NuGet-Paketsignatur wird übersprungen.</target>

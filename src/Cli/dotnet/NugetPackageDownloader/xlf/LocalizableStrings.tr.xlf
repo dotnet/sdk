@@ -37,11 +37,6 @@
         <target state="translated">{0}, {1} NuGet akışlarında bulunamadı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="translated">{0} paketi bir .NET aracı değil.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">NuGet paket imzası doğrulaması atlanıyor.</target>

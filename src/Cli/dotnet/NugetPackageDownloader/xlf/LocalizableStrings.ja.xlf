@@ -37,11 +37,6 @@
         <target state="translated">{0} が NuGet フィードに見つかりません{1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="translated">パッケージ {0} は .NET ツールではありません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">NuGet パッケージ署名の認証をスキップしています。</target>
