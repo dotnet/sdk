@@ -161,5 +161,50 @@ namespace Microsoft.DotNet.MsiInstallerTests
             SetupWorkloadSetInGlobalJson(out _);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UpdateDoesNotTryToInstallOlderWorkloadSet(bool usePreview)
+        {
+            if (NeedsIncludePreviews && usePreview)
+            {
+                //  This version of the test can't run when all of the test workload sets are previews
+                return;
+            }
+
+            InstallSdk();
+
+            UpdateAndSwitchToWorkloadSetMode(out string _, out WorkloadSet rollbackAfterUpdate);
+
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            if (usePreview)
+            {
+                RemoveWorkloadSetFromLocalSource(WorkloadSetVersion2);
+            }
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--include-previews")
+                .Execute().Should().PassWithoutWarning();
+
+            GetWorkloadVersion().Should().Be(usePreview ? WorkloadSetVersionPreview : WorkloadSetVersion2);
+
+            if (!usePreview)
+            {
+                RemoveWorkloadSetFromLocalSource(WorkloadSetVersion2);
+            }
+
+            InstallWorkload("aspire", skipManifestUpdate: false)
+                .Should().NotHaveStdOutContaining("Installing workload version")
+                .And.NotHaveStdOutContaining("microsoft.net.workloads.");
+
+            if (usePreview)
+            {
+                GetWorkloadVersion().Should().Be(WorkloadSetVersionPreview);
+            }
+            else
+            {
+                GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
+            }
+        }
     }
 }

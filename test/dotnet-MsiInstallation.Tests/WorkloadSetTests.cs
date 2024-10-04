@@ -203,13 +203,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
-            var packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(WorkloadSetVersion2, out var sdkFeatureBand);
-
-            VM.CreateActionGroup($"Disable {WorkloadSetVersion2}",
-                    VM.CreateRunCommand("cmd", "/c", "mkdir", @"c:\SdkTesting\DisabledWorkloadSets"),
-                    VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"),
-                    VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"))
-                .Execute().Should().PassWithoutWarning();
+            RemoveWorkloadSetFromLocalSource(WorkloadSetVersion2);
 
             CreateInstallingCommand("dotnet", "workload", "update")
                 .Execute().Should().PassWithoutWarning();

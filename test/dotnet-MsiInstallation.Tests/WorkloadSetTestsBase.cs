@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
@@ -19,10 +20,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         protected Lazy<Dictionary<string, string>> _testWorkloadSetVersions;
         protected string WorkloadSetVersion1 => _testWorkloadSetVersions.Value["version1"];
+        protected string WorkloadSetVersionPreview => _testWorkloadSetVersions.Value["versionpreview"];
         protected string WorkloadSetVersion2 => _testWorkloadSetVersions.Value["version2"];
         protected string WorkloadSetPreviousBandVersion => _testWorkloadSetVersions.Value.GetValueOrDefault("previousbandversion", "8.0.204");
 
-        protected bool NeedsIncludePreviews => bool.Parse(_testWorkloadSetVersions.Value.GetValueOrDefault("needsIncludePreviews", "false"));
+        protected override bool NeedsIncludePreviews => bool.Parse(_testWorkloadSetVersions.Value.GetValueOrDefault("needsIncludePreviews", "false"));
         public WorkloadSetTestsBase(ITestOutputHelper log) : base(log)
         {
             _testWorkloadSetVersions = new Lazy<Dictionary<string, string>>(() =>
@@ -139,6 +141,18 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 args = [.. args, "--include-previews"];
             }
             return VM.CreateRunCommand(args);
+        }
+
+        //  Moves workload set packages for a given version from C:\SdkTesting\WorkloadSets to C:\SdkTesting\DisabledWorkloadSets
+        protected void RemoveWorkloadSetFromLocalSource(string workloadSetVersion)
+        {
+            var packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var sdkFeatureBand);
+
+            VM.CreateActionGroup($"Disable {workloadSetVersion}",
+                VM.CreateRunCommand("cmd", "/c", "mkdir", @"c:\SdkTesting\DisabledWorkloadSets"),
+                VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"),
+                VM.CreateRunCommand("cmd", "/c", "move", @$"c:\SdkTesting\WorkloadSets\Microsoft.NET.Workloads.{sdkFeatureBand}.*.{packageVersion}.nupkg", @"c:\SdkTesting\DisabledWorkloadSets"))
+            .Execute().Should().PassWithoutWarning();
         }
     }
 }
