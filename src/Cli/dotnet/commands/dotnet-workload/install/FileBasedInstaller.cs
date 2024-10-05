@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
             var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
             var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
         {
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
             var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
                                 new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
             var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
@@ -381,7 +381,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             foreach ((string workloadSetVersion, _) in installedWorkloadSets)
             {
                 //  Get the feature band of the workload set
-                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+                WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
 
                 List<SdkFeatureBand> referencingFeatureBands;
                 if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))

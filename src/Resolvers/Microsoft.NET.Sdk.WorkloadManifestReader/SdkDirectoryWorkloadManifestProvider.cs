@@ -138,7 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
 
                 //  Check to see if workload set is from a different feature band
-                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+                var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(workloadSetVersion);
                 if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
                 {
                     var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);
@@ -544,7 +544,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             static void AddWorkloadSetsForFeatureBand(Dictionary<string, WorkloadSet> availableWorkloadSets, string featureBandDirectory)
             {
-                var featureBand = new SdkFeatureBand(Path.GetFileName(featureBandDirectory));
+                var featureBandDirectoryName = Path.GetFileName(featureBandDirectory);
+                var featureBand = new SdkFeatureBand(featureBandDirectoryName);
+                if (!featureBandDirectoryName.Equals(featureBand.ToString()))
+                {
+                    //  A folder which should be a feature band parses as something that doesn't match the feature band.  For example,
+                    //  a folder named 9.0.100-rtm.24476 would parse as feature band 9.0.100.  When we try to look up the workload set
+                    //  later, we would look for it in a 9.0.100 folder, and wouldn't find it.  So we will ignore these incorrect folders
+                    return;
+                }
+
                 var workloadSetsRoot = Path.Combine(featureBandDirectory, WorkloadSetsFolderName);
                 if (Directory.Exists(workloadSetsRoot))
                 {
@@ -552,6 +561,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
                         var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
+
+                        if (!WorkloadSetVersion.GetFeatureBand(workloadSet.Version!).Equals(featureBand))
+                        {
+                            //  We have a workload set version where the feature band doesn't match the feature band folder that it's in.
+                            //  Skip it, as if we try to actually load it via the workload set version, we'll fail
+                            continue;
+                        }
+
                         availableWorkloadSets[workloadSet.Version!] = workloadSet;
                     }
                 }

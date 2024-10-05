@@ -1,18 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
@@ -409,7 +402,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
-            var packageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var sdkFeatureBand);
+            var packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(WorkloadSetVersion2, out var sdkFeatureBand);
 
             //  Rename latest workload set so it won't be installed
             VM.CreateActionGroup($"Disable {WorkloadSetVersion2}",
@@ -465,7 +458,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
 
             //  Get workload set feature band
-            WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var workloadSetFeatureBand);
+            var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion2);
 
             string workloadSet2Path = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
 
@@ -514,8 +507,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             UpdateWithWorkloadSets();
 
-            //  Get workload set feature band
-            WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(WorkloadSetVersion2, out var workloadSetFeatureBand);
+            var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion2);
 
             string workloadSetPath = $@"c:\Program Files\dotnet\sdk-manifests\{workloadSetFeatureBand}\workloadsets\{WorkloadSetVersion2}";
 
