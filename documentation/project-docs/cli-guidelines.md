@@ -9,6 +9,10 @@ users have consistent experiences with all `dotnet` commands - even those that d
   - [Verbosity](#verbosity)
   - [Framework selection](#framework-selection)
   - [RID selection](#rid-selection)
+    - [Explicit RID](#explicit-rid)
+    - [OS-specific RID](#os-specific-rid)
+    - [Architecture-specific RID](#architecture-specific-rid)
+    - [SDK-matching RID](#sdk-matching-rid)
   - [MSBuild Properties](#msbuild-properties)
   - [Output modes/formatting](#output-modesformatting)
 - [NuGet-related options](#nuget-related-options)
@@ -47,14 +51,53 @@ If you only support a subset of these values, map the missing ones to the closes
 
 ### Framework selection
 
+Short form: `-f <TFM>`
+
+Long form: `--framework <TFM>`
+
 ### RID selection
+
+#### Explicit RID
+
+Short form: `-r <RID>`
+
+Long form: `--runtime <RID>`
+
+#### OS-specific RID
+
+Short form: `-o <OS>`
+
+Long form: `--os <OS>`
+
+#### Architecture-specific RID
+
+Short form: `-a <ARCH>`
+
+Long form: `--arch <ARCH>`
+
+#### SDK-matching RID
+
+Short form: `--ucr`
+
+Long form: `--use-current-runtime`
+
 ### MSBuild Properties
+
+Short form: `-p <MSBuild property expression(s)>`
+
+Long form: `--property <MSBuild property expression(s)>`
+
+If at all possible we _strongly encourage_ not parsing the `<MSBuild property expression(s)>` syntax yourself. It is much more complex than you think it is. At _best_ you should detect and forward along any of these arguments to any MSBuild invocations you make.
+
 ### Output modes/formatting
 
 Long form: `--output`
+
 Allowed values: `text`, `json`, others are relevant for your use case
 
 Users value scriptability of CLI commands, and some form of structured output is key to supporting this. JSON is a common structured output format, but other formats may be more appropriate for your use case. If you use a structured format like `csv`, please for the love of Turing use a proper CSV writer and not just a hand-rolled comma-separated list of values so that you don't break [RFC 4180][4180].
+
+When you write JSON outputs you are explicitly creating a data contract with users. Be _very intentional_ about changes to the format of this contract. Design up-front for extensibility. For example, instead of just emitting a list of versions as an array of strings, consider emitting them as an array of objects with a named property: `[{"workload_set_version": "1.0.0"}]` instead of `"1.0.0"`.
 
 ## NuGet-related options
 
@@ -65,7 +108,7 @@ Default value: directory-based probing implemented in the [`NuGet.Configuration`
 
 ### Package source management
 
-There are two semantics of behaviors here
+There are two semantics of behaviors that we have adopted in the dotnet CLI: additive and exclusive package sources.
 
 #### Additive package sources
 
