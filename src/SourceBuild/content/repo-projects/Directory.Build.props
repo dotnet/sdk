@@ -114,6 +114,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- TODO: Remove once net10.0 migration is complete -->
+    <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=True" />
+  
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
@@ -167,7 +170,7 @@
 
   <ItemGroup  Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <EnvironmentVariables Include="DotNetBuildFromSource=true" />
-    <EnvironmentVariables Include="NuGetAudit=false" Condition="'$(DotNetBuildWithOnlineFeeds)' != 'true'" />
+    <EnvironmentVariables Include="NuGetAudit=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -229,7 +232,7 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
     <!-- Used by windowsdesktop to determine msi version -->
-    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
 
