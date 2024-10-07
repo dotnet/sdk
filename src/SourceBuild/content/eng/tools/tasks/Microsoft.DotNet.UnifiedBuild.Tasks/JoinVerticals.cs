@@ -25,7 +25,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     public required ITaskItem[] VerticalManifest { get; init; }
 
     /// <summary>
-    /// Name of the main vertical that we'll take all artifacts from
+    /// Name of the main vertical that we'll take all artifacts from if they exist in this vertical, and at least one other vertical.
     /// </summary>
     [Required]
     public required string MainVertical { get; init; }
