@@ -3,7 +3,7 @@
     "dotnet": "9.0.100-rc.1.24452.12",
     "runtimes": {
       "dotnet": [
-        "$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)"
+        "$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)"
       ],
       "aspnetcore": [
         "$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)"
