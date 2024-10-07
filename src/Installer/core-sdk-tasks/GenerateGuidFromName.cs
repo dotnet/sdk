@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Build
             // Any fixed GUID will do for a namespace.
             Guid namespaceId = new Guid("28F1468D-672B-489A-8E0C-7C5B3030630C");
 
-            using (SHA1 hasher = SHA1.Create())
+            using (SHA1 hasher = SHA1.Create()) // CodeQL [SM02196] SHA1 is consistent with the UUID version 5 algorithm. This is used for a unique upgrade code but not for security
             {
                 var nameBytes = System.Text.Encoding.UTF8.GetBytes(name ?? string.Empty);
                 var namespaceBytes = namespaceId.ToByteArray();
