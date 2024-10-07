@@ -24,7 +24,7 @@ public class SymbolsTests : SdkTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    // [Fact(Skip="https://github.com/dotnet/sdk/issues/42920")]
+    [Fact]
     public void VerifySdkSymbols()
     {
         try

@@ -18,29 +18,11 @@ parameters:
 jobs:
 - job: ${{ parameters.buildName }}_${{ parameters.architecture }}
   timeoutInMinutes: 150
+  pool:
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals 1es-ubuntu-2004
   variables:
   - template: ../variables/pipelines.yml
-  templateContext:
-    outputs:
-    - output: pipelineArtifact
-      displayName: 'Publish BuildLogs'
-      condition: succeededOrFailed()
-      targetPath: '$(Build.StagingDirectory)/BuildLogs'
-      artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
-    inputs:
-    - input: pipelineArtifact
-      displayName: '${{ parameters.displayName }}'
-      buildType: specific
-      buildVersionToDownload: specific
-      project: internal
-      pipeline: ${{ parameters.pipeline }}
-      buildId: ${{ parameters.buildId }}
-      artifactName: ''
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-linux*-${{ parameters.architecture }}.tar.gz'
-      allowPartiallySucceededBuilds: true
-      allowFailedBuilds: true
-      downloadPath: $(Pipeline.Workspace)/Artifacts
-      checkDownloadedFiles: true
   steps:
   - script: |
       dotnet_dotnet_build='${{ replace(parameters.dotnetDotnetRunId, ' ', '') }}'
@@ -72,6 +54,11 @@ jobs:
     name: Get_Build_Ids
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+
+  - template: ../steps/download-pipeline-artifact.yml
+    parameters:
+      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-linux*-${{ parameters.architecture }}.tar.gz'
+      displayName: Download MSFT SDK
 
   - template: ../steps/download-vmr-artifact.yml
     parameters:
@@ -157,6 +144,12 @@ jobs:
       find artifacts/TestResults/ -type f -name "*.diff" -exec cp {} --parents -t ${targetFolder} \;
       find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - publish: '$(Build.StagingDirectory)/BuildLogs'
+    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+    displayName: Publish BuildLogs
     continueOnError: true
     condition: succeededOrFailed()
 
