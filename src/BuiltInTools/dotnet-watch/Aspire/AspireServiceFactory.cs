@@ -82,7 +82,8 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 "--project",
                 projectLaunchInfo.ProjectPath,
-                // TODO: Need to suppress launch profile for now, otherwise it would override the port set via env variable.
+                // TODO: https://github.com/dotnet/sdk/issues/43946
+                // Need to suppress launch profile for now, otherwise it would override the port set via env variable.
                 "--no-launch-profile",
             };
 

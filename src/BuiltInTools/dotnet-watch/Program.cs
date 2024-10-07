@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Watcher
                 // use normalized MSBuild path so that we can index into the ProjectGraph
                 rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
 
-                if (rootProject.GetCapabilities().Contains("Aspire"))
+                if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
                 {
                     runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
                 }
