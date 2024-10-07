@@ -254,12 +254,12 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
     <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
     <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
     <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzersPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>9.0.0-rc.1.24452.1</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
     <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-alpha.2.24504.5</MicrosoftAspNetCoreAppRefInternalPackageVersion>
     <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>10.0.0-alpha.2.24422.4</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
