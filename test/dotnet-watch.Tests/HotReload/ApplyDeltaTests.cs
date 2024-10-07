@@ -196,6 +196,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: http://localhost:5000/");
             await App.AssertWaitingForChanges();
 
+            // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
+            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+
             // TODO: enable once https://github.com/dotnet/razor/issues/10818 is fixed
             //var newSource = """
             //    @page "/"
