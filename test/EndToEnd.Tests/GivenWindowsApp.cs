@@ -31,6 +31,8 @@ namespace EndToEnd.Tests
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
             project.Root.Element(ns + "PropertyGroup")
                 .Element(ns + "TargetFramework").Value = ToolsetInfo.CurrentTargetFramework;
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "WindowsSdkPackageVersion").Value = targetPlatformVersion[..^1] + "39"; // Temporary until new projections flow to tests
             project.Save(projectPath);
 
             new BuildCommand(testInstance)

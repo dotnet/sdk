@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
         public void Enqueue(TestApplication testApplication)
         {
             if (!_channel.Writer.TryWrite(testApplication))
-                throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication.ModulePath}");
+                throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication}");
         }
 
         public bool WaitAllActions()

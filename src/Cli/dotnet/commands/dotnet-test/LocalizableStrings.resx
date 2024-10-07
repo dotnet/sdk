@@ -175,6 +175,18 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not execute an implicit restore.</value>
+  </data>
+  <data name="CmdArchitectureDescription" xml:space="preserve">
+    <value>The target architecture '{0}' on which tests will run.</value>
+  </data>
+  <data name="CmdConfigurationDescription" xml:space="preserve">
+    <value>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</value>
+  </data>
+  <data name="CmdProjectDescription" xml:space="preserve">
+    <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>

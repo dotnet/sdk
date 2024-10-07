@@ -75,7 +75,10 @@ internal readonly record struct DestinationImageReference
         }
         else if (!string.IsNullOrEmpty(outputRegistry))
         {
-            destinationImageReference = new DestinationImageReference(new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>()), repository, imageTags);
+            destinationImageReference = new DestinationImageReference(
+                new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>(), RegistryMode.Push),
+                repository,
+                imageTags);
         }
         else
         {

@@ -326,7 +326,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var applySucceded = await runningProject.DeltaApplier.Apply(updates.ProjectUpdates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                     if (applySucceded)
                     {
-                        runningProject.Reporter.Output("Hot reload succeeded.", emoji: "🔥");
+                        runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
                         if (runningProject.BrowserRefreshServer is { } server)
                         {
                             runningProject.Reporter.Verbose("Refreshing browser.");

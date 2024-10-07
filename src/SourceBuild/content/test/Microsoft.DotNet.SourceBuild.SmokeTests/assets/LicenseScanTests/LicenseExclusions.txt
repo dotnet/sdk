@@ -83,7 +83,7 @@ src/fsharp/setup/resources/eula/*.rtf
 src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 
 # False positive
-src/msbuild/documentation/specs/BuildCheck/interactive-package-references.md|unknown-license-reference
+src/msbuild/documentation/specs/proposed/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
 
 #
@@ -204,11 +204,11 @@ src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown-license-reference
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
 
 # Contains references to licenses which are not applicable to the source
 src/source-build-reference-packages/src/packageSourceGenerator/PackageSourceGeneratorTask/RewriteNuspec.cs|unknown-license-reference,ms-net-library-2018-11
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml|proprietary-license
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/*/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml|proprietary-license
 
 #
 # sourcelink

@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)

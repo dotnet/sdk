@@ -232,6 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
 
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
@@ -259,15 +260,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
-        Condition="!Exists('$(RoslynTargetsPath)')"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' != 'true' and !Exists('$(RoslynTargetsPath)')"
         FormatArguments="$(NETCoreSdkVersion)" />
+
+    <!-- Warn if $(NuGetPackageRoot) is empty. See https://github.com/dotnet/sdk/issues/43016. -->
+    <NETSdkWarning ResourceName="MicrosoftNetSdkCompilersToolsetRootEmpty"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true'" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -545,6 +547,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"
                                     Condition="'$(_ComObjectDescriptorSupport)' != ''"
                                     Value="$(_ComObjectDescriptorSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
@@ -1108,6 +1115,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
 
+  <!-- TODO: can we now move all of this into the ComputeRunArguments target, or must this be kept for compat? -->
   <PropertyGroup>
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' == ''">$(StartWorkingDirectory)</RunWorkingDirectory>
   </PropertyGroup>
@@ -1153,8 +1161,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Signals that this project supports the target-based run invocation protocol powered by the ComputeRunArguments target. -->
+    <ProjectCapability Include="SupportsComputeRunCommand" />
+  </ItemGroup>
+  <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
+       This allows tools to run validation or logic required to compute any required data,
+       which cannot be done during evaluation.  -->
+  <Target Name="ComputeRunArguments" />
+
+
   <!-- Override MSBuild Run Target -->
-  <Target Name="Run">
+  <Target Name="Run" DependsOnTargets="ComputeRunArguments">
     <Exec Command="$(RunCommand) $(RunArguments)" WorkingDirectory="$(RunWorkingDirectory)"/>
   </Target>
 

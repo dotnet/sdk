@@ -25,8 +25,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
         }
 
-        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
-            => Task.CompletedTask;
+        public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            // Wait for the browser connection to be established as an indication that the process has started.
+            // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
+            => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
         public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
@@ -60,34 +62,45 @@ namespace Microsoft.DotNet.Watcher.Tools
                     Reporter.Verbose("Connecting to the browser.");
 
                     await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
-                    await browserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
 
-                    // We'll query the browser and ask it send capabilities.
-                    var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
-                    if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
+                    string capabilities;
+                    if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
                     {
-                        throw new ApplicationException("Unable to connect to the browser refresh server.");
-                    }
-
-                    var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
-                    var shouldFallBackToDefaultCapabilities = false;
-
-                    // error while fetching capabilities from WASM:
-                    if (capabilities.StartsWith('!'))
-                    {
-                        Reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
-                        shouldFallBackToDefaultCapabilities = true;
-                    }
-                    else if (capabilities.Length == 0)
-                    {
-                        Reporter.Verbose($"Unable to read WASM runtime capabilities");
-                        shouldFallBackToDefaultCapabilities = true;
-                    }
-
-                    if (shouldFallBackToDefaultCapabilities)
-                    {
+                        // When testing return default capabilities without connecting to an actual browser.
                         capabilities = GetDefaultCapabilities(targetFrameworkVersion);
-                        Reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
+                    }
+                    else
+                    {
+                        await browserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
+
+                        // We'll query the browser and ask it send capabilities.
+                        var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
+                        if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
+                        {
+                            throw new ApplicationException("Unable to connect to the browser refresh server.");
+                        }
+
+                        capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
+
+                        var shouldFallBackToDefaultCapabilities = false;
+
+                        // error while fetching capabilities from WASM:
+                        if (capabilities.StartsWith('!'))
+                        {
+                            Reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                            shouldFallBackToDefaultCapabilities = true;
+                        }
+                        else if (capabilities.Length == 0)
+                        {
+                            Reporter.Verbose($"Unable to read WASM runtime capabilities");
+                            shouldFallBackToDefaultCapabilities = true;
+                        }
+
+                        if (shouldFallBackToDefaultCapabilities)
+                        {
+                            capabilities = GetDefaultCapabilities(targetFrameworkVersion);
+                            Reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
+                        }
                     }
 
                     // Capabilities are expressed a space-separated string.
@@ -119,16 +132,16 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
-            if (browserRefreshServer is null)
-            {
-                Reporter.Verbose("Unable to send deltas because the browser refresh server is unavailable.");
-                return ApplyStatus.Failed;
-            }
-
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
                 return ApplyStatus.NoChangesApplied;
+            }
+
+            if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
+            {
+                // When testing abstract away the browser and pretend all changes have been applied:
+                return ApplyStatus.AllChangesApplied;
             }
 
             await browserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload

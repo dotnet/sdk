@@ -37,7 +37,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals 1es-windows-2022-open
+        demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
@@ -60,13 +60,15 @@ stages:
       helixTargetQueue: osx.13.amd64.open
 
   ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      platform:
-        name: Managed
-        container: centosStream9
-        jobProperties:
-          timeoutInMinutes: 30
+  # Temporarily removed until the SDK can target net10. The assets produced by upstream repos
+  # are net10, but this repo needs net9.
+  # - template: /eng/common/templates-official/job/source-build.yml@self
+  #   parameters:
+  #     platform:
+  #       name: Managed
+  #       container: centosStream9
+  #       jobProperties:
+  #         timeoutInMinutes: 30
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
