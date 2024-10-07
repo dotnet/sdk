@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Tools.Test
                 switch (fieldId)
                 {
                     case FileArtifactMessagesFieldsId.ExecutionId:
-                        executionId = ReadString(stream);
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     case FileArtifactMessagesFieldsId.FileArtifactMessageList:
@@ -103,27 +103,27 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case FileArtifactMessageFieldsId.FullPath:
-                            fullPath = ReadString(stream);
+                            fullPath = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FileArtifactMessageFieldsId.DisplayName:
-                            displayName = ReadString(stream);
+                            displayName = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FileArtifactMessageFieldsId.Description:
-                            description = ReadString(stream);
+                            description = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FileArtifactMessageFieldsId.TestUid:
-                            testUid = ReadString(stream);
+                            testUid = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FileArtifactMessageFieldsId.TestDisplayName:
-                            testDisplayName = ReadString(stream);
+                            testDisplayName = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FileArtifactMessageFieldsId.SessionUid:
-                            sessionUid = ReadString(stream);
+                            sessionUid = ReadStringValue(stream, fieldSize);
                             break;
 
                         default:

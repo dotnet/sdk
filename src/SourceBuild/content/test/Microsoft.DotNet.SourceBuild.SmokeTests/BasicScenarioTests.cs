@@ -19,7 +19,7 @@ public class BasicScenarioTests : SdkTests
 {
     public BasicScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Theory]
+    // [Theory(Skip="https://github.com/dotnet/sdk/issues/42920")]
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 

@@ -44,7 +44,7 @@
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
-    <NoWarn>$(NoWarn);NU1701;NU1507</NoWarn>
+    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202</NoWarn>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>

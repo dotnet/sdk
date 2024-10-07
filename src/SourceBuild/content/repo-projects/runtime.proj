@@ -15,6 +15,7 @@
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
     <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
     <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeWasmEnableThreads=true</BuildArgs>
@@ -27,11 +28,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <BuildNonPortable>true</BuildNonPortable>
-    <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
-
-    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
