@@ -437,6 +437,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
+      <StaticWebAssetsBuildManifestCacheFilePath>$(StaticWebAssetBuildManifestPath).cache</StaticWebAssetsBuildManifestCacheFilePath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
@@ -620,7 +621,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetBuildManifestPath)"
+      ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
 
     <GenerateStaticWebAssetEndpointsManifest
@@ -649,6 +651,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetsBuildManifestCacheFilePath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
     </ItemGroup>
