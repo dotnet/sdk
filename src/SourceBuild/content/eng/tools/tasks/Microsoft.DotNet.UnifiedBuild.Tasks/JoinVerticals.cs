@@ -102,8 +102,11 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         List<string> addedPackageIds = AddMissingElements(packageElements, mainVerticalManifest, _packageElementName);
         List<string> addedBlobIds = AddMissingElements(blobElements, mainVerticalManifest, _blobElementName);
 
-        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _packagesFolderName), Path.Combine(OutputFolder, _packagesFolderName));
-        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _assetsFolderName), Path.Combine(OutputFolder, _assetsFolderName));
+        string packagesOutputDirectory = Path.Combine(OutputFolder, _packagesFolderName);
+        string blobsOutputDirectory = Path.Combine(OutputFolder, _assetsFolderName);
+
+        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _packagesFolderName), packagesOutputDirectory);
+        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _assetsFolderName), blobsOutputDirectory);
 
         using var clientThrottle = new SemaphoreSlim(16, 16);
         List<Task> downloadTasks = new();
@@ -121,14 +124,25 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             addedPackageIds = AddMissingElements(packageElements, verticalManifest, _packageElementName);
             addedBlobIds = AddMissingElements(blobElements, verticalManifest, _blobElementName);
 
-            if (addedPackageIds.Count > 0 || addedBlobIds.Count > 0)
+            if (addedPackageIds.Count > 0)
             {
                 downloadTasks.Add(
                     DownloadArtifactFiles(
                         BuildId,
                         $"{verticalName}{_artifactNameSuffix}",
                         addedPackageIds,
+                        packagesOutputDirectory,
+                        clientThrottle));
+            }
+
+            if (addedBlobIds.Count > 0)
+            {
+                downloadTasks.Add(
+                    DownloadArtifactFiles(
+                        BuildId,
+                        $"{verticalName}{_artifactNameSuffix}",
                         addedBlobIds,
+                        blobsOutputDirectory,
                         clientThrottle));
             }
         }
@@ -159,85 +173,86 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     }
 
     /// <summary>
-    /// Downloads specified packages and symbols from a specific build artifact and stores them in an output folder, 
-    /// either flat or with the same relative path as in the artifact.
+    /// Downloads specified packages and symbols from a specific build artifact and stores them in an output folder
     /// </summary>
     private async Task DownloadArtifactFiles(
         string buildId,
         string artifactName,
-        List<string> packageFileNames,
-        List<string> assetFileNames,
+        List<string> fileNamesToDownload,
+        string outputDirectory,
         SemaphoreSlim clientThrottle)
     {
-        string packagesOutputPath = Path.Combine(OutputFolder, _packagesFolderName);
-        string assetsOutputPath = Path.Combine(OutputFolder, _assetsFolderName);
-
         using AzureDevOpsClient azureDevOpsClient = new(AzureDevOpsToken, AzureDevOpsBaseUri, AzureDevOpsProject, Log);
 
+        ArtifactFiles filesInformation = await azureDevOpsClient.GetArtifactFilesInformation(buildId, artifactName, _retryCount);
+
+        await Task.WhenAll(fileNamesToDownload.Select(async fileName =>
+            await DownloadFileFromArtifact(
+                filesInformation, 
+                artifactName, 
+                azureDevOpsClient, 
+                buildId, 
+                fileName, 
+                outputDirectory, 
+                clientThrottle)));
+    }
+
+    private async Task DownloadFileFromArtifact(
+        ArtifactFiles artifactFilesMetadata, 
+        string azureDevOpsArtifact, 
+        AzureDevOpsClient azureDevOpsClient, 
+        string buildId, 
+        string manifestFile, 
+        string destinationDirectory,
+        SemaphoreSlim clientThrottle)
+    {
         try
         {
             await clientThrottle.WaitAsync();
+            
+            ArtifactItem fileItem;
 
-            ArtifactFiles filesInformation = await azureDevOpsClient.GetArtifactFilesInformation(buildId, artifactName, _retryCount);
+            var matchingFilePaths = artifactFilesMetadata.Items.Where(f => Path.GetFileName(f.Path) == Path.GetFileName(manifestFile));
 
-            foreach (var package in packageFileNames)
+            if (!matchingFilePaths.Any())
             {
-                await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, package, packagesOutputPath);
+                throw new ArgumentException($"File {manifestFile} not found in source files.");
             }
 
-            foreach (var asset in assetFileNames)
+            if (matchingFilePaths.Count() > 1)
             {
-                await DownloadFileFromArtifact(filesInformation, artifactName, azureDevOpsClient, buildId, asset, assetsOutputPath);
-            }
-        }
-        finally
-        {
-            clientThrottle.Release();
-        }
-    }
-
-    private async Task DownloadFileFromArtifact(ArtifactFiles artifactFilesMetadata, string azureDevOpsArtifact, AzureDevOpsClient azureDevOpsClient, string buildId, string manifestFile, string destinationDirectory)
-    {
-        ArtifactItem fileItem;
-
-        var matchingFilePaths = artifactFilesMetadata.Items.Where(f => Path.GetFileName(f.Path) == Path.GetFileName(manifestFile));
-
-        if (!matchingFilePaths.Any())
-        {
-            throw new ArgumentException($"File {manifestFile} not found in source files.");
-        }
-
-        if (matchingFilePaths.Count() > 1)
-        {
-            // Picking the first one until https://github.com/dotnet/source-build/issues/4596 is resolved
-            if (manifestFile.Contains("productVersion.txt"))
-            {
-                fileItem = matchingFilePaths.First();
+                // Picking the first one until https://github.com/dotnet/source-build/issues/4596 is resolved
+                if (manifestFile.Contains("productVersion.txt"))
+                {
+                    fileItem = matchingFilePaths.First();
+                }
+                else
+                {
+                    fileItem = matchingFilePaths
+                        .SingleOrDefault(f => f.Path.Contains(manifestFile) || f.Path.Contains(manifestFile.Replace("/", @"\")))
+                        ?? throw new ArgumentException($"File {manifestFile} not found in source files.");
+                }
             }
             else
             {
-                fileItem = matchingFilePaths.SingleOrDefault(f => f.Path.Contains(manifestFile) || f.Path.Contains(manifestFile.Replace("/", @"\")))
-                    ?? throw new ArgumentException($"File {manifestFile} not found in source files.");
+                fileItem = matchingFilePaths.Single();
             }
-        }
-        else
-        {
-            fileItem = matchingFilePaths.Single();
-        }
 
-        string itemId = fileItem.Blob.Id;
-        string artifactSubPath = fileItem.Path;
+            string itemId = fileItem.Blob.Id;
+            string artifactSubPath = fileItem.Path;
 
-        string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(manifestFile));
+            string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(manifestFile));
 
-        try
-        {
             await azureDevOpsClient.DownloadSingleFileFromArtifact(buildId, azureDevOpsArtifact, itemId, artifactSubPath, destinationFilePath, _retryCount);
         }
         catch (Exception ex)
         {
             Log.LogError($"Failed to download file {manifestFile} from artifact {azureDevOpsArtifact}: {ex.Message}");
             throw;
+        }
+        finally
+        {
+            clientThrottle.Release();
         }
     }
 
