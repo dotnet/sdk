@@ -127,7 +127,7 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24504.10</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-rc.1.24414.5</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24476.2</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24504.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24504.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-alpha.1.24504.10</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETHostModelVersion>10.0.0-alpha.1.24504.10</MicrosoftNETHostModelVersion>
