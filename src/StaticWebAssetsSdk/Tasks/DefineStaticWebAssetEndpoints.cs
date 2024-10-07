@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
                 {
-                    for (var j = routes.Count; j >= 0; j--)
+                    for (var j = routes.Count -1; j >= 0; j--)
                     {
                         var (label, route, values) = routes[j];
                         // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
@@ -108,13 +108,15 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                     if (!existingEndpointsByAssetFile.TryGetValue(assetFile, out var set))
                     {
-                        set = [];
+                        set = new HashSet<string>();
                         existingEndpointsByAssetFile[assetFile] = set;
                     }
 
                     // Add the route
                     set.Add(endpointCandidate.ItemSpec);
                 }
+
+                return existingEndpointsByAssetFile;
             }
 
             return null;
