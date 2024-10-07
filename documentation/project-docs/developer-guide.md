@@ -8,6 +8,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 ### For Windows
 
 1. git (available from the [Git Website](http://www.git-scm.com/)) on the PATH.
+2. MSVC, C++ CMake Tools, and C++ ATL through the Visual Studio Installer.
 
 ### For Linux
 
@@ -15,7 +16,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 
 ### For macOS
 
-1. git (available from [Homebrew](https://www.google.com/search?client=firefox-b-1-d&q=homebrew) or the [Git Website](http://www.git-scm.com/)) on the PATH.
+1. git (available from [Homebrew](https://brew.sh) or the [Git Website](http://www.git-scm.com/)) on the PATH.
 
 ## Building
 

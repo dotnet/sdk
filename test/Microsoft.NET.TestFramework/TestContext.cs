@@ -198,6 +198,12 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
                 testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
+
+                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
+                if (Directory.Exists(testPackages))
+                {
+                    testContext.TestPackages = testPackages;
+                }
             }
 
             if (commandLine.SdkVersion != null)

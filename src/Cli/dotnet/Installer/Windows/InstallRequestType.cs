@@ -74,5 +74,15 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Changes the workload set version
         /// </summary>
         AdjustWorkloadSetVersion,
+
+        /// <summary>
+        /// Record a workload set referenced by global.json in workload roots file
+        /// </summary>
+        RecordWorkloadSetInGlobalJson,
+
+        /// <summary>
+        /// Remove outdated entries from the global.json workload roots file and then return its contents
+        /// </summary>
+        GetGlobalJsonWorkloadSetVersions,
     }
 }

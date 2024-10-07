@@ -18,9 +18,6 @@ namespace Microsoft.DotNet.Watcher.Tests
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
-        private static readonly string s_waitingForChanges = GetLinePrefix(MessageDescriptor.WaitingForChanges);
-        private static readonly string s_waitingForFileChangeBeforeRestarting = GetLinePrefix(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-
         public readonly ITestOutputHelper Logger;
         private bool _prepared;
 
@@ -37,8 +34,11 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public bool UsePollingWatcher { get; set; }
 
-        private static string GetLinePrefix(MessageDescriptor descriptor)
+        public static string GetLinePrefix(MessageDescriptor descriptor)
             => $"dotnet watch {descriptor.Emoji} {descriptor.Format}";
+
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor));
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -76,12 +76,12 @@ namespace Microsoft.DotNet.Watcher.Tests
         /// Wait till file watcher starts watching for file changes.
         /// </summary>
         public Task AssertWaitingForChanges()
-            => AssertOutputLineStartsWith(s_waitingForChanges);
+            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
 
         public async Task AssertWaitingForFileChangeBeforeRestarting()
         {
             // wait for user facing message:
-            await AssertOutputLineStartsWith(s_waitingForFileChangeBeforeRestarting);
+            await AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // wait for the file watcher to start watching for changes:
             await AssertWaitingForChanges();

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using System.Globalization;
 
@@ -19,14 +18,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public ITaskItem[] ContentTypeMappings { get; set; }
 
+        public ITaskItem[] AssetFileDetails { get; set; }
+
         [Output]
         public ITaskItem[] Endpoints { get; set; }
 
         public Func<string, int> TestLengthResolver;
         public Func<string, DateTime> TestLastWriteResolver;
 
+        private Dictionary<string, ITaskItem> _assetFileDetails;
+
         public override bool Execute()
         {
+            if (AssetFileDetails != null)
+            {
+                _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
+                for (int i = 0; i < AssetFileDetails.Length; i++)
+                {
+                    var item = AssetFileDetails[i];
+                    _assetFileDetails[item.ItemSpec] = item;
+                }
+            }
+
             var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
             var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(ExistingEndpoints);
             var existingEndpointsByAssetFile = existingEndpoints
@@ -50,6 +63,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+            var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
             var endpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var kvp in staticWebAssets)
@@ -61,7 +75,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings);
+                var assetEndpoints = CreateEndpoints(asset, contentTypeProvider);
 
                 foreach (var endpoint in assetEndpoints)
                 {
@@ -84,10 +98,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
         {
             var routes = asset.ComputeRoutes();
-            var result = new List<StaticWebAssetEndpoint>();
+            var (length, lastModified) = ResolveDetails(asset);
+            var result = new List<StaticWebAssetEndpoint>(); 
             foreach (var (label, route, values) in routes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);
@@ -100,7 +115,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         new()
                         {
                             Name = "Content-Length",
-                            Value = GetFileLength(asset),
+                            Value = length,
                         },
                         new()
                         {
@@ -115,7 +130,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         new()
                         {
                             Name = "Last-Modified",
-                            Value = GetFileLastModified(asset)
+                            Value = lastModified
                         },
                     ];
 
@@ -187,88 +202,62 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         //
         // GMT
         // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
-        private string GetFileLastModified(StaticWebAsset asset)
+        private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
         {
-            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : GetFileLastModifiedCore(asset);
+            if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.Identity, out var details))
+            {
+                return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
+            }
+            else if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
+            {
+                return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
+            }
+            else if (TestLastWriteResolver != null || TestLengthResolver != null)
+            {
+                return (length: GetTestFileLength(asset), lastModified: GetTestFileLastModified(asset));
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.High, $"No details found for {asset.Identity}. Using file system to resolve details.");
+                var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
+                var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
+                var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
+                return (length, lastModified);
+            }
+        }
+
+        // Only used for testing
+        private string GetTestFileLastModified(StaticWebAsset asset)
+        {
+            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : asset.ResolveFile().LastWriteTimeUtc;
             return lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
         }
 
-        private static DateTime GetFileLastModifiedCore(StaticWebAsset asset)
-        {
-            var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
-            var lastWrite = new FileInfo(path).LastWriteTimeUtc;
-            return lastWrite;
-        }
-
-        private string GetFileLength(StaticWebAsset asset)
+        // Only used for testing
+        private string GetTestFileLength(StaticWebAsset asset)
         {
             if (TestLengthResolver != null)
             {
                 return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
             }
 
-            if (File.Exists(asset.Identity))
-            {
-                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} exists.");
-                return new FileInfo(asset.Identity).Length.ToString(CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} does not exist. Using {asset.OriginalItemSpec} instead.");
-                return new FileInfo(asset.OriginalItemSpec).Length.ToString(CultureInfo.InvariantCulture);
-            }
+            var fileInfo = asset.ResolveFile();
+            return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
         }
 
-        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider)
         {
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-            foreach (var mapping in contentTypeMappings)
+            var mapping = contentTypeProvider.ResolveContentTypeMapping(relativePath, Log);
+
+            if (mapping.MimeType != null)
             {
-                if (mapping.Matches(Path.GetFileName(relativePath)))
-                {
-                    Log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {mapping.Pattern}");
-                    return (mapping.MimeType, mapping.Cache);
-                }
-                else
-                {
-                    Log.LogMessage(MessageImportance.Low, $"No match for {relativePath} using pattern {mapping.Pattern}");
-                }
+                return (mapping.MimeType, mapping.Cache);
             }
 
             Log.LogMessage(MessageImportance.Low, $"No match for {relativePath}. Using default content type 'application/octet-stream'");
 
             return ("application/octet-stream", null);
-        }
-
-        private class ContentTypeMapping
-        {
-            private readonly Matcher _matcher;
-
-            public ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
-            {
-                Pattern = pattern;
-                MimeType = mimeType;
-                Cache = cache;
-                Priority = priority;
-                _matcher = new Matcher();
-                _matcher.AddInclude(pattern);
-            }
-
-            public string Pattern { get; set; }
-
-            public string MimeType { get; set; }
-
-            public string Cache { get; set; }
-
-            public int Priority { get; }
-
-            internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings) => new(
-                    contentTypeMappings.ItemSpec,
-                    contentTypeMappings.GetMetadata(nameof(Cache)),
-                    contentTypeMappings.GetMetadata(nameof(Pattern)),
-                    int.Parse(contentTypeMappings.GetMetadata(nameof(Priority))));
-
-            internal bool Matches(string identity) => _matcher.Match(identity).HasMatches;
         }
     }
 }

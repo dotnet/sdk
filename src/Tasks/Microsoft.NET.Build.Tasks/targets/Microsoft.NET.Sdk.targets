@@ -232,6 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
 
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
@@ -259,15 +260,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
-        Condition="!Exists('$(RoslynTargetsPath)')"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' != 'true' and !Exists('$(RoslynTargetsPath)')"
         FormatArguments="$(NETCoreSdkVersion)" />
+
+    <!-- Warn if $(NuGetPackageRoot) is empty. See https://github.com/dotnet/sdk/issues/43016. -->
+    <NETSdkWarning ResourceName="MicrosoftNetSdkCompilersToolsetRootEmpty"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true'" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -545,6 +547,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"
                                     Condition="'$(_ComObjectDescriptorSupport)' != ''"
                                     Value="$(_ComObjectDescriptorSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"

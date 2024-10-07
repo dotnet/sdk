@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Cli
 {
     internal sealed class TestModulesFilterHandler
     {
-        private readonly string[] _args;
+        private readonly List<string> _args;
 
         private readonly TestApplicationActionQueue _actionQueue;
 
-        public TestModulesFilterHandler(string[] args, TestApplicationActionQueue actionQueue)
+        public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue)
         {
             _args = args;
             _actionQueue = actionQueue;
@@ -22,14 +22,14 @@ namespace Microsoft.DotNet.Cli
         public bool RunWithTestModulesFilter(ParseResult parseResult)
         {
             // If the module path pattern(s) was provided, we will use that to filter the test modules
-            string testModules = parseResult.GetValue(TestCommandParser.TestModules);
+            string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
 
             // If the root directory was provided, we will use that to search for the test modules
             // Otherwise, we will use the current directory
             string rootDirectory = Directory.GetCurrentDirectory();
-            if (parseResult.HasOption(TestCommandParser.TestModulesRootDirectory))
+            if (parseResult.HasOption(TestingPlatformOptions.TestModulesRootDirectoryOption))
             {
-                rootDirectory = parseResult.GetValue(TestCommandParser.TestModulesRootDirectory);
+                rootDirectory = parseResult.GetValue(TestingPlatformOptions.TestModulesRootDirectoryOption);
 
                 // If the root directory is not valid, we simply return
                 if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
@@ -50,10 +50,9 @@ namespace Microsoft.DotNet.Cli
 
             foreach (string testModule in testModulePaths)
             {
-                var testApp = new TestApplication(testModule, _args);
+                var testApp = new TestApplication(new Module(testModule, null, null, null), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
-                testApp.OnCreated();
             }
 
             return true;
