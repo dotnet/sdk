@@ -43,6 +43,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0372b5080a4aec8d73d6861ad4b993d9d0fe3a11</Sha>
     </Dependency>
+    <Dependency Name="System.IO.Hashing" Version="10.0.0-alpha.1.24476.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>d22c74dc974a757b48380a01dd0450efba31db64</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="10.0.0-alpha.1.24504.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0372b5080a4aec8d73d6861ad4b993d9d0fe3a11</Sha>
