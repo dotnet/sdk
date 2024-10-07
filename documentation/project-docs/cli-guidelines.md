@@ -14,9 +14,13 @@ users have consistent experiences with all `dotnet` commands - even those that d
 - [NuGet-related options](#nuget-related-options)
   - [NuGet.Config File selection](#nugetconfig-file-selection)
   - [Package source management](#package-source-management)
+    - [Additive package sources](#additive-package-sources)
+    - [Exclusive package sources](#exclusive-package-sources)
+  - [Feed Authentication support](#feed-authentication-support)
 - [Contextual behaviors](#contextual-behaviors)
   - [Implicit project/solution file discovery](#implicit-projectsolution-file-discovery)
   - [Interactive session sniffing](#interactive-session-sniffing)
+  - [Determining interactive sessions](#determining-interactive-sessions)
 - [Interaction patterns](#interaction-patterns)
   - [support structured (JSON) output](#support-structured-json-output)
   - [StdOut/StdErr usage](#stdoutstderr-usage)
@@ -55,18 +59,43 @@ Users value scriptability of CLI commands, and some form of structured output is
 ## NuGet-related options
 
 ### NuGet.Config File selection
+
+Long form: `--config-file`
+Default value: directory-based probing implemented in the [`NuGet.Configuration`][nuget-configuration] library
+
 ### Package source management
+
+There are two semantics of behaviors here
+
+#### Additive package sources
+
+Long form: `--add-source <source_uri>`
+
+When this is used, you should load the sources list from the NuGet configuration (using the [libraries][nuget-configuration]) and create a new `PackageSource` to add to that set. This should be additive and not destructive.
+
+#### Exclusive package sources
+
+Long form: `--source <source_uri>`
+
+When this is used, you should ONLY use the sources supplied by this parameter and ignore any sources in the NuGet configuration. This is useful for scenarios where you want to ensure that you're only using a specific source for a specific operation.
+
+### Feed Authentication support
+
+Long form: `--interactive <bool>`
+Default value: `true` when in an [interactive session](#determining-interactive-sessions), `false` otherwise
+
+NuGet authentication often requires some interactive action like going to a browser page. You should 'prime' the NuGet credential services by calling `NuGet.Credentials.DefaultCredentialServiceUtility.SetupDefaultCredentialService(ILogger logger, bool nonInteractive)` with the value of `nonInteractive` being the inverted value of this parameter. This will ensure that the credential service is set up correctly for the current session type.
 
 ## Contextual behaviors
 
 ### Implicit project/solution file discovery
 ### Interactive session sniffing
+### Determining interactive sessions
 
 ## Interaction patterns
 
 ### support structured (JSON) output
 ### StdOut/StdErr usage
-
 
 ## References
 
@@ -74,3 +103,4 @@ Users value scriptability of CLI commands, and some form of structured output is
 
 [clig]: https://clig.dev/
 [4180]: https://www.loc.gov/preservation/digital/formats/fdd/fdd000323.shtml
+[nuget-configuration]: https://nuget.org/packages/NuGet.Configuration
