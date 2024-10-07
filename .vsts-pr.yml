@@ -8,6 +8,11 @@ pr:
     - main
     - release/*
     - internal/release/*
+  paths:
+    exclude:
+    - documentation/*
+    - README.md
+    - CODEOWNERS
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
