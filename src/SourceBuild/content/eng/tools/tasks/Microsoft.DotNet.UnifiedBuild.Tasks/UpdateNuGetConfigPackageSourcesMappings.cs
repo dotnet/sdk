@@ -115,7 +115,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 // Skip sources with zero package patterns
                 if (allSourcesPackages[packageSource]?.Count > 0)
                 {
-                    pkgSrcMappingClearElement.AddAfterSelf(GetPackageMappingsElementForSource(packageSource));
+                    var pkgSrc = GetPackageMappingsElementForSource(packageSource);
+                    if (pkgSrc.Elements().Any())
+                    {
+                        pkgSrcMappingClearElement.AddAfterSelf(pkgSrc);
+                    }
                 }
             }
 

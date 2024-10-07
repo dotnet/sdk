@@ -1096,7 +1096,7 @@ To install these workloads, run the following command: dotnet workload restore</
         <target state="needs-review-translation">NETSDK1147: Para criar este projeto, as seguintes cargas de trabalho devem ser instaladas: {0}
  
 Para instalar essas cargas de trabalho, execute o seguinte comando: dotnet workload restore</target>
-        <note>{StrBegins="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>

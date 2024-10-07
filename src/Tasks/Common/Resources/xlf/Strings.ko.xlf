@@ -1095,7 +1095,7 @@ You may need to build the project on another operating system or architecture, o
 To install these workloads, run the following command: dotnet workload restore</source>
         <target state="needs-review-translation">NETSDK1147: 이 프로젝트를 빌드하려면 다음 워크로드를 설치해야 합니다. {0}
  이러한 워크로드를 설치하려면 dotnet workload restore 명령을 실행합니다.</target>
-        <note>{StrBegins="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>
