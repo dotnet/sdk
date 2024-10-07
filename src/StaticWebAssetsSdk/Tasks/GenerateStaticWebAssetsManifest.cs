@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public string ManifestPath { get; set; }
 
+        public string ManifestCacheFilePath { get; set; }
+
         public override bool Execute()
         {
             try
@@ -116,19 +118,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
         {
-            var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
+            var cacheFileExists = File.Exists(ManifestCacheFilePath);
             var fileExists = File.Exists(ManifestPath);
-            var existingManifestHash = fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
+            var existingManifestHash = cacheFileExists ?
+                File.ReadAllText(ManifestCacheFilePath) :
+                fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
 
-            if (!fileExists)
+            if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
             {
-                Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
+                var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
+                if(!fileExists)
+                {
+                    Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
+                }
+                else
+                {
+                    Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
+                }
                 File.WriteAllBytes(ManifestPath, data);
-            }
-            else if (!string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
-            {
-                Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
-                File.WriteAllBytes(ManifestPath, data);
+                if(!string.IsNullOrEmpty(ManifestCacheFilePath))
+                {
+                    File.WriteAllText(ManifestCacheFilePath, manifest.Hash);
+                }
             }
             else
             {
