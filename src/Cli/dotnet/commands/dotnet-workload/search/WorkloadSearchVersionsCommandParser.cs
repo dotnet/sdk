@@ -7,8 +7,15 @@ using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.Localizabl
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class SearchWorkloadSetsParser
+    internal static class WorkloadSearchVersionsCommandParser
     {
+        public static readonly CliArgument<string> WorkloadVersionArgument =
+            new(LocalizableStrings.WorkloadVersionArgument)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = LocalizableStrings.WorkloadVersionArgumentDescription
+            };
+
         public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
         public static readonly CliOption<string> FormatOption = new("--format")
@@ -26,6 +33,7 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             var command = new CliCommand("version", LocalizableStrings.PrintSetVersionsDescription);
+            command.Arguments.Add(WorkloadVersionArgument);
             command.Options.Add(FormatOption);
             command.Options.Add(TakeOption);
 
@@ -33,14 +41,19 @@ namespace Microsoft.DotNet.Cli
             {
                 if (optionResult.GetValueOrDefault<int>() <= 0)
                 {
-                    throw new ArgumentException(LocalizableStrings.TakeOptionMustBePositive);
+                    throw new ArgumentException("The --take option must be positive.");
                 }
             });
 
-            command.SetAction(parseResult => new WorkloadSearchCommand(parseResult)
+            command.Validators.Add(result =>
             {
-                ListWorkloadSetVersions = true
-            }.Execute());
+                if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
+                {
+                    result.AddError(string.Format(LocalizableStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                }
+            });
+
+            command.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
 
             return command;
         }

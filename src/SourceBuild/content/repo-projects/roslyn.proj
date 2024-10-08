@@ -10,13 +10,15 @@
 
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
-
-    <!-- roslyn by default builds with desktop msbuild (xcopy-msbuild) -->
-    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken placeholder</BuildArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken placeholder</BuildArgs>
+  </PropertyGroup>
+  <PropertyGroup>
     <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:ApplyPartialNgenOptimization=false</BuildArgs>
@@ -35,7 +37,9 @@
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="roslyn-analyzers" />
-    <RepositoryReference Include="runtime" />
+    <!-- Dependency temporarily removed while transitioning to net10.
+         See https://github.com/dotnet/sdk/issues/42920. -->
+    <!-- <RepositoryReference Include="runtime" /> -->
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
     <RepositoryReference Include="symreader" />

@@ -20,7 +20,7 @@ public class WebScenarioTests : SdkTests
 {
     public WebScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Theory]
+    // [Theory(Skip="https://github.com/dotnet/sdk/issues/42920")]
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 

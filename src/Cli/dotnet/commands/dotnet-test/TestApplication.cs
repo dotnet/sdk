@@ -56,6 +56,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             bool isDll = _module.DLLOrExe.EndsWith(".dll");
+
             ProcessStartInfo processStartInfo = new()
             {
                 FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DLLOrExe : Environment.ProcessPath,
@@ -63,6 +64,11 @@ namespace Microsoft.DotNet.Cli
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
+
+            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            {
+                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+            }
 
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);

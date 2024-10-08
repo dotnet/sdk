@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             return Send(new InstallRequestMessage
             {
-                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                RequestType = InstallRequestType.GetGlobalJsonWorkloadSetVersions,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
             });
         }
