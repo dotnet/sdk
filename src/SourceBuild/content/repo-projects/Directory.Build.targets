@@ -27,7 +27,7 @@
 
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
-    <RepoConsoleLogFile>$(ArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
+    <RepoConsoleLogFile>$(DotNetBuildArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">$(BuildInParallel)</MinimalConsoleLogOutput>
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
@@ -511,6 +511,26 @@
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
+  <Target Name="MoveDotNetBuildLogs"
+        Condition="'$(IsUtilityProject)' != 'true' and
+                    Exists('$(ProjectDirectory)artifacts')">
+    <ItemGroup>
+      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.log" />
+      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.binlog" />
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+    </ItemGroup>
+
+    <!-- Move the build logs -->
+    <Move SourceFiles="@(LogFilesToMove)"
+          DestinationFolder="$(DotNetBuildArtifactsLogDir)"
+          Condition="'@(LogFilesToMove)' != ''" />
+
+    <!-- Move the prebuilt reports -->
+    <Move SourceFiles="@(PrebuiltReportsToMove)"
+          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          Condition="'@(PrebuiltReportsToMove)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
@@ -529,20 +549,14 @@
           IgnoreExitCode="true" />
 
     <PropertyGroup>
-      <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
       <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
     </PropertyGroup>
 
     <ItemGroup>
-      <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.log" />
-      <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.binlog" />
       <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/**/project.assets.json" />
     </ItemGroup>
 
-    <!-- Make a copy of the build logs & project.assets.json files -->
-    <Copy SourceFiles="@(LogFilesToCopy)"
-          DestinationFolder="$(BuildLogsDir)%(RecursiveDir)"
-          Condition="'@(LogFilesToCopy)' != ''" />
+    <!-- Make a copy of project.assets.json files -->
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
           Condition="'@(ObjFilesToCopy)' != ''" />
@@ -551,7 +565,6 @@
       <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(ProjectDirectory)artifacts'))" />
 
       <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
-      <DirsToDeleteWithTrailingSeparator Remove="$(BuildLogsDir)" />
       <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />
     </ItemGroup>
 
@@ -626,6 +639,7 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
+    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="Test">

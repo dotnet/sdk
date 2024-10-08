@@ -7,5 +7,7 @@ public class StaticWebAssetEndpointsManifest()
 {
     public int Version { get; set; }
 
+    public string ManifestType { get; set; }
+
     public StaticWebAssetEndpoint[] Endpoints { get; set; }
 }

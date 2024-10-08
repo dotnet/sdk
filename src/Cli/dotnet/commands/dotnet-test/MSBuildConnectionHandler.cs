@@ -6,17 +6,17 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli.commands.dotnet_test
+namespace Microsoft.DotNet.Cli
 {
     internal sealed class MSBuildConnectionHandler : IDisposable
     {
+        private List<string> _args;
+        private readonly TestApplicationActionQueue _actionQueue;
+
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
-        private readonly string[] _args;
 
-        private TestApplicationActionQueue _actionQueue;
-
-        public MSBuildConnectionHandler(string[] args, TestApplicationActionQueue actionQueue)
+        public MSBuildConnectionHandler(List<string> args, TestApplicationActionQueue actionQueue)
         {
             _args = args;
             _actionQueue = actionQueue;
@@ -57,15 +57,14 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
         {
             try
             {
-                if (request is not Module module)
+                if (request is not ModuleMessage module)
                 {
                     throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
 
-                var testApp = new TestApplication(module.DLLPath, _args);
+                var testApp = new TestApplication(new Module(module.DLLPath, module.ProjectPath, module.TargetFramework, module.RunSettingsFilePath), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
-                testApp.OnCreated();
             }
             catch (Exception ex)
             {
@@ -82,15 +81,16 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
 
         public int RunWithMSBuild(ParseResult parseResult)
         {
-            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
             List<string> msbuildCommandLineArgs =
             [
-                    $"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
+                    parseResult.GetValue(TestingPlatformOptions.ProjectOption) ?? string.Empty,
+                    $"-t:_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
                     "-verbosity:q"
             ];
 
-            AddAdditionalMSBuildParameters(parseResult, msbuildCommandLineArgs);
+            AddBinLogParameterIfExists(msbuildCommandLineArgs, _args);
+            AddAdditionalMSBuildParametersIfExist(parseResult, msbuildCommandLineArgs);
 
             if (VSTestTrace.TraceEnabled)
             {
@@ -101,9 +101,23 @@ namespace Microsoft.DotNet.Cli.commands.dotnet_test
             return msBuildForwardingApp.Execute();
         }
 
-        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
+        private static void AddBinLogParameterIfExists(List<string> msbuildCommandLineArgs, List<string> args)
         {
-            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
+            var binLog = args.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(binLog))
+            {
+                msbuildCommandLineArgs.Add(binLog);
+
+                // We remove it from the args list so that it is not passed to the test application
+                args.Remove(binLog);
+            }
+        }
+
+        private static void AddAdditionalMSBuildParametersIfExist(ParseResult parseResult, List<string> parameters)
+        {
+            string msBuildParameters = parseResult.GetValue(TestingPlatformOptions.AdditionalMSBuildParametersOption);
+
             if (!string.IsNullOrEmpty(msBuildParameters))
             {
                 parameters.AddRange(msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries));

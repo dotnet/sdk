@@ -47,9 +47,6 @@ src/razor/**/SampleApp/**/fonts/**/*.eot
 src/razor/**/SampleApp/**/fonts/**/*.otf
 src/razor/**/SampleApp/**/fonts/**/*.woff
 
-# roslyn
-src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd
-
 # runtime
 src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessages.res # Icon
 src/runtime/src/libraries/System.Speech/src/**/*.upsmap # https://github.com/dotnet/runtime/issues/81692

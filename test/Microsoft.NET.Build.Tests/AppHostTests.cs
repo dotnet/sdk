@@ -39,8 +39,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.1.0.60101")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {

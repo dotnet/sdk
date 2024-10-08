@@ -38,16 +38,13 @@
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 
-    <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
-         may target a lower version of .NET -->
-    <ResolverTargetFramework>net8.0</ResolverTargetFramework>
-    <!-- Source build does not need to worry about running on VS for Mac -->
-    <ResolverTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
+    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
+    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
-    <NoWarn>$(NoWarn);NU1701;NU1507</NoWarn>
+    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202</NoWarn>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
