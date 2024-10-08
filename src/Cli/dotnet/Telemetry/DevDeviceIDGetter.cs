@@ -38,8 +38,8 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Get device Id from Windows registry
-                using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                // Get device Id from Windows registry matching the OS architecture
+                using (var key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
                 {
                     deviceId = key?.GetValue("deviceid") as string;
                 }
@@ -80,10 +80,16 @@ namespace Microsoft.DotNet.Cli.Telemetry
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Cache device Id in Windows registry
-                using (var key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                // Cache device Id in Windows registry matching the OS architecture
+                using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
                 {
-                    key.SetValue("deviceid", deviceId);
+                    using(var key = baseKey.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                    {
+                        if (key != null)
+                        {
+                          key.SetValue("deviceid", deviceId);
+                        }
+                    }
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
