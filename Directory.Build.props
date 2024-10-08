@@ -39,7 +39,7 @@
     <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 
     <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
+    <ResolverTargetFramework>net9.0</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
