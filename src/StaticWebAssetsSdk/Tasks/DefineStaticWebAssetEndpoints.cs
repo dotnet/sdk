@@ -43,16 +43,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
             var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-            var endpoints = new ConcurrentBag<StaticWebAssetEndpoint>();
+            var endpoints = new List<StaticWebAssetEndpoint>();
 
-            Parallel.For(0, CandidateAssets.Length, i =>
+            for (var i = 0; i < CandidateAssets.Length; i++)
             {
                 var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
                 var routes = asset.ComputeRoutes().ToList();
 
                 if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
                 {
-                    for (var j = routes.Count -1; j >= 0; j--)
+                    for (var j = routes.Count - 1; j >= 0; j--)
                     {
                         var (label, route, values) = routes[j];
                         // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                     endpoints.Add(endpoint);
                 }
-            });
+            };
 
             Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
