@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO.Pipes;
 using System.Reflection;
 
 namespace Microsoft.Extensions.HotReload
@@ -16,28 +15,29 @@ namespace Microsoft.Extensions.HotReload
 
         private delegate void ApplyUpdateDelegate(Assembly assembly, ReadOnlySpan<byte> metadataDelta, ReadOnlySpan<byte> ilDelta, ReadOnlySpan<byte> pdbDelta);
 
-        private readonly AgentReporter _reporter = new();
-        private readonly NamedPipeClientStream _pipeClient;
-        private readonly Action<string> _stdOutLog;
-        private readonly AssemblyLoadEventHandler _assemblyLoad;
+        public readonly AgentReporter Reporter = new();
+
         private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
         private readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
         private readonly ApplyUpdateDelegate? _applyUpdate;
         private readonly string? _capabilities;
         private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
-        public HotReloadAgent(NamedPipeClientStream pipeClient, Action<string> stdOutLog)
+        public HotReloadAgent()
         {
-            _assemblyLoad = OnAssemblyLoad;
-            _pipeClient = pipeClient;
-            _stdOutLog = stdOutLog;
-            _metadataUpdateHandlerInvoker = new(_reporter);
+            _metadataUpdateHandlerInvoker = new(Reporter);
 
-            GetUpdaterMethods(out _applyUpdate, out _capabilities);
-            AppDomain.CurrentDomain.AssemblyLoad += _assemblyLoad;
+            GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
+
+            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
         }
 
-        private void GetUpdaterMethods(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
+        public void Dispose()
+        {
+            AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
+        }
+
+        private void GetUpdaterMethodsAndCapabilities(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
         {
             applyUpdate = null;
             capabilities = null;
@@ -45,14 +45,14 @@ namespace Microsoft.Extensions.HotReload
             var metadataUpdater = Type.GetType(MetadataUpdaterTypeName + ", System.Runtime.Loader", throwOnError: false);
             if (metadataUpdater == null)
             {
-                _reporter.Report($"Type not found: {MetadataUpdaterTypeName}", AgentMessageSeverity.Error);
+                Reporter.Report($"Type not found: {MetadataUpdaterTypeName}", AgentMessageSeverity.Error);
                 return;
             }
 
             var applyUpdateMethod = metadataUpdater.GetMethod(ApplyUpdateMethodName, BindingFlags.Public | BindingFlags.Static, binder: null, [typeof(Assembly), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>)], modifiers: null);
             if (applyUpdateMethod == null)
             {
-                _reporter.Report($"{MetadataUpdaterTypeName}.{ApplyUpdateMethodName} not found.", AgentMessageSeverity.Error);
+                Reporter.Report($"{MetadataUpdaterTypeName}.{ApplyUpdateMethodName} not found.", AgentMessageSeverity.Error);
                 return;
             }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.HotReload
             var getCapabilities = metadataUpdater.GetMethod(GetCapabilitiesMethodName, BindingFlags.NonPublic | BindingFlags.Static, binder: null, Type.EmptyTypes, modifiers: null);
             if (getCapabilities == null)
             {
-                _reporter.Report($"{MetadataUpdaterTypeName}.{GetCapabilitiesMethodName} not found.", AgentMessageSeverity.Error);
+                Reporter.Report($"{MetadataUpdaterTypeName}.{GetCapabilitiesMethodName} not found.", AgentMessageSeverity.Error);
                 return;
             }
 
@@ -71,30 +71,7 @@ namespace Microsoft.Extensions.HotReload
             }
             catch (Exception e)
             {
-                _reporter.Report($"Error retrieving capabilities: {e.Message}", AgentMessageSeverity.Error);
-            }
-        }
-
-        public async Task ReceiveDeltasAsync()
-        {
-            _reporter.Report("Writing capabilities: " + Capabilities, AgentMessageSeverity.Verbose);
-
-            var initPayload = new ClientInitializationPayload(Capabilities);
-            initPayload.Write(_pipeClient);
-
-            while (_pipeClient.IsConnected)
-            {
-                var update = await UpdatePayload.ReadAsync(_pipeClient, CancellationToken.None);
-
-                _stdOutLog($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
-
-                _reporter.Report("Attempting to apply deltas.", AgentMessageSeverity.Verbose);
-
-                ApplyDeltas(update.Deltas);
-
-                _pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
-
-                UpdatePayload.WriteLog(_pipeClient, _reporter.GetAndClearLogEntries(update.ResponseLoggingLevel));
+                Reporter.Report($"Error retrieving capabilities: {e.Message}", AgentMessageSeverity.Error);
             }
         }
 
@@ -118,8 +95,10 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
-        public void ApplyDeltas(IReadOnlyList<UpdateDelta> deltas)
+        public IReadOnlyCollection<(string message, AgentMessageSeverity severity)> ApplyDeltas(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel loggingLevel)
         {
+            Reporter.Report("Attempting to apply deltas.", AgentMessageSeverity.Verbose);
+
             Debug.Assert(Capabilities.Length > 0);
             Debug.Assert(_applyUpdate != null);
 
@@ -140,6 +119,8 @@ namespace Microsoft.Extensions.HotReload
             }
 
             _metadataUpdateHandlerInvoker.Invoke(GetMetadataUpdateTypes(deltas));
+
+            return Reporter.GetAndClearLogEntries(loggingLevel);
         }
 
         private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
@@ -168,7 +149,7 @@ namespace Microsoft.Extensions.HotReload
                     }
                     catch (Exception e)
                     {
-                        _reporter.Report($"Failed to load type 0x{updatedType:X8}: {e.Message}", AgentMessageSeverity.Warning);
+                        Reporter.Report($"Failed to load type 0x{updatedType:X8}: {e.Message}", AgentMessageSeverity.Warning);
                     }
                 }
             }
@@ -187,17 +168,12 @@ namespace Microsoft.Extensions.HotReload
                     _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                 }
 
-                _reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
+                Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
             }
             catch (Exception ex)
             {
-                _reporter.Report(ex.ToString(), AgentMessageSeverity.Warning);
+                Reporter.Report(ex.ToString(), AgentMessageSeverity.Warning);
             }
-        }
-
-        public void Dispose()
-        {
-            AppDomain.CurrentDomain.AssemblyLoad -= _assemblyLoad;
         }
 
         private static Guid? TryGetModuleId(Assembly loadedAssembly)

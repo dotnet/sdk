@@ -3,19 +3,6 @@
 
 namespace Microsoft.Extensions.HotReload
 {
-    internal enum ResponseLoggingLevel : byte
-    {
-        WarningsAndErrors = 0,
-        Verbose = 1, 
-    }
-
-    internal enum AgentMessageSeverity : byte
-    {
-        Verbose = 0,
-        Warning = 1,
-        Error = 2,
-    }
-
     internal readonly struct UpdatePayload(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel)
     {
         public const byte ApplySuccessValue = 0;

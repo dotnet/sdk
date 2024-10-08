@@ -53,10 +53,25 @@ internal sealed class StartupHook
                 return;
             }
 
-            using var agent = new HotReloadAgent(pipeClient, Log);
+            using var agent = new HotReloadAgent();
             try
             {
-                await agent.ReceiveDeltasAsync();
+                agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
+
+                var initPayload = new ClientInitializationPayload(agent.Capabilities);
+                initPayload.Write(pipeClient);
+
+                while (pipeClient.IsConnected)
+                {
+                    var update = await UpdatePayload.ReadAsync(pipeClient, CancellationToken.None);
+
+                    Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
+
+                    var logEntries = agent.ApplyDeltas(update.Deltas, update.ResponseLoggingLevel);
+
+                    pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
+                    UpdatePayload.WriteLog(pipeClient, logEntries);
+                }
             }
             catch (Exception ex)
             {
