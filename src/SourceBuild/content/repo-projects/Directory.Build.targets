@@ -511,6 +511,19 @@
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
+  <Target Name="MoveDotNetBuildLogs"
+        Condition="'$(IsUtilityProject)' != 'true' and
+                    Exists('$(ProjectDirectory)artifacts')">
+    <ItemGroup>
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+    </ItemGroup>
+
+    <!-- Move the prebuilt reports -->
+    <Move SourceFiles="@(PrebuiltReportsToMove)"
+          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          Condition="'@(PrebuiltReportsToMove)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
@@ -626,6 +639,7 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
+    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="Test">

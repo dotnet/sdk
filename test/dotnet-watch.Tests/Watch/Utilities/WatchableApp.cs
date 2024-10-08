@@ -37,8 +37,8 @@ namespace Microsoft.DotNet.Watcher.Tests
         public static string GetLinePrefix(MessageDescriptor descriptor)
             => $"dotnet watch {descriptor.Emoji} {descriptor.Format}";
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor));
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, Predicate<string> failure = null)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor), failure);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -51,12 +51,16 @@ namespace Microsoft.DotNet.Watcher.Tests
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
                 failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
 
-            if (line == null && failure != null)
+            if (line == null)
             {
-                Assert.Fail($"Failed to find expected text: '{expectedPrefix}'");
+                Assert.Fail(failure != null
+                    ? "Encountered failure condition"
+                    : $"Failed to find expected prefix: '{expectedPrefix}'");
             }
-
-            Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            else
+            {
+                Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            }
 
             return line.Substring(expectedPrefix.Length);
         }
@@ -123,7 +127,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             var encLogPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
                 ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-                : Path.Combine(asset.Path, ".hotreload");
+                : asset.Path + ".hotreload";
 
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", encLogPath);
 

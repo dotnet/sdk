@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <target state="translated">Workloads sind so konfiguriert, dass sie mithilfe von Workloadversionen installiert und aktualisiert werden, es wurden jedoch keine gefunden. Führen Sie „dotnet workload restore“ aus, um eine Workloadversion zu installieren.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">

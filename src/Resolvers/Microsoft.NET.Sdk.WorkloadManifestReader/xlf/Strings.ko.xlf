@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <target state="translated">워크로드가 워크로드 버전을 사용하여 설치 및 업데이트하도록 구성되었지만 찾을 수 없습니다. "dotnet 워크로드 복원"을 실행하여 워크로드 버전을 설치합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
