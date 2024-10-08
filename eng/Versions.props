@@ -87,8 +87,6 @@
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
     <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
-    <!-- This is the version of the zip archive for the WiX toolset and is different from the NuGet package version format. -->
-    <WixVersion>3.14.1.8722</WixVersion>
   </PropertyGroup>
   <PropertyGroup Label="NUnit3.DotNetNew.Template version">
     <!-- NUnit3.DotNetNew.Template versions do not 'flow in' -->
