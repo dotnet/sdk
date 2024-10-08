@@ -1,6 +1,10 @@
 {
   "files": [
     {
+      "path": "src/mono/sample/wasi/jco/package-lock.json",
+      "detected_license_expression": "(apache-2.0 AND llvm-exception) AND apache-2.0 AND mit AND isc AND bsd-new AND bsd-simplified"
+    },
+    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
