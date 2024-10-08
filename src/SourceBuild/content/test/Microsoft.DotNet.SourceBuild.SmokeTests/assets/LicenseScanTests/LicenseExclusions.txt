@@ -153,7 +153,6 @@ src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
 src/runtime/src/native/external/zlib-ng/cmake/detect-arch.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-coverage.cmake|other-permissive,tsl-2020,unknown-license-reference
-src/runtime/src/native/external/zlib-ng/cmake/detect-intrinsics.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-sanitizer.cmake|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
 
@@ -173,6 +172,7 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-component
 
 # False positive
 src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
+src/sdk/src/SourceBuild/patches/fsharp/0001-Fix17713-Reverting-PR-17649-Make-the-interaction-bet.patch|unknown-license-reference
 
 # Configuration, doesn't apply to source directly
 src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt

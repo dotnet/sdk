@@ -61,7 +61,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", WebJobName, webJobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", WebJobName, webJobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: WebJob deployment operation runs to completion with expected result
         Assert.Equal(expectedResult, result);
@@ -93,7 +93,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, invalidUrl, $"{UserAgentName}/8.0", WebJobName, webjobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, invalidUrl, $"{UserAgentName}/8.0", WebJobName, webjobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'PublishUrl' is not valid
         Assert.False(result);
@@ -142,7 +142,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName, webjobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName, webjobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because since 'WebJobName' and/or 'WebJobType' is invalid, so we calculate the
         // default OneDeploy URI ('<site_scm_ulr>/api/publish'), which target instance does not recognized as valid
