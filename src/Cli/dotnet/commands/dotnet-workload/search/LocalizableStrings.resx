@@ -145,4 +145,23 @@
   <data name="TakeOptionMustBePositive" xml:space="preserve">
     <value>The --take option must be positive.</value>
   </data>
+  <data name="WorkloadVersionArgument" xml:space="preserve">
+    <value>WORKLOAD_VERSION</value>
+  </data>
+  <data name="WorkloadVersionArgumentDescription" xml:space="preserve">
+    <value>Output workload manifest versions associated with the provided workload version.</value>
+  </data>
+  <data name="CannotCombineSearchStringAndVersion" xml:space="preserve">
+    <value>Cannot specify both the {0} and {1} arguments.</value>
+  </data>
+  <data name="NoWorkloadVersionsFound" xml:space="preserve">
+    <value>No workload versions found for SDK feature band {0}.</value>
+  </data>
+  <data name="WorkloadManifestIdColumn" xml:space="preserve">
+    <value>Workload manifest ID</value>
+  </data>
+  <data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
+    <value>Manifest feature band</value>
+  </data>
+  
 </root>

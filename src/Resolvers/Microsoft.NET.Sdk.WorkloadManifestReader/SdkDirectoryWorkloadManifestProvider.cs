@@ -6,6 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.Localization;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -243,27 +244,28 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public WorkloadVersion GetWorkloadVersion()
+        public WorkloadVersionInfo GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
             {
-                return new WorkloadVersion()
-                {
-                    Version = _globalJsonWorkloadSetVersion,
-                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
-                };
+                // _exceptionToThrow is set to null here if and only if the workload set is not installed.
+                // If this came from --info or workload --version, the error won't be thrown, but we should still
+                // suggest running `dotnet workload restore` to the user.
+                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersion()
-                {
-                    Version = _workloadSet.Version,
-                    WorkloadInstallType = WorkloadVersion.Type.WorkloadSet
-                };
+                return new WorkloadVersionInfo(_workloadSet.Version);
             }
+
+            var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
+            var installState = InstallStateContents.FromPath(installStateFilePath)!;
+            string? shouldRestoreMessage = installState.UseWorkloadSets == true ?
+                Strings.ShouldInstallAWorkloadSet :
+                null;
 
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -279,11 +281,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersion()
-                {
-                    Version = $"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}",
-                    WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-                };
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", null, UpdateModeMessage: shouldRestoreMessage);
             }
         }
 
