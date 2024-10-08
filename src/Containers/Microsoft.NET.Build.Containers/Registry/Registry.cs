@@ -81,7 +81,7 @@ internal sealed class Registry
         this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) : 
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
         this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings)
     { }
 
@@ -191,6 +191,14 @@ internal sealed class Registry
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
+            SchemaTypes.OciImageIndexV1 =>
+                await PickBestImageFromImageIndexAsync(
+                repositoryName,
+                reference,
+                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                runtimeIdentifier,
+                manifestPicker,
+                cancellationToken).ConfigureAwait(false),
             var unknownMediaType => throw new NotImplementedException(Resource.FormatString(
                 nameof(Strings.UnknownMediaType),
                 repositoryName,
@@ -236,10 +244,10 @@ internal sealed class Registry
     }
 
 
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
+    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
-        foreach (var manifest in manifestList.manifests)
+        foreach (var manifest in manifestList)
         {
             if (CreateRidForPlatform(manifest.platform) is { } rid)
             {
@@ -293,14 +301,51 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(manifestList);
-        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
+        var ridManifestDict = GetManifestsByRid(manifestList.manifests);
+        return await PickBestImageFromManifestsAsync(
+            repositoryName,
+            reference,
+            ridManifestDict,
+            runtimeIdentifier,
+            manifestPicker,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ImageBuilder> PickBestImageFromImageIndexAsync(
+        string repositoryName,
+        string reference,
+        ImageIndexV1 index,
+        string runtimeIdentifier,
+        IManifestPicker manifestPicker,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var ridManifestDict = GetManifestsByRid(index.manifests);
+        return await PickBestImageFromManifestsAsync(
+            repositoryName,
+            reference,
+            ridManifestDict,
+            runtimeIdentifier,
+            manifestPicker,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ImageBuilder> PickBestImageFromManifestsAsync(
+        string repositoryName,
+        string reference,
+        IReadOnlyDictionary<string, PlatformSpecificManifest> knownManifests,
+        string runtimeIdentifier,
+        IManifestPicker manifestPicker,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (manifestPicker.PickBestManifestForRid(knownManifests, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
         {
             using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
             var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, knownManifests.Keys);
             manifest.KnownDigest = matchingManifest.digest;
             return await ReadSingleImageAsync(
                 repositoryName,
@@ -309,7 +354,7 @@ internal sealed class Registry
         }
         else
         {
-            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, knownManifests.Keys);
         }
     }
 

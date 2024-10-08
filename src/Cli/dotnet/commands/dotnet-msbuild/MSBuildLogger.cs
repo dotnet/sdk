@@ -18,6 +18,9 @@ namespace Microsoft.DotNet.Tools.MSBuild
         internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
         internal const string BuildTelemetryEventName = "build";
         internal const string LoggingConfigurationTelemetryEventName = "loggingConfiguration";
+        internal const string BuildcheckAcquisitionFailureEventName = "buildcheck/acquisitionfailure";
+        internal const string BuildcheckRunEventName = "buildcheck/run";
+        internal const string BuildcheckRuleStatsEventName = "buildcheck/rule";
 
         internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
         internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
@@ -137,6 +140,21 @@ namespace Microsoft.DotNet.Tools.MSBuild
                     TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
                         toBeHashed: Array.Empty<string>(),
                         toBeMeasured: new[] { "FileLoggersCount" });
+                    break;
+                case BuildcheckAcquisitionFailureEventName:
+                    TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
+                        toBeHashed: new[] { "AssemblyName", "ExceptionType", "ExceptionMessage" },
+                        toBeMeasured: Array.Empty<string>());
+                    break;
+                case BuildcheckRunEventName:
+                    TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
+                        toBeHashed: Array.Empty<string>(),
+                        toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
+                    break;
+                case BuildcheckRuleStatsEventName:
+                    TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
+                        toBeHashed: new[] { "RuleId", "CheckFriendlyName" },
+                        toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
                     break;
                 // Pass through events that don't need special handling
                 case SdkTaskBaseCatchExceptionTelemetryEventName:
