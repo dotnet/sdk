@@ -43,7 +43,7 @@
     </PropertyGroup>
 
     <ComputeDotnetBaseImageAndTag
-      Condition="$(_ContainerIsUsingMicrosoftDefaultImages)"
+      UserBaseImage="$(ContainerBaseImage)"
       SdkVersion="$(NetCoreSdkVersion)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
       FrameworkReferences="@(FrameworkReference)"
@@ -271,6 +271,7 @@
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
   </Target>
 </Project>
