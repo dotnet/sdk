@@ -3,10 +3,10 @@
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
-      <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(WixVersion).zip</WixDownloadUrl>
-      <WixRoot>$(ArtifactsDir)Tools/WixTools/$(WixVersion)</WixRoot>
-      <WixDestinationPath>$(WixRoot)/WixTools.$(WixVersion).zip</WixDestinationPath>
-      <WixDownloadSentinel>$(WixRoot)/WixDownload.$(WixVersion).sentinel</WixDownloadSentinel>
+      <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
+      <WixRoot>$(ArtifactsDir)Tools/WixTools/$(MicrosoftSignedWixVersion)</WixRoot>
+      <WixDestinationPath>$(WixRoot)/WixTools.$(MicrosoftSignedWixVersion).zip</WixDestinationPath>
+      <WixDownloadSentinel>$(WixRoot)/WixDownload.$(MicrosoftSignedWixVersion).sentinel</WixDownloadSentinel>
     </PropertyGroup>
 
     <!-- Generate MSI/Bundle Properties -->
@@ -108,7 +108,7 @@
     <MakeDir Directories="$(WixRoot)" />
     <WriteLinesToFile
         File="$(WixDownloadSentinel)"
-        Lines="$(WixVersion)"
+        Lines="$(MicrosoftSignedWixVersion)"
         Overwrite="true"
         Encoding="Unicode" />
 
