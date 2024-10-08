@@ -34,9 +34,9 @@
     <VersionFeature21>30</VersionFeature21>
     <VersionFeature31>32</VersionFeature31>
     <VersionFeature50>17</VersionFeature50>
-    <VersionFeature60>33</VersionFeature60>
+    <VersionFeature60>35</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
-    <VersionFeature80>8</VersionFeature80>
+    <VersionFeature80>10</VersionFeature80>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
@@ -56,8 +56,8 @@
     <SubtractOneFromTemplateVersions Condition="'$(SYSTEM_TEAMPROJECT)' != 'internal'">true</SubtractOneFromTemplateVersions>
     <SubtractOneFromTemplateVersions Condition="$([MSBuild]::Subtract($(VersionFeature), $(MicrosoftNETSdkPatchVersion))) &gt;= 2">true</SubtractOneFromTemplateVersions>
     <SubtractOneFromTemplateVersions Condition="$(VersionFeature) &gt;= 1 AND ! $(PreReleaseVersionLabel.Contains('rtm')) AND ! $(PreReleaseVersionLabel.Contains('servicing'))">true</SubtractOneFromTemplateVersions>
-    <AspNetCoreTemplateFeature60>$([MSBuild]::Subtract($(VersionFeature60), 1))</AspNetCoreTemplateFeature60>
-    <AspNetCoreTemplateFeature80>$([MSBuild]::Subtract($(VersionFeature80), 1))</AspNetCoreTemplateFeature80>
+    <AspNetCoreTemplateFeature60>$([MSBuild]::Subtract($(VersionFeature60), 2))</AspNetCoreTemplateFeature60>
+    <AspNetCoreTemplateFeature80>$([MSBuild]::Subtract($(VersionFeature80), 2))</AspNetCoreTemplateFeature80>
     <AspNetCoreTemplateFeature60 Condition="$(PreReleaseVersionLabel.Contains('preview'))">$(VersionFeature60)</AspNetCoreTemplateFeature60>
     <AspNetCoreTemplateFeature80 Condition="$(PreReleaseVersionLabel.Contains('preview'))">$(VersionFeature80)</AspNetCoreTemplateFeature80>
     <AspNetCoreTemplateFeature60 Condition="'$(SubtractOneFromTemplateVersions)' == 'true'">$([MSBuild]::Subtract($(AspNetCoreTemplateFeature60), 1))</AspNetCoreTemplateFeature60>
@@ -88,7 +88,7 @@
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
     <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
     <!-- This is the version of the zip archive for the WiX toolset and is different from the NuGet package version format. -->
-    <WixVersion>3.14.1.8722</WixVersion>
+    <WixVersion>3.14.1-9313.2537997</WixVersion>
   </PropertyGroup>
   <PropertyGroup Label="NUnit3.DotNetNew.Template version">
     <!-- NUnit3.DotNetNew.Template versions do not 'flow in' -->
@@ -219,13 +219,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.100-rc.2.24463.2</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>9.0.100-rc.2.24466.6</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineEdgePackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>9.0.100-rc.2.24463.2</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>9.0.100-rc.2.24466.6</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
