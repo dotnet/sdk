@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         private readonly Dictionary<string, IFileSystemWatcher> _watchers = [];
 
         private bool _disposed;
-        public event Action<string, bool>? OnFileChange;
+        public event Action<string, ChangeKind>? OnFileChange;
 
         public void Dispose()
         {
@@ -73,9 +73,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        private void WatcherChangedHandler(object? sender, (string changedPath, bool newFile) args)
+        private void WatcherChangedHandler(object? sender, (string changedPath, ChangeKind kind) args)
         {
-            OnFileChange?.Invoke(args.changedPath, args.newFile);
+            OnFileChange?.Invoke(args.changedPath, args.kind);
         }
 
         private void DisposeWatcher(string directory)
@@ -101,22 +101,22 @@ namespace Microsoft.DotNet.Watcher.Internal
         private static string EnsureTrailingSlash(string path)
             => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
 
-        public async Task<FileItem?> GetChangedFileAsync(Action? startedWatching, CancellationToken cancellationToken)
+        public async Task<ChangedFile?> GetChangedFileAsync(Action? startedWatching, CancellationToken cancellationToken)
         {
             StartWatching();
 
-            var fileChangedSource = new TaskCompletionSource<FileItem?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var fileChangedSource = new TaskCompletionSource<ChangedFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => fileChangedSource.TrySetResult(null));
 
-            void FileChangedCallback(string path, bool newFile)
+            void FileChangedCallback(string path, ChangeKind kind)
             {
                 if (fileSet.TryGetValue(path, out var fileItem))
                 {
-                    fileChangedSource.TrySetResult(fileItem);
+                    fileChangedSource.TrySetResult(new ChangedFile(fileItem, kind));
                 }
             }
 
-            FileItem? changedFile;
+            ChangedFile? changedFile;
 
             OnFileChange += FileChangedCallback;
             try

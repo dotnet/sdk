@@ -47,6 +47,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public static readonly MessageDescriptor LaunchedProcess = new("Launched '{0}' with arguments '{1}': process id {2}", "🚀", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor KillingProcess = new("Killing process {0}", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor HotReloadChangeHandled = new("Hot reload change handled in {0}ms.", "🔥", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor HotReloadSucceeded = new("Hot reload succeeded.", "🔥", MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor BuildCompleted = new("Build completed.", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor UpdatesApplied = new("Updates applied: {0} out of {1}.", "🔥", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor WaitingForFileChangeBeforeRestarting = new("Waiting for a file to change before restarting dotnet...", "⏳", MessageSeverity.Warning, s_id++);
@@ -59,6 +60,8 @@ namespace Microsoft.Extensions.Tools.Internal
         public static readonly MessageDescriptor ApplyUpdate_Verbose = new("{0}", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ApplyUpdate_ChangingEntryPoint = new("{0} Press \"Ctrl + R\" to restart.", "⚠", MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = new("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ConfiguredToLaunchBrowser = new("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = new("Configuring the app to use browser-refresh middleware", "⌚", MessageSeverity.Verbose, s_id++);
     }
 
     internal interface IReporter

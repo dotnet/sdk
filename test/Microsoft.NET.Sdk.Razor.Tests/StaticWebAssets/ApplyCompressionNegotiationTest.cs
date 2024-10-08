@@ -172,19 +172,7 @@ public class ApplyCompressionNegotiationTest
             BuildEngine = buildEngine.Object,
             CandidateAssets = [.. candidateAssets],
             ExistingEndpoints = [],
-            ContentTypeMappings =
-            [
-                new TaskItem("text/javascript", new Dictionary<string, string>
-                {
-                    { "Pattern", "*.js" },
-                    { "Priority", "0" }
-                }),
-                new TaskItem("text/javascript", new Dictionary<string, string>
-                {
-                    { "Pattern", "*.js.gz" },
-                    { "Priority", "1" }
-                })
-            ]
+            ContentTypeMappings = []
         };
         defineStaticAssetEndpointsTask.Execute().Should().BeTrue();
         var compressed = defineStaticAssetEndpointsTask.Endpoints;
@@ -447,7 +435,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Content-Type",
-                    Value = "application/octet-stream"
+                    Value = "text/javascript"
                 },
                 new ()
                 {
@@ -753,7 +741,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Content-Type",
-                    Value = "application/octet-stream"
+                    Value = "text/javascript"
                 },
                 new ()
                 {

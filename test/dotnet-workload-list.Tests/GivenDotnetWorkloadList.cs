@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using ManifestReaderTests;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using ListStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
@@ -35,6 +36,18 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
 
             // Expected number of lines for table headers
             _reporter.Lines.Count.Should().Be(6);
+        }
+
+        [WindowsOnlyFact]
+        public void GivenAvailableWorkloadsItCanComputeVisualStudioIds()
+        {
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
+
+#pragma warning disable CA1416 // Validate platform compatibility
+            var availableWorkloads = VisualStudioWorkloads.GetAvailableVisualStudioWorkloads(workloadResolver);
+            availableWorkloads.Should().Contain("mock.workload.1", "mock-workload-1");
+            availableWorkloads.Should().Contain("Microsoft.NET.Component.mock.workload.1", "mock-workload-1");
+#pragma warning restore CA1416 // Validate platform compatibility
         }
 
         [Fact]

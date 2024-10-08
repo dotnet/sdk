@@ -383,6 +383,20 @@ jobs:
 
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
+      # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
+      # builds where the packages are only available in the private feeds. This allows the tests to restore from those feeds.
+      - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(sourcesPath)/src/sdk/eng/common/SetupNugetSources.sh
+            arguments: $(sourcesPath)/src/sdk/NuGet.config $Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+
+        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
+          displayName: Copy Test NuGet Config for Smoke Tests
+
       - script: |
           set -ex
 

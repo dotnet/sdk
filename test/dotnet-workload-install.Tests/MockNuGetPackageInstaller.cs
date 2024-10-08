@@ -38,7 +38,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping = null,
+            bool isTool = false)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
@@ -78,6 +79,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
+
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(Enumerable.Empty<NuGetVersion>());
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
         {

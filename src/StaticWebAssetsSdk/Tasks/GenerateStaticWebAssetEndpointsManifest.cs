@@ -56,6 +56,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             var manifest = new StaticWebAssetEndpointsManifest()
             {
                 Version = 1,
+                ManifestType = ManifestType,
                 Endpoints = [.. filteredEndpoints]
             };
 

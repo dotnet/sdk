@@ -26,9 +26,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
-            => Task.WhenAll(
-                _wasmApplier.WaitForProcessRunningAsync(cancellationToken),
-                _hostApplier.WaitForProcessRunningAsync(cancellationToken));
+            // We only need to wait for any of the app processes to start, so wait for the host.
+            // We do not need to wait for the browser connection to be established.
+            => _hostApplier.WaitForProcessRunningAsync(cancellationToken);
 
         public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {

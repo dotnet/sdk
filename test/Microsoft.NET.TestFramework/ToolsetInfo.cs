@@ -377,32 +377,6 @@ namespace Microsoft.NET.TestFramework
             return true;
         }
 
-        private static string FindFileInTree(string relativePath, string startPath, bool throwIfNotFound = true)
-        {
-            string currentPath = startPath;
-            while (true)
-            {
-                string path = Path.Combine(currentPath, relativePath);
-                if (File.Exists(path))
-                {
-                    return path;
-                }
-                var parent = Directory.GetParent(currentPath);
-                if (parent == null)
-                {
-                    if (throwIfNotFound)
-                    {
-                        throw new FileNotFoundException($"Could not find file '{relativePath}' in '{startPath}' or any of its ancestors");
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                currentPath = parent.FullName;
-            }
-        }
-
         private bool UsingFullMSBuildWithoutExtensionsTargets()
         {
             if (!ShouldUseFullFrameworkMSBuild)
@@ -414,22 +388,20 @@ namespace Microsoft.NET.TestFramework
             return !File.Exists(extensionsImportAfterPath);
         }
 
-        private static string GetPackageVersion(string key)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            return assembly.GetCustomAttributes(true)
-                .OfType<AssemblyMetadataAttribute>()
-                .FirstOrDefault(a => a.Key == key)?.Value;
-        }
+        internal static IEnumerable<(string versionPropertyName, string version)> GetPackageVersionProperties()
+            => typeof(ToolsetInfo).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(a => a.Key.EndsWith("PackageVersion"))
+                .Select(a => (a.Key, a.Value));
 
-        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() => GetPackageVersion( "NewtonsoftJsonPackageVersion"));
+        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() => GetPackageVersionProperties().Single(p => p.versionPropertyName == "NewtonsoftJsonPackageVersion").version);
 
         public static string GetNewtonsoftJsonPackageVersion()
         {
             return _NewtonsoftJsonPackageVersion.Value;
         }
 
-        private static readonly Lazy<string> _SystemDataSqlClientPackageVersion = new(() => GetPackageVersion("SystemDataSqlClientPackageVersion"));
+        private static readonly Lazy<string> _SystemDataSqlClientPackageVersion = new(() => GetPackageVersionProperties().Single(p => p.versionPropertyName == "SystemDataSqlClientPackageVersion").version);
 
         public static string GetSystemDataSqlClientPackageVersion()
         {

@@ -1,0 +1,575 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Kevin Ransom (msft)" <codecutter@hotmail.com>
+Date: Mon, 16 Sep 2024 13:21:58 -0700
+Subject: [PATCH] Fix17713 - Reverting PR - 17649 - Make the interaction
+ between #line and #nowarn directives consistent (#17724)
+
+Backport: https://github.com/dotnet/fsharp/pull/17724
+
+---
+ buildtools/fsyacc/fsyaccdriver.fs             |  2 -
+ .../.FSharp.Compiler.Service/9.0.100.md       |  1 -
+ src/Compiler/AbstractIL/ilpars.fsy            |  1 -
+ src/Compiler/Driver/CompilerDiagnostics.fs    | 25 +++++----
+ src/Compiler/Driver/CompilerDiagnostics.fsi   |  3 +-
+ src/Compiler/Driver/ParseAndCheckInputs.fs    |  4 +-
+ src/Compiler/Driver/fsc.fs                    |  2 +-
+ src/Compiler/FSComp.txt                       |  3 +-
+ src/Compiler/Facilities/LanguageFeatures.fs   |  3 --
+ src/Compiler/Facilities/LanguageFeatures.fsi  |  1 -
+ src/Compiler/Service/IncrementalBuild.fs      |  2 +-
+ src/Compiler/Service/TransparentCompiler.fs   |  7 +--
+ src/Compiler/pars.fsy                         |  1 -
+ src/Compiler/pppars.fsy                       |  1 -
+ src/Compiler/xlf/FSComp.txt.cs.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.de.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.es.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.fr.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.it.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.ja.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.ko.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.pl.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.pt-BR.xlf         |  5 --
+ src/Compiler/xlf/FSComp.txt.ru.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.tr.xlf            |  5 --
+ src/Compiler/xlf/FSComp.txt.zh-Hans.xlf       |  5 --
+ src/Compiler/xlf/FSComp.txt.zh-Hant.xlf       |  5 --
+ .../CompilerDirectives/Nowarn.fs              | 51 -------------------
+ .../FSharp.Compiler.ComponentTests.fsproj     |  1 -
+ 29 files changed, 22 insertions(+), 151 deletions(-)
+ delete mode 100644 tests/FSharp.Compiler.ComponentTests/CompilerDirectives/Nowarn.fs
+
+diff --git a/buildtools/fsyacc/fsyaccdriver.fs b/buildtools/fsyacc/fsyaccdriver.fs
+index f46e607f9..c9ca12e47 100644
+--- a/buildtools/fsyacc/fsyaccdriver.fs
++++ b/buildtools/fsyacc/fsyaccdriver.fs
+@@ -199,8 +199,6 @@ let writeSpecToFile (generatorState: GeneratorState) (spec: ParserSpec) (compile
+               writer.WriteLineInterface "module %s" s;
+       
+       writer.WriteLine "#nowarn \"64\";; // turn off warnings that type variables used in production annotations are instantiated to concrete type";
+-      writer.WriteLine "#nowarn \"1182\"  // the generated code often has unused variable 'parseState'"
+-      writer.WriteLine "#nowarn \"3261\"  // the generated code would need to properly annotate nulls, e.g. changing System.Object to `obj|null`";
+ 
+       for s in generatorState.opens do
+           writer.WriteLine          "open %s" s;
+diff --git a/docs/release-notes/.FSharp.Compiler.Service/9.0.100.md b/docs/release-notes/.FSharp.Compiler.Service/9.0.100.md
+index 22eee3e2e..91b91f3c3 100644
+--- a/docs/release-notes/.FSharp.Compiler.Service/9.0.100.md
++++ b/docs/release-notes/.FSharp.Compiler.Service/9.0.100.md
+@@ -1,6 +1,5 @@
+ ### Fixed
+ 
+-* Fix a bug in the interaction between ``#line` and `#nowarn` directives ([PR #17649](https://github.com/dotnet/fsharp/pull/17649))
+ * Fix wrong TailCall warning ([Issue #17604](https://github.com/dotnet/fsharp/issues/17604), [PR #17637](https://github.com/dotnet/fsharp/pull/17637))
+ * Compiler hangs when compiling inline recursive invocation ([Issue #17376](https://github.com/dotnet/fsharp/issues/17376), [PR #17394](https://github.com/dotnet/fsharp/pull/17394))
+ * Fix reporting IsFromComputationExpression only for CE builder type constructors and let bindings. ([PR #17375](https://github.com/dotnet/fsharp/pull/17375))
+diff --git a/src/Compiler/AbstractIL/ilpars.fsy b/src/Compiler/AbstractIL/ilpars.fsy
+index b8380364f..ca06f6570 100644
+--- a/src/Compiler/AbstractIL/ilpars.fsy
++++ b/src/Compiler/AbstractIL/ilpars.fsy
+@@ -2,7 +2,6 @@
+ 
+ %{
+ 
+-#nowarn "64" // turn off warnings that type variables used in production annotations are instantiated to concrete type
+ #nowarn "1182"  // the generated code often has unused variable "parseState"
+ #nowarn "3261"  // the generated code would need to properly annotate nulls, e.g. changing System.Object to `obj|null`
+ 
+diff --git a/src/Compiler/Driver/CompilerDiagnostics.fs b/src/Compiler/Driver/CompilerDiagnostics.fs
+index c73b8e5d1..1c50ca267 100644
+--- a/src/Compiler/Driver/CompilerDiagnostics.fs
++++ b/src/Compiler/Driver/CompilerDiagnostics.fs
+@@ -24,7 +24,6 @@ open FSharp.Compiler.ConstraintSolver
+ open FSharp.Compiler.DiagnosticMessage
+ open FSharp.Compiler.Diagnostics
+ open FSharp.Compiler.DiagnosticsLogger
+-open FSharp.Compiler.Features
+ open FSharp.Compiler.Infos
+ open FSharp.Compiler.IO
+ open FSharp.Compiler.Lexhelp
+@@ -2300,13 +2299,17 @@ type PhasedDiagnostic with
+ // Scoped #nowarn pragmas
+ 
+ /// Build an DiagnosticsLogger that delegates to another DiagnosticsLogger but filters warnings turned off by the given pragma declarations
++//
++// NOTE: we allow a flag to turn of strict file checking. This is because file names sometimes don't match due to use of
++// #line directives, e.g. for pars.fs/pars.fsy. In this case we just test by line number - in most cases this is sufficient
++// because we install a filtering error handler on a file-by-file basis for parsing and type-checking.
++// However this is indicative of a more systematic problem where source-line
++// sensitive operations (lexfilter and warning filtering) do not always
++// interact well with #line directives.
+ type DiagnosticsLoggerFilteringByScopedPragmas
+-    (langVersion: LanguageVersion, scopedPragmas, diagnosticOptions: FSharpDiagnosticOptions, diagnosticsLogger: DiagnosticsLogger) =
++    (checkFile, scopedPragmas, diagnosticOptions: FSharpDiagnosticOptions, diagnosticsLogger: DiagnosticsLogger) =
+     inherit DiagnosticsLogger("DiagnosticsLoggerFilteringByScopedPragmas")
+ 
+-    let needCompatibilityWithEarlierInconsistentInteraction =
+-        not (langVersion.SupportsFeature LanguageFeature.ConsistentNowarnLineDirectiveInteraction)
+-
+     let mutable realErrorPresent = false
+ 
+     override _.DiagnosticSink(diagnostic: PhasedDiagnostic, severity) =
+@@ -2320,10 +2323,12 @@ type DiagnosticsLoggerFilteringByScopedPragmas
+                 match diagnostic.Range with
+                 | Some m ->
+                     scopedPragmas
+-                    |> List.exists (fun (ScopedPragma.WarningOff(pragmaRange, warningNumFromPragma)) ->
++                    |> List.exists (fun pragma ->
++                        let (ScopedPragma.WarningOff(pragmaRange, warningNumFromPragma)) = pragma
++
+                         warningNum = warningNumFromPragma
+-                        && (needCompatibilityWithEarlierInconsistentInteraction
+-                            || m.FileIndex = pragmaRange.FileIndex && posGeq m.Start pragmaRange.Start))
++                        && (not checkFile || m.FileIndex = pragmaRange.FileIndex)
++                        && posGeq m.Start pragmaRange.Start)
+                     |> not
+                 | None -> true
+ 
+@@ -2339,5 +2344,5 @@ type DiagnosticsLoggerFilteringByScopedPragmas
+ 
+     override _.CheckForRealErrorsIgnoringWarnings = realErrorPresent
+ 
+-let GetDiagnosticsLoggerFilteringByScopedPragmas (langVersion, scopedPragmas, diagnosticOptions, diagnosticsLogger) =
+-    DiagnosticsLoggerFilteringByScopedPragmas(langVersion, scopedPragmas, diagnosticOptions, diagnosticsLogger) :> DiagnosticsLogger
++let GetDiagnosticsLoggerFilteringByScopedPragmas (checkFile, scopedPragmas, diagnosticOptions, diagnosticsLogger) =
++    DiagnosticsLoggerFilteringByScopedPragmas(checkFile, scopedPragmas, diagnosticOptions, diagnosticsLogger) :> DiagnosticsLogger
+diff --git a/src/Compiler/Driver/CompilerDiagnostics.fsi b/src/Compiler/Driver/CompilerDiagnostics.fsi
+index 7c5acef17..6139da434 100644
+--- a/src/Compiler/Driver/CompilerDiagnostics.fsi
++++ b/src/Compiler/Driver/CompilerDiagnostics.fsi
+@@ -7,7 +7,6 @@ open System.Text
+ open FSharp.Compiler.CompilerConfig
+ open FSharp.Compiler.Diagnostics
+ open FSharp.Compiler.DiagnosticsLogger
+-open FSharp.Compiler.Features
+ open FSharp.Compiler.Syntax
+ open FSharp.Compiler.Text
+ 
+@@ -85,7 +84,7 @@ type PhasedDiagnostic with
+ 
+ /// Get a diagnostics logger that filters the reporting of warnings based on scoped pragma information
+ val GetDiagnosticsLoggerFilteringByScopedPragmas:
+-    langVersion: LanguageVersion *
++    checkFile: bool *
+     scopedPragmas: ScopedPragma list *
+     diagnosticOptions: FSharpDiagnosticOptions *
+     diagnosticsLogger: DiagnosticsLogger ->
+diff --git a/src/Compiler/Driver/ParseAndCheckInputs.fs b/src/Compiler/Driver/ParseAndCheckInputs.fs
+index d5d18d796..a6804bfe7 100644
+--- a/src/Compiler/Driver/ParseAndCheckInputs.fs
++++ b/src/Compiler/Driver/ParseAndCheckInputs.fs
+@@ -511,7 +511,7 @@ let ParseInput
+     finally
+         // OK, now commit the errors, since the ScopedPragmas will (hopefully) have been scraped
+         let filteringDiagnosticsLogger =
+-            GetDiagnosticsLoggerFilteringByScopedPragmas(lexbuf.LanguageVersion, scopedPragmas, diagnosticOptions, diagnosticsLogger)
++            GetDiagnosticsLoggerFilteringByScopedPragmas(false, scopedPragmas, diagnosticOptions, diagnosticsLogger)
+ 
+         delayLogger.CommitDelayedDiagnostics filteringDiagnosticsLogger
+ 
+@@ -1429,7 +1429,7 @@ let CheckOneInput
+ 
+ // Within a file, equip loggers to locally filter w.r.t. scope pragmas in each input
+ let DiagnosticsLoggerForInput (tcConfig: TcConfig, input: ParsedInput, oldLogger) =
+-    GetDiagnosticsLoggerFilteringByScopedPragmas(tcConfig.langVersion, input.ScopedPragmas, tcConfig.diagnosticsOptions, oldLogger)
++    GetDiagnosticsLoggerFilteringByScopedPragmas(false, input.ScopedPragmas, tcConfig.diagnosticsOptions, oldLogger)
+ 
+ /// Typecheck a single file (or interactive entry into F# Interactive)
+ let CheckOneInputEntry (ctok, checkForErrors, tcConfig: TcConfig, tcImports, tcGlobals, prefixPathOpt) tcState input =
+diff --git a/src/Compiler/Driver/fsc.fs b/src/Compiler/Driver/fsc.fs
+index 9dccdec82..ac4ee1795 100644
+--- a/src/Compiler/Driver/fsc.fs
++++ b/src/Compiler/Driver/fsc.fs
+@@ -745,7 +745,7 @@ let main2
+                     yield! pragmas
+             ]
+ 
+-        GetDiagnosticsLoggerFilteringByScopedPragmas(tcConfig.langVersion, scopedPragmas, tcConfig.diagnosticsOptions, oldLogger)
++        GetDiagnosticsLoggerFilteringByScopedPragmas(true, scopedPragmas, tcConfig.diagnosticsOptions, oldLogger)
+ 
+     SetThreadDiagnosticsLoggerNoUnwind diagnosticsLogger
+ 
+diff --git a/src/Compiler/FSComp.txt b/src/Compiler/FSComp.txt
+index 2e391fa55..b5a50afc7 100644
+--- a/src/Compiler/FSComp.txt
++++ b/src/Compiler/FSComp.txt
+@@ -1783,5 +1783,4 @@ featureEmptyBodiedComputationExpressions,"Support for computation expressions wi
+ featureAllowAccessModifiersToAutoPropertiesGettersAndSetters,"Allow access modifiers to auto properties getters and setters"
+ 3871,tcAccessModifiersNotAllowedInSRTPConstraint,"Access modifiers cannot be applied to an SRTP constraint."
+ featureAllowObjectExpressionWithoutOverrides,"Allow object expressions without overrides"
+-3872,tcPartialActivePattern,"Multi-case partial active patterns are not supported. Consider using a single-case partial active pattern or a full active pattern."
+-featureConsistentNowarnLineDirectiveInteraction,"The interaction between #nowarn and #line is now consistent."
++3872,tcPartialActivePattern,"Multi-case partial active patterns are not supported. Consider using a single-case partial active pattern or a full active pattern."
+\ No newline at end of file
+diff --git a/src/Compiler/Facilities/LanguageFeatures.fs b/src/Compiler/Facilities/LanguageFeatures.fs
+index 5f16aead3..5d71f3ed2 100644
+--- a/src/Compiler/Facilities/LanguageFeatures.fs
++++ b/src/Compiler/Facilities/LanguageFeatures.fs
+@@ -94,7 +94,6 @@ type LanguageFeature =
+     | ParsedHashDirectiveArgumentNonQuotes
+     | EmptyBodiedComputationExpressions
+     | AllowObjectExpressionWithoutOverrides
+-    | ConsistentNowarnLineDirectiveInteraction
+ 
+ /// LanguageVersion management
+ type LanguageVersion(versionText) =
+@@ -213,7 +212,6 @@ type LanguageVersion(versionText) =
+                 LanguageFeature.LowerSimpleMappingsInComprehensionsToFastLoops, languageVersion90
+                 LanguageFeature.ParsedHashDirectiveArgumentNonQuotes, languageVersion90
+                 LanguageFeature.EmptyBodiedComputationExpressions, languageVersion90
+-                LanguageFeature.ConsistentNowarnLineDirectiveInteraction, languageVersion90
+ 
+                 // F# preview
+                 LanguageFeature.EnforceAttributeTargets, previewVersion // waiting for fix of https://github.com/dotnet/fsharp/issues/17731
+@@ -377,7 +375,6 @@ type LanguageVersion(versionText) =
+         | LanguageFeature.ParsedHashDirectiveArgumentNonQuotes -> FSComp.SR.featureParsedHashDirectiveArgumentNonString ()
+         | LanguageFeature.EmptyBodiedComputationExpressions -> FSComp.SR.featureEmptyBodiedComputationExpressions ()
+         | LanguageFeature.AllowObjectExpressionWithoutOverrides -> FSComp.SR.featureAllowObjectExpressionWithoutOverrides ()
+-        | LanguageFeature.ConsistentNowarnLineDirectiveInteraction -> FSComp.SR.featureConsistentNowarnLineDirectiveInteraction ()
+ 
+     /// Get a version string associated with the given feature.
+     static member GetFeatureVersionString feature =
+diff --git a/src/Compiler/Facilities/LanguageFeatures.fsi b/src/Compiler/Facilities/LanguageFeatures.fsi
+index 4ae722c7f..7408300b9 100644
+--- a/src/Compiler/Facilities/LanguageFeatures.fsi
++++ b/src/Compiler/Facilities/LanguageFeatures.fsi
+@@ -85,7 +85,6 @@ type LanguageFeature =
+     | ParsedHashDirectiveArgumentNonQuotes
+     | EmptyBodiedComputationExpressions
+     | AllowObjectExpressionWithoutOverrides
+-    | ConsistentNowarnLineDirectiveInteraction
+ 
+ /// LanguageVersion management
+ type LanguageVersion =
+diff --git a/src/Compiler/Service/IncrementalBuild.fs b/src/Compiler/Service/IncrementalBuild.fs
+index 7951f3c93..b7560b222 100644
+--- a/src/Compiler/Service/IncrementalBuild.fs
++++ b/src/Compiler/Service/IncrementalBuild.fs
+@@ -259,7 +259,7 @@ type BoundModel private (
+ 
+             IncrementalBuilderEventTesting.MRU.Add(IncrementalBuilderEventTesting.IBETypechecked fileName)
+             let capturingDiagnosticsLogger = CapturingDiagnosticsLogger("TypeCheck")
+-            let diagnosticsLogger = GetDiagnosticsLoggerFilteringByScopedPragmas(tcConfig.langVersion, input.ScopedPragmas, tcConfig.diagnosticsOptions, capturingDiagnosticsLogger)
++            let diagnosticsLogger = GetDiagnosticsLoggerFilteringByScopedPragmas(false, input.ScopedPragmas, tcConfig.diagnosticsOptions, capturingDiagnosticsLogger)
+             use _ = new CompilationGlobalsScope(diagnosticsLogger, BuildPhase.TypeCheck)
+ 
+             beforeFileChecked.Trigger fileName
+diff --git a/src/Compiler/Service/TransparentCompiler.fs b/src/Compiler/Service/TransparentCompiler.fs
+index 735a6b241..e3acd1d4c 100644
+--- a/src/Compiler/Service/TransparentCompiler.fs
++++ b/src/Compiler/Service/TransparentCompiler.fs
+@@ -1303,12 +1303,7 @@ type internal TransparentCompiler
+                 let diagnosticsLogger = errHandler.DiagnosticsLogger
+ 
+                 let diagnosticsLogger =
+-                    GetDiagnosticsLoggerFilteringByScopedPragmas(
+-                        tcConfig.langVersion,
+-                        input.ScopedPragmas,
+-                        tcConfig.diagnosticsOptions,
+-                        diagnosticsLogger
+-                    )
++                    GetDiagnosticsLoggerFilteringByScopedPragmas(false, input.ScopedPragmas, tcConfig.diagnosticsOptions, diagnosticsLogger)
+ 
+                 use _ = new CompilationGlobalsScope(diagnosticsLogger, BuildPhase.TypeCheck)
+ 
+diff --git a/src/Compiler/pars.fsy b/src/Compiler/pars.fsy
+index 54d47b7c4..2794edf56 100644
+--- a/src/Compiler/pars.fsy
++++ b/src/Compiler/pars.fsy
+@@ -2,7 +2,6 @@
+ 
+ %{
+ 
+-#nowarn "64" // turn off warnings that type variables used in production annotations are instantiated to concrete type
+ #nowarn "1182"  // generated code has lots of unused "parseState"
+ #nowarn "3261"  // the generated code would need to properly annotate nulls, e.g. changing System.Object to `obj|null`
+ 
+diff --git a/src/Compiler/pppars.fsy b/src/Compiler/pppars.fsy
+index 41cb41ff3..cd27722a2 100644
+--- a/src/Compiler/pppars.fsy
++++ b/src/Compiler/pppars.fsy
+@@ -3,7 +3,6 @@
+ %{
+ open FSharp.Compiler.DiagnosticsLogger
+ 
+-#nowarn "64" // turn off warnings that type variables used in production annotations are instantiated to concrete type
+ #nowarn "3261"  // the generated code would need to properly annotate nulls, e.g. changing System.Object to `obj|null`
+ 
+ let dummy       = IfdefId("DUMMY")
+diff --git a/src/Compiler/xlf/FSComp.txt.cs.xlf b/src/Compiler/xlf/FSComp.txt.cs.xlf
+index 39b41f3b3..2b1a9483d 100644
+--- a/src/Compiler/xlf/FSComp.txt.cs.xlf
++++ b/src/Compiler/xlf/FSComp.txt.cs.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Vyvolá upozornění, pokud je atribut TailCall použit u nerekurzivních funkcí.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Průnik omezení u flexibilních typů</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.de.xlf b/src/Compiler/xlf/FSComp.txt.de.xlf
+index 402571c8a..a1b2532e4 100644
+--- a/src/Compiler/xlf/FSComp.txt.de.xlf
++++ b/src/Compiler/xlf/FSComp.txt.de.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Löst Warnungen aus, wenn das Attribut "TailCall" für nicht rekursive Funktionen verwendet wird.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Einschränkungsüberschneidung für flexible Typen</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.es.xlf b/src/Compiler/xlf/FSComp.txt.es.xlf
+index d3267a742..dd9cbb7fe 100644
+--- a/src/Compiler/xlf/FSComp.txt.es.xlf
++++ b/src/Compiler/xlf/FSComp.txt.es.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Genera advertencias si el atributo 'TailCall' se usa en funciones no recursivas.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Intersección de restricciones en tipos flexibles</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.fr.xlf b/src/Compiler/xlf/FSComp.txt.fr.xlf
+index f74bc4e31..2cc92e5f4 100644
+--- a/src/Compiler/xlf/FSComp.txt.fr.xlf
++++ b/src/Compiler/xlf/FSComp.txt.fr.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Émet des avertissements si l’attribut « TailCall » est utilisé sur des fonctions non récursives.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Intersection de contraintes sur les types flexibles</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.it.xlf b/src/Compiler/xlf/FSComp.txt.it.xlf
+index 3495d0c16..5b5793c48 100644
+--- a/src/Compiler/xlf/FSComp.txt.it.xlf
++++ b/src/Compiler/xlf/FSComp.txt.it.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Genera avvisi se l'attributo 'TailCall' viene utilizzato in funzioni non ricorsive.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Intersezione di vincoli su tipi flessibili</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.ja.xlf b/src/Compiler/xlf/FSComp.txt.ja.xlf
+index a87915633..d30efc747 100644
+--- a/src/Compiler/xlf/FSComp.txt.ja.xlf
++++ b/src/Compiler/xlf/FSComp.txt.ja.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">'TailCall' 属性が再帰関数以外で使用されている場合、警告が発せられます。</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">フレキシブル型の制約積集合</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.ko.xlf b/src/Compiler/xlf/FSComp.txt.ko.xlf
+index 70a64e75a..c9359c568 100644
+--- a/src/Compiler/xlf/FSComp.txt.ko.xlf
++++ b/src/Compiler/xlf/FSComp.txt.ko.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">'TailCall' 특성이 비 재귀 함수에 사용되는 경우 경고를 발생합니다.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">유연한 형식의 제약 조건 교집합</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.pl.xlf b/src/Compiler/xlf/FSComp.txt.pl.xlf
+index 31b8d2a62..933379b9f 100644
+--- a/src/Compiler/xlf/FSComp.txt.pl.xlf
++++ b/src/Compiler/xlf/FSComp.txt.pl.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Zgłasza ostrzeżenia, jeśli atrybut „TailCall” jest używany w funkcjach niekursywnych.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Przecięcie ograniczenia dla typów elastycznych</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.pt-BR.xlf b/src/Compiler/xlf/FSComp.txt.pt-BR.xlf
+index c49d815ca..e6480e130 100644
+--- a/src/Compiler/xlf/FSComp.txt.pt-BR.xlf
++++ b/src/Compiler/xlf/FSComp.txt.pt-BR.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Gera avisos se o atributo "TailCall" for usado em funções não recursivas.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Interseção de restrição em tipos flexíveis</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.ru.xlf b/src/Compiler/xlf/FSComp.txt.ru.xlf
+index 495089d8c..61c038859 100644
+--- a/src/Compiler/xlf/FSComp.txt.ru.xlf
++++ b/src/Compiler/xlf/FSComp.txt.ru.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">Выдает предупреждения, если атрибут TailCall используется в нерекурсивных функциях.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Пересечение ограничений на гибких типах</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.tr.xlf b/src/Compiler/xlf/FSComp.txt.tr.xlf
+index 93dfdedb2..09c113ee3 100644
+--- a/src/Compiler/xlf/FSComp.txt.tr.xlf
++++ b/src/Compiler/xlf/FSComp.txt.tr.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">'TailCall' özniteliği özyinelemeli olmayan işlevlerde kullanılıyorsa uyarılar oluşturur.</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">Esnek türlerde kısıtlama kesişimi</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.zh-Hans.xlf b/src/Compiler/xlf/FSComp.txt.zh-Hans.xlf
+index 54f6b0880..d9573b5be 100644
+--- a/src/Compiler/xlf/FSComp.txt.zh-Hans.xlf
++++ b/src/Compiler/xlf/FSComp.txt.zh-Hans.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">如果在非递归函数上使用“TailCall”属性，则引发警告。</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">灵活类型的约束交集</target>
+diff --git a/src/Compiler/xlf/FSComp.txt.zh-Hant.xlf b/src/Compiler/xlf/FSComp.txt.zh-Hant.xlf
+index df3a706ae..1a6c3de6c 100644
+--- a/src/Compiler/xlf/FSComp.txt.zh-Hant.xlf
++++ b/src/Compiler/xlf/FSComp.txt.zh-Hant.xlf
+@@ -307,11 +307,6 @@
+         <target state="translated">如果 'TailCall' 屬性用於非遞迴函數，則引發警告。</target>
+         <note />
+       </trans-unit>
+-      <trans-unit id="featureConsistentNowarnLineDirectiveInteraction">
+-        <source>The interaction between #nowarn and #line is now consistent.</source>
+-        <target state="new">The interaction between #nowarn and #line is now consistent.</target>
+-        <note />
+-      </trans-unit>
+       <trans-unit id="featureConstraintIntersectionOnFlexibleTypes">
+         <source>Constraint intersection on flexible types</source>
+         <target state="translated">彈性類型上的條件約束交集</target>
+diff --git a/tests/FSharp.Compiler.ComponentTests/CompilerDirectives/Nowarn.fs b/tests/FSharp.Compiler.ComponentTests/CompilerDirectives/Nowarn.fs
+deleted file mode 100644
+index 78067aa8c..000000000
+--- a/tests/FSharp.Compiler.ComponentTests/CompilerDirectives/Nowarn.fs
++++ /dev/null
+@@ -1,51 +0,0 @@
+-// Copyright (c) Microsoft Corporation.  All Rights Reserved.  See License.txt in the project root for license information.
+-namespace CompilerDirectives
+-
+-open Xunit
+-open FSharp.Test.Compiler
+-
+-module Nowarn =
+-
+-    let warn20Text = "The result of this expression has type 'string' and is implicitly ignored. Consider using 'ignore' to discard this value explicitly, e.g. 'expr |> ignore', or 'let' to bind the result to a name, e.g. 'let result = expr'."
+-
+-    let checkFileBugSource = """
+-module A
+-#nowarn "20"
+-#line 1 "xyz.fs"
+-""
+-        """
+-
+-    let checkFileBugSource2 = """
+-module A
+-#line 1 "xyz.fs"
+-#nowarn "20"
+-""
+-        """
+-
+-
+-    [<Fact>]
+-    let ``checkFile bug simulation for compatibility`` () =
+-
+-        FSharp checkFileBugSource
+-        |> withLangVersion80
+-        |> compile
+-        |> shouldSucceed
+-
+-    [<Fact>]
+-    let ``checkFile bug fixed leads to new warning`` () =
+-
+-        FSharp checkFileBugSource
+-        |> withLangVersion90
+-        |> compile
+-        |> shouldFail
+-        |> withDiagnostics [
+-                (Warning 20, Line 1, Col 1, Line 1, Col 3, warn20Text)
+-            ]
+-
+-    [<Fact>]
+-    let ``checkFile bug fixed, no warning if nowarn is correctly used`` () =
+-
+-        FSharp checkFileBugSource2
+-        |> withLangVersion90
+-        |> compile
+-        |> shouldSucceed
+diff --git a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
+index f7e63b796..5f352a315 100644
+--- a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
++++ b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
+@@ -33,7 +33,6 @@
+     </Compile>
+     <Compile Include="CompilerDirectives\Line.fs" />
+     <Compile Include="CompilerDirectives\NonStringArgs.fs" />
+-    <Compile Include="CompilerDirectives\Nowarn.fs" />
+     <Compile Include="Conformance\BasicGrammarElements\AccessibilityAnnotations\Basic\Basic.fs" />
+     <Compile Include="Conformance\BasicGrammarElements\AccessibilityAnnotations\OnOverridesAndIFaceImpl\OnOverridesAndIFaceImpl.fs" />
+     <Compile Include="Conformance\BasicGrammarElements\AccessibilityAnnotations\OnTypeMembers\OnTypeMembers.fs" />

@@ -122,7 +122,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         packageId.ToString(),
                         versionRange,
                         packageLocation.NugetConfig,
-                        packageLocation.RootConfigDirectory);
+                        packageLocation.RootConfigDirectory,
+                        packageLocation.SourceFeedOverrides);
 
                     var packageVersion = feedPackage.Version;
                     targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
@@ -223,12 +224,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string packageId,
             VersionRange versionRange,
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null)
+            DirectoryPath? rootConfigDirectory = null,
+            string[] sourceFeedOverrides = null)
         {
             var allPackages = _feeds
                 .Where(feed =>
                 {
-                    if (nugetConfig == null)
+                    if (sourceFeedOverrides is not null && sourceFeedOverrides.Length > 0)
+                    {
+                        return sourceFeedOverrides.Contains(feed.Uri);
+                    }
+                    else if (nugetConfig == null)
                     {
                         return SimulateNugetSearchNugetConfigAndMatch(
                             rootConfigDirectory,
@@ -319,7 +325,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageId.ToString(),
                 versionRange,
                 packageLocation.NugetConfig,
-                packageLocation.RootConfigDirectory);
+                packageLocation.RootConfigDirectory,
+                packageLocation.SourceFeedOverrides);
 
             return NuGetVersion.Parse(feedPackage.Version);
         }

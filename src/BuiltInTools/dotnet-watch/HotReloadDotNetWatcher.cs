@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Watcher
                 HotReloadFileSetWatcher? fileSetWatcher = null;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
-                Task<FileItem[]?>? fileSetWatcherTask = null;
+                Task<ChangedFile[]?>? fileSetWatcherTask = null;
 
                 try
                 {
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Watcher
                         // When a new file is added we need to run design-time build to find out
                         // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
                         // We don't need to rebuild and restart the application though.
-                        if (changedFiles.Any(f => f.IsNewFile))
+                        if (changedFiles.Any(f => f.Change is ChangeKind.Add))
                         {
                             Context.Reporter.Verbose("File addition triggered re-evaluation.");
 
@@ -195,9 +195,9 @@ namespace Microsoft.DotNet.Watcher
                             // update files in the change set with new evaluation info:
                             for (int i = 0; i < changedFiles.Length; i++)
                             {
-                                if (evaluationResult.Files.TryGetValue(changedFiles[i].FilePath, out var evaluatedFile))
+                                if (evaluationResult.Files.TryGetValue(changedFiles[i].Item.FilePath, out var evaluatedFile))
                                 {
-                                    changedFiles[i] = evaluatedFile;
+                                    changedFiles[i] = changedFiles[i] with { Item = evaluatedFile };
                                 }
                             }
 
@@ -336,24 +336,43 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        private void ReportFileChanges(IReadOnlyList<FileItem> fileItems)
+        private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)
         {
-            Report(added: true);
-            Report(added: false);
+            Report(kind: ChangeKind.Add);
+            Report(kind: ChangeKind.Update);
+            Report(kind: ChangeKind.Delete);
 
-            void Report(bool added)
+            void Report(ChangeKind kind)
             {
-                var items = fileItems.Where(item => item.IsNewFile == added).ToArray();
+                var items = changedFiles.Where(item => item.Change == kind).ToArray();
                 if (items is not [])
                 {
-                    Context.Reporter.Output(GetMessage(items, added));
+                    Context.Reporter.Output(GetMessage(items, kind));
                 }
             }
 
-            string GetMessage(IReadOnlyList<FileItem> items, bool added)
-                => items is [var item]
-                    ? (added ? "File added: " : "File changed: ") + GetRelativeFilePath(item.FilePath)
-                    : (added ? "Files added: " : "Files changed: ") + string.Join(", ", items.Select(f => GetRelativeFilePath(f.FilePath)));
+            string GetMessage(IReadOnlyList<ChangedFile> items, ChangeKind kind)
+                => items is [{Item: var item }]
+                    ? GetSingularMessage(kind) + ": " + GetRelativeFilePath(item.FilePath)
+                    : GetPluralMessage(kind) + ": " + string.Join(", ", items.Select(f => GetRelativeFilePath(f.Item.FilePath)));
+
+            static string GetSingularMessage(ChangeKind kind)
+                => kind switch
+                {
+                    ChangeKind.Update => "File updated",
+                    ChangeKind.Add => "File added",
+                    ChangeKind.Delete => "File deleted",
+                    _ => throw new InvalidOperationException()
+                };
+
+            static string GetPluralMessage(ChangeKind kind)
+                => kind switch
+                {
+                    ChangeKind.Update => "Files updated",
+                    ChangeKind.Add => "Files added",
+                    ChangeKind.Delete => "Files deleted",
+                    _ => throw new InvalidOperationException()
+                };
         }
 
         private async ValueTask<EvaluationResult> EvaluateRootProjectAsync(CancellationToken cancellationToken)

@@ -22,7 +22,7 @@ public class DockerRegistryTests
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
         var logger = loggerFactory.CreateLogger(nameof(GetFromRegistry));
-        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
         // Don't need rid graph for local registry image pulls - since we're only pushing single image manifests (not manifest lists)
@@ -37,7 +37,7 @@ public class DockerRegistryTests
         Assert.NotNull(downloadedImage);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42820")]
     public async Task WriteToPrivateBasicRegistry()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(WriteToPrivateBasicRegistry));
@@ -54,6 +54,7 @@ public class DockerRegistryTests
             var registryCertFile = Path.Combine(registryCertsDir.FullName, "domain.crt");
 
             // export dev cert, using --no-password also generates a matching key file
+            new DotnetCommand(_testOutput, $"dev-certs", "https", "--trust").Execute().Should().Pass();
             new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
             ContainerCli.RunCommand(_testOutput,
@@ -74,9 +75,9 @@ public class DockerRegistryTests
             // login to that registry
             ContainerCli.LoginCommand(_testOutput, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
-            Registry localAuthed = new(new Uri($"https://{registryName}"), logger, settings: new(registryName) { ParallelUploadEnabled = false, ForceChunkedUpload = true });
+            Registry localAuthed = new(new Uri($"https://{registryName}"), logger, RegistryMode.Push, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
-            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger);
+            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull);
 
             var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
             var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, new[] { DockerRegistryManager.Net6ImageTag });

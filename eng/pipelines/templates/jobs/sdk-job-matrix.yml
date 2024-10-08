@@ -82,7 +82,7 @@ parameters:
 
 jobs:
 ### ONELOCBUILD ###
-- ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
+- ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], format('refs/heads/{0}', parameters.locBranch))) }}:
   - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/onelocbuild.yml
     parameters:
       CreatePr: true

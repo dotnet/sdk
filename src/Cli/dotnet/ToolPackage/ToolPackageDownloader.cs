@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity, currentWorkingDirectory: _currentWorkingDirectory);
 
-                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
+                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
                     bool givenSpecificVersion = false;
                     if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
@@ -130,13 +130,21 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else if(isGlobalTool)
+                    else
                     {
-                        throw new ToolPackageException(
-                            string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
-                                packageId,
-                                packageVersion.ToNormalizedString()));
+                        if (!ToolPackageInstance.IsToolPackage(package.Nuspec.Xml))
+                        {
+                            throw new GracefulException(string.Format(NuGetPackageDownloader.LocalizableStrings.NotATool, packageId));
+                        }
+
+                        if (isGlobalTool)
+                        {
+                            throw new ToolPackageException(
+                                string.Format(
+                                    CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                    packageId,
+                                    packageVersion.ToNormalizedString()));
+                        }
                     }
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
@@ -280,7 +288,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             bool includeUnlisted = false
             )
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted, isTool: true).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;
@@ -399,6 +407,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var packageSourceLocation = new PackageSourceLocation(
                 nugetConfig: packageLocation.NugetConfig,
                 rootConfigDirectory: packageLocation.RootConfigDirectory,
+                sourceFeedOverrides: packageLocation.SourceFeedOverrides,
                 additionalSourceFeeds: packageLocation.AdditionalFeeds);
 
             return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();

@@ -267,13 +267,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// </summary>
         private static bool ShouldIncludeType(MetadataReader reader, TypeDefinition type, int testMethodCount)
         {
-            // xunit only handles public, non-abstract classes
+            // xunit only handles public, non-abstract, non-generic classes
             var isPublic =
-                TypeAttributes.Public == (type.Attributes & TypeAttributes.Public) ||
-                TypeAttributes.NestedPublic == (type.Attributes & TypeAttributes.NestedPublic);
+                TypeAttributes.Public == (type.Attributes & TypeAttributes.VisibilityMask) ||
+                TypeAttributes.NestedPublic == (type.Attributes & TypeAttributes.VisibilityMask);
             if (!isPublic ||
                 TypeAttributes.Abstract == (type.Attributes & TypeAttributes.Abstract) ||
-                TypeAttributes.Class != (type.Attributes & TypeAttributes.Class))
+                type.GetGenericParameters().Count != 0 ||
+                TypeAttributes.Class != (type.Attributes & TypeAttributes.ClassSemanticsMask))
             {
                 return false;
             }

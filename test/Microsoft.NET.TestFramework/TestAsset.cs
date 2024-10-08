@@ -102,13 +102,9 @@ namespace Microsoft.NET.TestFramework
                 UpdateProjProperty(property[0], property[1], property[2]);
             }
 
-            string[][] PackageVersionVariables = {
-                new string[] { "NewtonsoftJsonPackageVersion", ToolsetInfo.GetNewtonsoftJsonPackageVersion() },
-                new string[] { "SystemDataSqlClientPackageVersion", ToolsetInfo.GetSystemDataSqlClientPackageVersion() }};
-
-            foreach (string[] PackageVersionVariable in PackageVersionVariables)
+            foreach (var (propertyName, version) in ToolsetInfo.GetPackageVersionProperties())
             {
-                this.ReplacePackageVersionVariable(PackageVersionVariable[0], PackageVersionVariable[1]);
+                this.ReplacePackageVersionVariable(propertyName, version);
             }
 
             return this;

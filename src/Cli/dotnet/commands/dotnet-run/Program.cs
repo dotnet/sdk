@@ -24,6 +24,35 @@ namespace Microsoft.DotNet.Tools.Run
                 parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
             }
 
+            // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
+            // them to the restore args.
+            // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
+            // bl information to synchronize the restore and build logger configurations
+            var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments).ToList();
+
+            var binlogArgs = new List<string>();
+            var nonBinLogArgs = new List<string>();
+            foreach (var arg in applicationArguments)
+            {
+
+                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
+                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
+                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
+                {
+                    binlogArgs.Add(arg);
+                }
+                else
+                {
+                    nonBinLogArgs.Add(arg);
+                }
+            }
+
+            var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
+            if (binlogArgs.Count > 0)
+            {
+                restoreArgs.AddRange(binlogArgs);
+            }
+
             var command = new RunCommand(
                 noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
                 projectFileOrDirectory: parseResult.GetValue(RunCommandParser.ProjectOption),
@@ -32,8 +61,8 @@ namespace Microsoft.DotNet.Tools.Run
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
                 verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
-                restoreArgs: parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToArray(),
-                args: parseResult.GetValue(RunCommandParser.ApplicationArguments)
+                restoreArgs: restoreArgs.ToArray(),
+                args: nonBinLogArgs.ToArray()
             );
 
             return command;

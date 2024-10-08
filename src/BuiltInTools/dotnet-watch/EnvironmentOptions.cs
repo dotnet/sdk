@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watcher
     {
         None = 0,
         RunningAsTest = 1 << 0,
-        BrowserRequired = 1 << 1,
+        MockBrowser = 1 << 1,
     }
 
     internal sealed record EnvironmentOptions(

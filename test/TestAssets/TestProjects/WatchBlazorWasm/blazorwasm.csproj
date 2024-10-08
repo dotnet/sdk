@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Based on .NET 8 breaking change: Add SelfContained if RuntimeIdentifier is defined to match old behavior.. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != '' and '$(SelfContained)' == ''">
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  
+  <!-- Enabling compression increases build time. We want to avoid this for tests so we
+  disable it here. This doesn't affect any test assertions. -->
+  <PropertyGroup>
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
+</Project>
