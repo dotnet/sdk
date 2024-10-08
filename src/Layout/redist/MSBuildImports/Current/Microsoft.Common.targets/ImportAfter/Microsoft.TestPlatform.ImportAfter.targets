@@ -17,4 +17,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <VSTestTargets Condition="'$(VSTestTargets)'==''">$(MSBuildExtensionsPath)\Microsoft.TestPlatform.targets</VSTestTargets>
   </PropertyGroup>
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
+  <!-- Register TestingPlatform task -->
+  <UsingTask TaskName="GetTestsProject" AssemblyFile="$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.Build.Tasks.dll" />
+  <Target Name="_GetTestsProject" Condition=" $(IsTestProject) == 'true' OR '$(IsTestingPlatformApplication)' == 'true' " >
+    <GetTestsProject TargetPath="$(TargetPath)" GetTestsProjectPipeName="$(GetTestsProjectPipeName)" ProjectFullPath="$(MSBuildProjectFullPath)" />
+  </Target>
 </Project>

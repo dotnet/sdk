@@ -74,6 +74,11 @@
         <target state="translated">Listelenecek aracı içeren dizin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolListFormatOptionDescription">
+        <source>The output format for the list of tools.</source>
+        <target state="translated">Araç listesi için çıkış biçimi.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
