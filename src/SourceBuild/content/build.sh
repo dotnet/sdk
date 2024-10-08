@@ -227,6 +227,8 @@ if [[ "$test" == true ]]; then
   targets="$targets;VSTest"
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
+  # Ensure all test projects share stdout (https://github.com/dotnet/source-build/issues/4635#issuecomment-2397464519)
+  export MSBUILDDISABLENODEREUSE=1
 fi
 
 function Build {
