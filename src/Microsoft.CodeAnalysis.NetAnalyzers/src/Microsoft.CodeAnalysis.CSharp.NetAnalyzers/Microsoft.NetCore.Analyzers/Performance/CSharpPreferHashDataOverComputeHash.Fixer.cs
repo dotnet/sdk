@@ -174,12 +174,25 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     });
 
                 var parent = usingStatement.Parent!;
-                root = root.TrackNodes(parent);
-                var newParent = parent.TrackNodes(usingStatement);
-                newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingStatement)!, statements);
-                newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingStatement)!, SyntaxRemoveOptions.KeepNoTrivia)!
-                    .WithAdditionalAnnotations(Formatter.Annotation);
-                root = root.ReplaceNode(root.GetCurrentNode(parent)!, newParent);
+                if (parent is GlobalStatementSyntax target)
+                {
+                    parent = parent.Parent!;
+                    parent = parent.TrackNodes(target);
+                    parent = parent.InsertNodesBefore(parent.GetCurrentNode(target)!, statements.Select(SyntaxFactory.GlobalStatement));
+                    parent = parent.RemoveNode(parent.GetCurrentNode(target)!, SyntaxRemoveOptions.KeepNoTrivia)!
+                        .WithAdditionalAnnotations(Formatter.Annotation);
+                    root = parent;
+                }
+                else
+                {
+                    root = root.TrackNodes(parent);
+                    var newParent = parent.TrackNodes(usingStatement);
+                    newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingStatement)!, statements);
+                    newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingStatement)!, SyntaxRemoveOptions.KeepNoTrivia)!
+                        .WithAdditionalAnnotations(Formatter.Annotation);
+                    root = root.ReplaceNode(root.GetCurrentNode(parent)!, newParent);
+                }
+
                 return root;
             }
 

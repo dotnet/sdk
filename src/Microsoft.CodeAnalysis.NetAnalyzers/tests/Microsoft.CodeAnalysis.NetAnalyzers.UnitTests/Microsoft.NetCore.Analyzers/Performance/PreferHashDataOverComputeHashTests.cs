@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -2756,6 +2757,80 @@ public class Test
         }
 
         [Fact]
+        public async Task CSharpObjectCreationUsingStatementCaseTopLevel()
+        {
+            await TestWithType(HashTypeSHA1);
+            await TestWithType(HashTypeSHA256);
+            await TestWithType(HashTypeSHA384);
+            await TestWithType(HashTypeSHA512);
+
+            static async Task TestWithType(string hashType)
+            {
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
+
+var buffer = new byte[1024];
+using (var {{|#1:hasher = new {hashType}Managed()|}})
+{{
+    int line1 = 20;
+    byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+    int line2 = 10;
+}}
+
+var buffer2 = new byte[1024];
+using (var {{|#3:hasher2 = new {hashType}Managed()|}})
+{{
+    int line12 = 20;
+    byte[] digest2 = {{|#2:hasher2.ComputeHash(buffer2, 0, 10)|}};
+    int line22 = 10;
+}}
+
+var buffer3 = new byte[1024];
+using (var {{|#5:hasher3 = new {hashType}Managed()|}})
+{{
+    int line13 = 20;
+    byte[] digest3 = new byte[1024];
+    int line23 = 10;
+    if ({{|#4:hasher3.TryComputeHash(buffer3, digest3, out var i)|}})
+    {{
+        int line33 = 10;
+    }}
+    int line43 = 10;
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
+
+var buffer = new byte[1024];
+int line1 = 20;
+byte[] digest = {hashType}.HashData(buffer);
+int line2 = 10;
+
+var buffer2 = new byte[1024];
+int line12 = 20;
+byte[] digest2 = {hashType}.HashData(buffer2.AsSpan(0, 10));
+int line22 = 10;
+
+var buffer3 = new byte[1024];
+int line13 = 20;
+byte[] digest3 = new byte[1024];
+int line23 = 10;
+if ({hashType}.TryHashData(buffer3, digest3, out var i))
+{{
+    int line33 = 10;
+}}
+int line43 = 10;
+";
+                await TestCSTopLevelAsync(
+                    csInput,
+                    csFix,
+                    GetCreationSingleInvokeCSDiagnostics($"System.Security.Cryptography.{hashType}"));
+            }
+        }
+
+        [Fact]
         public async Task BasicObjectCreationUsingBlockCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -3178,6 +3253,22 @@ End Class
             return test;
         }
 
+        private static VerifyCS.Test GetTestTopLevelCS(string source, string corrected, ReferenceAssemblies referenceAssemblies)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                },
+                ReferenceAssemblies = referenceAssemblies,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                FixedCode = corrected,
+            };
+            return test;
+        }
+
         private static async Task TestCSAsync(string source)
         {
             await GetTestCS(source, source, ReferenceAssemblies.Net.Net50).RunAsync();
@@ -3196,6 +3287,19 @@ End Class
 
             await test.RunAsync();
             await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+        }
+
+        private static async Task TestCSTopLevelAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
+        {
+            var test = GetTestTopLevelCS(source, corrected, ReferenceAssemblies.Net.Net80);
+
+            for (int i = 0; i < diagnosticResults.Length; i++)
+            {
+                var expected = diagnosticResults[i];
+                test.ExpectedDiagnostics.Add(expected);
+            }
+
+            await test.RunAsync();
         }
 
         private static VerifyVB.Test GetTestVB(string source, string corrected, ReferenceAssemblies referenceAssemblies)
