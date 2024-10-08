@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Cli
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
             var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLPath, tfm, arch, executionId);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLOrExe, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
