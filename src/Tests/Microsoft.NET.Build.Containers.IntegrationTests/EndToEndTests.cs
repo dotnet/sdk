@@ -50,9 +50,9 @@ public class EndToEndTests : IDisposable
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
-            DockerRegistryManager.Net8PreviewImageTag,
+            DockerRegistryManager.Net8ImageTag,
             "linux-x64",
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
         Assert.NotNull(imageBuilder);
@@ -66,7 +66,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Push the image back to the local registry
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest", "1.0" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
@@ -97,9 +97,9 @@ public class EndToEndTests : IDisposable
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
-            DockerRegistryManager.Net8PreviewImageTag,
+            DockerRegistryManager.Net8ImageTag,
             "linux-x64",
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
@@ -138,9 +138,9 @@ public class EndToEndTests : IDisposable
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
-            DockerRegistryManager.Net8PreviewImageTag,
+            DockerRegistryManager.Net8ImageTag,
             "linux-x64",
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
@@ -197,11 +197,6 @@ public class EndToEndTests : IDisposable
             new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
-        if (tfm == ToolsetInfo.CurrentTargetFramework)
-        {
-            publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion=8.0.0-preview.3.23174.8" });
-        }
-
         publishCommand.Execute()
             .Should().Pass();
 
@@ -209,6 +204,87 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
+    [DockerAvailableFact]
+    public async Task EndToEnd_MultiProjectSolution()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
+        DirectoryInfo newSolutionDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_EndToEnd_MultiProjectSolution"));
+
+        if (newSolutionDir.Exists)
+        {
+            newSolutionDir.Delete(recursive: true);
+        }
+
+        newSolutionDir.Create();
+
+        // Create solution with projects
+        new DotnetNewCommand(_testOutput, "sln", "-n", nameof(EndToEnd_MultiProjectSolution))
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "console", "-n", "ConsoleApp")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "web", "-n", "WebApp")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // Add 'EnableSdkContainerSupport' property to the ConsoleApp and set TFM
+        using (FileStream stream = File.Open(Path.Join(newSolutionDir.FullName, "ConsoleApp", "ConsoleApp.csproj"), FileMode.Open, FileAccess.ReadWrite))
+        {
+            XDocument document = await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "PropertyGroup")?
+                .Add(new XElement("EnableSdkContainerSupport", "true"));
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "TargetFramework")
+                .Value = ToolsetInfo.CurrentTargetFramework;
+
+            stream.SetLength(0);
+            await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
+        }
+
+        // Set TFM for WebApp
+        using (FileStream stream = File.Open(Path.Join(newSolutionDir.FullName, "WebApp", "WebApp.csproj"), FileMode.Open, FileAccess.ReadWrite))
+        {
+            XDocument document = await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "TargetFramework")
+                .Value = ToolsetInfo.CurrentTargetFramework;
+
+            stream.SetLength(0);
+            await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
+        }
+
+        // Publish
+        CommandResult commandResult = new DotnetCommand(_testOutput, "publish", "/t:PublishContainer")
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute();
+
+        commandResult.Should().Pass();
+        commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
+        commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
+    }
 
     [DockerAvailableTheory()]
     [InlineData("webapi", false)]
@@ -284,7 +360,7 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
-            $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8")
+            "/p:UseRazorSourceGenerator=false")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
@@ -442,7 +518,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -480,13 +555,13 @@ public class EndToEndTests : IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
         var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
-            isWin ? DockerRegistryManager.Net8PreviewWindowsSpecificImageTag : DockerRegistryManager.Net8PreviewImageTag,
+            isWin ? DockerRegistryManager.Net8PreviewWindowsSpecificImageTag : DockerRegistryManager.Net8ImageTag,
             rid,
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
@@ -501,7 +576,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Load the image into the local registry
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
         await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 

@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="translated">安裝 .NET 工具套件時允許套件降級。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
         <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
         <target state="translated">如果在工具安裝期間找不到工具資訊清單，則建立工具資訊清單。如需如何尋找資訊清單的相關資訊，請參閱 https://aka.ms/dotnet/tools/create-manifest-if-needed</target>
@@ -81,6 +86,11 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">同一個命令中不支援 --prerelease 與 --version 選項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">如果未安裝 .NET 執行階段目標，則允許 .NET 工具向前復原至較新版本的 .NET 執行階段。</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
