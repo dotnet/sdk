@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.HotReload
                 {
                     if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
                     {
-                        _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, pdbDelta: []);
+                        _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, item.PdbDelta);
                     }
                 }
 
@@ -157,7 +157,7 @@ namespace Microsoft.Extensions.HotReload
             return types?.ToArray() ?? Type.EmptyTypes;
         }
 
-        public void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
+        private void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
         {
             Debug.Assert(_applyUpdate != null);
 
@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.HotReload
             {
                 foreach (var item in deltas)
                 {
-                    _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, item.PdbDelta);
                 }
 
                 Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);

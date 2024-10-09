@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.HotReload;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         string? capabilityString = null;
 
                         await browserRefreshServer.SendAndReceive(
-                            request: _ => default(BlazorRequestApplyUpdateCapabilities),
+                            request: _ => default(JsonGetApplyUpdateCapabilitiesRequest),
                             response: value =>
                             {
                                 var str = Encoding.UTF8.GetString(value);
@@ -158,10 +158,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var anyFailure = false;
 
             await browserRefreshServer.SendAndReceive(
-                request: sharedSecret => new UpdatePayload
+                request: sharedSecret => new JsonApplyHotReloadDeltasRequest
                 {
                     SharedSecret = sharedSecret,
-                    Deltas = updates.Select(update => new UpdateDelta
+                    Deltas = updates.Select(update => new JsonDelta
                     {
                         SequenceId = _sequenceId++,
                         ModuleId = update.ModuleId,
@@ -172,32 +172,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 },
                 response: value =>
                 {
-                    if (value is [])
-                    {
-                        Reporter.Verbose($"Unexpected response length: {value.Length}");
-                        anyFailure = true;
-                        return;
-                    }
+                    var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
-                    var status = value[0];
-                    if (status == 1)
+                    if (data.Success)
                     {
-                        if (value.Length > 1)
-                        {
-                            Reporter.Verbose($"Unexpected response length: {value.Length}");
-                        }
-
                         anySuccess = true;
-                        return;
                     }
-
-                    if (value.Length > 1)
+                    else
                     {
-                        Reporter.Error("Browser failed to apply the change and reported error:");
-                        Reporter.Error(Encoding.UTF8.GetString(value[1..]).Replace("\0", Environment.NewLine));
+                        anyFailure = true;
                     }
 
-                    anyFailure = true;
+                    ReportLog(data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)));
                 },
                 cancellationToken);
 
@@ -207,24 +193,38 @@ namespace Microsoft.DotNet.Watcher.Tools
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private readonly struct UpdatePayload
+        private readonly struct JsonApplyHotReloadDeltasRequest
         {
-            public string Type => "BlazorHotReloadDeltav2";
+            public string Type => "BlazorHotReloadDeltav3";
             public string? SharedSecret { get; init; }
-            public IEnumerable<UpdateDelta> Deltas { get; init; }
+            public IEnumerable<JsonDelta> Deltas { get; init; }
+            public int ResponseLoggingLevel { get; init; }
         }
 
-        private readonly struct UpdateDelta
+        private readonly struct JsonDelta
         {
             public int SequenceId { get; init; }
             public string ServerId { get; init; }
             public Guid ModuleId { get; init; }
             public byte[] MetadataDelta { get; init; }
             public byte[] ILDelta { get; init; }
+            public byte[] PdbDelta { get; init; }
             public int[] UpdatedTypes { get; init; }
         }
 
-        private readonly struct BlazorRequestApplyUpdateCapabilities
+        private readonly struct JsonApplyDeltasResponse
+        {
+            public bool Success { get; init; }
+            public IEnumerable<JsonLogEntry> Log { get; init; }
+        }
+
+        private readonly struct JsonLogEntry
+        {
+            public string Message { get; init; }
+            public int Severity { get; init; }
+        }
+
+        private readonly struct JsonGetApplyUpdateCapabilitiesRequest
         {
             public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }

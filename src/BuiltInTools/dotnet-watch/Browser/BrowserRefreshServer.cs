@@ -294,8 +294,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             return openConnections;
         }
 
-        private static ReadOnlyMemory<byte> SerializeJson<TValue>(TValue value)
+        public static ReadOnlyMemory<byte> SerializeJson<TValue>(TValue value)
             => JsonSerializer.SerializeToUtf8Bytes(value, s_jsonSerializerOptions);
+
+        public static TValue DeserializeJson<TValue>(ReadOnlySpan<byte> value)
+            => JsonSerializer.Deserialize<TValue>(value, s_jsonSerializerOptions) ?? throw new InvalidDataException("Unexpected null object");
 
         public ValueTask SendJsonMessage<TValue>(TValue value, CancellationToken cancellationToken)
             => Send(SerializeJson(value), cancellationToken);

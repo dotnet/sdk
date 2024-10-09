@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.HotReload;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -27,6 +28,27 @@ namespace Microsoft.DotNet.Watcher.Tools
         public abstract Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
 
         public abstract void Dispose();
+
+        public void ReportLog(IEnumerable<(string message, AgentMessageSeverity severity)> log)
+        {
+            foreach (var (message, severity) in log)
+            {
+                switch (severity)
+                {
+                    case AgentMessageSeverity.Error:
+                        Reporter.Error(message);
+                        break;
+
+                    case AgentMessageSeverity.Warning:
+                        Reporter.Warn(message, emoji: "⚠");
+                        break;
+
+                    default:
+                        Reporter.Verbose(message, emoji: "🕵️");
+                        break;
+                }
+            }
+        }
     }
 
     internal enum ApplyStatus

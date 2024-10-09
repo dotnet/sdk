@@ -27,6 +27,7 @@ namespace Microsoft.Extensions.HotReload
                 binaryWriter.Write(delta.ModuleId.ToString());
                 await WriteBytesAsync(binaryWriter, delta.MetadataDelta, cancellationToken);
                 await WriteBytesAsync(binaryWriter, delta.ILDelta, cancellationToken);
+                await WriteBytesAsync(binaryWriter, delta.PdbDelta, cancellationToken);
                 WriteIntArray(binaryWriter, delta.UpdatedTypes);
             }
 
@@ -91,9 +92,10 @@ namespace Microsoft.Extensions.HotReload
                 var moduleId = Guid.Parse(binaryReader.ReadString());
                 var metadataDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var ilDelta = await ReadBytesAsync(binaryReader, cancellationToken);
+                var pdbDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var updatedTypes = ReadIntArray(binaryReader);
 
-                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, updatedTypes);
+                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, pdbDelta: pdbDelta, updatedTypes);
             }
 
             var responseLoggingLevel = (ResponseLoggingLevel)binaryReader.ReadByte();
@@ -147,22 +149,6 @@ namespace Microsoft.Extensions.HotReload
             {
                 yield return (reader.ReadString(), (AgentMessageSeverity)reader.ReadByte());
             }
-        }
-    }
-
-    internal readonly struct UpdateDelta
-    {
-        public Guid ModuleId { get; }
-        public byte[] MetadataDelta { get; }
-        public byte[] ILDelta { get; }
-        public int[] UpdatedTypes { get; }
-
-        public UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, int[] updatedTypes)
-        {
-            ModuleId = moduleId;
-            MetadataDelta = metadataDelta;
-            ILDelta = ilDelta;
-            UpdatedTypes = updatedTypes;
         }
     }
 
