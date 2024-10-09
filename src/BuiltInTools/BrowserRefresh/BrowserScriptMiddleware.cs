@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await context.Response.Body.WriteAsync(_scriptBytes.AsMemory(), context.RequestAborted);
         }
 
+        // for backwards compat only
         internal static byte[] GetBlazorHotReloadJS()
         {
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorHotReload.js";

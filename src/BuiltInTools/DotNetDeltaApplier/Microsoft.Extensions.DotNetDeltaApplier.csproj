@@ -16,6 +16,7 @@
     <Compile Include="..\dotnet-watch\HotReload\NamedPipeContract.cs" />
     <Compile Include="..\dotnet-watch\HotReload\AgentMessageSeverity.cs" />
     <Compile Include="..\dotnet-watch\HotReload\ResponseLoggingLevel.cs" />
+    <Compile Include="..\dotnet-watch\HotReload\UpdateDelta.cs" />
   </ItemGroup>
 
 </Project>

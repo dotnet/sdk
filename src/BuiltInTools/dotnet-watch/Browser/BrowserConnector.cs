@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             else
             {
                 // Notify the browser of a project rebuild (delta applier notifies of updates):
-                await server.SendWaitMessageAsync(cancellationToken);
+                await server.SendWaitMessage(cancellationToken);
             }
 
             return server;
@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = server.ReloadAsync(cancellationToken);
+                    _ = server.Reload(cancellationToken);
                 }
             }
         }
