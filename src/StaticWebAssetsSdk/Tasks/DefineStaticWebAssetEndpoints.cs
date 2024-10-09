@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
-using System.Collections.Concurrent;
-using System.Globalization;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -89,8 +88,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
             {
                 Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
-                existingEndpointsByAssetFile = new(OSPath.PathComparer);
-                var assets = new HashSet<string>();
+                var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
                 foreach (var asset in CandidateAssets)
                 {
                     assets.Add(asset.ItemSpec);
@@ -108,7 +106,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                     if (!existingEndpointsByAssetFile.TryGetValue(assetFile, out var set))
                     {
-                        set = new HashSet<string>();
+                        set = new HashSet<string>(OSPath.PathComparer);
                         existingEndpointsByAssetFile[assetFile] = set;
                     }
 
