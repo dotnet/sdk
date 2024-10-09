@@ -228,8 +228,11 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
                 }
                 else
                 {
+                    // For some files it's not enough to compare the filename because they have 2 copies in the artifact
+                    // e.g. assets/Release/dotnet-sdk-*-win-x64.zip and assets/Release/Sdk/*/dotnet-sdk-*-win-x64.zip
+                    // In this case take the one matching the full path from the manifest
                     fileItem = matchingFilePaths
-                        .SingleOrDefault(f => f.Path.Contains(manifestFile) || f.Path.Contains(manifestFile.Replace("/", @"\")))
+                        .SingleOrDefault(f => f.Path.EndsWith(manifestFile) || f.Path.EndsWith(manifestFile.Replace("/", @"\")))
                         ?? throw new ArgumentException($"File {manifestFile} not found in source files.");
                 }
             }
