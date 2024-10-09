@@ -1,17 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using FluentAssertions;
-using Xunit;
-using Microsoft.DotNet.Cli.Sln.Internal;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Sln.Internal.Tests
 {
@@ -271,7 +261,7 @@ EndGlobal
             File.SetAttributes(tmpFile, attr);
         
             Action act = () => SlnFile.Read(tmpFile);
-            act.ShouldNotThrow("Because readonly file is not being modified.");
+            act.Should().NotThrow("Because readonly file is not being modified.");
         }
 
         [Fact]
@@ -332,7 +322,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(lineNum, LocalizableStrings.FileHeaderMissingVersionError));
         }
 
@@ -350,7 +340,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(LocalizableStrings.FileHeaderMissingError);
         }
 
@@ -372,7 +362,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(5, LocalizableStrings.GlobalSectionMoreThanOnceError));
         }
 
@@ -391,7 +381,7 @@ Global
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(3, LocalizableStrings.GlobalSectionNotClosedError));
         }
 
@@ -410,7 +400,7 @@ Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App\App.csproj"
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(3, LocalizableStrings.ProjectSectionNotClosedError));
         }
 
@@ -431,7 +421,7 @@ EndProject
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(3, LocalizableStrings.ProjectParsingErrorFormatString, "(", 0));
         }
 
@@ -453,7 +443,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(4, LocalizableStrings.InvalidSectionTypeError, "thisIsUnknown"));
         }
 
@@ -475,7 +465,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(4, LocalizableStrings.SectionIdMissingError));
         }
 
@@ -496,7 +486,7 @@ EndGlobal
                 SlnFile.Read(tmpFile);
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(6, LocalizableStrings.ClosingSectionTagNotFoundError));
         }
 
@@ -525,7 +515,7 @@ EndGlobal
                 }
             };
 
-            action.ShouldThrow<InvalidSolutionFormatException>()
+            action.Should().Throw<InvalidSolutionFormatException>()
                 .WithMessage(FormatError(7, LocalizableStrings.InvalidPropertySetFormatString, "."));
         }
 

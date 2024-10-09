@@ -1,18 +1,11 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -66,17 +59,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var reporter = new NullReporter();
             var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
             var sdkVersion = Product.Version;
-            var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir);
+            var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
             var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
             var tempPackagesDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             var nugetPackageDownloader = new NuGetPackageDownloader(tempPackagesDir,
                                           filePermissionSetter: null,
-                                          new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, new NullLogger()),
+                                          new FirstPartyNuGetPackageSigningVerifier(),
                                           new NullLogger(),
                                           reporter,
                                           verifySignatures: SignCheck.IsDotNetSigned());
             var installer = WorkloadInstallerFactory.GetWorkloadInstaller(reporter, new SdkFeatureBand(sdkVersion),
-                workloadResolver, Cli.VerbosityOptions.normal, userProfileDir, verifySignatures: false);
+                workloadResolver, VerbosityOptions.normal, userProfileDir, verifySignatures: false);
             var workloadRecordRepo = installer.GetWorkloadInstallationRecordRepository();
 
             return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, tempPackagesDir.Value, workloadRecordRepo, installer);
@@ -425,9 +418,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private async Task<bool> UpdatedAdManifestPackagesExistAsync()
         {
             var manifests = GetInstalledManifestIds();
-            var avaliableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest)))
+            var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest)))
                 .ConfigureAwait(false);
-            return avaliableUpdates.Any();
+            return availableUpdates.Any();
         }
 
         private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
@@ -463,30 +456,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     throw new ArgumentException(string.Format(LocalizableStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
                 }
             }
-            return JsonSerializer.Deserialize<IDictionary<string, string>>(fileContent)
-                .Select(manifest =>
-                {
-                    ManifestVersion manifestVersion;
-                    SdkFeatureBand manifestFeatureBand;
-                    var parts = manifest.Value.Split('/');
 
-                    string manifestVersionString = (parts[0]);
-                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion version))
-                    {
-                        throw new FormatException(String.Format(LocalizableStrings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
-                    }
-
-                    manifestVersion = new ManifestVersion(parts[0]);
-                    if (parts.Length == 1)
-                    {
-                        manifestFeatureBand = _sdkFeatureBand;
-                    }
-                    else
-                    {
-                        manifestFeatureBand = new SdkFeatureBand(parts[1]);
-                    }
-                    return (new ManifestId(manifest.Key), manifestVersion, manifestFeatureBand);
-                });
+            return WorkloadSet.FromJson(fileContent, _sdkFeatureBand).ManifestVersions
+                .Select(kvp => (kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand));
         }
 
         private bool BackgroundUpdatesAreDisabled() =>

@@ -27,6 +27,16 @@
         <target state="translated">Bildirim</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageIdArgumentDescription">
+        <source>The NuGet Package Id of the tool to list</source>
+        <target state="translated">Listelenen aracın NuGet Paket Kimliği</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdArgumentName">
+        <source>PACKAGE_ID</source>
+        <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionColumn">
         <source>Version</source>
         <target state="translated">Sürüm</target>

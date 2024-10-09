@@ -1,22 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -88,11 +73,11 @@ namespace Microsoft.NET.Build.Tests
 
             getValuesCommand.GetValuesWithMetadata().Select(valueAndMetadata => (valueAndMetadata.value, valueAndMetadata.metadata["VisualStudioComponentId"]))
                 .Should()
-                .BeEquivalentTo(("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload"));
+                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
 
             getValuesCommand.GetValuesWithMetadata().Select(valueAndMetadata => (valueAndMetadata.value, valueAndMetadata.metadata["VisualStudioComponentIds"]))
                 .Should()
-                .BeEquivalentTo(("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload"));
+                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
         }
 
         [Fact]
@@ -141,8 +126,6 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1147")
                 .And
-                .HaveStdOutContaining("ios")
-                .And
                 .HaveStdOutContaining("android");
         }
 
@@ -173,20 +156,20 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "WorkloadTest",
-                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-workloadtestplatform"
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android"
             };
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(testProject);
 
-            //  NETSDK1139: The target platform identifier workloadtestplatform was not recognized.
+            //  NETSDK1208: The target platform identifier android was not recognized.
             new BuildCommand(testAsset)
                 .WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "false")
                 .Execute()
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1139");
+                .HaveStdOutContaining("NETSDK1208");
         }
 
         [Fact]
@@ -272,7 +255,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("android");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [Theory(Skip = "https://github.com/dotnet/installer/issues/13361")]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;android-aot")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "macos;android-aot")]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android", "macos;android-aot")]

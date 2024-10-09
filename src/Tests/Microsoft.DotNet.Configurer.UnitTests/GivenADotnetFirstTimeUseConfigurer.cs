@@ -1,24 +1,13 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tests;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Moq;
-using Xunit;
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
     public class GivenADotnetFirstTimeUseConfigurer
     {
-        private const string CliFallbackFolderPath = "some path";
-
         private Mock<IFirstTimeUseNoticeSentinel> _firstTimeUseNoticeSentinelMock;
         private Mock<IAspNetCertificateSentinel> _aspNetCertificateSentinelMock;
         private Mock<IAspNetCoreCertificateGenerator> _aspNetCoreCertificateGeneratorMock;
@@ -51,10 +40,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -78,10 +67,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -105,10 +94,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -132,10 +121,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -159,10 +148,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true, 
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -185,10 +174,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: false,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -211,10 +200,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -236,10 +225,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -260,10 +249,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: false,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
@@ -288,10 +277,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: true,
                     telemetryOptout: false,
                     addGlobalToolsToPath: true,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object,
                 measurements);
 
@@ -328,10 +317,10 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     generateAspNetCertificate: false,
                     telemetryOptout: false,
                     addGlobalToolsToPath: false,
-                    nologo: false
+                    nologo: false,
+                    skipWorkloadIntegrityCheck: false
                 ),
                 _reporterMock.Object,
-                CliFallbackFolderPath,
                 _pathAdderMock.Object,
                 measurements);
 
