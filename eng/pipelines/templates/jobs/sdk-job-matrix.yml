@@ -79,6 +79,9 @@ parameters:
     publishXunitResults: true
   - categoryName: AoT
     runAoTTests: true
+  - categoryName: TestBuild
+    buildArchitecture: arm64
+    runtimeIdentifier: osx-arm64
 
 jobs:
 ### ONELOCBUILD ###
