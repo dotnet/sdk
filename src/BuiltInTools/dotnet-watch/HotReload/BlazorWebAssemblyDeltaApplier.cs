@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                     else
                     {
-                        await browserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
+                        await browserRefreshServer.SendJsonMessage(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
 
                         // We'll query the browser and ask it send capabilities.
                         var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ApplyStatus.AllChangesApplied;
             }
 
-            await browserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload
+            await browserRefreshServer.SendJsonMessageWithSecret(sharedSecret => new UpdatePayload
             {
                 SharedSecret = sharedSecret,
                 Deltas = updates.Select(update => new UpdateDelta
