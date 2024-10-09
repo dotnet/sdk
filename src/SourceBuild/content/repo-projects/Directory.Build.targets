@@ -37,7 +37,6 @@
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="AddNoWarns"
-          BeforeTargets="Build"
           Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
@@ -423,6 +422,7 @@
           Outputs="$(BaseIntermediateOutputPath)Build.complete"
           Condition="'$(BuildCommand)' != ''"
           DependsOnTargets="BuildRepoReferences;
+                            AddNoWarns;
                             UpdateNuGetConfig;
                             UpdateGlobalJsonVersions;
                             UpdateEngCommonFiles;
