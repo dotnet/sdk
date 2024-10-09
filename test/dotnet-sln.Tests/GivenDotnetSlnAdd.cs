@@ -475,7 +475,7 @@ EndGlobal
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnAdd")
+                .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -494,7 +494,7 @@ EndGlobal
         public void WhenInvalidSolutionIsFoundAddPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution")
+                .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -514,7 +514,7 @@ EndGlobal
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: "GivenDotnetSlnAdd")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -532,7 +532,7 @@ EndGlobal
         public void WhenNoSolutionExistsInTheDirectoryAddPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -599,7 +599,7 @@ EndGlobal
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(string solutionCommand, bool fooFirst)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVS")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVS", identifier: $"{solutionCommand}{fooFirst}")
                 .WithSource()
                 .Path;
             string projectToAdd;
@@ -642,7 +642,7 @@ EndGlobal
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-               .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVSErrors")
+               .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVSErrors", identifier: $"{solutionCommand}")
                .WithSource()
                .Path;
             string projectToAdd;
@@ -673,7 +673,7 @@ EndGlobal
         public void WhenDirectoryContainingProjectIsGivenProjectIsAdded(string solutionCommand, string testAsset)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -694,7 +694,7 @@ EndGlobal
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -721,7 +721,7 @@ EndGlobal
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -748,7 +748,7 @@ EndGlobal
         public void WhenProjectDirectoryIsAddedSolutionFoldersAreNotCreated(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -771,7 +771,7 @@ EndGlobal
         public void WhenSharedProjectAddedShouldStillBuild(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -796,7 +796,7 @@ EndGlobal
         public void WhenSolutionFolderExistsItDoesNotGetAdded(string solutionCommand, string firstComponent)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndSolutionFolders", identifier: firstComponent)
+                .CopyTestAsset("TestAppWithSlnAndSolutionFolders", identifier: $"{solutionCommand}{firstComponent}")
                 .WithSource()
                 .Path;
 
@@ -842,7 +842,7 @@ EndGlobal
             string expectedProjectGuid)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -873,7 +873,7 @@ EndGlobal
         public void WhenValidProjectIsPassedItGetsAdded(string solutionCommand, string testAsset)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -893,7 +893,7 @@ EndGlobal
         public void WhenProjectIsAddedSolutionHasUTF8BOM(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithEmptySln")
+                .CopyTestAsset("TestAppWithEmptySln", $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -925,7 +925,7 @@ EndGlobal
         public void WhenInvalidProjectIsPassedItDoesNotGetAdded(string solutionCommand, string testAsset)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -954,7 +954,7 @@ EndGlobal
         public void WhenValidProjectIsPassedTheSlnBuilds(string solutionCommand, string testAsset)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -996,7 +996,7 @@ EndGlobal
         public void WhenSolutionAlreadyContainsProjectItDoesntDuplicate(string solutionCommand, string testAsset)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -1016,7 +1016,7 @@ EndGlobal
         public void WhenPassedMultipleProjectsAndOneOfthemDoesNotExistItCancelsWholeOperation(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1040,7 +1040,7 @@ EndGlobal
         public void WhenPassedAnUnknownProjectTypeItFails(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProject")
+                .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProject", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1077,7 +1077,7 @@ EndGlobal
             string expectedTypeGuid)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -1102,7 +1102,7 @@ EndGlobal
         public void WhenPassedAProjectWithoutATypeGuidItErrors(string solutionCommand)
         {
             var solutionDirectory = _testAssetsManager
-                .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType")
+                .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1131,7 +1131,7 @@ EndGlobal
         private void WhenSlnContainsSolutionFolderWithDifferentCasingItDoesNotCreateDuplicate(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCaseSensitiveSolutionFolders")
+                .CopyTestAsset("TestAppWithSlnAndCaseSensitiveSolutionFolders", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1153,7 +1153,7 @@ EndGlobal
         public void WhenProjectWithoutMatchingConfigurationsIsAddedSolutionMapsToFirstAvailable(string solutionCommand)
         {
             var slnDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndProjectConfigs")
+                .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1174,7 +1174,7 @@ EndGlobal
         public void WhenProjectWithMatchingConfigurationsIsAddedSolutionMapsAll(string solutionCommand)
         {
             var slnDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndProjectConfigs")
+                .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1195,7 +1195,7 @@ EndGlobal
         public void WhenProjectWithAdditionalConfigurationsIsAddedSolutionDoesNotMapThem(string solutionCommand)
         {
             var slnDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndProjectConfigs")
+                .CopyTestAsset("TestAppWithSlnAndProjectConfigs", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1216,7 +1216,7 @@ EndGlobal
         public void ItAddsACSharpProjectThatIsMultitargeted(string solutionCommand)
         {
             var solutionDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects")
+                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1237,7 +1237,7 @@ EndGlobal
         public void ItAddsAVisualBasicProjectThatIsMultitargeted(string solutionCommand)
         {
             var solutionDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects")
+                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1258,7 +1258,7 @@ EndGlobal
         public void ItAddsAnFSharpProjectThatIsMultitargeted(string solutionCommand)
         {
             var solutionDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects")
+                .CopyTestAsset("TestAppsWithSlnAndMultitargetedProjects", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1280,7 +1280,7 @@ EndGlobal
         public void WhenNestedProjectIsAddedAndInRootOptionIsPassedNoSolutionFoldersAreCreated(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1302,7 +1302,7 @@ EndGlobal
         public void WhenSolutionFolderIsPassedProjectsAreAddedThere(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1324,7 +1324,7 @@ EndGlobal
         public void WhenSolutionFolderAndInRootIsPassedItFails(string solutionCommand)
         {
             var solutionDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1353,7 +1353,7 @@ EndGlobal
         public void WhenSolutionFolderIsPassedWithDirectorySeparatorFolderStructureIsCorrect(string solutionCommand, string solutionFolder, string testIdentifier)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: testIdentifier)
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}{testIdentifier}")
                 .WithSource()
                 .Path;
 
@@ -1433,7 +1433,7 @@ EndGlobal
         private void VerifySuggestionAndUsage(string solutionCommand, string arguments)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{arguments}")
                 .WithSource()
                 .Path;
 
