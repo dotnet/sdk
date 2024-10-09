@@ -305,7 +305,7 @@ EndGlobal
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnRemove")
+                .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -324,7 +324,7 @@ EndGlobal
         public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution")
+                .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -344,7 +344,7 @@ EndGlobal
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: "GivenDotnetSlnRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -362,7 +362,7 @@ EndGlobal
         public void WhenNoSolutionExistsInTheDirectoryRemovePrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -381,7 +381,7 @@ EndGlobal
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: "GivenDotnetSlnRemove")
+                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -400,7 +400,7 @@ EndGlobal
         public void WhenPassedAReferenceNotInSlnItPrintsStatus(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -421,7 +421,7 @@ EndGlobal
         public void WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -447,7 +447,7 @@ EndGlobal
         public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders")
+                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -473,7 +473,7 @@ EndGlobal
         public void WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndDuplicateProjectReferences")
+                .CopyTestAsset("TestAppWithSlnAndDuplicateProjectReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -502,7 +502,7 @@ EndGlobal
         public void WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -533,7 +533,7 @@ EndGlobal
         public void WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -557,7 +557,7 @@ EndGlobal
         public void WhenDirectoryContainingProjectIsGivenProjectIsRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -580,7 +580,7 @@ EndGlobal
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
             var directoryToRemove = "Empty";
@@ -602,7 +602,7 @@ EndGlobal
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
             var directoryToRemove = "Multiple";
@@ -624,7 +624,7 @@ EndGlobal
         public void WhenReferenceIsRemovedSlnBuilds(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -665,7 +665,7 @@ EndGlobal
         public void WhenProjectIsRemovedSolutionHasUTF8BOM(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -693,7 +693,7 @@ EndGlobal
         public void WhenFinalReferenceIsRemovedEmptySectionsAreRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -719,7 +719,7 @@ EndGlobal
         public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirToRemove")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -741,7 +741,7 @@ EndGlobal
         public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndLastCsprojInSubDirToRemove")
+                .CopyTestAsset("TestAppWithSlnAndLastCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -763,7 +763,7 @@ EndGlobal
         public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnProjectDependencyToRemove")
+                .CopyTestAsset("TestAppWithSlnProjectDependencyToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -785,7 +785,7 @@ EndGlobal
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
