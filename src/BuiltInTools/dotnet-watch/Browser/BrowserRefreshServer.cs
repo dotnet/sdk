@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
@@ -31,35 +32,39 @@ namespace Microsoft.DotNet.Watcher.Tools
             public string? SharedSecret { get; } = sharedSecret;
             public int Id { get; } = id;
 
-            internal async Task SendMessageAsync(ReadOnlyMemory<byte> messageBytes, IReporter reporter, CancellationToken cancellationToken)
-            {
-                try
-                {
-                    await ClientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
-                }
-                catch (TaskCanceledException)
-                {
-                    reporter.Verbose($"Browser connection #{Id} has been terminated.");
-                }
-                catch (Exception e)
-                {
-                    reporter.Verbose($"Failed to send message to browser #{Id}: {e.Message}");
-                }
-            }
-
             public async ValueTask DisposeAsync()
             {
                 await ClientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
                 ClientSocket.Dispose();
             }
+
+            internal ValueTask SendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+                => ClientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+
+            internal async ValueTask ReceiveMessageAsync(Action<ReadOnlySpan<byte>> receiver, CancellationToken cancellationToken)
+            {
+                var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
+
+                while (true)
+                {
+                    var result = await ClientSocket.ReceiveAsync(writer.GetMemory(), cancellationToken);
+                    writer.Advance(result.Count);
+                    if (result.EndOfMessage)
+                    {
+                        break;
+                    }
+                }
+
+                receiver(writer.WrittenSpan);
+            }
         }
 
-        private readonly byte[] ReloadMessage = Encoding.UTF8.GetBytes("Reload");
-        private readonly byte[] WaitMessage = Encoding.UTF8.GetBytes("Wait");
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+        private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
+        private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
-
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _clientConnected;
@@ -289,57 +294,72 @@ namespace Microsoft.DotNet.Watcher.Tools
             return openConnections;
         }
 
-        public ValueTask SendJsonMessage<TValue>(TValue value, CancellationToken cancellationToken)
-        {
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions);
-            return Send(jsonSerialized, cancellationToken);
-        }
+        private static ReadOnlyMemory<byte> SerializeJson<TValue>(TValue value)
+            => JsonSerializer.SerializeToUtf8Bytes(value, s_jsonSerializerOptions);
 
-        public async ValueTask SendJsonMessageWithSecret<TValue>(Func<string?, TValue> messageFactory, CancellationToken cancellationToken)
-        {
-            foreach (var connection in await GetOpenBrowserConnectionsAsync())
-            {
-                var message = messageFactory(connection.SharedSecret);
-                var messageBytes = JsonSerializer.SerializeToUtf8Bytes(message, _jsonSerializerOptions);
-                await connection.SendMessageAsync(messageBytes, _reporter, cancellationToken);
-            }
-        }
+        public ValueTask SendJsonMessage<TValue>(TValue value, CancellationToken cancellationToken)
+            => Send(SerializeJson(value), cancellationToken);
+
+        public ValueTask ReloadAsync(CancellationToken cancellationToken)
+            => Send(s_reloadMessage, cancellationToken);
+
+        public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
+            => Send(s_waitMessage, cancellationToken);
 
         public async ValueTask Send(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
         {
             foreach (var connection in await GetOpenBrowserConnectionsAsync())
             {
-                await connection.SendMessageAsync(messageBytes, _reporter, cancellationToken);
+                try
+                {
+                    await connection.SendMessageAsync(messageBytes, cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    _reporter.Verbose($"Failed to send message to browser #{connection.Id}: {e.Message}");
+                }
             }
         }
 
-        public async ValueTask<TValue> SendAndReceive<TValue>(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+        public async ValueTask SendAndReceive<TRequest>(
+            Func<string?, TRequest> request,
+            Action<ReadOnlySpan<byte>> response,
+            CancellationToken cancellationToken)
         {
+            var responded = false;
+
             foreach (var connection in await GetOpenBrowserConnectionsAsync())
             {
-                await connection.SendMessageAsync(messageBytes, _reporter, cancellationToken);
+                var requestBytes = SerializeJson(request(connection.SharedSecret));
 
                 try
                 {
-                    var result = await connection.ReceiveMessageAsync(buffer, cancellationToken);
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        continue;
-                    }
-
-                    return result;
+                    await connection.SendMessageAsync(requestBytes, cancellationToken);
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    _reporter.Verbose($"Refresh server error: {ex}");
+                    _reporter.Verbose($"Failed to send message to browser #{connection.Id}: {e.Message}");
+                    continue;
                 }
+
+                try
+                {
+                    await connection.ReceiveMessageAsync(response, cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    _reporter.Verbose($"Failed to receive response from browser #{connection.Id}: {e.Message}");
+                    continue;
+                }
+
+                responded = true;
+            }
+
+            if (!responded)
+            {
+                _reporter.Verbose($"Failed to receive response from a connected browser.");
             }
         }
-
-        public ValueTask ReloadAsync(CancellationToken cancellationToken) => Send(ReloadMessage, cancellationToken);
-
-        public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken) => Send(WaitMessage, cancellationToken);
 
         private async Task<bool> SupportsTLS()
         {
