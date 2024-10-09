@@ -21,6 +21,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly SemaphoreSlim _capabilityRetrievalSemaphore = new(initialCount: 1);
         private int _sequenceId;
 
+        public override void Dispose()
+        {
+            // Do nothing.
+        }
+
         public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
         }
@@ -71,32 +76,37 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                     else
                     {
-                        await browserRefreshServer.SendJsonMessage(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
+                        string? capabilityString = null;
 
-                        // We'll query the browser and ask it send capabilities.
-                        var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
-                        if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
+                        await browserRefreshServer.SendAndReceive(
+                            request: _ => default(BlazorRequestApplyUpdateCapabilities),
+                            response: value =>
+                            {
+                                var str = Encoding.UTF8.GetString(value);
+                                if (str.StartsWith('!'))
+                                {
+                                    Reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
+                                }
+                                else if (str.Length == 0)
+                                {
+                                    Reporter.Verbose($"Unable to read WASM runtime capabilities");
+                                }
+                                else if (capabilityString == null)
+                                {
+                                    capabilityString = str;
+                                }
+                                else if (capabilityString != str)
+                                {
+                                    Reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
+                                }
+                            },
+                            cancellationToken);
+
+                        if (capabilityString != null)
                         {
-                            throw new ApplicationException("Unable to connect to the browser refresh server.");
+                            capabilities = capabilityString;
                         }
-
-                        capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
-
-                        var shouldFallBackToDefaultCapabilities = false;
-
-                        // error while fetching capabilities from WASM:
-                        if (capabilities.StartsWith('!'))
-                        {
-                            Reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
-                            shouldFallBackToDefaultCapabilities = true;
-                        }
-                        else if (capabilities.Length == 0)
-                        {
-                            Reporter.Verbose($"Unable to read WASM runtime capabilities");
-                            shouldFallBackToDefaultCapabilities = true;
-                        }
-
-                        if (shouldFallBackToDefaultCapabilities)
+                        else
                         {
                             capabilities = GetDefaultCapabilities(targetFrameworkVersion);
                             Reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
@@ -144,71 +154,57 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ApplyStatus.AllChangesApplied;
             }
 
-            await browserRefreshServer.SendJsonMessageWithSecret(sharedSecret => new UpdatePayload
-            {
-                SharedSecret = sharedSecret,
-                Deltas = updates.Select(update => new UpdateDelta
+            var anySuccess = false;
+            var anyFailure = false;
+
+            await browserRefreshServer.SendAndReceive(
+                request: sharedSecret => new UpdatePayload
                 {
-                    SequenceId = _sequenceId++,
-                    ModuleId = update.ModuleId,
-                    MetadataDelta = update.MetadataDelta.ToArray(),
-                    ILDelta = update.ILDelta.ToArray(),
-                    UpdatedTypes = update.UpdatedTypes.ToArray(),
-                })
-            }, cancellationToken);
-
-            bool result = await ReceiveApplyUpdateResult(browserRefreshServer, cancellationToken);
-
-            return !result ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
-        }
-
-        private async Task<bool> ReceiveApplyUpdateResult(BrowserRefreshServer browserRefresh, CancellationToken cancellationToken)
-        {
-            var buffer = new byte[1];
-
-            var result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
-            if (result is not { MessageType: WebSocketMessageType.Binary })
-            {
-                // A null result indicates no clients are connected. No deltas could have been applied in this state.
-                Reporter.Verbose("Apply confirmation: No browser is connected");
-                return false;
-            }
-
-            if (result is { Count: 1, EndOfMessage: true })
-            {
-                return buffer[0] == 1;
-            }
-
-            Reporter.Verbose("Browser failed to apply the change and reported error:");
-
-            buffer = new byte[1024];
-            var messageStream = new MemoryStream();
-
-            while (true)
-            {
-                result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
-                if (result is not { MessageType: WebSocketMessageType.Binary })
+                    SharedSecret = sharedSecret,
+                    Deltas = updates.Select(update => new UpdateDelta
+                    {
+                        SequenceId = _sequenceId++,
+                        ModuleId = update.ModuleId,
+                        MetadataDelta = update.MetadataDelta.ToArray(),
+                        ILDelta = update.ILDelta.ToArray(),
+                        UpdatedTypes = update.UpdatedTypes.ToArray(),
+                    })
+                },
+                response: value =>
                 {
-                    Reporter.Verbose("Failed to receive error message");
-                    break;
-                }
+                    if (value is [])
+                    {
+                        Reporter.Verbose($"Unexpected response length: {value.Length}");
+                        anyFailure = true;
+                        return;
+                    }
 
-                messageStream.Write(buffer, 0, result.Value.Count);
+                    var status = value[0];
+                    if (status == 1)
+                    {
+                        if (value.Length > 1)
+                        {
+                            Reporter.Verbose($"Unexpected response length: {value.Length}");
+                        }
 
-                if (result is { EndOfMessage: true })
-                {
-                    // message and stack trace are separated by '\0'
-                    Reporter.Verbose(Encoding.UTF8.GetString(messageStream.ToArray()).Replace("\0", Environment.NewLine));
-                    break;
-                }
-            }
+                        anySuccess = true;
+                        return;
+                    }
 
-            return false;
-        }
+                    if (value.Length > 1)
+                    {
+                        Reporter.Error("Browser failed to apply the change and reported error:");
+                        Reporter.Error(Encoding.UTF8.GetString(value[1..]).Replace("\0", Environment.NewLine));
+                    }
 
-        public override void Dispose()
-        {
-            // Do nothing.
+                    anyFailure = true;
+                },
+                cancellationToken);
+
+            // If no browser is connected we assume the changes have been applied.
+            // If at least one browser suceeds we consider the changes successfully applied.
+            // TODO: The refresh server should remember the deltas and apply them to browsers connected in future.
+            return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
         private readonly struct UpdatePayload
