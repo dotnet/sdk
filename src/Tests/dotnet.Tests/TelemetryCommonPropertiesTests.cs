@@ -34,6 +34,13 @@ namespace Microsoft.DotNet.Tests
         }
 
         [Fact]
+        public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
+        {
+            var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
+            unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"].Should().Be("plaintext");
+        }
+
+        [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
@@ -42,6 +49,19 @@ namespace Microsoft.DotNet.Tests
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
         
+        [Fact]
+        public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
+        {
+            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
+
+            Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
+
+            Guid.TryParse(secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
+        }
+
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
         {

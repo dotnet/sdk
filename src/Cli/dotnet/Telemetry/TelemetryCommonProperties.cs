@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             Func<string> getCurrentDirectory = null,
             Func<string, string> hasher = null,
             Func<string> getMACAddress = null,
+            Func<string> getDeviceId = null,
             IDockerContainerDetector dockerContainerDetector = null,
             IUserLevelCacheWriter userLevelCacheWriter = null,
             ICIEnvironmentDetector ciEnvironmentDetector = null)
@@ -21,6 +22,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
             _hasher = hasher ?? Sha256Hasher.Hash;
             _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+            _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
             _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
             _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
             _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
@@ -31,6 +33,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private Func<string> _getCurrentDirectory;
         private Func<string, string> _hasher;
         private Func<string> _getMACAddress;
+        private Func<string> _getDeviceId;
         private IUserLevelCacheWriter _userLevelCacheWriter;
         private const string OSVersion = "OS Version";
         private const string OSPlatform = "OS Platform";
@@ -40,6 +43,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private const string ProductVersion = "Product Version";
         private const string TelemetryProfile = "Telemetry Profile";
         private const string CurrentPathHash = "Current Path Hash";
+        private const string DeviceId = "devdeviceid";
         private const string MachineId = "Machine ID";
         private const string MachineIdOld = "Machine ID Old";
         private const string DockerContainer = "Docker Container";
@@ -81,6 +85,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                             CliFolderPathCalculator.DotnetUserProfileFolderPath,
                             $"{MachineIdCacheKey}.v1.dotnetUserLevelCache"),
                         GetMachineId)},
+                {DeviceId, _getDeviceId()},
                 {KernelVersion, GetKernelVersion()},
                 {InstallationType, ExternalTelemetryProperties.GetInstallationType()},
                 {ProductType, ExternalTelemetryProperties.GetProductType()},
