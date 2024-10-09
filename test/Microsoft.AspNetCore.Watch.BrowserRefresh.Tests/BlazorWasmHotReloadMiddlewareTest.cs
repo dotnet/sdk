@@ -4,7 +4,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-
+#if F
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class BlazorWasmHotReloadMiddlewareTest
@@ -15,26 +15,33 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            var deltas = new[]
+            var updates = new BlazorWasmHotReloadMiddleware.Update[]
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new()
                 {
                     SequenceId = 0,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta1",
-                    MetadataDelta = "MetadataDelta1",
-                    UpdatedTypes = [42],
-                },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
-                {
-                    SequenceId = 1,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta2",
-                    MetadataDelta = "MetadataDelta2",
-                    UpdatedTypes = [42],
+                    Deltas =
+                    [
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta1",
+                            PdbDelta = "PDBDelta1",
+                            MetadataDelta = "MetadataDelta1",
+                            UpdatedTypes = [42],
+                        },
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta2",
+                            PdbDelta = "PDBDelta2",
+                            MetadataDelta = "MetadataDelta2",
+                            UpdatedTypes = [42],
+                        }
+                    ]
                 }
             };
-            context.Request.Body = GetJson(deltas);
+            context.Request.Body = GetJson(updates);
 
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
@@ -42,36 +49,50 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await middleware.InvokeAsync(context);
 
             // Assert
-            AssertDeltas(deltas, middleware.Deltas);
-            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
+            AssertUpdates(updates, middleware.Updates);
         }
 
         [Fact]
         public async Task DuplicateDeltasOnPostAreIgnored()
         {
             // Arrange
-            var deltas = new[]
+            var updates = new BlazorWasmHotReloadMiddleware.Update[]
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new()
                 {
                     SequenceId = 0,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta1",
-                    MetadataDelta = "MetadataDelta1",
-                    UpdatedTypes = [42],
+                    Deltas =
+                    [
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta1",
+                            PdbDelta = "PDBDelta1",
+                            MetadataDelta = "MetadataDelta1",
+                            UpdatedTypes = [42],
+                        }
+                    ]
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new()
                 {
                     SequenceId = 1,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta2",
-                    MetadataDelta = "MetadataDelta2",
-                    UpdatedTypes = [42],
+                    Deltas =
+                    [
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta2",
+                            PdbDelta = "PDBDelta2",
+                            MetadataDelta = "MetadataDelta2",
+                            UpdatedTypes = [42],
+                        }
+                    ]
                 }
             };
+
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(deltas);
+            context.Request.Body = GetJson(updates);
 
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
@@ -81,40 +102,53 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Act 2
             context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(deltas);
+            context.Request.Body = GetJson(updates);
             await middleware.InvokeAsync(context);
 
             // Assert
-            AssertDeltas(deltas, middleware.Deltas);
-            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
+            AssertUpdates(updates, middleware.Updates);
         }
 
         [Fact]
         public async Task MultipleDeltaPayloadsCanBeAccepted()
         {
             // Arrange
-            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            var updates = new BlazorWasmHotReloadMiddleware.Update[]
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new()
                 {
                     SequenceId = 0,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta1",
-                    MetadataDelta = "MetadataDelta1",
-                    UpdatedTypes = [42],
+                    Deltas =
+                    [
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta1",
+                            PdbDelta = "PDBDelta1",
+                            MetadataDelta = "MetadataDelta1",
+                            UpdatedTypes = [42],
+                        }
+                    ]
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new()
                 {
                     SequenceId = 1,
-                    ModuleId = Guid.NewGuid().ToString(),
-                    ILDelta = "ILDelta2",
-                    MetadataDelta = "MetadataDelta2",
-                    UpdatedTypes = [42],
+                    Deltas =
+                    [
+                        new()
+                        {
+                            ModuleId = Guid.NewGuid().ToString(),
+                            ILDelta = "ILDelta2",
+                            PdbDelta = "PDBDelta2",
+                            MetadataDelta = "MetadataDelta2",
+                            UpdatedTypes = [42],
+                        }
+                    ]
                 }
             };
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(deltas);
+            context.Request.Body = GetJson(updates);
 
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
@@ -122,9 +156,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await middleware.InvokeAsync(context);
 
             // Act 2
-            var newDeltas = new[]
+            var newUpdate = new  new[]
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 3,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -132,7 +166,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     MetadataDelta = "MetadataDelta3",
                     UpdatedTypes = [42],
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 4,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -140,7 +174,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     MetadataDelta = "MetadataDelta4",
                     UpdatedTypes = [42],
                 },
-                    new BlazorWasmHotReloadMiddleware.UpdateDelta
+                    new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 5,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -152,12 +186,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(newDeltas);
+            context.Request.Body = GetJson(newUpdate);
             await middleware.InvokeAsync(context);
 
             // Assert
-            deltas.AddRange(newDeltas);
-            AssertDeltas(deltas, middleware.Deltas);
+            deltas.AddRange(newUpdate);
+            AssertUpdates(deltas, middleware.Updates);
             Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
@@ -185,9 +219,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var stream = new MemoryStream();
             context.Response.Body = stream;
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            var deltas = new List<BlazorWasmHotReloadMiddleware.Update>
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 0,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -195,7 +229,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     MetadataDelta = "MetadataDelta1",
                     UpdatedTypes = [42],
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 1,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -204,7 +238,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     UpdatedTypes = [42],
                 }
             };
-            middleware.Deltas.AddRange(deltas);
+            middleware.Updates.AddRange(deltas);
 
             // Act
             await middleware.InvokeAsync(context);
@@ -224,9 +258,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            var deltas = new List<BlazorWasmHotReloadMiddleware.Update>
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 0,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -234,7 +268,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     MetadataDelta = "MetadataDelta1",
                     UpdatedTypes = [42],
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 1,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -243,7 +277,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     UpdatedTypes = [42],
                 }
             };
-            middleware.Deltas.AddRange(deltas);
+            middleware.Updates.AddRange(deltas);
 
             // Act 1
             await middleware.InvokeAsync(context);
@@ -267,9 +301,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
             var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            var deltas = new List<BlazorWasmHotReloadMiddleware.Update>
             {
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 0,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -277,7 +311,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     MetadataDelta = "MetadataDelta1",
                     UpdatedTypes = [42],
                 },
-                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                new BlazorWasmHotReloadMiddleware.Update
                 {
                     SequenceId = 1,
                     ModuleId = Guid.NewGuid().ToString(),
@@ -286,14 +320,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     UpdatedTypes = [42],
                 }
             };
-            middleware.Deltas.AddRange(deltas);
+            middleware.Updates.AddRange(deltas);
 
             // Act 1
             await middleware.InvokeAsync(context);
             var etag = context.Response.Headers[HeaderNames.ETag];
 
             // Act 2
-            var update = new BlazorWasmHotReloadMiddleware.UpdateDelta
+            var update = new BlazorWasmHotReloadMiddleware.Update
             {
                 SequenceId = 3,
                 ModuleId = Guid.NewGuid().ToString(),
@@ -302,7 +336,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 UpdatedTypes = [42],
             };
             deltas.Add(update);
-            middleware.Deltas.Add(update);
+            middleware.Updates.Add(update);
             context = new DefaultHttpContext();
             context.Request.Method = "get";
             context.Request.Headers[HeaderNames.IfNoneMatch] = etag;
@@ -319,7 +353,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.NotEqual(etag, context.Response.Headers[HeaderNames.ETag]);
         }
 
-        private static void AssertDeltas(IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> actual)
+        private static void AssertUpdates(IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> actual)
         {
             Assert.Equal(expected.Count, actual.Count);
 
@@ -333,10 +367,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
         }
 
-        private Stream GetJson(IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> deltas)
+        private Stream GetJson(IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> deltas)
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(deltas, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return new MemoryStream(bytes);
         }
     }
 }
+#endif

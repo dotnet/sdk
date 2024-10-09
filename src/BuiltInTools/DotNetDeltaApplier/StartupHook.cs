@@ -67,8 +67,10 @@ internal sealed class StartupHook
 
                     Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
 
-                    var logEntries = agent.ApplyDeltas(update.Deltas, update.ResponseLoggingLevel);
+                    agent.ApplyDeltas(update.Deltas);
+                    var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
 
+                    // response:
                     pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
                     UpdatePayload.WriteLog(pipeClient, logEntries);
                 }

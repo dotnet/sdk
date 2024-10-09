@@ -332,7 +332,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         if (runningProject.BrowserRefreshServer is { } server)
                         {
                             runningProject.Reporter.Verbose("Refreshing browser.");
-                            await server.RefreshBrowserAsync(cancellationToken);
+                            await server.RefreshBrowser(cancellationToken);
                         }
                     }
                 }
@@ -433,7 +433,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // report or clear diagnostics in the browser UI
             await ForEachProjectAsync(
                 _runningProjects,
-                (project, cancellationToken) => project.BrowserRefreshServer?.ReportCompilationErrorsInBrowserAsync(diagnosticsToDisplay.ToImmutableArray(), cancellationToken).AsTask() ?? Task.CompletedTask,
+                (project, cancellationToken) => project.BrowserRefreshServer?.ReportCompilationErrorsInBrowser(diagnosticsToDisplay.ToImmutableArray(), cancellationToken).AsTask() ?? Task.CompletedTask,
                 cancellationToken);
         }
 

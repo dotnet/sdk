@@ -1,12 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System.Buffers;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Net.WebSockets;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.HotReload;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -19,7 +17,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private ImmutableArray<string> _cachedCapabilities;
         private readonly SemaphoreSlim _capabilityRetrievalSemaphore = new(initialCount: 1);
-        private int _sequenceId;
+        private int _updateId;
 
         public override void Dispose()
         {
@@ -33,7 +31,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
             // Wait for the browser connection to be established as an indication that the process has started.
             // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
-            => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
+            => await browserRefreshServer.WaitForClientConnection(cancellationToken);
 
         public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
@@ -66,7 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 {
                     Reporter.Verbose("Connecting to the browser.");
 
-                    await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
+                    await browserRefreshServer.WaitForClientConnection(cancellationToken);
 
                     string capabilities;
                     if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
@@ -79,17 +77,17 @@ namespace Microsoft.DotNet.Watcher.Tools
                         string? capabilityString = null;
 
                         await browserRefreshServer.SendAndReceive(
-                            request: _ => default(BlazorRequestApplyUpdateCapabilities),
-                            response: value =>
+                            request: _ => default(JsonGetApplyUpdateCapabilitiesRequest),
+                            response: (value, reporter) =>
                             {
                                 var str = Encoding.UTF8.GetString(value);
                                 if (str.StartsWith('!'))
                                 {
-                                    Reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
+                                    reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
                                 }
                                 else if (str.Length == 0)
                                 {
-                                    Reporter.Verbose($"Unable to read WASM runtime capabilities");
+                                    reporter.Verbose($"Unable to read WASM runtime capabilities");
                                 }
                                 else if (capabilityString == null)
                                 {
@@ -97,7 +95,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                                 }
                                 else if (capabilityString != str)
                                 {
-                                    Reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
+                                    reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
                                 }
                             },
                             cancellationToken);
@@ -157,47 +155,42 @@ namespace Microsoft.DotNet.Watcher.Tools
             var anySuccess = false;
             var anyFailure = false;
 
+            // Make sure to send the same update to all browsers, the only difference is the shared secret.
+
+            var updateId = _updateId++;
+            var deltas = updates.Select(update => new JsonDelta
+            {
+                ModuleId = update.ModuleId,
+                MetadataDelta = [.. update.MetadataDelta],
+                ILDelta = [.. update.ILDelta],
+                PdbDelta = [.. update.PdbDelta],
+                UpdatedTypes = [.. update.UpdatedTypes],
+            }).ToArray();
+
+            var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+
             await browserRefreshServer.SendAndReceive(
-                request: sharedSecret => new UpdatePayload
+                request: sharedSecret => new JsonApplyHotReloadDeltasRequest
                 {
                     SharedSecret = sharedSecret,
-                    Deltas = updates.Select(update => new UpdateDelta
-                    {
-                        SequenceId = _sequenceId++,
-                        ModuleId = update.ModuleId,
-                        MetadataDelta = update.MetadataDelta.ToArray(),
-                        ILDelta = update.ILDelta.ToArray(),
-                        UpdatedTypes = update.UpdatedTypes.ToArray(),
-                    })
+                    UpdateId = updateId,
+                    Deltas = deltas,
+                    ResponseLoggingLevel = (int)loggingLevel
                 },
-                response: value =>
+                response: (value, reporter) =>
                 {
-                    if (value is [])
-                    {
-                        Reporter.Verbose($"Unexpected response length: {value.Length}");
-                        anyFailure = true;
-                        return;
-                    }
+                    var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
-                    var status = value[0];
-                    if (status == 1)
+                    if (data.Success)
                     {
-                        if (value.Length > 1)
-                        {
-                            Reporter.Verbose($"Unexpected response length: {value.Length}");
-                        }
-
                         anySuccess = true;
-                        return;
                     }
-
-                    if (value.Length > 1)
+                    else
                     {
-                        Reporter.Error("Browser failed to apply the change and reported error:");
-                        Reporter.Error(Encoding.UTF8.GetString(value[1..]).Replace("\0", Environment.NewLine));
+                        anyFailure = true;
                     }
 
-                    anyFailure = true;
+                    ReportLog(reporter, data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)));
                 },
                 cancellationToken);
 
@@ -207,24 +200,38 @@ namespace Microsoft.DotNet.Watcher.Tools
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private readonly struct UpdatePayload
+        private readonly struct JsonApplyHotReloadDeltasRequest
         {
-            public string Type => "BlazorHotReloadDeltav2";
+            public string Type => "BlazorHotReloadDeltav3";
             public string? SharedSecret { get; init; }
-            public IEnumerable<UpdateDelta> Deltas { get; init; }
+
+            public int UpdateId { get; init; }
+            public JsonDelta[] Deltas { get; init; }
+            public int ResponseLoggingLevel { get; init; }
         }
 
-        private readonly struct UpdateDelta
+        private readonly struct JsonDelta
         {
-            public int SequenceId { get; init; }
-            public string ServerId { get; init; }
             public Guid ModuleId { get; init; }
             public byte[] MetadataDelta { get; init; }
             public byte[] ILDelta { get; init; }
+            public byte[] PdbDelta { get; init; }
             public int[] UpdatedTypes { get; init; }
         }
 
-        private readonly struct BlazorRequestApplyUpdateCapabilities
+        private readonly struct JsonApplyDeltasResponse
+        {
+            public bool Success { get; init; }
+            public IEnumerable<JsonLogEntry> Log { get; init; }
+        }
+
+        private readonly struct JsonLogEntry
+        {
+            public string Message { get; init; }
+            public int Severity { get; init; }
+        }
+
+        private readonly struct JsonGetApplyUpdateCapabilitiesRequest
         {
             public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }
