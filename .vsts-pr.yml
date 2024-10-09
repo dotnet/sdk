@@ -155,7 +155,7 @@ stages:
       parameters:
         agentOs: Darwin
         pool:
-          vmImage: 'macos-12'
+          vmImage: 'macOS-latest'
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: OSX.13.Amd64.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
