@@ -22,8 +22,11 @@ internal class IncrementalMSBuildWorkspace : Workspace
     {
         WorkspaceFailed += (_sender, diag) =>
         {
-            // Errors reported here are not fatal, an exception would be thrown for fatal issues.
-            reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
+            // Report both Warning and Failure as warnings.
+            // MSBuildProjectLoader reports Failures for cases where we can safely continue loading projects
+            // (e.g. non-C#/VB project is ignored).
+            // https://github.com/dotnet/roslyn/issues/75170
+            reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
         };
 
         _reporter = reporter;
