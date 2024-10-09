@@ -43,6 +43,7 @@
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Utils/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateSearch.Common/8.0.*" />
     <UsagePattern IdentityGlob="System.Drawing.Common/8.0.*" />
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
