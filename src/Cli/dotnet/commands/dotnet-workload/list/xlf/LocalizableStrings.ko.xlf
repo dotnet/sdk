@@ -13,13 +13,8 @@
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
-        <target state="translated">{1}의 global.json 파일에 고정되어 워크로드 버전 {0}을(를) 찾았습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
-        <target state="translated">{1}의 global.json 파일에 고정된 워크로드 버전 {0}을(를) 찾았지만 설치되지 않았습니다. 'dotnet 워크로드 설치', 'dotnet 워크로드 업데이트' 또는 'dotnet 워크로드 복원'을 실행하면 이 문제가 해결될 수 있습니다.</target>
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="needs-review-translation">{1}의 global.json 파일에 고정되어 워크로드 버전 {0}을(를) 찾았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
