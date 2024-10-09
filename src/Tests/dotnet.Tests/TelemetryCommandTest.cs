@@ -14,6 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class TelemetryCommandTests : SdkTest
     {
         private readonly FakeRecordEventNameTelemetry _fakeTelemetry;
@@ -310,7 +311,7 @@ namespace Microsoft.DotNet.Tests
         public void DotnetPublishCommandRuntimeOpinionsShouldBeSentToTelemetry()
         {
             const string optionKey = "runtime";
-            const string optionValueToSend = "win10-x64";
+            const string optionValueToSend = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             string[] args = { "publish", "--" + optionKey, optionValueToSend };
             Cli.Program.ProcessArgs(args);
             _fakeTelemetry
@@ -325,7 +326,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void DotnetBuildAndPublishCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
         {
-            string[] args = { "build", "--configuration", "Debug", "--runtime", "osx.10.11-x64" };
+            string[] args = { "build", "--configuration", "Debug", "--runtime", $"{ToolsetInfo.LatestMacRuntimeIdentifier}-x64" };
             Cli.Program.ProcessArgs(args);
             _fakeTelemetry
                 .LogEntries.Should()
@@ -337,7 +338,7 @@ namespace Microsoft.DotNet.Tests
             _fakeTelemetry
                 .LogEntries.Should()
                 .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey("runtime") &&
-                              e.Properties["runtime"] == Sha256Hasher.Hash("OSX.10.11-X64") &&
+                              e.Properties["runtime"] == Sha256Hasher.Hash($"{ToolsetInfo.LatestMacRuntimeIdentifier.ToUpper()}-X64") &&
                               e.Properties.ContainsKey("verb") &&
                               e.Properties["verb"] == Sha256Hasher.Hash("BUILD"));
         }
@@ -345,7 +346,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void DotnetRunCleanTestCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
         {
-            string[] args = { "clean", "--configuration", "Debug", "--framework", "netcoreapp1.0" };
+            string[] args = { "clean", "--configuration", "Debug", "--framework", ToolsetInfo.CurrentTargetFramework };
             Cli.Program.ProcessArgs(args);
             _fakeTelemetry
                 .LogEntries.Should()
@@ -357,7 +358,7 @@ namespace Microsoft.DotNet.Tests
             _fakeTelemetry
                 .LogEntries.Should()
                 .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey("framework") &&
-                              e.Properties["framework"] == Sha256Hasher.Hash("NETCOREAPP1.0") &&
+                              e.Properties["framework"] == Sha256Hasher.Hash(ToolsetInfo.CurrentTargetFramework.ToUpper()) &&
                               e.Properties.ContainsKey("verb") &&
                               e.Properties["verb"] == Sha256Hasher.Hash("CLEAN"));
         }
@@ -374,12 +375,6 @@ namespace Microsoft.DotNet.Tests
                 .LogEntries.Should()
                 .Contain(e => e.EventName == "install/reportsuccess" && e.Properties.ContainsKey("exeName") &&
                               e.Properties["exeName"] == Sha256Hasher.Hash("DOTNET-SDK-LATEST-WIN-X64.EXE"));
-        }
-
-        [Fact]
-        public void InternalreportinstallsuccessCommandIsRegisteredInBuiltIn()
-        {
-            BuiltInCommandsCatalog.Commands.Should().ContainKey("internal-reportinstallsuccess");
         }
 
         [Fact]
