@@ -119,6 +119,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => WorkloadSet.FromJson(workloadSetContents, new SdkFeatureBand("6.0.100"));
+
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
             InstallWorkloadSetCalled = true;
