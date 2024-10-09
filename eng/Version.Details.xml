@@ -456,34 +456,34 @@
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
       <Sha>7871ee378dce87b64d930d4f33dca9c888f4034d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24507.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24508.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>49b08e968e7e5edf282f068b4bce56b9909433b0</Sha>
+      <Sha>d5c8685f05dba8c8ee335f2bc22844e245fe1f44</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
@@ -627,14 +627,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24475.2">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24507.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>76edac963b2c6296018c7bf1e04a03c8488076d3</Sha>
+      <Sha>985485ca86e0c04ab39d8f97ed2db4d7c50a46fa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24475.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24507.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>76edac963b2c6296018c7bf1e04a03c8488076d3</Sha>
+      <Sha>985485ca86e0c04ab39d8f97ed2db4d7c50a46fa</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
