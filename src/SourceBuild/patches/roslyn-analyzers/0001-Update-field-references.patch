@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 3 Oct 2024 19:06:30 +0000
+Subject: [PATCH] Update field references
+
+Backport: https://github.com/dotnet/roslyn-analyzers/pull/7430
+---
+ .../FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs         | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs b/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs
+index 5a69abfa0..20553be25 100644
+--- a/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs
++++ b/src/Utilities/FlowAnalysis/FlowAnalysis/Framework/DataFlow/AnalysisEntity.cs
+@@ -186,8 +186,8 @@ internal bool ShouldBeTrackedForAnalysis(bool hasCompletePointsToAnalysisResult)
+ 
+         public bool HasConstantValue => Symbol switch
+         {
+-            IFieldSymbol field => field.HasConstantValue,
+-            ILocalSymbol local => local.HasConstantValue,
++            IFieldSymbol fieldSymbol => fieldSymbol.HasConstantValue,
++            ILocalSymbol localSymbol => localSymbol.HasConstantValue,
+             _ => false,
+         };
+ 
