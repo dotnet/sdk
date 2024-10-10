@@ -163,13 +163,13 @@ namespace Microsoft.DotNet.Cli
             foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
             {
                 VSTestTrace.SafeWriteTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
-                $"{successfulTestResult.State}, {successfulTestResult.Reason}, {successfulTestResult.SessionUid}");
+                $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.SessionUid}");
             }
 
             foreach (FailedTestResult failedTestResult in args.FailedTestResults)
             {
                 VSTestTrace.SafeWriteTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
                 $" {failedTestResult.ErrorStackTrace}, {failedTestResult.SessionUid}");
             }
         }
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Cli
 
             foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
             {
-                VSTestTrace.SafeWriteTrace(() => $"FileArtifacr: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                VSTestTrace.SafeWriteTrace(() => $"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
                 $"{fileArtifactMessage.SessionUid}");
             }

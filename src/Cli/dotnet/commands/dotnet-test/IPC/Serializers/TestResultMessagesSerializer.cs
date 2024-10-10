@@ -9,75 +9,84 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Tools.Test
 {
+
     /*
-    |---FieldCount---| 2 bytes
+      |---FieldCount---| 2 bytes
 
-    |---ExecutionId Id---| (2 bytes)
-    |---ExecutionId Size---| (4 bytes)
-    |---ExecutionId Value---| (n bytes)
+      |---ExecutionId Id---| (2 bytes)
+      |---ExecutionId Size---| (4 bytes)
+      |---ExecutionId Value---| (n bytes)
 
-    |---SuccessfulTestMessageList Id---| (2 bytes)
-    |---SuccessfulTestMessageList Size---| (4 bytes)
-    |---SuccessfulTestMessageList Value---| (n bytes)
-        |---SuccessfulTestMessageList Length---| (4 bytes)
+      |---SuccessfulTestMessageList Id---| (2 bytes)
+      |---SuccessfulTestMessageList Size---| (4 bytes)
+      |---SuccessfulTestMessageList Value---| (n bytes)
+          |---SuccessfulTestMessageList Length---| (4 bytes)
 
-        |---SuccessfulTestMessageList[0] FieldCount---| 2 bytes
+          |---SuccessfulTestMessageList[0] FieldCount---| 2 bytes
 
-        |---SuccessfulTestMessageList[0].Uid Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].Uid Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].Uid Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Uid Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Uid Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].Uid Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].DisplayName Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].DisplayName Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].DisplayName Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].State Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].State Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].State Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].State Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].State Size---| (1 byte)
+          |---SuccessfulTestMessageList[0].State Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].Reason Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].Reason Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].Reason Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Duration Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Duration Size---| (8 bytes)
+          |---SuccessfulTestMessageList[0].Duration Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].SessionUid Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].SessionUid Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].SessionUid Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Reason Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Reason Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].Reason Value---| (n bytes)
 
-    |---FailedTestMessageList Id---| (2 bytes)
-    |---FailedTestMessageList Size---| (4 bytes)
-    |---FailedTestMessageList Value---| (n bytes)
-        |---FailedTestMessageList Length---| (4 bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Value---| (n bytes)
 
-        |---FailedTestMessageList[0] FieldCount---| 2 bytes
+      |---FailedTestMessageList Id---| (2 bytes)
+      |---FailedTestMessageList Size---| (4 bytes)
+      |---FailedTestMessageList Value---| (n bytes)
+          |---FailedTestMessageList Length---| (4 bytes)
 
-        |---FailedTestMessageList[0].Uid Id---| (2 bytes)
-        |---FailedTestMessageList[0].Uid Size---| (4 bytes)
-        |---FailedTestMessageList[0].Uid Value---| (n bytes)
+          |---FailedTestMessageList[0] FieldCount---| 2 bytes
 
-        |---FailedTestMessageList[0].DisplayName Id---| (2 bytes)
-        |---FailedTestMessageList[0].DisplayName Size---| (4 bytes)
-        |---FailedTestMessageList[0].DisplayName Value---| (n bytes)
+          |---FailedTestMessageList[0].Uid Id---| (2 bytes)
+          |---FailedTestMessageList[0].Uid Size---| (4 bytes)
+          |---FailedTestMessageList[0].Uid Value---| (n bytes)
 
-        |---FailedTestMessageList[0].State Id---| (2 bytes)
-        |---FailedTestMessageList[0].State Size---| (4 bytes)
-        |---FailedTestMessageList[0].State Value---| (n bytes)
+          |---FailedTestMessageList[0].DisplayName Id---| (2 bytes)
+          |---FailedTestMessageList[0].DisplayName Size---| (4 bytes)
+          |---FailedTestMessageList[0].DisplayName Value---| (n bytes)
 
-        |---FailedTestMessageList[0].Reason Id---| (2 bytes)
-        |---FailedTestMessageList[0].Reason Size---| (4 bytes)
-        |---FailedTestMessageList[0].Reason Value---| (n bytes)
+          |---FailedTestMessageList[0].State Id---| (2 bytes)
+          |---FailedTestMessageList[0].State Size---| (1 byte)
+          |---FailedTestMessageList[0].State Value---| (n bytes)
 
-        |---FailedTestMessageList[0].ErrorMessage Id---| (2 bytes)
-        |---FailedTestMessageList[0].ErrorMessage Size---| (4 bytes)
-        |---FailedTestMessageList[0].ErrorMessage Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Duration Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Duration Size---| (8 bytes)
+          |---SuccessfulTestMessageList[0].Duration Value---| (n bytes)
 
-        |---FailedTestMessageList[0].ErrorStackTrace Id---| (2 bytes)
-        |---FailedTestMessageList[0].ErrorStackTrace Size---| (4 bytes)
-        |---FailedTestMessageList[0].ErrorStackTrace Value---| (n bytes)
+          |---FailedTestMessageList[0].Reason Id---| (2 bytes)
+          |---FailedTestMessageList[0].Reason Size---| (4 bytes)
+          |---FailedTestMessageList[0].Reason Value---| (n bytes)
 
-        |---FailedTestMessageList[0].SessionUid Id---| (2 bytes)
-        |---FailedTestMessageList[0].SessionUid Size---| (4 bytes)
-        |---FailedTestMessageList[0].SessionUid Value---| (n bytes)
-    */
+          |---FailedTestMessageList[0].ErrorMessage Id---| (2 bytes)
+          |---FailedTestMessageList[0].ErrorMessage Size---| (4 bytes)
+          |---FailedTestMessageList[0].ErrorMessage Value---| (n bytes)
+
+          |---FailedTestMessageList[0].ErrorStackTrace Id---| (2 bytes)
+          |---FailedTestMessageList[0].ErrorStackTrace Size---| (4 bytes)
+          |---FailedTestMessageList[0].ErrorStackTrace Value---| (n bytes)
+
+          |---FailedTestMessageList[0].SessionUid Id---| (2 bytes)
+          |---FailedTestMessageList[0].SessionUid Size---| (4 bytes)
+          |---FailedTestMessageList[0].SessionUid Value---| (n bytes)
+      */
 
     internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
@@ -132,6 +141,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 string? uid = null, displayName = null, reason = null, sessionUid = null;
                 byte? state = null;
+                long? duration = null;
 
                 int fieldCount = ReadShort(stream);
 
@@ -154,6 +164,10 @@ namespace Microsoft.DotNet.Tools.Test
                             state = ReadByte(stream);
                             break;
 
+                        case SuccessfulTestResultMessageFieldsId.Duration:
+                            duration = ReadLong(stream);
+                            break;
+
                         case SuccessfulTestResultMessageFieldsId.Reason:
                             reason = ReadStringValue(stream, fieldSize);
                             break;
@@ -168,7 +182,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                successfulTestResultMessages.Add(new SuccessfulTestResultMessage(uid, displayName, state, reason, sessionUid));
+                successfulTestResultMessages.Add(new SuccessfulTestResultMessage(uid, displayName, state, duration, reason, sessionUid));
             }
 
             return successfulTestResultMessages;
@@ -183,6 +197,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 string? uid = null, displayName = null, reason = null, sessionUid = null, errorMessage = null, errorStackTrace = null;
                 byte? state = null;
+                long? duration = null;
 
                 int fieldCount = ReadShort(stream);
 
@@ -203,6 +218,10 @@ namespace Microsoft.DotNet.Tools.Test
 
                         case FailedTestResultMessageFieldsId.State:
                             state = ReadByte(stream);
+                            break;
+
+                        case FailedTestResultMessageFieldsId.Duration:
+                            duration = ReadLong(stream);
                             break;
 
                         case FailedTestResultMessageFieldsId.Reason:
@@ -227,7 +246,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, reason, errorMessage, errorStackTrace, sessionUid));
+                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, errorMessage, errorStackTrace, sessionUid));
             }
 
             return failedTestResultMessages;
@@ -268,6 +287,7 @@ namespace Microsoft.DotNet.Tools.Test
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.Uid, successfulTestResultMessage.Uid);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.DisplayName, successfulTestResultMessage.DisplayName);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.State, successfulTestResultMessage.State);
+                WriteField(stream, SuccessfulTestResultMessageFieldsId.Duration, successfulTestResultMessage.Duration);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.Reason, successfulTestResultMessage.Reason);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.SessionUid, successfulTestResultMessage.SessionUid);
             }
@@ -299,6 +319,7 @@ namespace Microsoft.DotNet.Tools.Test
                 WriteField(stream, FailedTestResultMessageFieldsId.Uid, failedTestResultMessage.Uid);
                 WriteField(stream, FailedTestResultMessageFieldsId.DisplayName, failedTestResultMessage.DisplayName);
                 WriteField(stream, FailedTestResultMessageFieldsId.State, failedTestResultMessage.State);
+                WriteField(stream, FailedTestResultMessageFieldsId.Duration, failedTestResultMessage.Duration);
                 WriteField(stream, FailedTestResultMessageFieldsId.Reason, failedTestResultMessage.Reason);
                 WriteField(stream, FailedTestResultMessageFieldsId.ErrorMessage, failedTestResultMessage.ErrorMessage);
                 WriteField(stream, FailedTestResultMessageFieldsId.ErrorStackTrace, failedTestResultMessage.ErrorStackTrace);
@@ -319,6 +340,7 @@ namespace Microsoft.DotNet.Tools.Test
             (ushort)((successfulTestResultMessage.Uid is null ? 0 : 1) +
             (successfulTestResultMessage.DisplayName is null ? 0 : 1) +
             (successfulTestResultMessage.State is null ? 0 : 1) +
+            (successfulTestResultMessage.Duration is null ? 0 : 1) +
             (successfulTestResultMessage.Reason is null ? 0 : 1) +
             (successfulTestResultMessage.SessionUid is null ? 0 : 1));
 
@@ -326,9 +348,11 @@ namespace Microsoft.DotNet.Tools.Test
             (ushort)((failedTestResultMessage.Uid is null ? 0 : 1) +
             (failedTestResultMessage.DisplayName is null ? 0 : 1) +
             (failedTestResultMessage.State is null ? 0 : 1) +
+            (failedTestResultMessage.Duration is null ? 0 : 1) +
             (failedTestResultMessage.Reason is null ? 0 : 1) +
             (failedTestResultMessage.ErrorMessage is null ? 0 : 1) +
             (failedTestResultMessage.ErrorStackTrace is null ? 0 : 1) +
             (failedTestResultMessage.SessionUid is null ? 0 : 1));
     }
+
 }

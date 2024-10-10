@@ -71,8 +71,9 @@ namespace Microsoft.DotNet.Tools.Test
         public const ushort Uid = 1;
         public const ushort DisplayName = 2;
         public const ushort State = 3;
-        public const ushort Reason = 4;
-        public const ushort SessionUid = 5;
+        public const ushort Duration = 4;
+        public const ushort Reason = 5;
+        public const ushort SessionUid = 6;
     }
 
     internal static class FailedTestResultMessageFieldsId
@@ -80,10 +81,11 @@ namespace Microsoft.DotNet.Tools.Test
         public const ushort Uid = 1;
         public const ushort DisplayName = 2;
         public const ushort State = 3;
-        public const ushort Reason = 4;
-        public const ushort ErrorMessage = 5;
-        public const ushort ErrorStackTrace = 6;
-        public const ushort SessionUid = 7;
+        public const ushort Duration = 4;
+        public const ushort Reason = 5;
+        public const ushort ErrorMessage = 6;
+        public const ushort ErrorStackTrace = 7;
+        public const ushort SessionUid = 8;
     }
 
     internal static class FileArtifactMessagesFieldsId
