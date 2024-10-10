@@ -14,16 +14,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
+        string GetAdvertisedWorkloadSetVersion();
         IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
-        IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files);
+        IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
         IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 
         void DeleteUpdatableWorkloadsFile();
-
-        void DownloadWorkloadSet(string version, DirectoryPath? offlineCache);
     }
 
     internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
