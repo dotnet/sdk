@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
@@ -15,13 +16,27 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
+    public ITaskItem[] AssetFileDetails { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
     public Func<string, long> TestResolveFileLength;
 
+    private Dictionary<string, ITaskItem> _assetFileDetails;
+
     public override bool Execute()
     {
+        if (AssetFileDetails != null)
+        {
+            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
+            for (int i = 0; i < AssetFileDetails.Length; i++)
+            {
+                var item = AssetFileDetails[i];
+                _assetFileDetails[item.ItemSpec] = item;
+            }
+        }
+
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
 
         var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
@@ -55,10 +70,6 @@ public class ApplyCompressionNegotiation : Task
             }
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
-
-            var length = TestResolveFileLength != null
-                ? TestResolveFileLength(compressedAsset.Identity)
-                : new FileInfo(compressedAsset.Identity).Length;
             StaticWebAssetEndpointResponseHeader[] compressionHeaders = [
                 new()
                 {
@@ -72,9 +83,10 @@ public class ApplyCompressionNegotiation : Task
                 }
             ];
 
+            var quality = ResolveQuality(compressedAsset);
             foreach (var compressedEndpoint in compressedEndpoints)
             {
-                if (compressedEndpoint.Selectors.Any(s => string.Equals(s.Name,"Content-Encoding", StringComparison.Ordinal)))
+                if (compressedEndpoint.Selectors.Any(s => string.Equals(s.Name, "Content-Encoding", StringComparison.Ordinal)))
                 {
                     Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{compressedEndpoint.Route}' since it already has a Content-Encoding selector");
                     continue;
@@ -102,7 +114,7 @@ public class ApplyCompressionNegotiation : Task
                     {
                         Name = "Content-Encoding",
                         Value = compressedAsset.AssetTraitValue,
-                        Quality = Math.Round(1.0 / (length + 1), 12).ToString("F12")
+                        Quality = quality
                     };
                     Log.LogMessage(MessageImportance.Low, "  Created Content-Encoding selector for compressed asset '{0}' with size '{1}' is '{2}'", encodingSelector.Value, encodingSelector.Quality, relatedEndpointCandidate.Route);
                     var endpointCopy = new StaticWebAssetEndpoint
@@ -199,6 +211,25 @@ public class ApplyCompressionNegotiation : Task
         UpdatedEndpoints = updatedEndpoints.Distinct().Select(e => e.ToTaskItem()).ToArray();
 
         return true;
+    }
+
+    private string ResolveQuality(StaticWebAsset compressedAsset)
+    {
+        long length;
+        if(_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
+        {
+            length = long.Parse(assetFileDetail.GetMetadata("FileLength"));
+        }
+        else if (TestResolveFileLength != null)
+        {
+            length = TestResolveFileLength(compressedAsset.Identity);
+        }
+        else
+        {
+            length = new FileInfo(compressedAsset.Identity).Length;
+        }
+
+        return Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
     }
 
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
