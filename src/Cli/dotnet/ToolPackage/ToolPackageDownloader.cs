@@ -107,11 +107,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToNormalizedString().ToLowerInvariant());
 
                     if (isGlobalTool)
                     {
-                        NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
+                        NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToNormalizedString().ToLowerInvariant()));
                         var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 
                         if (globalPackage != null)
@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             }
 
             // Extract the package
-            var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToString());
+            var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToNormalizedString().ToLowerInvariant());
             await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             return version;

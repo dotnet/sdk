@@ -133,10 +133,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             string nupkgPath = downloadFolder == null || !downloadFolder.HasValue
                 ? Path.Combine(_packageInstallDir.Value, packageId.ToString(),
-                    resolvedPackageVersion.ToNormalizedString(),
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg")
+                    resolvedPackageVersion.ToNormalizedString().ToLowerInvariant(),
+                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString().ToLowerInvariant()}.nupkg")
                 : Path.Combine(downloadFolder.Value.Value,
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg");
+                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString().ToLowerInvariant()}.nupkg");
 
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
             using FileStream destinationStream = File.Create(nupkgPath);
@@ -308,8 +308,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) =>
-            baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
-            "." + version.ToNormalizedString() + ".nupkg";
+            baseUri + id.ToString() + "/" + version.ToNormalizedString().ToLowerInvariant() + "/" + id.ToString() +
+            "." + version.ToNormalizedString().ToLowerInvariant() + ".nupkg";
 
         internal IEnumerable<FilePath> FindAllFilesNeedExecutablePermission(IEnumerable<string> files,
             string targetPath)

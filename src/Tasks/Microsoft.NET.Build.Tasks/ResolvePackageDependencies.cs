@@ -166,7 +166,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var package in LockFile.Libraries)
             {
                 var packageName = package.Name;
-                var packageVersion = package.Version.ToNormalizedString();
+                var packageVersion = package.Version.ToNormalizedString().ToLowerInvariant();
                 string packageId = $"{packageName}/{packageVersion}";
                 var item = new TaskItem(packageId);
                 item.SetMetadata(MetadataKeys.Name, packageName);
@@ -288,7 +288,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var package in target.Libraries)
             {
-                string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
+                string packageId = $"{package.Name}/{package.Version.ToNormalizedString().ToLowerInvariant()}";
 
                 if (_projectFileDependencies.Contains(package.Name))
                 {
@@ -313,7 +313,7 @@ namespace Microsoft.NET.Build.Tasks
             Dictionary<string, string> resolvedPackageVersions,
             HashSet<string> transitiveProjectRefs)
         {
-            string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
+            string packageId = $"{package.Name}/{package.Version.ToNormalizedString().ToLowerInvariant()}";
             string frameworkAlias = _targetNameToAliasMap[targetName];
             foreach (var deps in package.Dependencies)
             {
@@ -339,7 +339,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private void GetFileDependencies(LockFileTargetLibrary package, string targetName)
         {
-            string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
+            string packageId = $"{package.Name}/{package.Version.ToNormalizedString().ToLowerInvariant()}";
             string frameworkAlias = _targetNameToAliasMap[targetName];
 
             // for each type of file group
