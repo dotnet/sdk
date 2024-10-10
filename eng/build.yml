@@ -15,13 +15,13 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.2xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.4xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
   - template: /eng/common/templates-official/job/onelocbuild.yml@self
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/8.0.2xx
+      MirrorBranch: release/8.0.4xx
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
@@ -202,6 +202,7 @@ jobs:
            log/$(_BuildConfig)/**/*
            TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
+           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
         continueOnError: true
         condition: always()
@@ -347,6 +348,7 @@ jobs:
               log/$(_BuildConfig)/**/*
               TestResults/$(_BuildConfig)/**/*
               SymStore/$(_BuildConfig)/**/*
+              tmp/$(_BuildConfig)/**/*.binlog
             TargetFolder: '$(Build.ArtifactStagingDirectory)'
           continueOnError: true
           condition: always()
@@ -503,6 +505,7 @@ jobs:
            log/$(_BuildConfig)/**/*
            TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
+           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
         continueOnError: true
         condition: always()
