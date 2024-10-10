@@ -1,21 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -40,7 +26,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-            var outputDll = Path.Combine(testInstance.Path, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
+            var outputPathCalculator = OutputPathCalculator.FromProject(testInstance.Path);
+
+            var outputDll = Path.Combine(outputPathCalculator.GetOutputDirectory(configuration: configuration), $"{testAppName}.dll");
 
             var outputRunCommand = new DotnetCommand(Log);
 
@@ -129,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
             var outputDll = Directory.EnumerateFiles(
-                Path.Combine(rootPath, "bin", configuration, ToolsetInfo.CurrentTargetFramework), "*.dll",
+                OutputPathCalculator.FromProject(rootPath).GetOutputDirectory(configuration: configuration), "*.dll",
                 SearchOption.TopDirectoryOnly)
                 .Single();
 
@@ -179,7 +167,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         }
 
         [Fact]
-        public void It_warns_on_rid_without_self_contained_options()
+        public void It_no_longer_warns_on_rid_without_self_contained_options()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
@@ -192,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                .Should()
                .Pass()
                .And
-               .HaveStdOutContaining("NETSDK1179");
+               .NotHaveStdOutContaining("NETSDK1179");
         }
 
         [Fact]
@@ -202,9 +190,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             {
                 IsExe = true,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                SelfContained = "true"
             };
-            testProject.AdditionalProperties["SelfContained"] = "true";
-            
+
             var testInstance = _testAssetsManager.CreateTestProject(testProject);
 
             new DotnetBuildCommand(Log)
@@ -246,6 +234,61 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             new DotnetBuildCommand(Log)
                .WithWorkingDirectory(testInstance.Path)
                .Execute("-r", "win-x64")
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining("NETSDK1179");
+        }
+
+        [Theory]
+        [InlineData("--self-contained")]
+        public void It_builds_with_implicit_rid_with_SelfContained(string executeOptions)
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = targetFramework
+            };
+
+            testProject.RecordProperties("RuntimeIdentifier");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
+               .Execute(executeOptions)
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining("NETSDK1031") // Self Contained Checks
+               .And
+               .NotHaveStdErrContaining("NETSDK1190"); // Check that publish properties don't interfere with build either
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
+            Assert.NotEqual("", properties["RuntimeIdentifier"]);
+        }
+
+        [RequiresMSBuildVersionFact("17.4.0.41702")]
+        public void It_builds_referenced_exe_with_self_contained_specified_via_command_line_argument()
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            var testProject = new TestProject("TestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new DotnetCommand(Log)
+               .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
+               .Execute("build", "-r", EnvironmentInfo.GetCompatibleRid(), "--self-contained")
                .Should()
                .Pass()
                .And
@@ -337,10 +380,24 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [InlineData("run")]
         public void It_uses_correct_runtime_help_description(string command)
         {
-            var console = new TestConsole();
-            var parseResult = Parser.Instance.Parse(new string[] { command, "-h" });
-            parseResult.Invoke(console);
-            console.Out.ToString().Should().Contain(command.Equals("build") ?
+            CliConfiguration sharedConfig = Parser.Instance;
+            CliConfiguration localCopy = new(sharedConfig.RootCommand)
+            {
+                EnableDefaultExceptionHandler = sharedConfig.EnableDefaultExceptionHandler,
+                EnableParseErrorReporting = sharedConfig.EnableParseErrorReporting,
+                EnableTypoCorrections = sharedConfig.EnableTypoCorrections,
+                ResponseFileTokenReplacer = sharedConfig.ResponseFileTokenReplacer,
+                ProcessTerminationTimeout = sharedConfig.ProcessTerminationTimeout,
+                EnablePosixBundling = sharedConfig.EnablePosixBundling,
+            };
+            localCopy.Directives.Clear();
+            localCopy.Directives.AddRange(sharedConfig.Directives);
+
+            localCopy.Output = new StringWriter();
+
+            var parseResult = localCopy.Parse(new string[] { command, "-h" });
+            parseResult.Invoke();
+            localCopy.Output.ToString().Should().Contain(command.Equals("build") ?
                 Tools.Build.LocalizableStrings.RuntimeOptionDescription :
                 Tools.Run.LocalizableStrings.RuntimeOptionDescription);
         }

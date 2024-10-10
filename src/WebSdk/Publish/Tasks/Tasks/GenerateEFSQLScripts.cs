@@ -1,7 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -76,13 +76,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         private int _processExitCode;
         private StringBuilder _standardOut = new StringBuilder();
         private StringBuilder _standardError = new StringBuilder();
-        private const string SkipFirstTimeEnvironmentVariable = "DOTNET_SKIP_FIRST_TIME_EXPERIENCE";
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string previousSkipValue = Environment.GetEnvironmentVariable(SkipFirstTimeEnvironmentVariable);
             string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment); 
-            Environment.SetEnvironmentVariable(SkipFirstTimeEnvironmentVariable, "true");
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new ProcessStartInfo("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {
@@ -128,7 +125,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 isProcessExited = proc.WaitForExit(300000);
             }
 
-            Environment.SetEnvironmentVariable(SkipFirstTimeEnvironmentVariable, previousSkipValue);
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, previousAspNetCoreEnvironment);
             if (!isProcessExited || _processExitCode != 0)
             {

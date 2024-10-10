@@ -21,14 +21,12 @@ function InitializeCustomSDKToolset {
 
   InitializeDotNetCli true
   
-  if [[ "$DISTRO" != "ubuntu" || "$MAJOR_VERSION" -le 16 ]]; then
-    InstallDotNetSharedFramework "1.0.5"
-    InstallDotNetSharedFramework "1.1.2"
-  fi
   InstallDotNetSharedFramework "2.1.0"
   InstallDotNetSharedFramework "2.2.8"
   InstallDotNetSharedFramework "3.1.0"
   InstallDotNetSharedFramework "5.0.0"
+  InstallDotNetSharedFramework "6.0.0"
+  InstallDotNetSharedFramework "7.0.0"
 
   CreateBuildEnvScript
 }
@@ -57,8 +55,7 @@ function CreateBuildEnvScript {
   mkdir -p $artifacts_dir
   scriptPath="$artifacts_dir/sdk-build-env.sh"
   scriptContents="
-#!/bin/bash
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+#!/usr/bin/env bash
 export DOTNET_MULTILEVEL_LOOKUP=0
 
 export DOTNET_ROOT=$DOTNET_INSTALL_DIR
@@ -71,4 +68,52 @@ export NUGET_PACKAGES=$NUGET_PACKAGES
   echo "$scriptContents" > ${scriptPath}
 }
 
+# ReadVersionFromJson [json key]
+function ReadGlobalVersion {
+  local key=$1
+
+  if command -v jq &> /dev/null; then
+    _ReadGlobalVersion="$(jq -r ".[] | select(has(\"$key\")) | .\"$key\"" "$global_json_file")"
+  elif [[ "$(cat "$global_json_file")" =~ \"$key\"[[:space:]\:]*\"([^\"]+) ]]; then
+    _ReadGlobalVersion=${BASH_REMATCH[1]}
+  fi
+
+  if [[ -z "$_ReadGlobalVersion" ]]; then
+    Write-PipelineTelemetryError -category 'Build' "Error: Cannot find \"$key\" in $global_json_file"
+    ExitWithExitCode 1
+  fi
+}
+
+function CleanOutStage0ToolsetsAndRuntimes {
+  ReadGlobalVersion "dotnet"
+  local dotnetSdkVersion=$_ReadGlobalVersion
+  local dotnetRoot=$DOTNET_INSTALL_DIR
+  local versionPath="$dotnetRoot/.version"
+  local majorVersion="${dotnetSdkVersion:0:1}"
+  local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
+  local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
+  local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
+  local sdkPath="$dotnetRoot/sdk/*"
+
+  if [ -f "$versionPath" ]; then
+    local lastInstalledSDK=$(cat $versionPath)
+    if [[ "$lastInstalledSDK" != "$dotnetSdkVersion" ]]; then
+      echo $dotnetSdkVersion > $versionPath
+      rm -rf $aspnetRuntimePath
+      rm -rf $coreRuntimePath
+      rm -rf $wdRuntimePath
+      rm -rf $sdkPath
+      rm -rf "$dotnetRoot/packs"
+      rm -rf "$dotnetRoot/sdk-manifests"
+      rm -rf "$dotnetRoot/templates"
+      Write-PipelineTelemetryError -category 'Build' "Found old version of SDK, cleaning out folder. Please run build.sh again"
+      ExitWithExitCode 1
+    fi
+  else
+    echo $dotnetSdkVersion > $versionPath
+  fi
+}
+
 InitializeCustomSDKToolset
+
+CleanOutStage0ToolsetsAndRuntimes

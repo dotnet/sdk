@@ -1,15 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
-using NuGet.Protocol.Core.Types;
-using Xunit;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -28,7 +21,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenMalformedPathItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMalformed.xml");
-            a.ShouldThrow<ToolConfigurationException>()
+            a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(string.Format(CommonLocalizableStrings.ToolSettingsInvalidXml, string.Empty));
         }
@@ -37,7 +30,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenMissingContentItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissing.xml");
-            a.ShouldThrow<ToolConfigurationException>()
+            a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(CommonLocalizableStrings.ToolSettingsMissingCommandName);
         }
@@ -71,7 +64,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             var invalidCommandName = "na\0me";
             Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
-            a.ShouldThrow<ToolConfigurationException>()
+            a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(
                     string.Format(
@@ -85,7 +78,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             var invalidCommandName = ".mytool";
             Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
-            a.ShouldThrow<ToolConfigurationException>()
+            a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(string.Format(
                         CommonLocalizableStrings.ToolSettingsInvalidLeadingDotCommandName,

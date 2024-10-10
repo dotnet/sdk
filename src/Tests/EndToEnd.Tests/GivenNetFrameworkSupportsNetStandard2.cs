@@ -1,13 +1,5 @@
-﻿using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Xunit.Abstractions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace EndToEnd
 {
@@ -18,7 +10,7 @@ namespace EndToEnd
         }
 
         [WindowsOnlyFact]
-        public void ANET461ProjectCanReferenceANETStandardProject()
+        public void Anet462ProjectCanReferenceANETStandardProject()
         {
             var _testInstance = _testAssetsManager.CopyTestAsset("NETFrameworkReferenceNETStandard20", testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();

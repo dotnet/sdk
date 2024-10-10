@@ -1,19 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using System.Linq;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using Xunit.Abstractions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Pack.Tests
 {
@@ -119,8 +105,8 @@ namespace Microsoft.NET.Pack.Tests
         {
             TestProject testProject = new TestProject()
             {
-                Name = "PackNet461App",
-                TargetFrameworks = "net461",
+                Name = "Packnet462App",
+                TargetFrameworks = "net462",
             };
 
             testProject.PackageReferences.Add(
@@ -208,7 +194,7 @@ namespace Microsoft.NET.Pack.Tests
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                testProject.TargetFrameworks += ";net461";
+                testProject.TargetFrameworks += ";net462";
             }
 
             var dependencyGroups = GetDependencyGroups(PackAndGetNuspec(testProject), out var ns);
@@ -237,7 +223,7 @@ namespace Microsoft.NET.Pack.Tests
             ExpectDependencyGroup(ToolsetInfo.CurrentTargetFramework, null);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ExpectDependencyGroup(".NETFramework4.6.1", null);
+                ExpectDependencyGroup(".NETFramework4.6.2", null);
             }
         }
 
