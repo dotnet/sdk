@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             internal async ValueTask ReceiveMessageAsync(Action<ReadOnlySpan<byte>> receiver, CancellationToken cancellationToken)
             {
-                var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
+                var writer = new ArrayBufferWriter<byte>(initialCapacity: 10);
 
                 while (true)
                 {

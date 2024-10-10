@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public abstract void Dispose();
 
-        public void ReportLog(IEnumerable<(string message, AgentMessageSeverity severity)> log)
+        public void ReportLog(IEnumerable<(string message, AgentMessageSeverity severity)> log, string agentEmoji)
         {
             foreach (var (message, severity) in log)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         break;
 
                     default:
-                        Reporter.Verbose(message, emoji: "🕵️");
+                        Reporter.Verbose(message, emoji: agentEmoji);
                         break;
                 }
             }

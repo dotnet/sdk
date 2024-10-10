@@ -190,7 +190,7 @@ setTimeout(async function () {
       // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
       // to be a failure. These deltas will get applied later, when Blazor completes initialization.
       try {
-        log = window.Blazor._internal.applyHotReloadDeltas(deltas.map(delta => {
+        let wasmDeltas = deltas.map(delta => {
           return {
             "moduleId": delta.moduleId,
             "metadataDelta": delta.metadataDelta,
@@ -198,7 +198,9 @@ setTimeout(async function () {
             "pdbDelta": delta.pdbDelta,
             "updatedTypes": delta.updatedTypes,
           };
-        }), responseLoggingLevel);
+        });
+
+        log = window.Blazor._internal.applyHotReloadDeltas(wasmDeltas, responseLoggingLevel);
       } catch (error) {
         console.warn(error);
         applyError = error;

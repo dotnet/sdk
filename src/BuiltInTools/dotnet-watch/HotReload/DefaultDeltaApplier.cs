@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     return false;
                 }
 
-                ReportLog(UpdatePayload.ReadLog(_pipe));
+                ReportLog(UpdatePayload.ReadLog(_pipe), agentEmoji: "🕵️");
                 return true;
             }
             finally
