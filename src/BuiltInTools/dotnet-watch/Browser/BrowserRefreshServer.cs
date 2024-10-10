@@ -209,6 +209,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             try
             {
+                bool messageSent = false;
+
                 for (var i = 0; i < _clientSockets.Count; i++)
                 {
                     var (clientSocket, secret) = _clientSockets[i];
@@ -221,7 +223,10 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var messageBytes = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions);
 
                     await clientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                    messageSent = true;
                 }
+
+                _reporter.Verbose(messageSent ? "Browser message sent." : "Unable to send message to browser, no socket is open.");
             }
             catch (TaskCanceledException)
             {
@@ -237,6 +242,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             try
             {
+                bool messageSent = false;
+
                 for (var i = 0; i < _clientSockets.Count; i++)
                 {
                     var (clientSocket, _) = _clientSockets[i];
@@ -244,8 +251,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                     {
                         continue;
                     }
+
                     await clientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                    messageSent = true;
                 }
+
+                _reporter.Verbose(messageSent ? "Browser message sent." : "Unable to send message to browser, no socket is open.");
             }
             catch (TaskCanceledException)
             {
