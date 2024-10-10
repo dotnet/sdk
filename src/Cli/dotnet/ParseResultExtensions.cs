@@ -23,13 +23,13 @@ namespace Microsoft.DotNet.Cli
         /// more situations that want to show help into Parsing Errors (which trigger help in the default System.CommandLine pipeline)
         /// or custom Invocation Middleware, so we can more easily create our version of a HelpResult type.
         ///</remarks>
-        public static void ShowHelp(this ParseResult parseResult)
+        public static int ShowHelp(this ParseResult parseResult)
         {
             // take from the start of the list until we hit an option/--/unparsed token
             // since commands can have arguments, we must take those as well in order to get accurate help
             var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
-            Parser.Instance.Parse(tokenList).Invoke();
+            return Parser.Instance.Parse(tokenList).Invoke();
         }
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
