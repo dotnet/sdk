@@ -13,7 +13,7 @@ public class DotNetWatchTests : SdkTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Fact]
+    // [Fact(Skip="https://github.com/dotnet/sdk/issues/42920")]
     public void WatchTests()
     {
         if (DotNetHelper.IsMonoRuntime)

@@ -48,7 +48,7 @@ public class LicenseScanTests : TestBase
         "apache-1.1", // https://opensource.org/license/apache-1-1/
         "apache-2.0", // https://opensource.org/license/apache-2-0/
         "apache-2.0 WITH apple-runtime-library-exception", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/apple-runtime-library-exception.LICENSE
-        "apache-2.0 WITH llvm-exception", // https://foundation.llvm.org/relicensing/LICENSE.txt
+        "apache-2.0 WITH llvm-exception", // https://spdx.org/licenses/LLVM-exception.html
         "apsl-2.0", // https://opensource.org/license/apsl-2-0-php/
         "blueoak-1.0.0", // https://blueoakcouncil.org/license/1.0.0
         "boost-1.0", // https://opensource.org/license/bsl-1-0/
@@ -80,6 +80,7 @@ public class LicenseScanTests : TestBase
         "lgpl-2.1", // https://opensource.org/license/lgpl-2-1/
         "lgpl-2.1-plus", // https://opensource.org/license/lgpl-2-1/
         "lgpl-3.0", // https://opensource.org/license/lgpl-3-0/
+        "llvm-exception", // https://spdx.org/licenses/LLVM-exception.html
         "lzma-sdk-9.22", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/lzma-sdk-9.22.LICENSE
         "mit", // https://opensource.org/license/mit/
         "mit-addition", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-addition.LICENSE

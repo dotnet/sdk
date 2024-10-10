@@ -16,7 +16,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy.Tests;
 public partial class OneDeployTests
 {
     private const string Username = "someUser";
-    private const string Password = "123secret";
+    private const string NotShareableValue = "PLACEHOLDER";
     private const string PublishUrl = "https://mysite.scm.azurewebsites.net";
     private const string UserAgentName = "websdk"; // as OneDeploy.UserAgentName
     private const string DeploymentUrl = $@"{PublishUrl}/api/deployments/056f49ce-fcd7-497c-929b-d74bc6f8905e";
@@ -87,7 +87,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation runs to completion with expected result
         Assert.Equal(expectedResult, result);
@@ -130,7 +130,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation runs to completion, without polling the deployment because 'Location' header was not found in response
         Assert.True(result);
@@ -161,7 +161,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because HTTP POST request to upload the package returns a failed HTTP Response
         Assert.False(result);
@@ -190,7 +190,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, invalidUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, invalidUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'PublishUrl' is not valid
         Assert.False(result);
@@ -219,7 +219,7 @@ public partial class OneDeployTests
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            invalidFileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            invalidFileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'FileToPublishPath' is not valid
         Assert.False(result);
@@ -277,12 +277,12 @@ public partial class OneDeployTests
         var oneDeployTask = new OneDeploy(taskLoggerMock.Object);
 
         var msbuildHostObject = new VSMsDeployTaskHostObject();
-        msbuildHostObject.AddCredentialTaskItemIfExists(Username, Password);
+        msbuildHostObject.AddCredentialTaskItemIfExists(Username, NotShareableValue);
         oneDeployTask.HostObject = msbuildHostObject;
 
         // Act
         var result = await oneDeployTask.OneDeployAsync(
-            FileToPublish, Username, Password, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
+            FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation runs to completion
         // obtaining the credentials from the Task HostObject
@@ -344,7 +344,7 @@ public partial class OneDeployTests
         var statusServiceMock = new Mock<IDeploymentStatusService<DeploymentResponse>>();
 
         statusServiceMock
-            .Setup(s => s.PollDeploymentAsync(httpClient, DeploymentUrl, Username, Password, $"{UserAgentName}/8.0", It.IsAny<CancellationToken>()))
+            .Setup(s => s.PollDeploymentAsync(httpClient, DeploymentUrl, Username, NotShareableValue, $"{UserAgentName}/8.0", It.IsAny<CancellationToken>()))
             .ReturnsAsync(deploymentResponse);
 
         return statusServiceMock;
