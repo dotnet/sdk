@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
             // Setup
             Debug.Assert(_propertyToCheck == MSBuildPropertyNames.PUBLISH_RELEASE || _propertyToCheck == MSBuildPropertyNames.PACK_RELEASE, "Only PackRelease or PublishRelease are currently expected.");
             var nothing = Enumerable.Empty<string>();
-            if (String.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE), "true", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE), "true", StringComparison.OrdinalIgnoreCase))
             {
                 return nothing;
             }
@@ -156,11 +156,11 @@ namespace Microsoft.DotNet.Cli
             }
 
             _isHandlingSolution = true;
-            List<ProjectInstance> configuredProjects = new List<ProjectInstance>();
-            HashSet<string> configValues = new HashSet<string>();
-            object projectDataLock = new object();
+            List<ProjectInstance> configuredProjects = new();
+            HashSet<string> configValues = new();
+            object projectDataLock = new();
 
-            if (String.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
             {
                 // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
                 return GetSingleProjectFromSolution(sln, globalProps);
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli
                 // 1) This error should not be thrown in VS because it is part of the SDK CLI code
                 // 2) If PublishRelease or PackRelease is disabled via opt out, or Configuration is specified, we won't get to this code, so we won't error
                 // 3) This code only gets hit if we are in a solution publish setting, so we don't need to worry about it failing other publish scenarios
-                throw new GracefulException(Strings.SolutionProjectConfigurationsConflict, _propertyToCheck, String.Join("\n", (configuredProjects).Select(x => x.FullPath)));
+                throw new GracefulException(Strings.SolutionProjectConfigurationsConflict, _propertyToCheck, string.Join("\n", (configuredProjects).Select(x => x.FullPath)));
             }
             return configuredProjects.FirstOrDefault();
         }
@@ -251,7 +251,6 @@ namespace Microsoft.DotNet.Cli
                 Reporter.Error.WriteLine(e.Message);
             }
             return null;
-#nullable disable
         }
 
         /// <returns>Returns true if the path exists and is a project file type.</returns> 
@@ -269,16 +268,19 @@ namespace Microsoft.DotNet.Cli
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
         private Dictionary<string, string> GetUserSpecifiedExplicitMSBuildProperties()
         {
-            Dictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
 
-            string[] globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
-
-            foreach (var keyEqValString in globalPropEnumerable)
+            string[]? globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
+            
+            if ( globalPropEnumerable != null )
             {
-                var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
-                foreach (var propertyKeyValue in propertyPairs)
+                foreach (var keyEqValString in globalPropEnumerable)
                 {
-                    globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                    var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
+                    foreach (var propertyKeyValue in propertyPairs)
+                    {
+                        globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                    }
                 }
             }
             return globalProperties;
