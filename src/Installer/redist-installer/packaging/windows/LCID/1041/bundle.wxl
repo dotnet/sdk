@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - バンドルの完全なローカル コピーに対する
+  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] - バンドルの完全なローカル コピーに対する
   ディレクトリへのインストール、修復、ディレクトリからのアンインストール、または作成を行います。既定は '/install' です。
 
 /passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも

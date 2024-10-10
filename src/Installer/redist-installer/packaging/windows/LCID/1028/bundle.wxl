@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>
   <String Id="HelpHeader">安裝說明</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 在目錄中安裝、修復、解除安裝
+  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 在目錄中安裝、修復、解除安裝
    或建立搭售方案的完整本機複本。預設為 '/install'。
 
 /passive | /quiet - 顯示最少 UI 且不含提示，或者不顯示 UI，也

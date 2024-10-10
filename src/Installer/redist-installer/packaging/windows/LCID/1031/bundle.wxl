@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang wirklich abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
   <String Id="HelpHeader">Setup-Hilfe</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] – installiert, repariert, deinstalliert
+  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] – installiert, repariert, deinstalliert
    oder erstellt eine vollständige lokale Kopie des Bundles im Verzeichnis. „/install“ ist die Standardeinstellung.
 
 /passive | /quiet –  zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen oder keine Benutzeroberfläche und

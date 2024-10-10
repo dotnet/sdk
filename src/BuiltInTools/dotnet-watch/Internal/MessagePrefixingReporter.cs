@@ -7,6 +7,9 @@ namespace Microsoft.DotNet.Watcher;
 
 internal sealed class MessagePrefixingReporter(string additionalPrefix, IReporter underlyingReporter) : IReporter
 {
+    public bool IsVerbose
+        => underlyingReporter.IsVerbose;
+
     public bool ReportProcessOutput
         => underlyingReporter.ReportProcessOutput;
 
