@@ -95,3 +95,6 @@ extends:
           scope: lite
         ${{ else }}:
           scope: full
+
+    - ${{ if eq(variables['isSourceOnlyBuild'], 'false') }}:
+      - template: /src/sdk/eng/pipelines/templates/stages/vmr-final-join.yml@self
