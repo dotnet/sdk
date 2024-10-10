@@ -50,7 +50,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
-    container: debian11Amd64
+    container: debian12Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
     # Skipping all container-based testing for now.

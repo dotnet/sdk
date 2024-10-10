@@ -20,7 +20,7 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-  - container: debian11Amd64
+  - container: debian12Amd64
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
   - container: fedora39
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
