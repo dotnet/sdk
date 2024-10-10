@@ -35683,7 +35683,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/plain"
+          "Value": "application/x-gzip"
         },
         {
           "Name": "ETag",
@@ -36083,7 +36083,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/plain"
+          "Value": "application/x-gzip"
         },
         {
           "Name": "ETag",
