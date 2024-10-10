@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
 {
-    private readonly string _registeryName;
+    private readonly string _registryName;
     private readonly string _host;
     private readonly int _port;
     private readonly ILogger _logger;
@@ -21,7 +21,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
     public FallbackToHttpMessageHandler(string registryName, string host, int port, HttpMessageHandler innerHandler, ILogger logger)
         : base(innerHandler)
     {
-        _registeryName = registryName;
+        _registryName = registryName;
         _host = host;
         _port = port;
         _logger = logger;
@@ -41,7 +41,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
             {
                 if (canFallback && _fallbackToHttp)
                 {
-                    FallbackToHttp(_registeryName, request);
+                    FallbackToHttp(_registryName, request);
                     canFallback = false;
                 }
 
@@ -54,7 +54,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
                 {
                     // Try falling back.
                     _logger.LogTrace("Attempt to fall back to http for {uri}.", uri);
-                    FallbackToHttp(_registeryName, request);
+                    FallbackToHttp(_registryName, request);
                     HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Fall back was successful. Use http for all new requests.
