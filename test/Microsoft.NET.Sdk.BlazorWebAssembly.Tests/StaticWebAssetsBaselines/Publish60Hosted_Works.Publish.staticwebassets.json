@@ -176,7 +176,7 @@
       "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat"
     },
     {
-      "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "SourceId": "BlazorWasmHosted60.Client",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
@@ -194,7 +194,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
@@ -1447,7 +1447,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
@@ -1468,7 +1468,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
@@ -2622,7 +2622,7 @@
     },
     {
       "Route": "_framework/blazor.boot.json",
-      "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "Selectors": [],
       "ResponseHeaders": [
         {
