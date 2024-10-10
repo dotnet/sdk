@@ -16,7 +16,8 @@ namespace EndToEnd.Tests
         [InlineData("10.0.22621.0")]
         // Skipped due to: https://github.com/dotnet/sdk/pull/42090/files#r1680016439
         //[InlineData("10.0.26100.0")]
-        public void ItCanBuildAndRun(string targetPlatformVersion)
+        [InlineData("10.0.22621.0", "34")]
+        public void ItCanBuildAndRun(string targetPlatformVersion, string packageVersion = "")
         {
             var testInstance = _testAssetsManager
                 .CopyTestAsset("UseCswinrt", identifier: targetPlatformVersion)
@@ -31,8 +32,20 @@ namespace EndToEnd.Tests
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
             project.Root.Element(ns + "PropertyGroup")
                 .Element(ns + "TargetFramework").Value = ToolsetInfo.CurrentTargetFramework;
-            project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "WindowsSdkPackageVersion").Value = targetPlatformVersion[..^1] + "39"; // Temporary until new projections flow to tests
+
+            if (!string.IsNullOrEmpty(packageVersion))
+            {
+                // Used to test older versions of the package to make sure they can still be referenced.
+                // This currently tests the version before profile support was added to our package.
+                project.Root.Element(ns + "PropertyGroup")
+                    .Element(ns + "WindowsSdkPackageVersion").Value = targetPlatformVersion[..^1] + packageVersion;
+            }
+            else
+            {
+                project.Root.Element(ns + "PropertyGroup")
+                    .Element(ns + "WindowsSdkPackageVersion").Value = targetPlatformVersion[..^1] + "39"; // Temporary until new projections flow to tests
+            }
+
             project.Save(projectPath);
 
             new BuildCommand(testInstance)
