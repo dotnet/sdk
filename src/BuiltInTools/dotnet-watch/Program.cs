@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using Microsoft.Build.Graph;
 using Microsoft.Build.Locator;
-using Microsoft.CodeAnalysis.ChangeSignature;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;

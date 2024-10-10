@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
@@ -25,15 +26,91 @@ namespace Microsoft.DotNet.Watcher.Tools
     /// </summary>
     internal sealed class BrowserRefreshServer : IAsyncDisposable
     {
-        private readonly byte[] ReloadMessage = Encoding.UTF8.GetBytes("Reload");
-        private readonly byte[] WaitMessage = Encoding.UTF8.GetBytes("Wait");
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-        private readonly List<(WebSocket clientSocket, string? sharedSecret)> _clientSockets = new();
-        private readonly RSA _rsa;
+        private readonly struct BrowserConnection : IAsyncDisposable
+        {
+            private static int s_lastId;
 
+            public WebSocket ClientSocket { get; }
+            public string? SharedSecret { get; }
+            public int Id { get; }
+            public IReporter Reporter { get; }
+
+            public BrowserConnection(WebSocket clientSocket, string? sharedSecret, IReporter reporter)
+            {
+                ClientSocket = clientSocket;
+                SharedSecret = sharedSecret;
+                Id = Interlocked.Increment(ref s_lastId);
+                Reporter = new MessagePrefixingReporter($"[Browser #{Id}] ", reporter);
+
+                Reporter.Verbose($"Connected to referesh server.");
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                await ClientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
+                ClientSocket.Dispose();
+
+                Reporter.Verbose($"Disconnected.");
+            }
+
+            internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+            {
+                try
+                {
+                    await ClientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    Reporter.Verbose($"Failed to send message: {e.Message}");
+                    return false;
+                }
+
+                return true;
+            }
+
+            internal async ValueTask<bool> TryReceiveMessageAsync(Action<ReadOnlySpan<byte>, IReporter> receiver, CancellationToken cancellationToken)
+            {
+                var writer = new ArrayBufferWriter<byte>(initialCapacity: 10);
+
+                while (true)
+                {
+                    ValueWebSocketReceiveResult result;
+                    try
+                    {
+                        result = await ClientSocket.ReceiveAsync(writer.GetMemory(), cancellationToken);
+                    }
+                    catch (Exception e) when (e is not OperationCanceledException)
+                    {
+                        Reporter.Verbose($"Failed to receive response: {e.Message}");
+                        return false;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        return false;
+                    }
+
+                    writer.Advance(result.Count);
+                    if (result.EndOfMessage)
+                    {
+                        break;
+                    }
+                }
+
+                receiver(writer.WrittenSpan, Reporter);
+                return true;
+            }
+        }
+
+        private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
+        private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+        
+        private readonly List<BrowserConnection> _activeConnections = [];
+        private readonly RSA _rsa;
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
-        private readonly TaskCompletionSource _clientConnected;
+        private readonly TaskCompletionSource _browserConnected;
         private readonly string? _environmentHostName;
 
         // initialized by StartAsync
@@ -48,8 +125,23 @@ namespace Microsoft.DotNet.Watcher.Tools
             Options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _rsa.Dispose();
+
+            foreach (var connection in await GetOpenBrowserConnectionsAsync())
+            {
+                _reporter.Verbose($"Disconnecting from browser #{connection.Id}.");
+                await connection.DisposeAsync();
+            }
+
+            _refreshServer?.Dispose();
+
+            _terminateWebSocket.TrySetResult();
         }
 
         public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
@@ -147,8 +239,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-            _clientSockets.Add((clientSocket, sharedSecret));
-            _clientConnected.TrySetResult();
+            var connection = new BrowserConnection(clientSocket, sharedSecret, _reporter);
+
+            lock (_activeConnections)
+            {
+                _activeConnections.Add(connection);
+            }
+
+            _browserConnected.TrySetResult();
             await _terminateWebSocket.Task;
         }
 
@@ -157,7 +255,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// </summary>
         internal void EmulateClientConnected()
         {
-            _clientConnected.TrySetResult();
+            _browserConnected.TrySetResult();
         }
 
         public async Task WaitForClientConnectionAsync(CancellationToken cancellationToken)
@@ -186,7 +284,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             try
             {
-                await _clientConnected.Task.WaitAsync(cancellationToken);
+                await _browserConnected.Task.WaitAsync(cancellationToken);
             }
             finally
             {
@@ -199,114 +297,90 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public ValueTask SendJsonSerlialized<TValue>(TValue value, CancellationToken cancellationToken = default)
+        private async ValueTask<IReadOnlyCollection<BrowserConnection>> GetOpenBrowserConnectionsAsync()
         {
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions);
-            return SendMessage(jsonSerialized, cancellationToken);
-        }
+            var openConnections = new List<BrowserConnection>();
+            List<BrowserConnection>? lazyConnectionsToDispose = null;
 
-        public async ValueTask SendJsonWithSecret<TValue>(Func<string?, TValue> valueFactory, CancellationToken cancellationToken = default)
-        {
-            try
+            lock (_activeConnections)
             {
-                for (var i = 0; i < _clientSockets.Count; i++)
+                openConnections.AddRange(_activeConnections.Where(b => b.ClientSocket.State == WebSocketState.Open));
+
+                if (openConnections.Count < _activeConnections.Count)
                 {
-                    var (clientSocket, secret) = _clientSockets[i];
-                    if (clientSocket.State is not WebSocketState.Open)
+                    foreach (var connection in _activeConnections)
                     {
-                        continue;
+                        if (connection.ClientSocket.State != WebSocketState.Open)
+                        {
+                            lazyConnectionsToDispose ??= [];
+                            lazyConnectionsToDispose.Add(connection);
+                        }
                     }
 
-                    var value = valueFactory(secret);
-                    var messageBytes = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions);
-
-                    await clientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                    _activeConnections.Clear();
+                    _activeConnections.AddRange(openConnections);
                 }
             }
-            catch (TaskCanceledException)
-            {
-                _reporter.Verbose("WebSocket connection has been terminated.");
-            }
-            catch (Exception ex)
-            {
-                _reporter.Verbose($"Refresh server error: {ex}");
-            }
-        }
 
-        public async ValueTask SendMessage(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken = default)
-        {
-            try
+            if (lazyConnectionsToDispose != null)
             {
-                for (var i = 0; i < _clientSockets.Count; i++)
+                foreach (var connection in lazyConnectionsToDispose)
                 {
-                    var (clientSocket, _) = _clientSockets[i];
-                    if (clientSocket.State is not WebSocketState.Open)
-                    {
-                        continue;
-                    }
-                    await clientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                    await connection.DisposeAsync();
                 }
             }
-            catch (TaskCanceledException)
-            {
-                _reporter.Verbose("WebSocket connection has been terminated.");
-            }
-            catch (Exception ex)
-            {
-                _reporter.Verbose($"Refresh server error: {ex}");
-            }
+
+            return openConnections;
         }
 
-        public async ValueTask DisposeAsync()
+        public static ReadOnlyMemory<byte> SerializeJson<TValue>(TValue value)
+            => JsonSerializer.SerializeToUtf8Bytes(value, s_jsonSerializerOptions);
+
+        public static TValue DeserializeJson<TValue>(ReadOnlySpan<byte> value)
+            => JsonSerializer.Deserialize<TValue>(value, s_jsonSerializerOptions) ?? throw new InvalidDataException("Unexpected null object");
+
+        public ValueTask SendJsonMessage<TValue>(TValue value, CancellationToken cancellationToken)
+            => Send(SerializeJson(value), cancellationToken);
+
+        public ValueTask ReloadAsync(CancellationToken cancellationToken)
+            => Send(s_reloadMessage, cancellationToken);
+
+        public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
+            => Send(s_waitMessage, cancellationToken);
+
+        public ValueTask Send(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+            => SendAndReceive(request: _ => messageBytes, response: null, cancellationToken);
+
+        public async ValueTask SendAndReceive<TRequest>(
+            Func<string?, TRequest> request,
+            Action<ReadOnlySpan<byte>, IReporter>? response,
+            CancellationToken cancellationToken)
         {
-            _rsa.Dispose();
+            var responded = false;
 
-            for (var i = 0; i < _clientSockets.Count; i++)
+            foreach (var connection in await GetOpenBrowserConnectionsAsync())
             {
-                var (clientSocket, _) = _clientSockets[i];
-                await clientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
-                clientSocket.Dispose();
-            }
+                var requestValue = request(connection.SharedSecret);
+                var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
 
-            _refreshServer?.Dispose();
-
-            _terminateWebSocket.TrySetResult();
-        }
-
-        public async ValueTask<ValueWebSocketReceiveResult?> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
-        {
-            for (int i = 0; i < _clientSockets.Count; i++)
-            {
-                var (clientSocket, _) = _clientSockets[i];
-
-                if (clientSocket.State != WebSocketState.Open)
+                if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
                 {
                     continue;
                 }
 
-                try
+                if (response != null && !await connection.TryReceiveMessageAsync(response, cancellationToken))
                 {
-                    var result = await clientSocket.ReceiveAsync(buffer, cancellationToken);
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        continue;
-                    }
-
-                    return result;
+                    continue;
                 }
-                catch (Exception ex)
-                {
-                    _reporter.Verbose($"Refresh server error: {ex}");
-                }
+
+                responded = true;
             }
 
-            return default;
+            if (!responded)
+            {
+                _reporter.Verbose($"Failed to receive response from a connected browser.");
+            }
         }
-
-        public ValueTask ReloadAsync(CancellationToken cancellationToken) => SendMessage(ReloadMessage, cancellationToken);
-
-        public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken) => SendMessage(WaitMessage, cancellationToken);
 
         private async Task<bool> SupportsTLS()
         {
@@ -323,18 +397,18 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
-            => SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+            => SendJsonMessage(new AspNetCoreHotReloadApplied(), cancellationToken);
 
         public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         {
             _reporter.Verbose($"Updating diagnostics in the browser.");
             if (compilationErrors.IsEmpty)
             {
-                return SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+                return SendJsonMessage(new AspNetCoreHotReloadApplied(), cancellationToken);
             }
             else
             {
-                return SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
+                return SendJsonMessage(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
             }
         }
 

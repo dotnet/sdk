@@ -116,17 +116,18 @@ namespace Microsoft.DotNet.Watcher.Tools
             _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
         }
 
-        private DeltaApplier CreateDeltaApplier(ProjectGraphNode projectNode, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
-            => HotReloadProfileReader.InferHotReloadProfile(projectNode, _reporter) switch
+        private static DeltaApplier CreateDeltaApplier(HotReloadProfile profile, Version? targetFramework, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+            => profile switch
             {
-                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, projectNode.GetTargetFrameworkVersion()),
-                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, projectNode.GetTargetFrameworkVersion()),
+                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
+                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
                 _ => new DefaultDeltaApplier(processReporter),
             };
 
         public async Task<RunningProject> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
+            HotReloadProfile profile,
             string namedPipeName,
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
@@ -136,7 +137,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = CreateDeltaApplier(projectNode, browserRefreshServer, processReporter);
+            var targetFramework = projectNode.GetTargetFrameworkVersion();
+            var deltaApplier = CreateDeltaApplier(profile, targetFramework, browserRefreshServer, processReporter);
             var processExitedSource = new CancellationTokenSource();
             var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(processExitedSource.Token, cancellationToken);
 
