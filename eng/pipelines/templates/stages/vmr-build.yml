@@ -391,6 +391,11 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
+        ${{ if in(parameters.scope, 'full') }}:
+          buildPass: 2
+          reuseBuildArtifactsFrom:
+          - Windows_x86
+          - Windows_arm64
 
     - template: ../jobs/vmr-build.yml
       parameters:

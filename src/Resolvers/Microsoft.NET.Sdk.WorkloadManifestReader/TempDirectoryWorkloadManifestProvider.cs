@@ -53,11 +53,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         public string GetSdkFeatureBand() => _sdkVersionBand;
-        public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion
-        {
-            Version = _sdkVersionBand + ".2",
-            WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-        };
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(_sdkVersionBand.ToString() + ".2");
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
     }
 }
