@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">是否确实要取消?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
-  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
    或在目录中创建捆绑包的完整本地副本。'/install' 是默认值。
 
 /passive | /quiet - 显示最小 UI 且无提示，或不显示 UI 和

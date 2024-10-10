@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">Отменить?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
   <String Id="HelpHeader">Справка по установке</String>
-  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] - устанавливает, исправляет, удаляет
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - устанавливает, исправляет, удаляет
    или создает полную локальную копию пакета в каталоге. '/install' - значение по умолчанию.
 
 /passive | /quiet — отображает минимальный пользовательский интерфейс без запросов или не отображает пользовательский интерфейс и 

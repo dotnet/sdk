@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
   <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 설치, 복구, 제거
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 설치, 복구, 제거
    또는 디렉터리에 번들의 전체 로컬 복사본을 만듭니다. '/install'이 기본값입니다.
 
 /passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
