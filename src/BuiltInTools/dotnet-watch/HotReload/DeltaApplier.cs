@@ -29,22 +29,22 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public abstract void Dispose();
 
-        public void ReportLog(IEnumerable<(string message, AgentMessageSeverity severity)> log, string agentEmoji)
+        public static void ReportLog(IReporter reporter, IEnumerable<(string message, AgentMessageSeverity severity)> log)
         {
             foreach (var (message, severity) in log)
             {
                 switch (severity)
                 {
                     case AgentMessageSeverity.Error:
-                        Reporter.Error(message);
+                        reporter.Error(message);
                         break;
 
                     case AgentMessageSeverity.Warning:
-                        Reporter.Warn(message, emoji: "⚠");
+                        reporter.Warn(message, emoji: "⚠");
                         break;
 
                     default:
-                        Reporter.Verbose(message, emoji: agentEmoji);
+                        reporter.Verbose(message, emoji: "🕵️");
                         break;
                 }
             }

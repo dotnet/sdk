@@ -26,28 +26,70 @@ namespace Microsoft.DotNet.Watcher.Tools
     /// </summary>
     internal sealed class BrowserRefreshServer : IAsyncDisposable
     {
-        private readonly struct BrowserConnection(WebSocket clientSocket, string? sharedSecret, int id) : IAsyncDisposable
+        private readonly struct BrowserConnection : IAsyncDisposable
         {
-            public WebSocket ClientSocket { get; } = clientSocket;
-            public string? SharedSecret { get; } = sharedSecret;
-            public int Id { get; } = id;
+            private static int s_lastId;
+
+            public WebSocket ClientSocket { get; }
+            public string? SharedSecret { get; }
+            public int Id { get; }
+            public IReporter Reporter { get; }
+
+            public BrowserConnection(WebSocket clientSocket, string? sharedSecret, IReporter reporter)
+            {
+                ClientSocket = clientSocket;
+                SharedSecret = sharedSecret;
+                Id = Interlocked.Increment(ref s_lastId);
+                Reporter = new MessagePrefixingReporter($"[Browser #{Id}] ", reporter);
+
+                Reporter.Verbose($"Connected to referesh server.");
+            }
 
             public async ValueTask DisposeAsync()
             {
                 await ClientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
                 ClientSocket.Dispose();
+
+                Reporter.Verbose($"Disconnected.");
             }
 
-            internal ValueTask SendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
-                => ClientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+            internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+            {
+                try
+                {
+                    await ClientSocket.SendAsync(messageBytes, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    Reporter.Verbose($"Failed to send message: {e.Message}");
+                    return false;
+                }
 
-            internal async ValueTask ReceiveMessageAsync(Action<ReadOnlySpan<byte>> receiver, CancellationToken cancellationToken)
+                return true;
+            }
+
+            internal async ValueTask<bool> TryReceiveMessageAsync(Action<ReadOnlySpan<byte>, IReporter> receiver, CancellationToken cancellationToken)
             {
                 var writer = new ArrayBufferWriter<byte>(initialCapacity: 10);
 
                 while (true)
                 {
-                    var result = await ClientSocket.ReceiveAsync(writer.GetMemory(), cancellationToken);
+                    ValueWebSocketReceiveResult result;
+                    try
+                    {
+                        result = await ClientSocket.ReceiveAsync(writer.GetMemory(), cancellationToken);
+                    }
+                    catch (Exception e) when (e is not OperationCanceledException)
+                    {
+                        Reporter.Verbose($"Failed to receive response: {e.Message}");
+                        return false;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        return false;
+                    }
+
                     writer.Advance(result.Count);
                     if (result.EndOfMessage)
                     {
@@ -55,19 +97,20 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
                 }
 
-                receiver(writer.WrittenSpan);
+                receiver(writer.WrittenSpan, Reporter);
+                return true;
             }
         }
 
         private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
         private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-
+        
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
-        private readonly TaskCompletionSource _clientConnected;
+        private readonly TaskCompletionSource _browserConnected;
         private readonly string? _environmentHostName;
 
         // initialized by StartAsync
@@ -82,7 +125,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
         }
 
@@ -196,17 +239,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
+            var connection = new BrowserConnection(clientSocket, sharedSecret, _reporter);
 
-            int connectionId;
             lock (_activeConnections)
             {
-                connectionId = _activeConnections.Count;
-                _activeConnections.Add(new BrowserConnection(clientSocket, sharedSecret, connectionId));
+                _activeConnections.Add(connection);
             }
 
-            _reporter.Verbose($"Browser #{connectionId} connected to referesh server web socket.");
-
-            _clientConnected.TrySetResult();
+            _browserConnected.TrySetResult();
             await _terminateWebSocket.Task;
         }
 
@@ -215,7 +255,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// </summary>
         internal void EmulateClientConnected()
         {
-            _clientConnected.TrySetResult();
+            _browserConnected.TrySetResult();
         }
 
         public async Task WaitForClientConnectionAsync(CancellationToken cancellationToken)
@@ -244,7 +284,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             try
             {
-                await _clientConnected.Task.WaitAsync(cancellationToken);
+                await _browserConnected.Task.WaitAsync(cancellationToken);
             }
             finally
             {
@@ -287,7 +327,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                 foreach (var connection in lazyConnectionsToDispose)
                 {
                     await connection.DisposeAsync();
-                    _reporter.Verbose($"Browser #{connection.Id} disconnected.");
                 }
             }
 
@@ -309,49 +348,28 @@ namespace Microsoft.DotNet.Watcher.Tools
         public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
             => Send(s_waitMessage, cancellationToken);
 
-        public async ValueTask Send(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
-        {
-            foreach (var connection in await GetOpenBrowserConnectionsAsync())
-            {
-                try
-                {
-                    await connection.SendMessageAsync(messageBytes, cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    _reporter.Verbose($"Failed to send message to browser #{connection.Id}: {e.Message}");
-                }
-            }
-        }
+        public ValueTask Send(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+            => SendAndReceive(request: _ => messageBytes, response: null, cancellationToken);
 
         public async ValueTask SendAndReceive<TRequest>(
             Func<string?, TRequest> request,
-            Action<ReadOnlySpan<byte>> response,
+            Action<ReadOnlySpan<byte>, IReporter>? response,
             CancellationToken cancellationToken)
         {
             var responded = false;
 
             foreach (var connection in await GetOpenBrowserConnectionsAsync())
             {
-                var requestBytes = SerializeJson(request(connection.SharedSecret));
+                var requestValue = request(connection.SharedSecret);
+                var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
 
-                try
+                if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
                 {
-                    await connection.SendMessageAsync(requestBytes, cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    _reporter.Verbose($"Failed to send message to browser #{connection.Id}: {e.Message}");
                     continue;
                 }
 
-                try
+                if (response != null && !await connection.TryReceiveMessageAsync(response, cancellationToken))
                 {
-                    await connection.ReceiveMessageAsync(response, cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    _reporter.Verbose($"Failed to receive response from browser #{connection.Id}: {e.Message}");
                     continue;
                 }
 

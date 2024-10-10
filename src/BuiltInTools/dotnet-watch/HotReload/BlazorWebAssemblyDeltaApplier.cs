@@ -78,16 +78,16 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                         await browserRefreshServer.SendAndReceive(
                             request: _ => default(JsonGetApplyUpdateCapabilitiesRequest),
-                            response: value =>
+                            response: (value, reporter) =>
                             {
                                 var str = Encoding.UTF8.GetString(value);
                                 if (str.StartsWith('!'))
                                 {
-                                    Reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
+                                    reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
                                 }
                                 else if (str.Length == 0)
                                 {
-                                    Reporter.Verbose($"Unable to read WASM runtime capabilities");
+                                    reporter.Verbose($"Unable to read WASM runtime capabilities");
                                 }
                                 else if (capabilityString == null)
                                 {
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                                 }
                                 else if (capabilityString != str)
                                 {
-                                    Reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
+                                    reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
                                 }
                             },
                             cancellationToken);
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }),
                     ResponseLoggingLevel = (int)(Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors)
                 },
-                response: value =>
+                response: (value, reporter) =>
                 {
                     var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         anyFailure = true;
                     }
 
-                    ReportLog(data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)), agentEmoji: "🌐");
+                    ReportLog(reporter, data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)));
                 },
                 cancellationToken);
 
