@@ -1442,7 +1442,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 foreach (var package in _lockFile.Libraries)
                 {
-                    var packageVersion = package.Version.ToNormalizedString();
+                    var packageVersion = package.Version.ToNormalizedString().ToLowerInvariant();
                     string packageId = $"{package.Name}/{packageVersion}";
 
                     // Find PackageDefinitions that match our allowed item specs
@@ -1508,7 +1508,7 @@ namespace Microsoft.NET.Build.Tasks
                     return results;
                 }
 
-                static string GetPackageId(LockFileTargetLibrary package) => $"{package.Name}/{package.Version.ToNormalizedString()}";
+                static string GetPackageId(LockFileTargetLibrary package) => $"{package.Name}/{package.Version.ToNormalizedString().ToLowerInvariant()}";
 
                 Dictionary<string, LogLevel> GetPackageDiagnosticLevels()
                 {
