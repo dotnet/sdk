@@ -166,8 +166,8 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var package in LockFile.Libraries)
             {
                 var packageName = package.Name;
-                var packageVersion = package.Version.ToNormalizedString().ToLowerInvariant();
-                string packageId = $"{packageName}/{packageVersion}";
+                var packageVersion = package.Version.ToNormalizedString();
+                string packageId = $"{packageName}/{packageVersion.ToLowerInvariant()}";
                 var item = new TaskItem(packageId);
                 item.SetMetadata(MetadataKeys.Name, packageName);
                 item.SetMetadata(MetadataKeys.Type, package.Type);

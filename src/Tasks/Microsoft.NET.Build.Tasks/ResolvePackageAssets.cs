@@ -1442,8 +1442,8 @@ namespace Microsoft.NET.Build.Tasks
 
                 foreach (var package in _lockFile.Libraries)
                 {
-                    var packageVersion = package.Version.ToNormalizedString().ToLowerInvariant();
-                    string packageId = $"{package.Name}/{packageVersion}";
+                    var packageVersion = package.Version.ToNormalizedString();
+                    string packageId = $"{package.Name}/{packageVersion.ToLowerInvariant()}";
 
                     // Find PackageDefinitions that match our allowed item specs
                     if (string.IsNullOrEmpty(package.Name) || !allowItemSpecs.Contains(packageId))
