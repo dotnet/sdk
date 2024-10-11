@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         {
             // Remove version numbers for examples like "roslyn4.1", "net8.0", and "netstandard2.1".
             string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
-            string result = Regex.Replace(source, $@"{pathSeparator}(net|roslyn)[1-9]+\.[0-9]+{pathSeparator}", match =>
+            string result = Regex.Replace(source, $@"{pathSeparator}(net|roslyn)([1-9][0-9]*)\.[0-9]+{pathSeparator}", match =>
             {
                 string wordPart = match.Groups[1].Value;
                 return $"{Path.DirectorySeparatorChar}{wordPart}{NonSemanticVersionPlaceholder}{Path.DirectorySeparatorChar}";
