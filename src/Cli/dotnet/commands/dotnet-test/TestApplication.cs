@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(37568);
+            DebuggerUtility.AttachCurrentProcessToVSProcessPID(29016);
             Run?.Invoke(this, EventArgs.Empty);
 
             if (isFilterMode && !ModulePathExists())
@@ -337,8 +337,8 @@ namespace Microsoft.DotNet.Cli
             TestResultsReceived?.Invoke(this, new TestResultEventArgs
             {
                 ExecutionId = testResultMessage.ExecutionId,
-                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.SessionUid)).ToArray()
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 

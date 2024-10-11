@@ -13,9 +13,9 @@ namespace Microsoft.DotNet.Cli
 
     internal sealed record DiscoveredTest(string? Uid, string? DisplayName);
 
-    internal sealed record SuccessfulTestResult(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, string? SessionUid);
+    internal sealed record SuccessfulTestResult(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, string? StandardOutput, string? ErrorOutput, string? SessionUid);
 
-    internal sealed record FailedTestResult(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, string? ErrorMessage, string? ErrorStackTrace, string? SessionUid);
+    internal sealed record FailedTestResult(string? Uid, string? DisplayName, byte? State, long? Duration, string? Reason, string? ErrorMessage, string? ErrorStackTrace, string? StandardOutput, string? ErrorOutput, string? SessionUid);
 
     internal sealed record FileArtifact(string? FullPath, string? DisplayName, string? Description, string? TestUid, string? TestDisplayName, string? SessionUid);
 
