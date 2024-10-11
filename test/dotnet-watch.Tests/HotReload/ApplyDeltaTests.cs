@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
