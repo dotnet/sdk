@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
                     throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
 
-                var testApp = new TestApplication(new Module(module.DLLPath, module.ProjectPath, module.TargetFramework), _args);
+                var testApp = new TestApplication(new Module(module.DLLPath, module.ProjectPath, module.TargetFramework, module.RunSettingsFilePath), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
             }

@@ -12,7 +12,8 @@ namespace Microsoft.DotNet.Tools.Test
             string modulePath = ReadString(stream);
             string projectPath = ReadString(stream);
             string targetFramework = ReadString(stream);
-            return new ModuleMessage(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim());
+            string runSettingsFilePath = ReadString(stream);
+            return new ModuleMessage(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim(), runSettingsFilePath.Trim());
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -20,6 +21,7 @@ namespace Microsoft.DotNet.Tools.Test
             WriteString(stream, ((ModuleMessage)objectToSerialize).DLLPath);
             WriteString(stream, ((ModuleMessage)objectToSerialize).ProjectPath);
             WriteString(stream, ((ModuleMessage)objectToSerialize).TargetFramework);
+            WriteString(stream, ((ModuleMessage)objectToSerialize).RunSettingsFilePath);
         }
     }
 }

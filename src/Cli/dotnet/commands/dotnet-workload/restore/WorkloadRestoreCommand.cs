@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             recorder.Run(() =>
             {
                 // First update manifests and install a workload set as necessary
-                new WorkloadUpdateCommand(_result, recorder: recorder).Execute();
+                new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
                 var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
                 List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
@@ -64,6 +64,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
                     IsRunningRestore = true
                 }.Execute();
             });
+
+            workloadInstaller.Shutdown();
             
             return 0;
         }

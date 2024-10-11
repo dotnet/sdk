@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal interface IFileSystemWatcher : IDisposable
     {
-        event EventHandler<(string filePath, bool newFile)> OnFileChange;
+        event EventHandler<(string filePath, ChangeKind kind)> OnFileChange;
 
         event EventHandler<Exception> OnError;
 

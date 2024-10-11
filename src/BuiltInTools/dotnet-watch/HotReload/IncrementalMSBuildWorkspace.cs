@@ -1,20 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.Extensions.Tools.Internal;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools;
 
@@ -106,13 +101,24 @@ internal class IncrementalMSBuildWorkspace : Workspace
             }).ToImmutableArray();
     }
 
-    public async ValueTask UpdateFileContentAsync(IEnumerable<FileItem> changedFiles, CancellationToken cancellationToken)
+    public async ValueTask UpdateFileContentAsync(IEnumerable<ChangedFile> changedFiles, CancellationToken cancellationToken)
     {
         var updatedSolution = CurrentSolution;
 
-        foreach (var changedFile in changedFiles)
+        var documentsToRemove = new List<DocumentId>();
+
+        foreach (var (changedFile, change) in changedFiles)
         {
+            // when a file is added we reevaluate the project:
+            Debug.Assert(change != ChangeKind.Add);
+
             var documentIds = updatedSolution.GetDocumentIdsWithFilePath(changedFile.FilePath);
+            if (change == ChangeKind.Delete)
+            {
+                documentsToRemove.AddRange(documentIds);
+                continue;
+            }
+
             foreach (var documentId in documentIds)
             {
                 var textDocument = updatedSolution.GetDocument(documentId)
@@ -140,8 +146,16 @@ internal class IncrementalMSBuildWorkspace : Workspace
             }
         }
 
+        updatedSolution = RemoveDocuments(updatedSolution, documentsToRemove);
+
         await ReportSolutionFilesAsync(SetCurrentSolution(updatedSolution), cancellationToken);
     }
+
+    private static Solution RemoveDocuments(Solution solution, IEnumerable<DocumentId> ids)
+        => solution
+        .RemoveDocuments(ids.Where(id => solution.GetDocument(id) != null).ToImmutableArray())
+        .RemoveAdditionalDocuments(ids.Where(id => solution.GetAdditionalDocument(id) != null).ToImmutableArray())
+        .RemoveAnalyzerConfigDocuments(ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null).ToImmutableArray());
 
     private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
     {
