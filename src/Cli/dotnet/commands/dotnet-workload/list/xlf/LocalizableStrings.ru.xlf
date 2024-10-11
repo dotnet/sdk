@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="WorkloadIdColumn">
         <source>Installed Workload Ids</source>
-        <target state="translated">Идентификаторы установленных рабочих нагрузок</target>
+        <target state="new">Installed Workload Ids</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadListFooter">
@@ -17,14 +17,19 @@
         <target state="translated">Используйте "Поиск рабочей нагрузки DotNet", чтобы найти дополнительные рабочие нагрузки для установки.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadListHeader">
-        <source>This command lists only workloads that were installed via `dotnet workload install` in this version of the SDK and not those that were installed via Visual Studio.</source>
-        <target state="translated">Эта команда выводит только рабочие нагрузки, которые были установлены с помощью команды "Устаовка рабочей нагрузки DotNet" в этой версии пакета SDK, а не те, которые были установлены с помощью Visual Studio.</target>
+      <trans-unit id="WorkloadManfiestVersionColumn">
+        <source>Manifest Version</source>
+        <target state="new">Manifest Version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSourceColumn">
+        <source>Installation Source</source>
+        <target state="new">Installation Source</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are avaliable for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
-        <target state="translated">Обновления доступны для следующих рабочих нагрузок: {0}. Чтобы получить последнюю версию, запустите обновление рабочей нагрузки DotNet.</target>
+        <target state="needs-review-translation">Обновления доступны для следующих рабочих нагрузок: {0}. Чтобы получить последнюю версию, запустите обновление рабочей нагрузки DotNet.</target>
         <note />
       </trans-unit>
     </body>
