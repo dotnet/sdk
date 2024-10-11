@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.Build.Framework;
+using System.Collections.Concurrent;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
