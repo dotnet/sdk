@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -49,7 +48,6 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(29016);
             Run?.Invoke(this, EventArgs.Empty);
 
             if (isFilterMode && !ModulePathExists())
