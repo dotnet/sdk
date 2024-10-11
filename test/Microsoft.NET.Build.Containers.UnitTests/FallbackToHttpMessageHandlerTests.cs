@@ -18,9 +18,13 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [InlineData("mcr.microsoft.com:443", 443)]
         [InlineData("mcr.microsoft.com:80", 80)]
         [InlineData("mcr.microsoft.com:5555", 5555)]
+        [InlineData("[2408:8120:245:49a0:f041:d7bb:bb13:5b64]", 80)]
+        [InlineData("[2408:8120:245:49a0:f041:d7bb:bb13:5b64]:443", 443)]
+        [InlineData("[2408:8120:245:49a0:f041:d7bb:bb13:5b64]:80", 80)]
+        [InlineData("[2408:8120:245:49a0:f041:d7bb:bb13:5b64]:5555", 5555)]
         public async Task FallBackToHttpPortShouldAsExpected(string registry, int expectedPort)
         {
-            var uri = new UriBuilder($"https://{registry}").Uri;
+            var uri = new Uri($"https://{registry}");
             var handler = new FallbackToHttpMessageHandler(
                 registry,
                 uri.Host,

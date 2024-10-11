@@ -79,11 +79,17 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
         return exception.HttpRequestError == HttpRequestError.SecureConnectionError;
     }
 
+    private static bool RegistryNameContainsPort(string registryName)
+    {
+        // use `container` scheme which does not have a default port.
+        return new Uri($"container://{registryName}").Port != -1;
+    }
+
     private static void FallbackToHttp(string registryName, HttpRequestMessage request)
     {
         var uriBuilder = new UriBuilder(request.RequestUri!);
         uriBuilder.Scheme = "http";
-        if (registryName.IndexOf(':') < 0)
+        if (RegistryNameContainsPort(registryName) == false)
         {
             // registeryName does not contains port number, so reset the port number to -1, otherwise it will be https default port 443
             uriBuilder.Port = -1;
