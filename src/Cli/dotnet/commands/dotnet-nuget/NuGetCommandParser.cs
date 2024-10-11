@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(GetVerifyCommand());
             command.Subcommands.Add(GetTrustCommand());
             command.Subcommands.Add(GetSignCommand());
+            command.Subcommands.Add(GetWhyCommand());
 
             command.SetAction(NuGetCommand.Run);
 
@@ -212,6 +213,22 @@ namespace Microsoft.DotNet.Cli
             signCommand.SetAction(NuGetCommand.Run);
 
             return signCommand;
+        }
+
+        private static CliCommand GetWhyCommand()
+        {
+            CliCommand whyCommand = new("why");
+
+            whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
+            whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
+
+            whyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
+                .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
+                .AllowSingleArgPerToken());
+
+            whyCommand.SetAction(NuGetCommand.Run);
+
+            return whyCommand;
         }
     }
 }

@@ -43,7 +43,7 @@
     </PropertyGroup>
 
     <ComputeDotnetBaseImageAndTag
-      Condition="$(_ContainerIsUsingMicrosoftDefaultImages)"
+      UserBaseImage="$(ContainerBaseImage)"
       SdkVersion="$(NetCoreSdkVersion)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
       FrameworkReferences="@(FrameworkReference)"
@@ -222,6 +222,7 @@
           ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
           ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
         )"
+      Code="CONTAINER005"
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
 
     <PropertyGroup>
@@ -271,6 +272,7 @@
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
   </Target>
 </Project>
