@@ -228,7 +228,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CompressionBuildStaticWebAsset);@(_PrecompressedStaticWebAssets)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
