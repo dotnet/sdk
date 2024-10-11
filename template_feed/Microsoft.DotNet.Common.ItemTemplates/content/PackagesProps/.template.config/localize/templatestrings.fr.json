@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Fichier Directory.Packages.props MSBuild",
+  "description": "Fichier Directory.Packages.props vide qui peut être utilisé pour spécifier des versions de package de manière centralisée",
+  "symbols/inherit/displayName": "Hériter",
+  "symbols/inherit/description": "Si la valeur est true, ajoute une importation pour le fichier Directory.Packages.props le plus proche dans la hiérarchie de répertoires du système de fichiers. Directory.Packages.props n’hérite pas par défaut, ce qui vous permet de créer un ensemble de personnalisations dossier par dossier."
+}

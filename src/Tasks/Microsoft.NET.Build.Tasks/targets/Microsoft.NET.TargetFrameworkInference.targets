@@ -154,7 +154,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    Trigger an error if targeting a higher version of .NET Core or .NET Standard than is supported by the current SDK.
+    Trigger an error if targeting a higher version of .NET Core than is supported by the current SDK.
   -->
   <Target Name="_CheckForUnsupportedNETCoreVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NETCoreAppMaximumVersion)' != ''">
@@ -172,6 +172,21 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="UnsupportedVisualStudioVersion"
                  FormatArguments=".NET;$(_TargetFrameworkVersionWithoutV);$(NETCoreAppMaximumVersion);$(MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion)"
       />
+  </Target>
+
+  <!--
+    Trigger a warning if targeting a lower version of .NET Standard than is recommended
+  -->
+  <Target Name="_CheckForNotRecommendedNETStandardVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' and $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.0'))">
+    <PropertyGroup>
+      <!-- Default the check to true, but allow developers to turn the warning off. -->
+      <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == ''" >true</CheckNotRecommendedTargetFramework>
+    </PropertyGroup>
+
+    <NETSdkWarning Condition="'$(CheckNotRecommendedTargetFramework)' == 'true'"
+          ResourceName="TargetFrameworkIsNotRecommended"
+          FormatArguments="https://aka.ms/dotnet/dotnet-standard-guidance" />
   </Target>
 
   <!--
@@ -222,7 +237,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="ProcessFrameworkReferences"
     Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
     <ItemGroup>
-      <_ValidTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and $([MSBuild]::VersionEquals(%(Identity), $(TargetPlatformVersion)))" />
+      <_ApplicableTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and '%(SdkSupportedTargetPlatformVersion.DefineConstantsOnly)' != 'true'" RemoveMetadata="DefineConstantsOnly" />
+      <_ValidTargetPlatformVersion Include="@(_ApplicableTargetPlatformVersion)" Condition="'@(_ApplicableTargetPlatformVersion)' != '' and $([MSBuild]::VersionEquals(%(Identity), $(TargetPlatformVersion)))" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -236,8 +252,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
     <PropertyGroup>
       <TargetPlatformVersionSupported Condition="'$(TargetPlatformVersionSupported)' == '' and '@(_ValidTargetPlatformVersion)' != ''" >true</TargetPlatformVersionSupported>
-      <_ValidTargetPlatformVersions Condition="'@(SdkSupportedTargetPlatformVersion)' != ''" >@(SdkSupportedTargetPlatformVersion, '%0a')</_ValidTargetPlatformVersions>
-      <_ValidTargetPlatformVersions Condition="'@(SdkSupportedTargetPlatformVersion)' == ''" >None</_ValidTargetPlatformVersions>
+      <_ValidTargetPlatformVersions Condition="'@(_ApplicableTargetPlatformVersion)' != ''" >@(_ApplicableTargetPlatformVersion, '%0a')</_ValidTargetPlatformVersions>
+      <_ValidTargetPlatformVersions Condition="'@(_ApplicableTargetPlatformVersion)' == ''" >None</_ValidTargetPlatformVersions>
     </PropertyGroup>
 
     <NetSdkError Condition="'$(TargetPlatformVersionSupported)' != 'true'"
