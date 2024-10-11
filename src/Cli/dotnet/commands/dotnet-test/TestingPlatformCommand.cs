@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.IPC;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.Testing.TestInfrastructure;
@@ -204,12 +205,14 @@ namespace Microsoft.DotNet.Cli
                 // TODO: timespan for duration
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                     testResult.DisplayName,
-                    TestOutcome.Passed,
+                    ToOutcome(testResult.State),
                     TimeSpan.FromSeconds(1),
                     errorMessage: null,
                     errorStackTrace: null,
                     expected: null,
-                    actual: null);
+                    actual: null,
+                    standardOutput: null,
+                    errorOutput: null);
             }
 
             foreach (var testResult in args.FailedTestResults)
@@ -222,11 +225,14 @@ namespace Microsoft.DotNet.Cli
                 var appInfo = _executions[testApp];
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                     testResult.DisplayName,
-                    TestOutcome.Fail,
+                    ToOutcome(testResult.State),
                     TimeSpan.FromSeconds(1),
                     errorMessage: testResult.ErrorMessage,
                     errorStackTrace: testResult.ErrorStackTrace,
-                    expected: null, actual: null);
+                    expected: null,
+                    actual: null,
+                    standardOutput: null,
+                    errorOutput: null);
             }
 
 
@@ -251,6 +257,20 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
+        public static TestOutcome ToOutcome(byte? testState)
+        {
+            return testState switch
+            {
+                TestStates.Passed => TestOutcome.Passed,
+                TestStates.Skipped => TestOutcome.Skipped,
+                TestStates.Failed => TestOutcome.Fail,
+                TestStates.Error => TestOutcome.Error,
+                TestStates.Timeout => TestOutcome.Timeout,
+                TestStates.Cancelled => TestOutcome.Canceled,
+                _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
+            };
+        }
+
         private void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
         {
             if (!VSTestTrace.TraceEnabled)
@@ -262,7 +282,7 @@ namespace Microsoft.DotNet.Cli
 
             foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
             {
-                VSTestTrace.SafeWriteTrace(() => $"FileArtifacr: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                VSTestTrace.SafeWriteTrace(() => $"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
                 $"{fileArtifactMessage.SessionUid}");
             }
