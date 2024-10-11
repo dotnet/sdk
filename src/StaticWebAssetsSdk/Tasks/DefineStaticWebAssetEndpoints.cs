@@ -1,9 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using System.Globalization;
+using Microsoft.Build.Framework;
+using System.Collections.Concurrent;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -12,7 +13,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public ITaskItem[] CandidateAssets { get; set; }
 
-        [Required]
         public ITaskItem[] ExistingEndpoints { get; set; }
 
         [Required]
@@ -40,69 +40,91 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
             }
 
-            var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
-            var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(ExistingEndpoints);
-            var existingEndpointsByAssetFile = existingEndpoints
-                .GroupBy(e => e.AssetFile, OSPath.PathComparer)
-                .ToDictionary(g => g.Key, g => new HashSet<StaticWebAssetEndpoint>(g, StaticWebAssetEndpoint.RouteAndAssetComparer));
-
-            var assetsToRemove = new List<string>();
-            foreach (var kvp in existingEndpointsByAssetFile)
-            {
-                var asset = kvp.Key;
-                var set = kvp.Value;
-                if (!staticWebAssets.ContainsKey(asset))
-                {
-                    assetsToRemove.Remove(asset);
-                }
-            }
-            foreach (var asset in assetsToRemove)
-            {
-                Log.LogMessage(MessageImportance.Low, $"Removing endpoints for asset '{asset}' because it no longer exists.");
-                existingEndpointsByAssetFile.Remove(asset);
-            }
-
+            var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
             var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-            var endpoints = new List<StaticWebAssetEndpoint>();
+            var endpoints = new ConcurrentBag<StaticWebAssetEndpoint>();
 
-            foreach (var kvp in staticWebAssets)
+            Parallel.For(0, CandidateAssets.Length, i =>
             {
-                var asset = kvp.Value;
+                var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
+                var routes = asset.ComputeRoutes().ToList();
 
-                // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
-                // package or a referenced project and ignored if it comes from the current project.
-                // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
-                // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
-                // adjusted at that time.
-                var assetEndpoints = CreateEndpoints(asset, contentTypeProvider);
-
-                foreach (var endpoint in assetEndpoints)
+                if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
                 {
-                    // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
-                    // during the build will have already defined endpoints and we only want to add new ones.
-                    if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
-                        set.TryGetValue(endpoint, out var existingEndpoint))
+                    for (var j = routes.Count -1; j >= 0; j--)
                     {
-                        Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
-                        continue;
-                    }
+                        var (label, route, values) = routes[j];
+                        // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
+                        // package or a referenced project and ignored if it comes from the current project.
+                        // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
+                        // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
+                        // adjusted at that time.
+                        var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
+                        // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
+                        // during the build will have already defined endpoints and we only want to add new ones.
+                        if (set.Contains(finalRoute))
+                        {
+                            Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
+                            routes.RemoveAt(j);
+                        }
+                    }
+                }
+
+                foreach (var endpoint in CreateEndpoints(routes, asset, contentTypeProvider))
+                {
                     Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                     endpoints.Add(endpoint);
                 }
-            }
+            });
 
             Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
             return !Log.HasLoggedErrors;
         }
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
+        private Dictionary<string, HashSet<string>> CreateEndpointsByAssetFile()
         {
-            var routes = asset.ComputeRoutes();
+            if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
+            {
+                Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
+                var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
+                foreach (var asset in CandidateAssets)
+                {
+                    assets.Add(asset.ItemSpec);
+                }
+
+                for (int i = 0; i < ExistingEndpoints.Length; i++)
+                {
+                    var endpointCandidate = ExistingEndpoints[i];
+                    var assetFile = endpointCandidate.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile));
+                    if (!assets.Contains(assetFile))
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Removing endpoints for asset '{assetFile}' because it no longer exists.");
+                        continue;
+                    }
+
+                    if (!existingEndpointsByAssetFile.TryGetValue(assetFile, out var set))
+                    {
+                        set = new HashSet<string>(OSPath.PathComparer);
+                        existingEndpointsByAssetFile[assetFile] = set;
+                    }
+
+                    // Add the route
+                    set.Add(endpointCandidate.ItemSpec);
+                }
+
+                return existingEndpointsByAssetFile;
+            }
+
+            return null;
+        }
+
+        private List<StaticWebAssetEndpoint> CreateEndpoints(List<StaticWebAsset.StaticWebAssetResolvedRoute> routes, StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
+        {
             var (length, lastModified) = ResolveDetails(asset);
-            var result = new List<StaticWebAssetEndpoint>(); 
+            var result = new List<StaticWebAssetEndpoint>();
             foreach (var (label, route, values) in routes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);

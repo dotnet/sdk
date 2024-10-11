@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.Build.Framework;
