@@ -1,20 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Xunit;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using System.Linq;
-using Xunit.Abstractions;
-using System.Xml.Linq;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -64,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netstandard1.2", true, "netstandard1.5", true, false, false)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework}", true, "net45;netstandard1.5", true, true, true)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework}", true, "net45;net46", true, true, true)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework};net461", true, "netstandard1.4", true, true, true)]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework};net462", true, "netstandard1.4", true, true, true)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "netstandard1.4", true, false, false)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net46", true, "net45;netstandard1.6", true, true, true)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "net46;netstandard1.6", true, false, false)]
@@ -285,9 +270,9 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var contentPath = Path.Combine(testAsset.Path, testProjectC.Name, "bin", "Debug", targetFramework, "a.txt");
+            var contentPath = Path.Combine(testProjectC.GetOutputDirectory(testAsset.Path), "a.txt");
             File.Exists(contentPath).Should().BeTrue();
-            var binDir = new DirectoryInfo(Path.Combine(testAsset.Path, testProjectC.Name, "bin"));
+            var binDir = new DirectoryInfo(Path.GetDirectoryName(contentPath));
             binDir.Delete(true);
 
             buildCommand

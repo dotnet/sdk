@@ -1,14 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.NET.TestFramework;
-using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -28,10 +22,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolInstallCommand.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
                     LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
-                    "global tool-path"));
+                    "--global --tool-path"));
         }
 
         [Fact]
@@ -45,10 +39,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolInstallCommand.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
-                        "local tool-path"));
+                        "--local --tool-path"));
         }
 
         [Fact]
@@ -62,7 +56,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolInstallCommand.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
@@ -80,7 +74,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolInstallCommand.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
@@ -98,7 +92,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolInstallCommand.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption);
         }
     }
