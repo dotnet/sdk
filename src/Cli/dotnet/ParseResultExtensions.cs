@@ -122,16 +122,38 @@ namespace Microsoft.DotNet.Cli
             var subargs = args.ToList();
 
             // Don't remove any arguments that are being passed to the app in dotnet run
-            var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
-            subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
+            var dashDashIndex = subargs.IndexOf("--");
 
-            subargs.RemoveAll(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg));
-            if (subargs[0].Equals("dotnet"))
+            var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : new List<string>(0);
+            subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
+
+            return subargs
+                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1) // remove top level command (ex build or publish)
+                .Concat(runArgs)
+                .ToArray();
+        }
+
+        public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
+        {
+            if (string.IsNullOrEmpty(subCommand))
             {
-                subargs.RemoveAt(0);
+                return true;
             }
-            subargs.RemoveAt(0); // remove top level command (ex build or publish)
-            return subargs.Concat(runArgs).ToArray();
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i].Equals(subCommand))
+                {
+                    return false;
+                }
+                else if (DiagOption.Name.Equals(args) || DiagOption.Aliases.Contains(args[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)

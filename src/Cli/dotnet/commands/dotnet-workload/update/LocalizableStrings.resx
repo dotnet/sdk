@@ -153,4 +153,10 @@
   <data name="FromRollbackDefinitionOptionDescription" xml:space="preserve">
     <value>Update workloads based on specified rollback definition file.</value>
   </data>
+  <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
+    <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>
+  </data>
+  <data name="NoWorkloadUpdateFound" xml:space="preserve">
+    <value>No workload update found.</value>
+  </data>
 </root>
