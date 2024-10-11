@@ -101,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
             managedWinRTComponent.AdditionalProperties.Add("PlatformTarget", "x64");
 
             //  TODO: Update to latest (currently 1.2.5) once it shows up on dotnet-public feed
-            managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "1.2.3"));
+            managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "2.1.1"));
 
             managedWinRTComponent.SourceFiles["Coords.cs"] = @"using System;
 
