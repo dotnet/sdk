@@ -183,6 +183,17 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 if (null != GetElement(pkgSourcesElement, "add", sourceName))
                 {
                     AddSourceMappings(pkgSrcMappingElement, sourceName, packagePatterns);
+
+                    // Add all old source mapping patterns for custom sources.
+                    // Unlike local sources, custom sources cannot be enumerated.
+                    XElement pkgSrcElement = GetElement(pkgSrcMappingElement, "packageSource", sourceName);
+                    if (pkgSrcElement != null)
+                    {
+                        foreach (string pattern in allOldSourceMappingPatterns)
+                        {
+                            pkgSrcElement.Add(new XElement("package", new XAttribute("pattern", pattern)));
+                        }
+                    }
                 }
             }
         }
@@ -381,11 +392,14 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                         !prebuiltPackages.ContainsKey(pattern))
                     {
                         filteredPatterns.Add(pattern);
+                        if (!allOldSourceMappingPatterns.Contains(pattern))
+                        {
+                            allOldSourceMappingPatterns.Add(pattern);
+                        }
                     }
                 }
 
                 oldSourceMappingPatterns.Add(packageSource.Attribute("key").Value, filteredPatterns);
-                allOldSourceMappingPatterns.AddRange(filteredPatterns);
             }
         }
 
