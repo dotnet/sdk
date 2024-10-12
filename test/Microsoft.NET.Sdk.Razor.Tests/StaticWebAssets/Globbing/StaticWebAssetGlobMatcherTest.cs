@@ -37,6 +37,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a");
         Assert.True(match.IsMatch);
         Assert.Equal("a", match.Pattern);
+        Assert.Equal("a", match.Stem);
     }
 
     [Fact]
@@ -49,6 +50,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/b");
         Assert.True(match.IsMatch);
         Assert.Equal("a/b", match.Pattern);
+        Assert.Equal("b", match.Stem);
     }
 
     [Fact]
@@ -60,6 +62,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a.a");
         Assert.True(match.IsMatch);
         Assert.Equal("*.a", match.Pattern);
+        Assert.Equal("a.a", match.Stem);
     }
 
     [Fact]
@@ -71,6 +74,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("c.b.a");
         Assert.True(match.IsMatch);
         Assert.Equal("*.b.a", match.Pattern);
+        Assert.Equal("c.b.a", match.Stem);
     }
 
     [Fact]
@@ -82,6 +86,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("c.a/b");
         Assert.True(match.IsMatch);
         Assert.Equal("*.a/b", match.Pattern);
+        Assert.Equal("b", match.Stem);
     }
 
     [Fact]
@@ -93,6 +98,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/c.b");
         Assert.True(match.IsMatch);
         Assert.Equal("a/*.b", match.Pattern);
+        Assert.Equal("c.b", match.Stem);
     }
 
     [Fact]
@@ -104,6 +110,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/d.b/c");
         Assert.True(match.IsMatch);
         Assert.Equal("a/*.b/c", match.Pattern);
+        Assert.Equal("c", match.Stem);
     }
 
     [Theory]
@@ -124,6 +131,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a");
         Assert.True(match.IsMatch);
         Assert.Equal(pattern, match.Pattern);
+        Assert.Equal("a", match.Stem);
     }
 
     [Theory]
@@ -147,10 +155,12 @@ public partial class StaticWebAssetGlobMatcherTest
         if(expectedMatchResult)
         {
             Assert.Equal(pattern, match.Pattern);
+            Assert.Equal(input, match.Stem);
         }
         else
         {
             Assert.Null(match.Pattern);
+            Assert.Null(match.Stem);
         }
     }
 
@@ -178,10 +188,12 @@ public partial class StaticWebAssetGlobMatcherTest
         if (expectedMatchResult)
         {
             Assert.Equal(pattern, match.Pattern);
+            Assert.Equal(input, match.Stem);
         }
         else
         {
             Assert.Null(match.Pattern);
+            Assert.Null(match.Stem);
         }
     }
 
@@ -216,10 +228,12 @@ public partial class StaticWebAssetGlobMatcherTest
         if (expectedMatchResult)
         {
             Assert.Equal(pattern, match.Pattern);
+            Assert.Equal(input, match.Stem);
         }
         else
         {
             Assert.Null(match.Pattern);
+            Assert.Null(match.Stem);
         }
     }
 
@@ -267,10 +281,12 @@ public partial class StaticWebAssetGlobMatcherTest
         if (expectedMatchResult)
         {
             Assert.Equal(pattern, match.Pattern);
+            Assert.Equal(input, match.Stem);
         }
         else
         {
             Assert.Null(match.Pattern);
+            Assert.Null(match.Stem);
         }
     }
 
@@ -283,6 +299,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a");
         Assert.True(match.IsMatch);
         Assert.Equal("*", match.Pattern);
+        Assert.Equal("a", match.Stem);
     }
 
     [Fact]
@@ -294,6 +311,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("c/a");
         Assert.True(match.IsMatch);
         Assert.Equal("*/a", match.Pattern);
+        Assert.Equal("a", match.Stem);
     }
 
     [Fact]
@@ -305,6 +323,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/c");
         Assert.True(match.IsMatch);
         Assert.Equal("a/*", match.Pattern);
+        Assert.Equal("c", match.Stem);
     }
 
     [Fact]
@@ -316,6 +335,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/b/c");
         Assert.True(match.IsMatch);
         Assert.Equal("a/*/c", match.Pattern);
+        Assert.Equal("c", match.Stem);
     }
 
     [Fact]
@@ -327,6 +347,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/b/c");
         Assert.True(match.IsMatch);
         Assert.Equal("**", match.Pattern);
+        Assert.Equal("a/b/c", match.Stem);
     }
 
     [Fact]
@@ -338,6 +359,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("c/b/a");
         Assert.True(match.IsMatch);
         Assert.Equal("**/a", match.Pattern);
+        Assert.Equal("c/b/a", match.Stem);
     }
 
     [Fact]
@@ -349,6 +371,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/b/c");
         Assert.True(match.IsMatch);
         Assert.Equal("a/**", match.Pattern);
+        Assert.Equal("b/c", match.Stem);
     }
 
     [Fact]
@@ -360,5 +383,6 @@ public partial class StaticWebAssetGlobMatcherTest
         var match = globMatcher.Match("a/b/c");
         Assert.True(match.IsMatch);
         Assert.Equal("a/**/c", match.Pattern);
+        Assert.Equal("b/c", match.Stem);
     }
 }

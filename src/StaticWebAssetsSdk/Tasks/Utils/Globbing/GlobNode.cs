@@ -22,7 +22,7 @@ public class GlobNode
 
     internal bool HasChildren()
     {
-        return Literals?.Count > 0 || Extensions?.Count > 0 || WildCard != null || RecursiveWildCard != null;
+        return Literals?.Count > 0 || Extensions?.Count > 0 || ComplexGlobSegments?.Count > 0 || WildCard != null || RecursiveWildCard != null;
     }
 
     private string GetDebuggerDisplay()
