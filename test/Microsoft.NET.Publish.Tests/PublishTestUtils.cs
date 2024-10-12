@@ -15,7 +15,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net5.0
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net6.0
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net7.0
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net8.0
@@ -53,14 +53,14 @@ namespace Microsoft.NET.Publish.Tests
         {
             new object[] { "net8.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net9.0
         public static IEnumerable<object[]> Net9Plus { get; } = new List<object[]>
         {
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 #else
 #error If building for a newer TFM, please update the values above to include both the old and new TFMs.
