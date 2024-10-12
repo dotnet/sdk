@@ -5,12 +5,12 @@
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
         <target state="translated">'{0}'에서 여러 MSBuild 프로젝트 파일을 찾았습니다. --project 옵션을 사용하여 사용할 파일을 지정하세요.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
         <target state="translated">'{0}'에서 MSBuild 프로젝트 파일을 찾을 수 없습니다. --project 옵션을 사용하여 사용할 파일을 지정하세요.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
         <source>The project file '{0}' does not exist.</source>
@@ -20,12 +20,132 @@
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
         <target state="translated">'--quiet' 옵션과 '--verbose' 옵션을 둘 다 지정할 수는 없습니다.</target>
+        <note>{Locked="--quiet"}{Locked="--verbose"}</note>
+      </trans-unit>
+      <trans-unit id="Help">
+        <source>
+
+Environment variables:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  When set to '1' or 'true', dotnet-watch will poll the file system for
+  changes. This is required for some file systems, such as network shares,
+  Docker mounted volumes, and other virtual file systems.
+
+  DOTNET_WATCH
+  dotnet-watch sets this variable to '1' on all child processes launched.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch sets this variable to '1' and increments by one each time
+  a file is changed and the command is restarted.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  When set to '1' or 'true', dotnet-watch will not show emojis in the 
+  console output.
+
+Remarks:
+  The special option '--' is used to delimit the end of the options and
+  the beginning of arguments that will be passed to the child dotnet process.
+
+  For example: dotnet watch -- --verbose run
+
+  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
+  indicates that '--verbose' should be treated instead as an argument for
+  dotnet-run.
+
+Examples:
+  dotnet watch run
+  dotnet watch test
+
+    </source>
+        <target state="translated">
+
+환경 변수:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  '1' 또는 'true'로 설정하면 dotnet-watch는 파일 시스템에서 변경 내용을
+  폴링합니다. 이는 네트워크 공유, Docker 탑재 볼륨 및 기타 가상 파일 시스템 등
+  일부 파일 시스템에 필요합니다.
+
+  DOTNET_WATCH
+  dotnet-watch는 시작된 모든 자식 프로세스에서 이 변수를 '1'로 설정합니다.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch는 이 변수를 '1'로 설정하고 파일이 변경되고 명령이
+  다시 시작될 때마다 1씩 증가합니다.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  '1' 또는 'true'로 설정하면 dotnet-watch는 콘솔 출력에
+  이모지를 표시하지 않습니다.
+
+설명:
+  특수 옵션 '--'는 자식 dotnet 프로세스에 전달될 옵션의 끝과
+  인수의 시작을 구분하는 데 사용됩니다.
+
+  예: dotnet watch -- --verbose run
+
+  '--verbose'는 dotnet-watch가 지원하는 옵션이지만, '--' 사용은
+  '--verbose'를 dotnet-run의 인수로 대신 처리해야 함을
+  나타냅니다.
+
+예:
+  dotnet watch run
+  dotnet watch test
+
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_List">
+        <source>
+      Lists all discovered files without starting the watcher.
+    </source>
+        <target state="translated">
+      감시자를 시작하지 않고 검색된 모든 파일을 나열합니다.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NoHotReload">
+        <source>
+      Suppress hot reload for supported apps.
+    </source>
+        <target state="translated">
+      지원되는 앱에 대해 핫 다시 로드를 표시하지 않습니다.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NonInteractive">
+        <source>
+      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
+      Use this option to prevent console input from being captured.
+    </source>
+        <target state="translated">
+      대화형이 아닌 모드에서 dotnet-watch를 실행합니다. 이 옵션은 핫 다시 로드가 사용하도록 설정된 상태에서 실행하는 경우에만 지원됩니다.
+      콘솔 입력이 캡처되지 않도록 하려면 이 옵션을 사용합니다.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Quiet">
+        <source>
+      Suppresses all output except warnings and errors
+    </source>
+        <target state="translated">
+      경고 및 오류를 제외한 모든 출력을 표시하지 않습니다.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Verbose">
+        <source>
+      Show verbose output
+    </source>
+        <target state="translated">
+      자세한 출력 표시
+    </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
-        <note />
+        <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>
   </file>

@@ -1,15 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
-using System.Reflection;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
-using Microsoft.DotNet.Cli;
-
-#nullable disable
 
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
@@ -27,21 +25,21 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         // Default resolver has priority 10000 and we want to go before it and leave room on either side of us. 
         public override int Priority => 5000;
 
-        private readonly Func<string, string> _getEnvironmentVariable;
-        private readonly Func<string> _getCurrentProcessPath;
+        private readonly Func<string, string?> _getEnvironmentVariable;
+        private readonly Func<string>? _getCurrentProcessPath;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private static CachingWorkloadResolver _staticWorkloadResolver = new CachingWorkloadResolver();
+        private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
         private bool _shouldLog = false;
 
-        public DotNetMSBuildSdkResolver() 
+        public DotNetMSBuildSdkResolver()
             : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string> getEnvironmentVariable, Func<string> getCurrentProcessPath, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
@@ -57,26 +55,26 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
         private sealed class CachedState
         {
-            public string DotnetRoot;
-            public string MSBuildSdksDir;
-            public string NETCoreSdkVersion;
-            public string GlobalJsonPath;
-            public IDictionary<string, string> PropertiesToAdd;
-            public CachingWorkloadResolver WorkloadResolver;
+            public string? DotnetRoot;
+            public string? MSBuildSdksDir;
+            public string? NETCoreSdkVersion;
+            public string? GlobalJsonPath;
+            public IDictionary<string, string?>? PropertiesToAdd;
+            public CachingWorkloadResolver? WorkloadResolver;
         }
 
-        public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext context, SdkResultFactory factory)
+        public override SdkResult? Resolve(SdkReference sdkReference, SdkResolverContext context, SdkResultFactory factory)
         {
-            string dotnetRoot = null;
-            string msbuildSdksDir = null;
-            string netcoreSdkVersion = null;
-            string globalJsonPath = null;
-            IDictionary<string, string> propertiesToAdd = null;
-            IDictionary<string, SdkResultItem> itemsToAdd = null;
-            List<string> warnings = null;
-            CachingWorkloadResolver workloadResolver = null;
+            string? dotnetRoot = null;
+            string? msbuildSdksDir = null;
+            string? netcoreSdkVersion = null;
+            string? globalJsonPath = null;
+            IDictionary<string, string?>? propertiesToAdd = null;
+            IDictionary<string, SdkResultItem>? itemsToAdd = null;
+            List<string>? warnings = null;
+            CachingWorkloadResolver? workloadResolver = null;
 
-            ResolverLogger logger = null;
+            ResolverLogger? logger = null;
             if (_shouldLog)
             {
                 logger = new ResolverLogger();
@@ -117,7 +115,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 logger?.LogMessage($"\tDotnet root: {dotnetRoot}");
 
                 logger?.LogString("Resolving .NET Core SDK directory");
-                string globalJsonStartDir = GetGlobalJsonStartDir(context);
+                string? globalJsonStartDir = GetGlobalJsonStartDir(context);
                 logger?.LogMessage($"\tglobal.json start directory: {globalJsonStartDir}");
                 var resolverResult = _netCoreSdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetRoot);
 
@@ -211,7 +209,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
                     if (propertiesToAdd == null)
                     {
-                        propertiesToAdd = new Dictionary<string, string>();
+                        propertiesToAdd = new Dictionary<string, string?>();
                     }
                     propertiesToAdd.Add("SdkResolverHonoredGlobalJson", "false");
                     propertiesToAdd.Add("SdkResolverGlobalJsonPath", resolverResult.GlobalJsonPath);
@@ -234,8 +232,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
-            string userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir, globalJsonPath);
+            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot!, netcoreSdkVersion!, userProfileDir, globalJsonPath);
 
             if (workloadResult is not CachingWorkloadResolver.NullResolutionResult)
             {
@@ -256,7 +254,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
         }
 
-        private static SdkResult Failure(SdkResultFactory factory, ResolverLogger logger, SdkLogger sdkLogger, string format, params object[] args)
+        private static SdkResult Failure(SdkResultFactory factory, ResolverLogger? logger, SdkLogger sdkLogger, string format, params object?[] args)
         {
             string error = string.Format(format, args);
 
@@ -284,20 +282,20 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         /// </summary>
         /// <param name="context">A <see cref="SdkResolverContext" /> that specifies where the current project is located.</param>
         /// <returns>The full path to a starting directory to use when searching for a global.json.</returns>
-        private static string GetGlobalJsonStartDir(SdkResolverContext context)
+        private static string? GetGlobalJsonStartDir(SdkResolverContext context)
         {
             // Evaluating in-memory projects with MSBuild means that they won't have a solution or project path.
             // Default to using the current directory as a best effort to finding a global.json.  This could result in
             // using the wrong one but without a starting directory, SDK resolution won't work at all.  In most cases, a
             // global.json won't be found and the default SDK will be used.
 
-            string startDir = Environment.CurrentDirectory;
+            string? startDir = Environment.CurrentDirectory;
 
             if (!string.IsNullOrWhiteSpace(context.SolutionFilePath))
             {
                 startDir = Path.GetDirectoryName(context.SolutionFilePath);
             }
-            else if(!string.IsNullOrWhiteSpace(context.ProjectFilePath))
+            else if (!string.IsNullOrWhiteSpace(context.ProjectFilePath))
             {
                 startDir = Path.GetDirectoryName(context.ProjectFilePath);
             }
@@ -307,10 +305,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
         private static string GetMinimumVSDefinedSDKVersion()
         {
-            string dotnetMSBuildSdkResolverDirectory =
+            string? dotnetMSBuildSdkResolverDirectory =
                 Path.GetDirectoryName(typeof(DotNetMSBuildSdkResolver).GetTypeInfo().Assembly.Location);
+
             string minimumVSDefinedSdkVersionFilePath =
-                Path.Combine(dotnetMSBuildSdkResolverDirectory, "minimumVSDefinedSDKVersion");
+                Path.Combine(dotnetMSBuildSdkResolverDirectory ?? string.Empty, "minimumVSDefinedSDKVersion");
 
             if (!File.Exists(minimumVSDefinedSdkVersionFilePath))
             {
@@ -321,10 +320,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             return File.ReadLines(minimumVSDefinedSdkVersionFilePath).First().Trim();
         }
 
-        private bool IsNetCoreSDKSmallerThanTheMinimumVersion(string netcoreSdkVersion, string minimumVersion)
+        private bool IsNetCoreSDKSmallerThanTheMinimumVersion(string? netcoreSdkVersion, string minimumVersion)
         {
-            FXVersion netCoreSdkFXVersion;
-            FXVersion minimumFXVersion;
+            FXVersion? netCoreSdkFXVersion;
+            FXVersion? minimumFXVersion;
 
             if (string.IsNullOrEmpty(minimumVersion))
             {
@@ -337,13 +336,13 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 return true;
             }
 
-            return FXVersion.Compare(netCoreSdkFXVersion, minimumFXVersion) < 0;
+            return FXVersion.Compare(netCoreSdkFXVersion!, minimumFXVersion!) < 0;
         }
 
 
         class ResolverLogger
         {
-            public List<object> Messages = new List<object>();
+            public List<object> Messages = new();
 
             public ResolverLogger()
             {
