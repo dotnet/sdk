@@ -17,14 +17,16 @@ public class StaticWebAssetGlobMatcherBuilder
     private readonly List<string> _includePatterns = new();
     private readonly List<string> _excludePatterns = new();
 
-    public void AddIncludePatterns(params string[] patterns)
+    public StaticWebAssetGlobMatcherBuilder AddIncludePatterns(params string[] patterns)
     {
         _includePatterns.AddRange(patterns);
+        return this;
     }
 
-    public void AddExcludePatterns(params string[] patterns)
+    public StaticWebAssetGlobMatcherBuilder AddExcludePatterns(params string[] patterns)
     {
         _excludePatterns.AddRange(patterns);
+        return this;
     }
 
     public StaticWebAssetGlobMatcher Build()
@@ -50,6 +52,10 @@ public class StaticWebAssetGlobMatcherBuilder
             var tokenizer = new PathTokenizer(patternMemory);
             segments.Clear();
             tokenizer.Fill(segments);
+            if (patternMemory.Span.EndsWith("/".AsSpan()) || patternMemory.Span.EndsWith("\\".AsSpan()))
+            {
+                segments.Add("**".AsMemory());
+            }
             var current = includes;
             for (var j = 0; j < segments.Count; j++)
             {

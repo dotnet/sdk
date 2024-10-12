@@ -29,7 +29,9 @@ public ref struct PathTokenizer(ReadOnlyMemory<char> path)
     {
         while (MoveNext())
         {
-            if (Current.Length > 0 && !Current.Span.Equals(".".AsSpan(), StringComparison.Ordinal))
+            if (Current.Length > 0 &&
+                !Current.Span.Equals(".".AsSpan(), StringComparison.Ordinal) &&
+                !Current.Span.Equals("..".AsSpan(), StringComparison.Ordinal))
             {
                 segments.Add(Current);
             }
