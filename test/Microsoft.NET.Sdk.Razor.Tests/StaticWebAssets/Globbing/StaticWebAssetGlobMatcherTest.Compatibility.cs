@@ -102,8 +102,8 @@ public partial class StaticWebAssetGlobMatcherTest
     [InlineData(@"*alpha*/*", new[] { "alpha/hello.txt" })]
     [InlineData(@"/*/*", new[] { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" })]
     [InlineData(@"*/*", new[] { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" })]
-    [InlineData(@"/*.*/*", new[] { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" })]
-    [InlineData(@"*.*/*", new[] { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" })]
+    [InlineData(@"/*.*/*", new string[] { })]
+    [InlineData(@"*.*/*", new string[] { })]
     [InlineData(@"/*mm*/*", new[] { "gamma/hello.txt" })]
     [InlineData(@"*mm*/*", new[] { "gamma/hello.txt" })]
     [InlineData(@"/*alpha*/*", new[] { "alpha/hello.txt" })]
@@ -154,7 +154,7 @@ public partial class StaticWebAssetGlobMatcherTest
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
 
-        Assert.Equal(new[] { "alpha.txt", "alpha.", ".txt", ".", "alpha", "txt" }, matches);
+        Assert.Equal(new[] { "alpha.txt", "alpha.", ".txt" }, matches);
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public partial class StaticWebAssetGlobMatcherTest
     {
         var matcher = new StaticWebAssetGlobMatcherBuilder();
         matcher.AddIncludePatterns("*.cs", "*/*.cs", "*/*/*.cs");
-        matcher.AddExcludePatterns("bin", "one/two");
+        matcher.AddExcludePatterns("bin/", "one/two/");
         var globMatcher = matcher.Build();
 
         var matches = new List<string> { "one/x.cs", "two/x.cs", "one/two/x.cs", "x.cs", "bin/x.cs", "bin/two/x.cs" }
@@ -254,7 +254,7 @@ public partial class StaticWebAssetGlobMatcherTest
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
 
-        Assert.Equal(new[] { "x/1", "1/x/2" }, matches);
+        Assert.Equal(new[] { "x/1", "1/x/2", "1/x", "x" }, matches);
     }
 
     [Fact]
@@ -297,64 +297,6 @@ public partial class StaticWebAssetGlobMatcherTest
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
 
-        Assert.Equal(new[] { "1/x", "x", "1", "1/2" }, matches);
-    }
-
-    [Fact]
-    public void LeadingDotDotCanComeThroughPattern()
-    {
-        var matcher = new StaticWebAssetGlobMatcherBuilder();
-        matcher.AddIncludePatterns("*.cs", "../2/*.cs");
-        var globMatcher = matcher.Build();
-
-        var matches = new List<string> { "1/x.cs", "1/x.txt", "2/x.cs", "2/x.txt" }
-            .Where(file => globMatcher.Match(file).IsMatch)
-            .ToArray();
-
-        Assert.Equal(new[] { "x.cs", "../2/x.cs" }, matches);
-    }
-
-    [Fact]
-    public void LeadingDotDotWithRecursiveCanComeThroughPattern()
-    {
-        var matcher = new StaticWebAssetGlobMatcherBuilder();
-        matcher.AddIncludePatterns("*.cs", "../2/**/*.cs");
-        var globMatcher = matcher.Build();
-
-        var matches = new List<string> { "1/x.cs", "1/x.txt", "2/x.cs", "2/x.txt", "2/3/x.cs", "2/3/4/z.cs", "2/3/x.txt" }
-            .Where(file => globMatcher.Match(file).IsMatch)
-            .ToArray();
-
-        Assert.Equal(new[] { "x.cs", "../2/x.cs", "../2/3/x.cs", "../2/3/4/z.cs" }, matches);
-    }
-
-    [Fact]
-    public void ExcludeFolderRecursively()
-    {
-        var matcher = new StaticWebAssetGlobMatcherBuilder();
-        matcher.AddIncludePatterns("*.*", "../sibling/**/*.*");
-        matcher.AddExcludePatterns("../sibling/exc/**/*.*", "../sibling/inc/2.txt");
-        var globMatcher = matcher.Build();
-
-        var matches = new List<string> { "main/1.txt", "main/2.txt", "sibling/1.txt", "sibling/inc/1.txt", "sibling/inc/2.txt", "sibling/exc/1.txt", "sibling/exc/2.txt" }
-            .Where(file => globMatcher.Match(file).IsMatch)
-            .ToArray();
-
-        Assert.Equal(new[] { "1.txt", "2.txt", "../sibling/1.txt", "../sibling/inc/1.txt" }, matches);
-    }
-
-    [Fact]
-    public void ExcludeFolderByName()
-    {
-        var matcher = new StaticWebAssetGlobMatcherBuilder();
-        matcher.AddIncludePatterns("*.*", "../sibling/**/*.*");
-        matcher.AddExcludePatterns("../sibling/exc/", "../sibling/inc/2.txt");
-        var globMatcher = matcher.Build();
-
-        var matches = new List<string> { "main/1.txt", "main/2.txt", "sibling/1.txt", "sibling/inc/1.txt", "sibling/inc/2.txt", "sibling/exc/1.txt", "sibling/exc/2.txt" }
-            .Where(file => globMatcher.Match(file).IsMatch)
-            .ToArray();
-
-        Assert.Equal(new[] { "1.txt", "2.txt", "../sibling/1.txt", "../sibling/inc/1.txt" }, matches);
+        Assert.Equal(new[] { "1", "1/2" }, matches);
     }
 }

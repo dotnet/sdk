@@ -3,13 +3,11 @@
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public struct GlobMatch(bool isMatch, string stem)
+public struct GlobMatch(bool isMatch, string pattern = null, string stem = null)
 {
     public bool IsMatch { get; set; } = isMatch;
-    public string Pattern { get; set; } = stem;
 
-    public string GetStem(string path)
-    {
-        return null;
-    }
+    public string Pattern { get; set; } = pattern;
+
+    public string Stem { get; set; } = stem;
 }

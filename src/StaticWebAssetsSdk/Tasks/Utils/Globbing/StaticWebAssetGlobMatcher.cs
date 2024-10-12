@@ -7,12 +7,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 {
-    public GlobMatch Match(string path)
+    public GlobMatch Match(string path) =>
+        Match(path.AsMemory());
+
+    public GlobMatch Match(ReadOnlyMemory<char> path)
     {
         var segments = new List<ReadOnlyMemory<char>>();
-        var pathMemory = path.AsMemory();
 
-        var tokenizer = new PathTokenizer(pathMemory);
+        var tokenizer = new PathTokenizer(path);
         tokenizer.Fill(segments);
         if (segments.Count == 0)
         {
@@ -49,7 +51,8 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                     {
                         if (node.Match != null)
                         {
-                            return new(true, node.Match);
+                            var stem = ComputeStem(segments, state.StemStartIndex);
+                            return new(true, node.Match, stem);
                         }
 
                         // We got to the end with no matches, pop the next element on the stack.
@@ -57,18 +60,38 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                     }
                     break;
                 case MatchStage.Literal:
+                    if (currentIndex == segments.Count)
+                    {
+                        // We ran out of segments to match
+                        continue;
+                    }
                     PushNextStageIfAvailable(stateStack, state);
                     MatchLiteral(segments, stateStack, state);
                     break;
                 case MatchStage.Extension:
+                    if (currentIndex == segments.Count)
+                    {
+                        // We ran out of segments to match
+                        continue;
+                    }
                     PushNextStageIfAvailable(stateStack, state);
                     MatchExtension(segments, stateStack, state);
                     break;
                 case MatchStage.Complex:
+                    if (currentIndex == segments.Count)
+                    {
+                        // We ran out of segments to match
+                        continue;
+                    }
                     PushNextStageIfAvailable(stateStack, state);
                     MatchComplex(segments, stateStack, state);
                     break;
                 case MatchStage.WildCard:
+                    if (currentIndex == segments.Count)
+                    {
+                        // We ran out of segments to match
+                        continue;
+                    }
                     PushNextStageIfAvailable(stateStack, state);
                     MatchWildCard(stateStack, state);
                     break;
@@ -79,6 +102,50 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
 
         return new(false, null);
+    }
+
+    private string ComputeStem(List<ReadOnlyMemory<char>> segments, int stemStartIndex)
+    {
+        if (stemStartIndex == -1)
+        {
+            return segments[segments.Count - 1].ToString();
+        }
+#if NET9_0_OR_GREATER
+        var stemLength = 0;
+        for(var i = stemStartIndex; i < segments.Count; i++)
+        {
+            stemLength += segments[i].Length;
+        }
+        // Separators
+        stemLength += segments.Count - stemStartIndex - 1;
+
+        return string.Create(stemLength, (segments, stemStartIndex), (span, state) =>
+        {
+            var index = 0;
+            var (segments, stateStartIndex) = state;
+            for (var i = stateStartIndex; i < segments.Count; i++)
+            {
+                var segment = state.segments[i];
+                segment.Span.CopyTo(span.Slice(index));
+                index += segment.Length;
+                if (i < state.segments.Count - 1)
+                {
+                    span[index++] = '/';
+                }
+            }
+        });
+#else
+        var stem = new StringBuilder();
+        for (var i = stemStartIndex; i < segments.Count; i++)
+        {
+            stem.Append(segments[i].ToString());
+            if (i < segments.Count - 1)
+            {
+                stem.Append('/');
+            }
+        }
+        return stem.ToString();
+#endif
     }
 
     private void MatchComplex(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
@@ -197,14 +264,17 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
     private static void MatchRecursiveWildCard(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
     {
         var node = state.Node;
-        var currentIndex = state.SegmentIndex;
-        var end = !node.RecursiveWildCard.HasChildren() ?
-            segments.Count : segments.Count - 1;
-
-        for (var i = currentIndex; i <= end; i++)
+        for (var i = segments.Count - state.SegmentIndex; i >= 0; i--)
         {
-            var count = 1 + end - i;
-            stateStack.Push(state.NextSegment(node.RecursiveWildCard, count));
+            var nextSegment = state.NextSegment(node.RecursiveWildCard, i);
+            // The stem is calculated as the first time the /**/ pattern is matched til the remainder of the path, otherwise, the stem is
+            // the file name.
+            if (nextSegment.StemStartIndex == -1)
+            {
+                nextSegment.StemStartIndex = state.SegmentIndex;
+            }
+
+            stateStack.Push(nextSegment);
         }
     }
 
@@ -284,6 +354,8 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 
         public int ComplexSegmentIndex { get; set; } = complexSegmentIndex;
 
+        public int StemStartIndex { get; set; } = -1;
+
         internal readonly bool HasValue => Node != null;
 
         public void Deconstruct(out GlobNode node, out MatchStage stage, out int segmentIndex, out int extensionIndex, out int complexIndex)
@@ -294,8 +366,9 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             extensionIndex = ExtensionSegmentIndex;
             complexIndex = ComplexSegmentIndex;
         }
+
         internal MatchState NextSegment(GlobNode candidate, int elements = 1, int complexIndex = 0) =>
-            new(candidate, GetInitialStage(candidate), SegmentIndex + elements, 0, complexIndex);
+            new(candidate, GetInitialStage(candidate), SegmentIndex + elements, 0, complexIndex) { StemStartIndex = StemStartIndex };
 
         internal MatchState NextStage()
         {
@@ -304,58 +377,69 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                 case MatchStage.Literal:
                     if (Node.Extensions != null && Node.Extensions.Count > 0)
                     {
-                        return new(Node, MatchStage.Extension, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.Extension, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.ComplexGlobSegments != null && Node.ComplexGlobSegments.Count > 0)
                     {
-                        return new(Node, MatchStage.Complex, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.Complex, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.WildCard != null)
                     {
-                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.RecursiveWildCard != null)
                     {
-                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.Extension:
                     if (Node.ComplexGlobSegments != null && Node.ComplexGlobSegments.Count > 0)
                     {
-                        return new(Node, MatchStage.Complex, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.Complex, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.WildCard != null)
                     {
-                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
 
                     if (Node.RecursiveWildCard != null)
                     {
-                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.Complex:
                     if (Node.WildCard != null)
                     {
-                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.WildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
                     if (Node.RecursiveWildCard != null)
                     {
-                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.WildCard:
                     if (Node.RecursiveWildCard != null)
                     {
-                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0);
+                        return new(Node, MatchStage.RecursiveWildCard, SegmentIndex, 0, 0)
+                        { StemStartIndex = StemStartIndex };
                     }
                     break;
                 case MatchStage.RecursiveWildCard:
-                    return new(Node, MatchStage.Done, SegmentIndex, 0, 0);
+                    return new(Node, MatchStage.Done, SegmentIndex, 0, 0)
+                    { StemStartIndex = StemStartIndex };
             }
 
             return default;
