@@ -107,6 +107,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">Только проверяет наличие обновлений и отображает пакеты шаблонов, подлежащие обновлению, без применения обновления.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListCommand_Option_Format">
+        <source>Specifies the output format type for the list packages command</source>
+        <target state="new">Specifies the output format type for the list packages command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
         <source>Disables checking if the template meets the constraints to be run.</source>
         <target state="translated">Отключает проверку соответствия шаблона ограничениям для запуска.</target>

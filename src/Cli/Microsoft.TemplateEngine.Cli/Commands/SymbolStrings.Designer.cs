@@ -237,6 +237,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the output format type for the list packages command.
+        /// </summary>
+        internal static string ListCommand_Option_Format {
+            get {
+                return ResourceManager.GetString("ListCommand_Option_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disables checking if the template meets the constraints to be run..
         /// </summary>
         internal static string ListCommand_Option_IgnoreConstraints {

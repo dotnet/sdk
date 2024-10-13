@@ -107,6 +107,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">업데이트를 적용하지 않고 업데이트를 확인하고 업데이트할 템플릿 패키지만 표시합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListCommand_Option_Format">
+        <source>Specifies the output format type for the list packages command</source>
+        <target state="new">Specifies the output format type for the list packages command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
         <source>Disables checking if the template meets the constraints to be run.</source>
         <target state="translated">템플릿이 실행할 제약 조건을 충족하는지 여부를 확인하지 않습니다.</target>
