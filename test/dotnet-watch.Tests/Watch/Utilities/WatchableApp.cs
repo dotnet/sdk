@@ -51,12 +51,16 @@ namespace Microsoft.DotNet.Watcher.Tests
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
                 failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
 
-            if (line == null && failure != null)
+            if (line == null)
             {
-                Assert.Fail($"Failed to find expected text: '{expectedPrefix}'");
+                Assert.Fail(failure != null
+                    ? "Encountered failure condition"
+                    : $"Failed to find expected prefix: '{expectedPrefix}'");
             }
-
-            Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            else
+            {
+                Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            }
 
             return line.Substring(expectedPrefix.Length);
         }
