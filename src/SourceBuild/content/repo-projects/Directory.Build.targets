@@ -35,6 +35,36 @@
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
   </PropertyGroup>
 
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="AddNoWarns"
+          Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
+
+    <!-- Don't warn on warnings that can be generated in source-build
+         but not necessarily in repo builds. 
+         NU1603 - See https://github.com/dotnet/source-build/issues/2766.
+         NU5104 - During preview builds, some packages have pre-release versions.
+                  Some repos with stable versions may need to uptake these packages 
+                  with pre-release versions because of PVP when building with 
+                  source-build.  -->
+    <PropertyGroup>
+      <OldText><![CDATA[</Project>]]></OldText>
+      <NewText>
+        <![CDATA[  <PropertyGroup>
+    <NoWarn>%24(NoWarn);NU1903;$(RepoNoWarns)</NoWarn>
+  </PropertyGroup>
+</Project>]]>
+      </NewText>
+
+      <DirectoryBuildPropsFile Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') ">$(ProjectDirectory)Directory.Build.props</DirectoryBuildPropsFile>
+      <DirectoryBuildPropsFile Condition=" '$(DirectoryBuildPropsFile)' == '' AND EXISTS('$(ProjectDirectory)src/Directory.Build.props') ">$(ProjectDirectory)src/Directory.Build.props</DirectoryBuildPropsFile>
+    </PropertyGroup>
+    <ReplaceTextInFile InputFile="$(DirectoryBuildPropsFile)"
+      OldText="$(OldText)"
+      NewText="$(NewText)" />
+  </Target>
+
   <!-- Returns the repository references of this project and all the projects this project references, recursively -->
   <Target Name="GetTransitiveRepositoryReferences" Returns="@(TransitiveRepositoryReference)">
     <ItemGroup>
@@ -392,6 +422,7 @@
           Outputs="$(BaseIntermediateOutputPath)Build.complete"
           Condition="'$(BuildCommand)' != ''"
           DependsOnTargets="BuildRepoReferences;
+                            AddNoWarns;
                             UpdateNuGetConfig;
                             UpdateGlobalJsonVersions;
                             UpdateEngCommonFiles;
@@ -511,6 +542,19 @@
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
+  <Target Name="MoveDotNetBuildLogs"
+        Condition="'$(IsUtilityProject)' != 'true' and
+                    Exists('$(ProjectDirectory)artifacts')">
+    <ItemGroup>
+      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+    </ItemGroup>
+
+    <!-- Move the prebuilt reports -->
+    <Move SourceFiles="@(PrebuiltReportsToMove)"
+          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          Condition="'@(PrebuiltReportsToMove)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
@@ -626,6 +670,7 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
+    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="Test">

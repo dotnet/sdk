@@ -18,9 +18,6 @@ namespace Microsoft.DotNet.Watcher.Tests
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
-        private static readonly string s_waitingForChanges = GetLinePrefix(MessageDescriptor.WaitingForChanges);
-        private static readonly string s_waitingForFileChangeBeforeRestarting = GetLinePrefix(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-
         public readonly ITestOutputHelper Logger;
         private bool _prepared;
 
@@ -37,8 +34,11 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public bool UsePollingWatcher { get; set; }
 
-        private static string GetLinePrefix(MessageDescriptor descriptor)
+        public static string GetLinePrefix(MessageDescriptor descriptor)
             => $"dotnet watch {descriptor.Emoji} {descriptor.Format}";
+
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, Predicate<string> failure = null)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor), failure);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -51,12 +51,16 @@ namespace Microsoft.DotNet.Watcher.Tests
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
                 failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
 
-            if (line == null && failure != null)
+            if (line == null)
             {
-                Assert.Fail($"Failed to find expected text: '{expectedPrefix}'");
+                Assert.Fail(failure != null
+                    ? "Encountered failure condition"
+                    : $"Failed to find expected prefix: '{expectedPrefix}'");
             }
-
-            Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            else
+            {
+                Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+            }
 
             return line.Substring(expectedPrefix.Length);
         }
@@ -76,12 +80,12 @@ namespace Microsoft.DotNet.Watcher.Tests
         /// Wait till file watcher starts watching for file changes.
         /// </summary>
         public Task AssertWaitingForChanges()
-            => AssertOutputLineStartsWith(s_waitingForChanges);
+            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
 
         public async Task AssertWaitingForFileChangeBeforeRestarting()
         {
             // wait for user facing message:
-            await AssertOutputLineStartsWith(s_waitingForFileChangeBeforeRestarting);
+            await AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // wait for the file watcher to start watching for changes:
             await AssertWaitingForChanges();
@@ -123,7 +127,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             var encLogPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
                 ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-                : Path.Combine(asset.Path, ".hotreload");
+                : asset.Path + ".hotreload";
 
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", encLogPath);
 

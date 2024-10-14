@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         private WorkloadHistoryState GetWorkloadState()
         {
             var resolver = _workloadResolverFunc();
-            var currentWorkloadInfo = resolver.GetWorkloadVersion();
+            var currentWorkloadVersion = resolver.GetWorkloadVersion().Version;
             return new WorkloadHistoryState()
             {
                 ManifestVersions = resolver.GetInstalledManifests().ToDictionary(manifest => manifest.Id.ToString(), manifest => $"{manifest.Version}/{manifest.ManifestFeatureBand}"),
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                                                        .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
                                                        .Select(id => id.ToString())
                                                        .ToList(),
-                WorkloadSetVersion = resolver.GetWorkloadVersion()
+                WorkloadSetVersion = currentWorkloadVersion
             };
 
         }

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-workload-restore" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-workload-restore" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet workload restore
 .PP
@@ -29,8 +29,8 @@ dotnet-workload-restore - Installs workloads needed for a project or a solution.
 dotnet workload restore [<PROJECT | SOLUTION>]
     [--configfile <FILE>] [--disable-parallel]
     [--ignore-failed-sources] [--include-previews] [--interactive]
-    [--no-cache] [--skip-manifest-update]
-    [-s|--source <SOURCE>] [--temp-dir <PATH>] [-v|--verbosity <LEVEL>]
+    [--no-cache] [--skip-manifest-update] [-s|--source <SOURCE>] 
+    [--temp-dir <PATH>] [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet workload restore -?|-h|--help
 \f[R]
@@ -124,6 +124,16 @@ Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--version\f[B]\f[R]
+.RS 2
+.PP
+The workload set version to install or update to.
+If you specify the workload-set version in global.json, you can\[cq]t use the \f[V]--version\f[R] option to specify the workload-set version.
+To make it possible to use the \f[V]--version\f[R] option in that case, run the command outside of the path containing the global.json file.
+Available since 8.0.400 SDK.
+For more information, see .NET SDK workload sets.
 .RE
 .SS Example
 .IP \[bu] 2
