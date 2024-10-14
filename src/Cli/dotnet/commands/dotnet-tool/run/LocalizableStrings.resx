@@ -121,7 +121,7 @@
     <value>Cannot find a tool in the manifest file that has a command named '{0}'.</value>
   </data>
   <data name="CommandDescription" xml:space="preserve">
-    <value>Run local tool.</value>
+    <value>Run a local tool. Note that this command cannot be used to run a global tool. </value>
   </data>
   <data name="CommandNameArgumentDescription" xml:space="preserve">
     <value>The command name of the tool to run.</value>
