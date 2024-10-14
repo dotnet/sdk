@@ -3,6 +3,10 @@
     {
       "path": "src/application-insights/LOGGING/ThirdPartyNotices.txt",
       "detected_license_expression": "unknown AND apache-2.0 AND mit AND bsd-new"
+    },
+    {
+      "path": "src/vs-solutionpersistence/stylecop.json",
+      "detected_license_expression": "unknown"
     }
   ]
 }
