@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <OutputType>exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lib2\Lib2.csproj" />
+    <ProjectReference Include="..\ServiceA\A.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ServiceB\B.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

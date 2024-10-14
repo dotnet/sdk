@@ -1,0 +1,115 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: Auto close "Area-NuGet" issues and add a comment pointing to NuGet repo
+      frequencies:
+      - daily:
+          time: 16:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: Area-NuGet
+      actions:
+      - addReply:
+          reply: >-
+            Thanks for creating this issue! We believe this issue is related to NuGet tooling, which is maintained by the NuGet team. Thus, we closed this one and encourage you to raise this issue in the [NuGet repository](https://github.com/NuGet/Home) instead. Don’t forget to check out [NuGet’s contributing guide](https://github.com/NuGet/Home/blob/dev/CONTRIBUTING.md#before-submitting-an-issue) before submitting an issue!
+
+
+            If you believe this issue was closed out of error, please comment to let us know.
+
+
+            Happy Coding!
+      - closeIssue
+    eventResponderTasks:
+    - if:
+      - payloadType: Pull_Request
+      - hasLabel:
+          label: Auto-Merge If Tests Pass
+      then:
+      - enableAutoMerge:
+          mergeMethod: Squash
+      description: Automatically merge pull requests
+    - if:
+      - payloadType: Pull_Request
+      - labelRemoved:
+          label: Auto-Merge If Tests Pass
+      then:
+      - disableAutoMerge
+      description: Automatically merge pull requests
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: Area-ApiCompat
+      then:
+      - addReply:
+          reply: '@dotnet/area-infrastructure-libraries a new issue has been filed in the ApiCompat area, please triage'
+      description: Notify apicompat of new untriaged bugs
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: Area-ILLink
+      then:
+      - addReply:
+          reply: '@dotnet/illink a new issue has been filed in the ILLink area, please triage'
+      description: Notify linker of new untriaged bugs
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: Area-AspNetCore
+      - isOpen
+      then:
+      - addReply:
+          reply: >-
+            Thanks for your PR, @${issueAuthor}.
+
+            To learn about the PR process and branching schedule of this repo, please take a look at the [SDK PR Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/SDK-PR-guide.md).
+      description: Remind ASP.NET Core PR authors the process to follow
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: breaking-change
+      then:
+      - addLabel:
+          label: needs-breaking-change-doc-created
+      - addReply:
+          reply: >-
+            Added `needs-breaking-change-doc-created` label because this issue has the `breaking-change` label. 
+
+
+            1. [ ] Create and link to this issue a matching issue in the dotnet/docs repo using the [breaking change documentation template](https://aka.ms/dotnet/docs/new-breaking-change-issue), then remove this `needs-breaking-change-doc-created` label.
+
+
+            Tagging @dotnet/compat for awareness of the breaking change.
+      description: Add breaking change doc label to issue
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: breaking-change
+      then:
+      - addLabel:
+          label: needs-breaking-change-doc-created
+      - addReply:
+          reply: >-
+            Added `needs-breaking-change-doc-created` label because this PR has the `breaking-change` label. 
+
+
+            When you commit this breaking change:
+
+
+            1. [ ] Create and link to this PR and the issue a matching issue in the dotnet/docs repo using the [breaking change documentation template](https://aka.ms/dotnet/docs/new-breaking-change-issue), then remove this `needs-breaking-change-doc-created` label.
+
+            2. [ ] Ask a committer to mail the `.NET Breaking Change Notification` DL.
+
+
+            Tagging @dotnet/compat for awareness of the breaking change.
+      description: Add breaking change doc label to PR
+onFailure: 
+onSuccess: 
