@@ -428,6 +428,42 @@ stages:
         targetArchitecture: arm64
         runTests: false
 
+    # TEMP change to test the join point -> Revert before merging!!!!!!!!!
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        architecture: x86
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x86
+
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        architecture: arm64
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: arm64
+
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        architecture: x64
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x64
+        buildPass: 2
+        reuseBuildArtifactsFrom:
+        - Windows_x64_BuildPass
+        - Windows_x86_BuildPass
+        - Windows_arm64_BuildPass
+
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
 
@@ -1095,42 +1131,6 @@ stages:
             runTests: false
 
         # Build Pass 2 verticals
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: x64
-            buildPass: 2
-            reuseBuildArtifactsFrom:
-            - Windows_x64
-            - Windows_x86
-            - Windows_arm64
-
-        # TEMP change to test the join point -> Revert before merging!!!!!!!!!
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: x86
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: arm64
 
         - template: ../jobs/vmr-build.yml
           parameters:

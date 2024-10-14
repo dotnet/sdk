@@ -14,7 +14,6 @@ parameters:
 
 - name: buildPass
   type: string
-  default: ''
 
 - name: container
   type: string
@@ -106,7 +105,7 @@ parameters:
   type: string
 
 jobs:
-- job: ${{ parameters.buildName }}_${{ parameters.architecture }}_BuildPass${{ parameters.buildPass }}
+- job: ${{ parameters.buildName }}_${{ parameters.architecture }}${{ if parameters.buildPass }}_BuildPass${{ parameters.buildPass }}${{ endif }}
   pool: ${{ parameters.pool }}
 
   # Currently, CodeQL slows the build down too much

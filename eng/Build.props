@@ -6,10 +6,10 @@
     <ProjectToBuild Include="$(RepoRoot)src/VirtualMonoRepo/InitializeVMR.proj" BuildInParallel="false" />
   </ItemGroup>
 
-  <!-- For product build, redist-installer.csproj only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
-       which need assets from other verticals that are built in the first build pass. -->
-  <ItemGroup>
-    <ProjectToBuild Include="src/Installer/redist-installer/redist-installer.csproj" DotNetBuildPass="2" />
+  <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+    <!-- For product build, redist-installer.csproj only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
+         which need assets from other verticals that are built in the first build pass. -->
+    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.csproj" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

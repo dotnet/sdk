@@ -368,6 +368,8 @@
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
     </ItemGroup>
 
+    <Error Text="No projects were found to build. A 'RepositoryReference' item must be specified." Condition="'@(_DependentProject)' == ''" />
+
     <MSBuild Projects="@(_DependentProject)"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
