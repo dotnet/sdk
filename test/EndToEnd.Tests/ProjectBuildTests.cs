@@ -411,8 +411,6 @@ namespace EndToEnd.Tests
                 if (template.StartsWith("mstest")
                        || template.StartsWith("winforms")
                        || template.StartsWith("wpf")
-                       || template.StartsWith("blazor")
-                       || template.StartsWith("mvc")
                        || template.StartsWith("classlib")
                        || template.StartsWith("console")
                        || template.StartsWith("nunit")
