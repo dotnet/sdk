@@ -28,6 +28,24 @@ internal abstract class BaseSerializer
         }
     }
 
+    protected static string ReadStringValue(Stream stream, int size)
+    {
+        byte[] bytes = ArrayPool<byte>.Shared.Rent(size);
+        try
+        {
+#if NET7_0_OR_GREATER
+            stream.ReadExactly(bytes, 0, size);
+#else
+            _ = stream.Read(bytes, 0, size);
+#endif
+            return Encoding.UTF8.GetString(bytes, 0, size);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(bytes);
+        }
+    }
+
     protected static void WriteString(Stream stream, string str)
     {
         int stringutf8TotalBytes = Encoding.UTF8.GetByteCount(str);
@@ -38,6 +56,21 @@ internal abstract class BaseSerializer
             BitConverter.TryWriteBytes(len, stringutf8TotalBytes);
             stream.Write(len);
 
+            Encoding.UTF8.GetBytes(str, bytes);
+            stream.Write(bytes, 0, stringutf8TotalBytes);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(bytes);
+        }
+    }
+
+    protected static void WriteStringValue(Stream stream, string str)
+    {
+        int stringutf8TotalBytes = Encoding.UTF8.GetByteCount(str);
+        byte[] bytes = ArrayPool<byte>.Shared.Rent(stringutf8TotalBytes);
+        try
+        {
             Encoding.UTF8.GetBytes(str, bytes);
             stream.Write(bytes, 0, stringutf8TotalBytes);
         }
@@ -140,11 +173,25 @@ internal abstract class BaseSerializer
         return Encoding.UTF8.GetString(bytes);
     }
 
+    protected static string ReadStringValue(Stream stream, int size)
+    {
+        byte[] bytes = new byte[size];
+        _ = stream.Read(bytes, 0, bytes.Length);
+
+        return Encoding.UTF8.GetString(bytes);
+    }
+
     protected static void WriteString(Stream stream, string str)
     {
         byte[] bytes = Encoding.UTF8.GetBytes(str);
         byte[] len = BitConverter.GetBytes(bytes.Length);
         stream.Write(len, 0, len.Length);
+        stream.Write(bytes, 0, bytes.Length);
+    }
+
+    protected static void WriteStringValue(Stream stream, string str)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(str);
         stream.Write(bytes, 0, bytes.Length);
     }
 
@@ -160,7 +207,7 @@ internal abstract class BaseSerializer
     {
         int sizeInBytes = GetSize<T>();
         byte[] len = BitConverter.GetBytes(sizeInBytes);
-        stream.Write(len, 0, sizeInBytes);
+        stream.Write(len, 0, len.Length);
     }
 
     protected static void WriteInt(Stream stream, int value)
@@ -216,6 +263,10 @@ internal abstract class BaseSerializer
     }
 #endif
 
+    protected static byte ReadByte(Stream stream) => (byte)stream.ReadByte();
+
+    protected static void WriteByte(Stream stream, byte value) => stream.WriteByte(value);
+
     protected static void WriteField(Stream stream, ushort id, string? value)
     {
         if (value is null)
@@ -225,7 +276,19 @@ internal abstract class BaseSerializer
 
         WriteShort(stream, id);
         WriteStringSize(stream, value);
-        WriteString(stream, value);
+        WriteStringValue(stream, value);
+    }
+
+    protected static void WriteField(Stream stream, ushort id, long? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        WriteShort(stream, id);
+        WriteSize<long>(stream);
+        WriteLong(stream, value.Value);
     }
 
     protected static void WriteField(Stream stream, string? value)
@@ -238,6 +301,16 @@ internal abstract class BaseSerializer
         WriteString(stream, value);
     }
 
+    protected static void WriteField(Stream stream, byte? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        WriteByte(stream, value.Value);
+    }
+
     protected static void WriteField(Stream stream, ushort id, bool? value)
     {
         if (value is null)
@@ -248,6 +321,18 @@ internal abstract class BaseSerializer
         WriteShort(stream, id);
         WriteSize<bool>(stream);
         WriteBool(stream, value.Value);
+    }
+
+    protected static void WriteField(Stream stream, ushort id, byte? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        WriteShort(stream, id);
+        WriteSize<byte>(stream);
+        WriteByte(stream, value.Value);
     }
 
     protected static void SetPosition(Stream stream, long position) => stream.Position = position;
@@ -266,6 +351,9 @@ internal abstract class BaseSerializer
         Type type when type == typeof(long) => sizeof(long),
         Type type when type == typeof(short) => sizeof(short),
         Type type when type == typeof(bool) => sizeof(bool),
+        Type type when type == typeof(byte) => sizeof(byte),
         _ => 0,
     };
+
+    public static bool IsNullOrEmpty<T>(T[]? list) => list is null || list.Length == 0;
 }

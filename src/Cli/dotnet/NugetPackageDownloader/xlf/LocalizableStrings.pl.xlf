@@ -28,8 +28,10 @@
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
-        <source>Failed to validate package signing.</source>
-        <target state="translated">Nie można zweryfikować podpisywania pakietu.</target>
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="new">Failed to validate package signing.
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
@@ -40,6 +42,11 @@
       <trans-unit id="NotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -72,9 +79,9 @@
         <target state="translated">Wersja mniejsza niż {0} pakietu {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
-        <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
-        <target state="translated">Pomiń weryfikację podpisywania pakietu NuGet. Sprawdzanie podpisywania NuGet nie jest dostępne w systemie Linux ani MacOS https://aka.ms/workloadskippackagevalidation .</target>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
         <note />
       </trans-unit>
     </body>

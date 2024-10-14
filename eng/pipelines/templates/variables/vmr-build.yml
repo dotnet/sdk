@@ -27,25 +27,25 @@ variables:
 - name: ubuntuArmContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
 - name: azurelinuxX64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
 - name: azurelinuxArmCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm
 - name: azurelinuxArm64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64
 - name: azurelinuxX64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-alpine-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64-alpine
 - name: azurelinuxArmAlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-alpine-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
 - name: azurelinuxArm64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-alpine-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-alpine
 - name: androidCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-android-amd64-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-android-amd64
 - name: linuxBionicCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-android-openssl
 - name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
 - name: wasiCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
 
 - name: almaLinuxName
   value: AlmaLinux8

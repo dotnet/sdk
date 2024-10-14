@@ -1207,7 +1207,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
             ExecuteCommand(publishCommand, "/p:RuntimeIdentifier=linux-x64").Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
         [ConditionalFact()]
@@ -1243,7 +1243,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             var result = ExecuteCommand(publishCommand, "--no-self-contained");
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true, selfContained: false);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true, selfContained: false);
         }
 
         [Fact]
@@ -1269,7 +1269,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var result = ExecuteCommand(publishCommand, "--self-contained");
 
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
         [Fact]
@@ -1292,10 +1292,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
             ExecuteCommand(publishCommand).Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        private void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
+        private void AssertRIDPublishOutput(PublishCommand command, TestAsset testInstance, bool hosted = false)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Debug", "linux-x64");
 
@@ -1375,7 +1375,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        private void AssertRIDPublishOuput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
+        private void AssertRIDPublishOutput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Release", "linux-x64");
 

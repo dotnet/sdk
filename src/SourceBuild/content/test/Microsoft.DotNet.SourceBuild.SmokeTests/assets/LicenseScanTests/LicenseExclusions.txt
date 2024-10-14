@@ -83,7 +83,7 @@ src/fsharp/setup/resources/eula/*.rtf
 src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 
 # False positive
-src/msbuild/documentation/specs/BuildCheck/interactive-package-references.md|unknown-license-reference
+src/msbuild/documentation/specs/proposed/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
 
 #
@@ -135,7 +135,6 @@ src/roslyn/src/Setup/Roslyn.VsixLicense/EULA.rtf
 src/runtime/docs/project/copyright.md
 
 # Doc that references a license, not applicable to source
-src/runtime/docs/design/mono/web/llvm-backend.md|llvm-exception
 src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
 
 # Installer asset, not applicable to source

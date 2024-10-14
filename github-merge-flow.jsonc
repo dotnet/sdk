@@ -21,8 +21,18 @@
             "MergeToBranch": "release/8.0.4xx",
             "ExtraSwitches": "-QuietComments"
         },
-        // Automate opening PRs to merge sdk repos from release/8.0.4xx to main
+        // Automate opening PRs to merge sdk repos from release/8.0.4xx to 9.0.1xx
         "release/8.0.4xx":{
+            "MergeToBranch": "release/9.0.1xx",
+            "ExtraSwitches": "-QuietComments"
+        },        
+        // Automate opening PRs to merge sdk repos from release/9.0.1xx to release/9.0.2xx
+        "release/9.0.1xx":{
+            "MergeToBranch": "release/9.0.2xx",
+            "ExtraSwitches": "-QuietComments"
+        },
+        // Automate opening PRs to merge sdk repos from release/9.0.2xx to main
+        "release/9.0.2xx":{
             "MergeToBranch": "main",
             "ExtraSwitches": "-QuietComments"
         }
