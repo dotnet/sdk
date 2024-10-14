@@ -191,6 +191,9 @@ src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unk
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
 src/source-build-externals/src/spectre-console/README.md|unknown-license-reference
 
+# Configuration, doesn't apply to source directly
+src/source-build-externals/src/vs-solutionpersistence/stylecop.json
+
 #
 # source-build-reference-packages
 #
