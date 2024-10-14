@@ -106,7 +106,7 @@ parameters:
   type: string
 
 jobs:
-- job: ${{ parameters.buildName }}_${{ parameters.architecture }}
+- job: ${{ parameters.buildName }}_${{ parameters.architecture }}_BuildPass${{ parameters.buildPass }}
   pool: ${{ parameters.pool }}
 
   # Currently, CodeQL slows the build down too much

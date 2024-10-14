@@ -10,6 +10,9 @@
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
     <!-- DotNetBuildOrchestrator is (currently) needed in order to obtain NuGet packages from the runtime build. -->
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(SourceBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
+     <!-- For product build, this only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
+          which need assets from other verticals that are built in the first build pass. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +22,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true' or '$(ExcludeFromDotNetBuild)' != 'true'">
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

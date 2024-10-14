@@ -76,8 +76,13 @@
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
     <BuildArgs>$(BuildArgs) -bl</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
+
     <!-- Indicate that the build is being run from the orchestrator -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
+
+    <!-- Pass through DotNetBuildPass for join point vertical support. -->
+    <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
+
     <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=true</BuildArgs>
     <!-- Only pass when enabled to reduce command line noise. -->
     <BuildArgs Condition="'$(DotNetBuildTests)' == 'true'">$(BuildArgs) /p:DotNetBuildTests=true</BuildArgs>
