@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Cli
         private Task _namedPipeConnectionLoop;
         private List<string> _args;
         private Dictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+        private byte _cancelled;
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
@@ -34,6 +35,12 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
+            Console.CancelKeyPress += (s, e) =>
+            {
+                _output?.StartCancelling();
+                CompleteRun();
+            };
+
             if (Environment.GetEnvironmentVariable("Debug") == "1")
             {
                 DebuggerUtility.AttachCurrentProcessToParentVSProcess();
@@ -86,7 +93,7 @@ namespace Microsoft.DotNet.Cli
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
-                    _output.TestExecutionCompleted(DateTimeOffset.Now);
+                    CompleteRun();
                     return result;
                 });
             }
@@ -117,7 +124,7 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                 {
-                    _output.TestExecutionCompleted(DateTimeOffset.Now);
+                    CompleteRun();
                     return ExitCodes.GenericFailure;
                 }
             }
@@ -128,7 +135,7 @@ namespace Microsoft.DotNet.Cli
                 if (msbuildResult != 0)
                 {
                     VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
-                    _output.TestExecutionCompleted(DateTimeOffset.Now);
+                    CompleteRun();
                     return ExitCodes.GenericFailure;
                 }
             }
@@ -143,8 +150,16 @@ namespace Microsoft.DotNet.Cli
             // Clean up everything
             CleanUp();
 
-            _output.TestExecutionCompleted(DateTimeOffset.Now);
+            CompleteRun();
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void CompleteRun()
+        {
+            if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
+            {
+                _output?.TestExecutionCompleted(DateTimeOffset.Now);
+            }
         }
 
         private void CleanUp()
