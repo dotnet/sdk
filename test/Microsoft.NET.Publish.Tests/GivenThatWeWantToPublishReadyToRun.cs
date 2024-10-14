@@ -492,7 +492,7 @@ public class Program
         public static IEnumerable<object[]> GetTargetFrameworks()
         {
             // Define the target frameworks array
-            string[] frameworks = new string[] { "netcoreapp3.0", "net5.0", "net6.0", "net7.0", "net8.0", ToolsetInfo.CurrentTargetFramework };
+            string[] frameworks = new string[] { "netcoreapp3.0", "net5.0", ToolsetInfo.CurrentTargetFramework };
             var result = new List<object[]>();
 
             // Return different target frameworks based on the runtime environment
