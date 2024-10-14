@@ -7,9 +7,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
-    <!-- For product build, redist-installer.csproj only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
-         which need assets from other verticals that are built in the first build pass. -->
-    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.csproj" DotNetBuildPass="2" />
+    <!-- For product build, build SdkResolver and VSTemplateLocator only in the second build pass as they depend on
+         assets from other verticals that are built in the first build pass. -->
+    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\projects\SdkResolver.csproj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\projects\VSTemplateLocator.csproj" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

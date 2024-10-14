@@ -460,9 +460,9 @@ stages:
         targetArchitecture: x64
         buildPass: 2
         reuseBuildArtifactsFrom:
-        - Windows_x64_BuildPass
-        - Windows_x86_BuildPass
-        - Windows_arm64_BuildPass
+        - Windows_x64
+        - Windows_x86
+        - Windows_arm64
 
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
