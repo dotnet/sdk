@@ -15,4 +15,9 @@
     <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 
+  <!-- Repositories to build in a later build pass. -->
+  <ItemGroup>
+    <RepositoryReference Include="sdk" DotNetBuildPass="2" />
+  </ItemGroup>
+
 </Project>

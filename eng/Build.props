@@ -8,8 +8,8 @@
 
   <!-- For product build, redist-installer.csproj only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
        which need assets from other verticals that are built in the first build pass. -->
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
-    <ProjectToBuild Include="src/Installer/redist-installer/redist-installer.csproj" />
+  <ItemGroup>
+    <ProjectToBuild Include="src/Installer/redist-installer/redist-installer.csproj" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

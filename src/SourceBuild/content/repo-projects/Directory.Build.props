@@ -122,6 +122,12 @@
     <AspNetRazorBuildServerLogFile>$(AspNetRazorBuildServerLogDir)razor-build-server.log</AspNetRazorBuildServerLogFile>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <RepositoryReference>
+      <DotNetBuildPass>1</DotNetBuildPass>
+    </RepositoryReference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <!-- TODO: Remove once net10.0 migration is complete -->
     <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=True" />

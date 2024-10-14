@@ -361,6 +361,13 @@
       <_DependentProject Include="@(TransitiveRepositoryReference -> '%(Identity).proj')" />
     </ItemGroup>
 
+    <!-- Filter out projects that are part of a different build pass. -->
+    <ItemGroup Condition="'$(_DotNetBuildPassNormalized)' != '1'">
+      <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(_DotNetBuildPassNormalized)'))" />
+      <_DependentProject Remove="@(_DependentProject)" />
+      <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
+    </ItemGroup>
+
     <MSBuild Projects="@(_DependentProject)"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"

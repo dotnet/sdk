@@ -127,6 +127,10 @@
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+
+    <!-- An empty DotNetBuildPass refers to the 1st build pass. -->
+    <_DotNetBuildPassNormalized Condition="'$(DotNetBuildPass)' != ''">$(DotNetBuildPass)</_DotNetBuildPassNormalized>
+    <_DotNetBuildPassNormalized Condition="'$(DotNetBuildPass)' == ''">1</_DotNetBuildPassNormalized>
   </PropertyGroup>
 
   <PropertyGroup>
