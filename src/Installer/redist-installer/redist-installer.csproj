@@ -21,11 +21,10 @@
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- For product build, this only builds in the second build pass as it depends on SdkResolver and VSTemplateLocator
+  <!-- For product build, this only builds in the second build pass as it depends on SdkResolver
        which need assets from other verticals that are built in the first build pass. -->
   <ItemGroup Condition="'$(DotNetBuild)' != 'true' or '$(ExcludeFromDotNetBuild)' != 'true'">
     <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,7 +34,6 @@
   <Import Project="targets\BuildCoreSdkTasks.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
-  <Import Project="targets\Versions.targets" />
   <Import Project="targets\Branding.targets" />
   <Import Project="targets\BundledTemplates.targets" />
   <Import Project="targets\BundledManifests.targets" />

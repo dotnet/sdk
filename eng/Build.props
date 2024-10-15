@@ -10,7 +10,7 @@
     <!-- For product build, build SdkResolver and VSTemplateLocator only in the second build pass as they depend on
          assets from other verticals that are built in the first build pass. -->
     <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\projects\SdkResolver.csproj" DotNetBuildPass="2" />
-    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\projects\VSTemplateLocator.csproj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\projects\VSTemplateLocator\VSTemplateLocator.csproj" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

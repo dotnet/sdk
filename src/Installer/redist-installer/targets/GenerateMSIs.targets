@@ -33,10 +33,6 @@
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
-      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/$(Configuration)</VSTemplateLocatorLayoutPath>
-      <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
-      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
-
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
       <!-- Directory for the zipped up light command package -->
@@ -440,12 +436,14 @@
     </ItemGroup>
   </Target>
 
+  <!-- For product build, this only builds in the second build pass as it depends on assets
+       from other verticals that are built in the first build pass. -->
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
           DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2')"
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                    $(SdkMSBuildExtensionsNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
+                  $(SdkMSBuildExtensionsNuspecFile);
+                  $(GenerateNupkgPowershellScript)"
           Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
     <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
                                   OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
@@ -461,23 +459,6 @@
                       '$(SdkMSBuildExtensionsNupkgFile)'" />
   </Target>
 
-  <!-- For product build, this only builds in the second build pass as it depends on assets
-       from other verticals that are built in the first build pass. -->
-  <Target Name="GenerateVSTemplateLocatorNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2')"
-          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                    $(VSTemplateLocatorNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
-          Outputs="$(VSTemplateLocatorNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateMsis"
         DependsOnTargets="GenerateLayout;
                             MsiTargetsSetupInputOutputs;
@@ -489,8 +470,7 @@
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
-                            GenerateSdkMSBuildExtensionsNupkg;
-                            GenerateVSTemplateLocatorNupkg"
+                            GenerateSdkMSBuildExtensionsNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 
 </Project>
