@@ -19,12 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <!-- For product build, this only builds in the second build pass as it depends on SdkResolver
-       which need assets from other verticals that are built in the first build pass. -->
-  <ItemGroup Condition="'$(DotNetBuild)' != 'true' or '$(ExcludeFromDotNetBuild)' != 'true'">
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
