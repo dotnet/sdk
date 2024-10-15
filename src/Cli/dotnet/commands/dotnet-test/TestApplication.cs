@@ -335,8 +335,8 @@ namespace Microsoft.DotNet.Cli
             TestResultsReceived?.Invoke(this, new TestResultEventArgs
             {
                 ExecutionId = testResultMessage.ExecutionId,
-                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.SessionUid)).ToArray()
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 

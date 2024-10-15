@@ -42,26 +42,13 @@ namespace Microsoft.DotNet.Cli
             var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
             // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
-            return versionInfo.Version + (versionInfo.VersionNotInstalledMessage is not null ? ' ' + Workloads.Workload.List.LocalizableStrings.WorkloadVersionNotInstalledShort : string.Empty);
+            return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + Workloads.Workload.List.LocalizableStrings.WorkloadVersionNotInstalledShort);
         }
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             reporter ??= Utils.Reporter.Output;
-            var globalJsonInformation = workloadInfoHelper.ManifestProvider.GetGlobalJsonInformation();
-            if (globalJsonInformation?.WorkloadVersionInstalled == false)
-            {
-                reporter.WriteLine(string.Format(Workloads.Workload.List.LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled, globalJsonInformation.GlobalJsonVersion, globalJsonInformation.GlobalJsonPath));
-                return;
-            }
-
-            IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
-            InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
-            string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
-
-            
-
             var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
             void WriteUpdateModeAndAnyError(string indent = "")
@@ -70,10 +57,13 @@ namespace Microsoft.DotNet.Cli
                 var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
                 reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
-                var additionalMessage = versionInfo.VersionNotInstalledMessage ?? versionInfo.UpdateModeMessage;
-                if (additionalMessage != null)
+                if (!versionInfo.IsInstalled)
                 {
-                    reporter.WriteLine(indent + additionalMessage);
+                    reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                }
+                else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
+                {
+                    reporter.WriteLine(indent + CommonStrings.ShouldInstallAWorkloadSet);
                 }
             }
             
@@ -85,37 +75,44 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine();
             }
 
-            if (installedWorkloads.Count == 0)
+            if (versionInfo.IsInstalled)
             {
-                reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
-            }
-            else
-            {
-                var manifestInfoDict = workloadInfoHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
+                IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
+                InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
+                string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
-                foreach (var workload in installedWorkloads.AsEnumerable())
+                if (installedWorkloads.Count == 0)
                 {
-                    var workloadManifest = workloadInfoHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
-                    var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
+                    reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
+                }
+                else
+                {
+                    var manifestInfoDict = workloadInfoHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
 
-                    const int align = 10;
-                    const string separator = "   ";
+                    foreach (var workload in installedWorkloads.AsEnumerable())
+                    {
+                        var workloadManifest = workloadInfoHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
+                        var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
 
-                    reporter.WriteLine($" [{workload.Key}]");
+                        const int align = 10;
+                        const string separator = "   ";
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
-                    reporter.WriteLine($" {workload.Value,align}");
+                        reporter.WriteLine($" [{workload.Key}]");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadManifestVersionColumn}:");
-                    reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
+                        reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
+                        reporter.WriteLine($" {workload.Value,align}");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadManifestPathColumn}:");
-                    reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
+                        reporter.Write($"{separator}{CommonStrings.WorkloadManifestVersionColumn}:");
+                        reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
-                    );
-                    reporter.WriteLine("");
+                        reporter.Write($"{separator}{CommonStrings.WorkloadManifestPathColumn}:");
+                        reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
+
+                        reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
+                        reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
+                        );
+                        reporter.WriteLine("");
+                    }
                 }
             }
 
