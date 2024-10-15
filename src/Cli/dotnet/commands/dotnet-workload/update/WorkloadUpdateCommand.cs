@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _fromPreviousSdk;
         private WorkloadHistoryRecorder _recorder;
         private readonly bool _isRestoring;
+        private readonly bool _shouldShutdownInstaller;
         public WorkloadUpdateCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -48,6 +49,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                                 _sdkFeatureBand, _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader,
                                 _dotnetPath, TempDirectoryPath, packageSourceLocation: _packageSourceLocation, RestoreActionConfiguration,
                                 elevationRequired: !_printDownloadLinkOnly && !_printRollbackDefinitionOnly && string.IsNullOrWhiteSpace(_downloadToCacheOption));
+
+            _shouldShutdownInstaller = _workloadInstallerFromConstructor != null;
+
 
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
@@ -132,7 +136,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 }
             }
 
-            _workloadInstaller.Shutdown();
+            if (_shouldShutdownInstaller)
+            {
+                _workloadInstaller.Shutdown();
+            }
             return _workloadInstaller.ExitCode;
         }
 
