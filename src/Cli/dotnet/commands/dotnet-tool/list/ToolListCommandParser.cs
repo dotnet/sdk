@@ -24,6 +24,12 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
+        public static readonly CliOption<ToolListOutputFormat> ToolListFormatOption = new("--format")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            DefaultValueFactory = _ => ToolListOutputFormat.table,
+        };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -39,6 +45,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
             command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+            command.Options.Add(ToolListFormatOption.WithHelpDescription(command, LocalizableStrings.ToolListFormatOptionDescription));
 
             command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 

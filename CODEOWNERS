@@ -9,86 +9,101 @@
 
 # Area-WebSDK
 /src/WebSdk/ @vijayrkn
-/src/Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
+/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
 
 # Area-AspNetCore
 /src/BlazorWasmSdk/ @dotnet/aspnet-blazor-eng
-/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
-/src/RazorSdk/ @dotnet/aspnet-blazor-eng
-/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
-/src/Tests/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/aspnet-blazor-eng
-/src/Tests/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
-/src/Assets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/src/src/Assets/TestProjects/Razor*/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHosted/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
+/src/RazorSdk/ @dotnet/razor-compiler
+/test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
+/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
+/test/TestAssets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
-/src/WasmSdk @lewing @radical @pavelsavara @maraf
+/src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
 /src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
-/src/Tests/dotnet-format.Tests @sharwell @arkalyanms
+/test/dotnet-format.Tests @sharwell @arkalyanms
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
-/src/Tests/dotnet-add-package.Tests @dotnet/nuget-team
+/test/dotnet-add-package.Tests @dotnet/nuget-team
 /src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
-/src/Tests/dotnet-nuget.UnitTests @dotnet/nuget-team
+/test/dotnet-nuget.UnitTests @dotnet/nuget-team
+/src/Cli/dotnet/commands/dotnet-list/dotnet-list-package @dotnet/nuget-team
+/test/dotnet-list-package.Tests @dotnet/nuget-team
 
 # Area-FSharp
 /src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp
-/src/Tests/dotnet-fsi.Tests @dotnet/fsharp
+/test/dotnet-fsi.Tests @dotnet/fsharp
 
 # Area-DotNet Test
-/src/Cli/dotnet/commands/dotnet-test @dotnet/dotnet-test-templates-admin
-/src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-test-templates-admin
-/src/Tests/dotnet-test.Tests @dotnet/dotnet-test-templates-admin
-/src/Tests/dotnet-vstest.Tests @dotnet/dotnet-test-templates-admin
+/src/Cli/dotnet/commands/dotnet-test @dotnet/dotnet-testing-admin
+/src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-testing-admin
+/test/dotnet-test.Tests @dotnet/dotnet-testing-admin
+/test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
 
 # Area-Templates
-/src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers 
-/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers 
-/src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers 
-/src/Tests/dotnet-new.Tests @dotnet/templating-engine-maintainers
-/src/Tests/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers 
-/template_feed @dotnet/templating-engine-maintainers 
+/src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
+/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers
+/src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
+/test/dotnet-new.Tests @dotnet/templating-engine-maintainers
+/test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
+/template_feed @dotnet/templating-engine-maintainers
 
 # ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets clrappmodel@microsoft.com @dotnet/illink-contrib
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
 /src/Tasks/Microsoft.NET.Build.Tasks/PrepareForReadyToRunCompilation.cs @AntonLapounov
 /src/Tasks/Microsoft.NET.Build.Tasks/RunReadyToRunCompiler.cs @AntonLapounov
-/src/Tests/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs clrappmodel@microsoft.com @dotnet/illink-contrib
-/src/Tests/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
+/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
+/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets clrappmodel@microsoft.com @dotnet/illink-contrib @AntonLapounov @dotnet/dotnet-cli
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @AntonLapounov @dotnet/dotnet-cli
+# Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/src/Assets/TestProjects/Watch*/     @tmat @arkalyanms @dotnet/roslyn-ide
-/src/Tests/dotnet-watch.Tests/       @tmat @arkalyanms @dotnet/roslyn-ide
-/src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/*   @tmat @arkalyanms @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh   @dotnet/aspnet-blazor-eng
+/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
+/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService @BillHiebert @dotnet/aspnet-blazor-eng
 
-# ApiCompat tools owned by runtime team
-# Area-ApiCompat
-/src/ApiCompat/ @ericstj @dotnet/area-infrastructure-libraries @joperezr 
-/src/Tests/Microsoft.DotNet.ApiCompatibility*/ @ericstj @dotnet/area-infrastructure-libraries @joperezr 
-/src/Tests/Microsoft.DotNet.ApiCompat*/ @ericstj @dotnet/area-infrastructure-libraries @joperezr 
-/src/Tests/Microsoft.DotNet.PackageValidation*/ @ericstj @dotnet/area-infrastructure-libraries @joperezr 
+# Compatibility tools owned by runtime team
+/src/Compatibility/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
 
 # Area-GenAPI
-/src/GenAPI/ @andriipatsula @dotnet/area-infrastructure-libraries
-/src/Tests/Microsoft.DotNet.GenAPI/ @andriipatsula @dotnet/area-infrastructure-libraries
-/src/Microsoft.DotNet.ApiSymbolExtensions/ @andriipatsula @dotnet/area-infrastructure-libraries
+/src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries
+/src/Compatibility/Microsoft.DotNet.ApiSymbolExtensions/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.GenAPI/ @dotnet/area-infrastructure-libraries
+/test/Microsoft.DotNet.ApiSymbolExtensions.Tests/ @dotnet/area-infrastructure-libraries
 
 # Area: dotnet containers
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
-/src/Tests/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
-/src/Tests/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
-/src/Tests/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
+/test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
+/test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
+/test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
+
+# dotnet-format
+/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
+/test/dotnet-format.Tests @dotnet/roslyn-ide
+
+# Area: VMR & SourceBuild
+/.devcontainer/ @dotnet/source-build
+/eng/pipelines/ @dotnet/source-build @dotnet/product-construction
+/eng/SourceBuild* @dotnet/source-build
+/src/SourceBuild/ @dotnet/source-build @dotnet/product-construction
+/src/VirtualMonoRepo/ @dotnet/product-construction

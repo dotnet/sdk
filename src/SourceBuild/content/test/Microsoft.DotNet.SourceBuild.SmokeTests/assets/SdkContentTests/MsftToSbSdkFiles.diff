@@ -1,0 +1,62 @@
+diff --git a/msftSdkFiles.txt b/sbSdkFiles.txt
+index ------------
+--- a/msftSdkFiles.txt
++++ b/sbSdkFiles.txt
+@@ ------------ @@
+ ./host/fxr/x.y.z/
+ ./host/fxr/x.y.z/libhostfxr.so
+ ./LICENSE.txt
++./metadata/
++./metadata/workloads/
++./metadata/workloads/x.y.z/
++./metadata/workloads/x.y.z/userlocal
+ ./packs/
+ ./packs/Microsoft.AspNetCore.App.Ref/
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
+@@ ------------ @@
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.dll
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.xml
+-./packs/Microsoft.NETCore.App.Host.portable-rid/
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/apphost
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/coreclr_delegates.h
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/hostfxr.h
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/libnethost.a
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/libnethost.so
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/nethost.h
+-./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/singlefilehost
++./packs/Microsoft.NETCore.App.Host.banana-rid/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/apphost
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/coreclr_delegates.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/hostfxr.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/libnethost.a
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/libnethost.so
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/nethost.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/singlefilehost
+ ./packs/Microsoft.NETCore.App.Ref/
+ ./packs/Microsoft.NETCore.App.Ref/x.y.z/
+ ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
+@@ ------------ @@
+ ./sdk-manifests/
+ ./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/
+-./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
+@@ ------------ @@
+ ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
+ ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
+ ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
+-./sdk/x.y.z/Microsoft.CodeCoverage.IO.dll
+ ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
+ ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
+ ./sdk/x.y.z/Microsoft.Common.overridetasks

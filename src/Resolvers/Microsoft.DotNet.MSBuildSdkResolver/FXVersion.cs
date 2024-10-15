@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// dotnet doesn't have nullable enabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
-
+#nullable enable
+#pragma warning restore IDE0240 // Remove redundant nullable directivee
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
     // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
@@ -68,8 +65,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             for (int i = idStart; true; ++i)
             {
                 // C# strings are not null terminated. Pretend to make code similar to fx_ver.cpp
-                char s1char = (s1.Pre.Length  == i) ? '\0' : s1.Pre[i];
-                char s2char = (s2.Pre.Length  == i) ? '\0' : s2.Pre[i];
+                char s1char = (s1.Pre.Length == i) ? '\0' : s1.Pre[i];
+                char s2char = (s2.Pre.Length == i) ? '\0' : s2.Pre[i];
                 if (s1char != s2char)
                 {
                     // Found first character with a difference
@@ -219,10 +216,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             return -1;
         }
 
-        public static bool TryParse(string fxVersionString, out FXVersion FXVersion)
+        public static bool TryParse(string? fxVersionString, out FXVersion? FXVersion)
         {
             FXVersion = null;
-            if (string.IsNullOrEmpty(fxVersionString))
+            if (string.IsNullOrEmpty(fxVersionString) || fxVersionString == null)
             {
                 return false;
             }
