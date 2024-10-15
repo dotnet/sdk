@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">渡す追加の msbuild パラメーター。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -105,7 +105,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">並列で実行できるテスト モジュールの最大数。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -237,12 +237,12 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">ID '{0}' で登録されたシリアライザーがありません</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">型 '{0}' で登録されたシリアライザーがありません</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

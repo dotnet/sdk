@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionNotInstalledShort">
         <source>(not installed)</source>
-        <target state="new">(not installed)</target>
+        <target state="translated">(未安裝)</target>
         <note />
       </trans-unit>
     </body>
