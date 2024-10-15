@@ -26,6 +26,7 @@
     <PropertyGroup>
       <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
       <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
+      <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)../../packaging/windows/generatenupkg.ps1</GenerateNupkgPowershellScript>
     </PropertyGroup>
 
     <RemoveDir Directories="$(OutputPath)" />
