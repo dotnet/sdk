@@ -31,4 +31,23 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" />
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
+
+  <!--
+  ============================================================
+    DefaultRuntimeHostConfigurationOptions
+  Defaults @(RuntimeHostConfigurationOption) items based on MSBuild properties.
+  ============================================================
+  -->
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported"
+                                    Condition="'$(SignalRCustomAwaitableSupport)' != ''"
+                                    Value="$(SignalRCustomAwaitableSupport)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported"
+                                    Condition="'$(MvcEnhancedModelMetadataSupport)' != ''"
+                                    Value="$(MvcEnhancedModelMetadataSupport)"
+                                    Trim="true" />
+  </ItemGroup>
+
 </Project>

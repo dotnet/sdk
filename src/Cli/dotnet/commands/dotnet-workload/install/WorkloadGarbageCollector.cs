@@ -11,6 +11,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -30,19 +31,35 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         string _dotnetDir;
         IEnumerable<WorkloadId> _installedWorkloads;
         Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
+        Dictionary<string, string> _globalJsonWorkloadSetVersions;
         IReporter _verboseReporter;
 
         public HashSet<string> WorkloadSetsToKeep = new();
         public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = new();
         public HashSet<(WorkloadPackId id, string version)> PacksToKeep = new();
 
+        enum GCAction
+        {
+            Collect = 0,
+            KeepWithoutPacks = 1,
+            Keep = 2,
+        }
+
+        Dictionary<string, GCAction> _workloadSets = new();
+        Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = new();
+
+        //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
+        //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
+        //  file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
+        //  set version).
         public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
-            IReporter verboseReporter)
+            Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
         {
             _dotnetDir = dotnetDir;
             _sdkFeatureBand = sdkFeatureBand;
             _installedWorkloads = installedWorkloads;
             _getResolverForWorkloadSet = getResolverForWorkloadSet;
+            _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
             _verboseReporter = verboseReporter ?? Reporter.NullReporter;
         }
 
@@ -53,6 +70,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             GarbageCollectWorkloadSets();
             GarbageCollectWorkloadManifestsAndPacks();
+
+            WorkloadSetsToKeep.AddRange(_workloadSets.Where(kvp => kvp.Value != GCAction.Collect).Select(kvp => kvp.Key));
+            ManifestsToKeep.AddRange(_manifests.Where(kvp => kvp.Value != GCAction.Collect).Select(kvp => kvp.Key));
         }
 
         IWorkloadResolver GetResolver(string workloadSetVersion = null)
@@ -64,31 +84,30 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             //  Determine which workload sets should not be garbage collected.  IInstaller implementation will be responsible for actually uninstalling the other ones (if not referenced by another feature band)
             //  Keep the following, garbage collect all others:
+            //  - Baseline workload sets
             //  - Workload set if specified in rollback state file, otherwise latest installed workload set
             //  - Workload sets from global.json GC roots (after scanning to see if GC root data is up-to-date)
-            //  - Baseline workload sets
-
-            //  What happens if there's a later SDK installed?  Could a workload set from a previous band be pinned to a later SDK?
+            //  Baseline workload sets and manifests should be kept, but if they aren't active, the packs should be garbage collected.
+            //  GCAction.KeepWithoutPacks is for keeping track of this
 
             var resolver = GetResolver();
 
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-
-            foreach (var set in installedWorkloadSets.Keys)
-            {
-                WorkloadSetsToKeep.Add(set);
-                _verboseReporter.WriteLine($"GC: Keeping workload set version {set} because workload set GC isn't implemented yet.");
-            }
+            _workloadSets = installedWorkloadSets.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.IsBaselineWorkloadSet ? GCAction.KeepWithoutPacks : GCAction.Collect);
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            if (File.Exists(installStateFilePath))
+            var installState = InstallStateContents.FromPath(installStateFilePath);
+            //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
+            if (!string.IsNullOrEmpty(installState.WorkloadVersion))
             {
-                //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
-                var installState = InstallStateContents.FromPath(installStateFilePath);
-                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
+                if (installedWorkloadSets.ContainsKey(installState.WorkloadVersion))
                 {
-                    WorkloadSetsToKeep.Add(installState.WorkloadVersion);
+                    _workloadSets[installState.WorkloadVersion] = GCAction.Keep;
                     _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadVersion} because it is specified in the install state file {installStateFilePath}");
+                }
+                else
+                {
+                    _verboseReporter.WriteLine($"GC: Error: Workload set version {installState.WorkloadVersion} which was specified in {installStateFilePath} was not found.  This is likely an invalid state.");
                 }
             }
             else
@@ -97,26 +116,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if (installedWorkloadSets.Any())
                 {
                     var latestWorkloadSetVersion = installedWorkloadSets.Keys.MaxBy(k => new ReleaseVersion(k));
-                    WorkloadSetsToKeep.Add(latestWorkloadSetVersion);
+                    _workloadSets[latestWorkloadSetVersion] = GCAction.Keep;
                     _verboseReporter.WriteLine($"GC: Keeping latest installed workload set version {latestWorkloadSetVersion}");
                 }
             }
 
-            //  Add baseline workload set versions for installed SDKs to list that shouldn't be collected.  They should stay installed until the SDK is uninstalled
-            foreach (var workloadSet in installedWorkloadSets.Values)
+            foreach (var (globalJsonPath, workloadSetVersion) in _globalJsonWorkloadSetVersions)
             {
-                if (workloadSet.IsBaselineWorkloadSet)
+                if (installedWorkloadSets.ContainsKey(workloadSetVersion))
                 {
-                    WorkloadSetsToKeep.Add(workloadSet.Version);
-                    _verboseReporter.WriteLine($"GC: Keeping baseline workload set version {workloadSet.Version}");
+                    _workloadSets[workloadSetVersion] = GCAction.Keep;
+                    _verboseReporter.WriteLine($"GC: Keeping workload set version {workloadSetVersion} because it is referenced by {globalJsonPath}.");
                 }
             }
-
-            //  TODO:
-            //  Scan workload set GC roots, which correspond to global.json files that pinned to a workload set.  For each one, check to see if it's up-to-date.  If the global.json file
-            //  doesn't exist anymore (or doesn't specify a workload set version), delete the GC root.  If the workload set version in global.json has changed, update the GC root.
-            //  After updating GC roots, add workload sets listed in GC roots to list of workload sets to keep
-
         }
 
         void GarbageCollectWorkloadManifestsAndPacks()
@@ -131,35 +143,57 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             //  - Any manifests listed in the rollback state file (default.json)
             //  - The latest version of each manifest, if a workload set is not installed and there is no rollback state file
 
-            List<(IWorkloadResolver, string workloadSet)> resolvers = new();
-            resolvers.Add((GetResolver(), "<none>"));
+            List<(IWorkloadResolver, string workloadSet, GCAction gcAction)> resolvers = new();
+            resolvers.Add((GetResolver(), "<none>", GCAction.Keep));
 
 
             //  Iterate through all installed workload sets for this SDK feature band that have not been marked for garbage collection
             //  For each manifest version listed in a workload set, add it to a list to keep
-            foreach (var workloadSet in WorkloadSetsToKeep)
+            foreach (var (workloadSet, gcAction) in _workloadSets)
             {
-                resolvers.Add((GetResolver(workloadSet), workloadSet));
+                if (gcAction != GCAction.Collect)
+                {
+                    resolvers.Add((GetResolver(workloadSet), workloadSet, gcAction));
+                }
             }
 
-            foreach (var (resolver, workloadSet) in resolvers)
+            foreach (var (resolver, workloadSet, gcAction) in resolvers)
             {
                 foreach (var manifest in resolver.GetInstalledManifests())
                 {
                     _verboseReporter.WriteLine($"GC: Keeping manifest {manifest.Id} {manifest.Version}/{manifest.ManifestFeatureBand} as part of workload set {workloadSet}");
-                    ManifestsToKeep.Add((new ManifestId(manifest.Id), new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand)));
+
+                    var manifestKey = (new ManifestId(manifest.Id), new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
+                    GCAction existingAction;
+                    if (!_manifests.TryGetValue(manifestKey, out existingAction))
+                    {
+                        existingAction = GCAction.Collect;
+                    }
+
+                    //  We should keep a manifest if it's referenced by any workload set we're planning to keep.  If there are multiple resolvers that end up referencing
+                    //  a workload manifest, we should take the "greater" action.  IE if a manifest would be KeepWithoutPacks with one resolver and Keep with another one,
+                    //  then it (and its packs) should be kept.
+                    //  The scenario where there would be a mismatch is if there's a baseline workload set that's not active referring to the same manifest as an active
+                    //  workload set.  The manifest would be marked KeepWithoutPacks via the baseline manifest, and Keep via the active workload set.
+                    if (gcAction > existingAction)
+                    {
+                        _manifests[manifestKey] = gcAction;
+                    }
                 }
 
-                foreach (var pack in _installedWorkloads.SelectMany(workloadId => resolver.GetPacksInWorkload(workloadId))
-                    .Select(packId => resolver.TryGetPackInfo(packId))
-                    .Where(pack => pack != null))
+                if (gcAction == GCAction.Keep)
                 {
-                    _verboseReporter.WriteLine($"GC: Keeping workload pack {pack.ResolvedPackageId} {pack.Version} as part of workload set {workloadSet}");
-                    PacksToKeep.Add((new WorkloadPackId(pack.ResolvedPackageId), pack.Version));
+                    foreach (var pack in _installedWorkloads.SelectMany(workloadId => resolver.GetPacksInWorkload(workloadId))
+                        .Select(packId => resolver.TryGetPackInfo(packId))
+                        .Where(pack => pack != null))
+                    {
+                        _verboseReporter.WriteLine($"GC: Keeping workload pack {pack.ResolvedPackageId} {pack.Version} as part of workload set {workloadSet}");
+                        PacksToKeep.Add((new WorkloadPackId(pack.ResolvedPackageId), pack.Version));
+                    }
                 }
             }
 
-            //  NOTE: We should not collect baseline workload manifests. When we have a corresponding baseline manifest, this will happen, as we have logic
+            //  NOTE: We should not collect baseline workload manifests. When we have a corresponding baseline workload set, this will happen, as we have logic
             //  to avoid collecting baseline manifests. Until then, it will be possible for the baseline manifests to be collected.
         }
     }
