@@ -4,10 +4,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-
-    <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
-    <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
-
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <!-- For product build, this project only builds in the second build pass as it depends on assets other
          verticals that are built in the first build pass. -->
@@ -26,6 +22,12 @@
   </ItemGroup>
 
   <Target Name="GenerateLayout">
+    <!-- Set these here early enough for inputs & outputs in the GenerateVSTemplateLocatorNupkg target. -->
+    <PropertyGroup>
+      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
+      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
+    </PropertyGroup>
+
     <RemoveDir Directories="$(OutputPath)" />
     <MakeDir Directories="$(OutputPath)" />
 
