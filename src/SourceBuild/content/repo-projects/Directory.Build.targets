@@ -27,7 +27,7 @@
 
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
-    <RepoConsoleLogFile>$(DotNetBuildArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
+    <RepoConsoleLogFile>$(ArtifactsLogRepoDir)$(RepositoryName).log</RepoConsoleLogFile>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">$(BuildInParallel)</MinimalConsoleLogOutput>
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
@@ -553,12 +553,12 @@
 
     <!-- Move the build logs -->
     <Move SourceFiles="@(LogFilesToMove)"
-          DestinationFolder="$(DotNetBuildArtifactsLogDir)"
+          DestinationFolder="$(ArtifactsLogRepoDir)"
           Condition="'@(LogFilesToMove)' != ''" />
 
     <!-- Move the prebuilt reports -->
     <Move SourceFiles="@(PrebuiltReportsToMove)"
-          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          DestinationFolder="$(PackageReportRepoDir)"
           Condition="'@(PrebuiltReportsToMove)' != ''" />
   </Target>
 
