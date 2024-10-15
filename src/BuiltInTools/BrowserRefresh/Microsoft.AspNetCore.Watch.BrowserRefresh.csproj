@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     /// A middleware that manages receiving and sending deltas from a BlazorWebAssembly app.
     /// This assembly is shared between Visual Studio and dotnet-watch. By putting some of the complexity
     /// in here, we can avoid duplicating work in watch and VS.
+    ///
+    /// Mapped to <see cref="ApplicationPaths.BlazorHotReloadMiddleware"/>.
     /// </summary>
     internal sealed class BlazorWasmHotReloadMiddleware
     {

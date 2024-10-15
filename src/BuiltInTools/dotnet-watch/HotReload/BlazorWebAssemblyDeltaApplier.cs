@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
             // Wait for the browser connection to be established as an indication that the process has started.
             // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
-            => await browserRefreshServer.WaitForClientConnection(cancellationToken);
+            => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
         public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 {
                     Reporter.Verbose("Connecting to the browser.");
 
-                    await browserRefreshServer.WaitForClientConnection(cancellationToken);
+                    await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
                     string capabilities;
                     if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     {
                         string? capabilityString = null;
 
-                        await browserRefreshServer.SendAndReceive(
+                        await browserRefreshServer.SendAndReceiveAsync(
                             request: _ => default(JsonGetApplyUpdateCapabilitiesRequest),
                             response: (value, reporter) =>
                             {
@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-            await browserRefreshServer.SendAndReceive(
+            await browserRefreshServer.SendAndReceiveAsync(
                 request: sharedSecret => new JsonApplyHotReloadDeltasRequest
                 {
                     SharedSecret = sharedSecret,
@@ -196,7 +196,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             // If no browser is connected we assume the changes have been applied.
             // If at least one browser suceeds we consider the changes successfully applied.
-            // TODO: The refresh server should remember the deltas and apply them to browsers connected in future.
+            // TODO: 
+            // The refresh server should remember the deltas and apply them to browsers connected in future.
+            // Currently the changes are remembered on the dev server and sent over there from the browser.
+            // If no browser is connected the changes are not sent though.
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
