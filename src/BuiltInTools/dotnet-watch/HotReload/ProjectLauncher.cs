@@ -51,6 +51,12 @@ internal sealed class ProjectLauncher(
 
     public async Task<RunningProject> LaunchProcessAsync(ProjectOptions projectOptions, ProjectGraphNode projectNode, CancellationTokenSource processTerminationSource, bool build, CancellationToken cancellationToken)
     {
+        var profile = HotReloadProfileReader.InferHotReloadProfile(projectNode, Reporter);
+
+        // Blazor WASM does not need dotnet applier as all changes are applied in the browser,
+        // the process being launched is a dev server.
+        var injectDeltaApplier = profile != HotReloadProfile.BlazorWebAssembly;
+
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
@@ -78,10 +84,6 @@ internal sealed class ProjectLauncher(
 
         // Directives:
 
-        environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
-
         // Variables:
 
         foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
@@ -100,15 +102,22 @@ internal sealed class ProjectLauncher(
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));
 
-        if (context.Options.Verbose)
+        if (injectDeltaApplier)
         {
-            environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
-        }
+            environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
+            environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
+            environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
 
-        // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
-        var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath, targetPath);
-        Reporter.Verbose($"Target process is '{targetPath}'");
+            if (context.Options.Verbose)
+            {
+                environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+            }
+
+            // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
+            var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath, targetPath);
+            Reporter.Verbose($"Target process is '{targetPath}'");
+        }
 
         var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
         environmentBuilder.ConfigureProcess(processSpec);
@@ -118,6 +127,7 @@ internal sealed class ProjectLauncher(
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
+            profile,
             namedPipeName,
             browserRefreshServer,
             processSpec,
