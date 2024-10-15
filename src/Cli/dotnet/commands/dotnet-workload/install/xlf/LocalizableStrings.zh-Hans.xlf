@@ -22,14 +22,24 @@
         <target state="translated">不能同时使用 {0} 和 {1} 选项。如果从回滚文件安装，请删除 {0}。否则，请删除 {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">不能同时使用 {0} 和 {1} 选项。移除其中一个选项。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">当 global.json 文件 {0} 中已指定版本时，无法在命令行上通过 --version 或 --from-history 指定特定工作负载版本。若要更新全局安装的工作负载版本，请在包含该 global.json 文件的路径外部运行命令，或者更新 global.json 文件中指定的版本，然后运行 "dotnet workload update"。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">在 global.json 中指定工作负载版本时，无法使用 {0} 选项。移除 {0} 选项，或从 {1} 中移除“workloadVersion”元素。</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">正在检查更新的工作负载清单。</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">正在检查更新的工作负载版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -80,6 +90,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">未能安装清单 {0} 版本 {1}: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">未能安装工作负载版本 {0}：{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -155,11 +170,6 @@
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
         <target state="translated">要为其安装工作负载的目标框架。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">不存在 ID 为 {0} 的清单。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -375,11 +385,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">路径</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">正在将工作负载版本从 {0} 更新为 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">

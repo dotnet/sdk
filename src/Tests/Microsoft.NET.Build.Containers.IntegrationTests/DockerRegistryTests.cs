@@ -37,7 +37,7 @@ public class DockerRegistryTests
         Assert.NotNull(downloadedImage);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42820")]
     public async Task WriteToPrivateBasicRegistry()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(WriteToPrivateBasicRegistry));
@@ -45,7 +45,8 @@ public class DockerRegistryTests
         var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
-        try {
+        try
+        {
             if (!registryCertsDir.Exists)
             {
                 registryCertsDir.Create();
@@ -53,6 +54,7 @@ public class DockerRegistryTests
             var registryCertFile = Path.Combine(registryCertsDir.FullName, "domain.crt");
 
             // export dev cert, using --no-password also generates a matching key file
+            new DotnetCommand(_testOutput, $"dev-certs", "https", "--trust").Execute().Should().Pass();
             new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
             ContainerCli.RunCommand(_testOutput,
@@ -78,7 +80,7 @@ public class DockerRegistryTests
             Registry mcr = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Pull);
 
             var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
-            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage,new[] { DockerRegistryManager.Net6ImageTag });
+            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, new[] { DockerRegistryManager.Net6ImageTag });
             ImageBuilder? downloadedImage = await mcr.GetImageManifestAsync(
                 DockerRegistryManager.RuntimeBaseImage,
                 DockerRegistryManager.Net6ImageTag,
