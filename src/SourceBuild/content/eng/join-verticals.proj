@@ -14,7 +14,7 @@
 
     <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
     
-    <Target Name="JoinVerticals" DependsOnTargets="BuildTasksProject" AfterTargets="BuildTasksProject" >
+    <Target Name="JoinVerticals" DependsOnTargets="ResolveProjectReferences" AfterTargets="Build">
       <Error Condition="'$(MainVertical)' == ''" Text="MainVertical is not set." />
       <Error Condition="'$(VerticalManifestsPath)' == ''" Text="VerticalManifestsPath is not set." />
       <Error Condition="'$(BuildId)' == ''" Text="BuildId is not set." />
