@@ -42,24 +42,24 @@
         <target state="translated">'{0}' aracı güncel (sürüm '{1}' bildirim dosyası {2}).</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">İstenen sürüm ({0}) mevcut sürümünden ({1}) (bildirim dosyası {2}) düşük.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">'{0}' aracı, '{1}' sürümünden '{2}' (bildirim dosyası {3}) sürümüne başarıyla güncelleştirildi.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
+        <target state="translated">İstenen {0} sürümü mevcut {1} sürümünden ({2}bildirim dosyası) düşük. Bu güncelleştirmeye izin vermek için --allow-downgrade seçeneğini kullanın.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, en yeni ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="translated">'{0}' aracı, ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="translated">'{0}' aracı, kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

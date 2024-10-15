@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         int ExitCode { get; }
 
+        string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath);
+
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
         void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null);
@@ -25,6 +27,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         IEnumerable<WorkloadDownload> GetDownloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, bool includeInstalledItems);
 
+        void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion);
+
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>
         /// for a set of workload manifests that isn't currently installed
@@ -33,6 +37,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void ReplaceWorkloadResolver(IWorkloadResolver workloadResolver);
 
         void Shutdown();
+
+        /// <summary>
+        /// Delete the install state file at the specified path.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file.</param>
+        void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand);
+
+        /// <summary>
+        /// Writes the specified JSON contents to the install state file.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file.</param>
+        /// <param name="manifestContents">The JSON contents describing the install state.</param>
+        void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
+
+        void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode);
     }
 
     // Interface to pass to workload manifest updater
