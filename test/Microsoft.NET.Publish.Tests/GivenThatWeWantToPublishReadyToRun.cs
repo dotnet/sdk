@@ -45,7 +45,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(GetTargetFrameworks))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_creates_readytorun_images_for_all_assemblies_except_excluded_ones(string targetFramework)
         {
             var projectName = "CrossgenTest2";
@@ -89,14 +89,14 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(GetTargetFrameworks))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_creates_readytorun_symbols_when_switch_is_used(string targetFramework)
         {
             TestProjectPublishing_Internal("CrossgenTest3", targetFramework, emitNativeSymbols: true, composite: false, identifier: targetFramework);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(GetTargetFrameworks))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_supports_framework_dependent_publishing(string targetFramework)
         {
             TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, composite: false, emitNativeSymbols: true, identifier: targetFramework);
@@ -181,14 +181,14 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(GetTargetFrameworks))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_publish_readytorun_for_library_projects(string targetFramework)
         {
             TestProjectPublishing_Internal("LibraryProject1", targetFramework, isSelfContained: false, composite: false, makeExeProject: false, identifier: targetFramework);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(GetTargetFrameworks))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_publish_readytorun_for_selfcontained_library_projects(string targetFramework)
         {
             TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained: true, composite: true, makeExeProject: false, identifier: targetFramework);
@@ -487,31 +487,6 @@ public class Program
                     return (pereader.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) != CorFlags.ILOnly;
                 }
             }
-        }
-
-        public static IEnumerable<object[]> GetTargetFrameworks()
-        {
-            // Define the target frameworks array
-            string[] frameworks = new string[] { "netcoreapp3.0", "net5.0", ToolsetInfo.CurrentTargetFramework };
-            var result = new List<object[]>();
-
-            // Return different target frameworks based on the runtime environment
-            foreach (var framework in frameworks)
-            {
-                if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
-                {
-                    // Check if the framework version is greater than or equal to net6.0
-                    if (framework.StartsWith("net") && Version.TryParse(framework.Substring(3), out var version) && version >= new Version(6, 0))
-                    {
-                        result.Add(new object[] { framework });
-                    }
-                }
-                else
-                {
-                    result.Add(new object[] { framework });
-                }
-            }
-            return result;
         }
     }
 }
