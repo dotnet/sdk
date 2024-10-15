@@ -52,7 +52,7 @@ internal readonly struct BrowserConnection : IAsyncDisposable
 
     internal async ValueTask<bool> TryReceiveMessageAsync(Action<ReadOnlySpan<byte>, IReporter> receiver, CancellationToken cancellationToken)
     {
-        var writer = new ArrayBufferWriter<byte>(initialCapacity: 10);
+        var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
         while (true)
         {
