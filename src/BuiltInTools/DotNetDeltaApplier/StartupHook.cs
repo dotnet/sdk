@@ -23,11 +23,9 @@ internal sealed class StartupHook
         // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
         // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
         // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
-        var processExe = Path.ChangeExtension(processPath, ".exe");
-        var expectedExe = Path.ChangeExtension(s_targetProcessPath, ".exe");
-        if (!string.Equals(processExe, expectedExe, Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        if (!IsMatchingProcess(processPath, s_targetProcessPath))
         {
-            Log($"Ignoring process '{processExe}', expecting '{expectedExe}'");
+            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
             return;
         }
 
@@ -65,6 +63,24 @@ internal sealed class StartupHook
 
             Log("Stopped received delta updates. Server is no longer connected.");
         });
+    }
+
+    public static bool IsMatchingProcess(string processPath, string targetProcessPath)
+    {
+        var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var (shorter, longer) = (processPath.Length > targetProcessPath.Length) ? (targetProcessPath, processPath) : (processPath, targetProcessPath);
+
+        // one or both have no extension, or they have the same extension
+        if (longer.StartsWith(shorter, comparison))
+        {
+            var suffix = longer[shorter.Length..];
+            return suffix is "" || suffix.Equals(".exe", comparison) || suffix.Equals(".dll", comparison);
+        }
+
+        // different extension:
+        return (processPath.EndsWith(".exe", comparison) || processPath.EndsWith(".dll", comparison)) &&
+               (targetProcessPath.EndsWith(".exe", comparison) || targetProcessPath.EndsWith(".dll", comparison)) &&
+               string.Equals(processPath[..^4], targetProcessPath[..^4], comparison);
     }
 
     internal static void ClearHotReloadEnvironmentVariables()
