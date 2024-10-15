@@ -147,10 +147,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-rtm.24514.3</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-rtm.24514.3</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0-rtm.24514.3</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0-rtm.24514.3</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.0-rtm.24515.1</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.0-rtm.24515.1</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.0</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.0</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
