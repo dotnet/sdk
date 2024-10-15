@@ -9,6 +9,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public readonly struct WorkloadId : IComparable<WorkloadId>, IEquatable<WorkloadId>
     {
+        private static readonly string s_visualStudioComponentPrefix = "Microsoft.NET.Component";
+
+        private static readonly string[] s_wellKnownWorkloadPrefixes = { "Microsoft.NET.", "Microsoft." };
+
         private readonly string _id;
 
         public WorkloadId(string id)
@@ -30,6 +34,29 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public override bool Equals(object? obj) => obj is WorkloadId id && Equals(id);
 
         public override string ToString() => _id;
+
+        public string ToSafeId() => ToSafeId(includeVisualStudioPrefix: false);
+
+        public string ToSafeId(bool includeVisualStudioPrefix)
+        {
+            string safeId = _id.Replace('-', '.').Replace(' ', '.').Replace('_', '.');
+
+            if (includeVisualStudioPrefix)
+            {
+                foreach (string wellKnownPrefix in s_wellKnownWorkloadPrefixes)
+                {
+                    if (safeId.StartsWith(wellKnownPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        safeId = safeId.Substring(wellKnownPrefix.Length);
+                        break;
+                    }
+                }
+
+                safeId = s_visualStudioComponentPrefix + "." + safeId;
+            }
+
+            return safeId;
+        }
 
         public static implicit operator string(WorkloadId id) => id._id;
 

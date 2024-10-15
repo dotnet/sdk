@@ -25,22 +25,12 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// Visual Studio product ID filters. We dont' want to query SKUs such as Server, TeamExplorer, TestAgent
         /// TestController and BuildTools.
         /// </summary>
-        private static readonly string[] s_visualStudioProducts = new string[]
+        private static readonly string[] s_visualStudioProducts =
         {
             "Microsoft.VisualStudio.Product.Community",
             "Microsoft.VisualStudio.Product.Professional",
             "Microsoft.VisualStudio.Product.Enterprise",
         };
-
-        /// <summary>
-        /// Default prefix to use for Visual Studio component and component group IDs.
-        /// </summary>
-        private static readonly string s_visualStudioComponentPrefix = "Microsoft.NET.Component";
-
-        /// <summary>
-        /// Well-known prefixes used by some workloads that can be replaced when generating component IDs.
-        /// </summary>
-        private static readonly string[] s_wellKnownWorkloadPrefixes = { "Microsoft.NET.", "Microsoft." };
 
         /// <summary>
         /// The SWIX package ID wrapping the SDK installer in Visual Studio. The ID should contain
@@ -67,22 +57,9 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 string workloadId = workload.Id.ToString();
                 // Old style VS components simply replaced '-' with '.' in the workload ID.
-                string componentId = workload.Id.ToString().Replace('-', '.');
-
-                visualStudioComponentWorkloads.Add(componentId, workloadId);
-
+                visualStudioComponentWorkloads.Add(workload.Id.ToSafeId(), workloadId);
                 // Starting in .NET 9.0 and VS 17.12, workload components will follow the VS naming convention.
-                foreach (string wellKnownPrefix in s_wellKnownWorkloadPrefixes)
-                {
-                    if (componentId.StartsWith(wellKnownPrefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        componentId = componentId.Substring(wellKnownPrefix.Length);
-                        break;
-                    }
-                }
-
-                componentId = s_visualStudioComponentPrefix + "." + componentId;
-                visualStudioComponentWorkloads.Add(componentId, workloadId);
+                visualStudioComponentWorkloads.Add(workload.Id.ToSafeId(includeVisualStudioPrefix: true), workloadId);
             }
 
             return visualStudioComponentWorkloads;

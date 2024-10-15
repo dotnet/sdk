@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tasks
             { "android", "android-aot", "ios", "maccatalyst", "macos", "maui", "maui-android",
             "maui-desktop", "maui-ios", "maui-maccatalyst", "maui-mobile", "maui-windows", "tvos" };
         private static readonly HashSet<string> WasmWorkloadIds = new(StringComparer.OrdinalIgnoreCase)
-            { "wasm-tools", "wasm-tools-net6", "wasm-tools-net7" };
+            { "wasm-tools", "wasm-tools-net6", "wasm-tools-net7", "wasm-tools-net8" };
 
         public ITaskItem[] MissingWorkloadPacks { get; set; }
 
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         var suggestedWorkloadsList = GetSuggestedWorkloadsList(suggestedWorkload);
                         var taskItem = new TaskItem(suggestedWorkload.Id);
-                        taskItem.SetMetadata("VisualStudioComponentId", ToSafeId(suggestedWorkload.Id));
+                        taskItem.SetMetadata("VisualStudioComponentId", suggestedWorkload.Id.ToSafeId(includeVisualStudioPrefix: true));
                         taskItem.SetMetadata("VisualStudioComponentIds", string.Join(";", suggestedWorkloadsList));
                         return taskItem;
                     }).ToArray();
@@ -78,14 +78,10 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        internal static string ToSafeId(string id)
-        {
-            return id.Replace("-", ".").Replace(" ", ".").Replace("_", ".");
-        }
-
         private static IEnumerable<string> GetSuggestedWorkloadsList(WorkloadInfo workloadInfo)
         {
-            yield return ToSafeId(workloadInfo.Id);
+            yield return workloadInfo.Id.ToSafeId();
+            yield return workloadInfo.Id.ToSafeId(includeVisualStudioPrefix: true);
             if (MauiWorkloadIds.Contains(workloadInfo.Id.ToString()))
             {
                 yield return MauiCrossPlatTopLevelVSWorkloads;
