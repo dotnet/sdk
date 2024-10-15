@@ -355,20 +355,21 @@
   <Target Name="BuildRepoReferences"
           DependsOnTargets="GetTransitiveRepositoryReferences"
           Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
-    <Message Importance="High" Text="Building dependencies [@(TransitiveRepositoryReference)] needed by '$(RepositoryName)'." />
-
     <ItemGroup>
-      <_DependentProject Include="@(TransitiveRepositoryReference -> '%(Identity).proj')" />
+      <_DependentProject Include="@(TransitiveRepositoryReference)"
+                         Project="%(Identity).proj" />
     </ItemGroup>
 
-    <!-- Filter out projects that are part of a different build pass. -->
+    <!-- Filter out projects that aren't part of the current build pass. -->
     <ItemGroup Condition="'$(_DotNetBuildPassNormalized)' != '1'">
       <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(_DotNetBuildPassNormalized)'))" />
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
     </ItemGroup>
 
-    <MSBuild Projects="@(_DependentProject)"
+    <Message Importance="High" Text="Building dependencies [@(_DependentProject)] needed by '$(RepositoryName)'." />
+
+    <MSBuild Projects="@(_DependentProject->Metadata('Project'))"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
              StopOnFirstFailure="true"

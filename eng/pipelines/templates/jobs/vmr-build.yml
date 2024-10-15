@@ -218,12 +218,11 @@ jobs:
 
       - ${{ else }}:
         - task: CopyFiles@2
-          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }})
           inputs:
-            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
-            Contents: '**/*.nupkg'
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/
             OverWrite: false
-            TargetFolder: $(sourcesPath)/artifacts/packages/
+            TargetFolder: $(sourcesPath)/artifacts/
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
@@ -585,8 +584,8 @@ jobs:
     inputs:
       SourceFolder: $(sourcesPath)/artifacts
       Contents: |
-        VerticalManifest.xml
         assets/**
+        manifests/**
       TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
     displayName: Copy artifacts to Artifact Staging Directory
 
