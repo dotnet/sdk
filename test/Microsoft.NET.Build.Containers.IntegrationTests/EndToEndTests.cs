@@ -291,7 +291,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]

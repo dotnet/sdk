@@ -216,7 +216,7 @@ public class CreateNewImageTests
             .And.HaveStdOut("Foo");
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
         const string RootlessBase = "dotnet/rootlessbase";
