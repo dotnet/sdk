@@ -207,10 +207,14 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             {
                 pkgSrc = existingPkgSrcElement;
             }
-            else
+            else if (packagePatterns.Count > 0)
             {
                 pkgSrc = new XElement("packageSource", new XAttribute("key", sourceName));
                 pkgSrcMappingElement.Add(pkgSrc);
+            }
+            else
+            {
+                return;
             }
 
             foreach (string packagePattern in packagePatterns)
