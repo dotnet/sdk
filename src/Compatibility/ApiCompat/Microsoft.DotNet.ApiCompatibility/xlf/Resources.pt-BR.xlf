@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="CannotAddGenericConstraint">
         <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">Não é possível adicionar a restrição '{0}' no parâmetro de tipo '{1}' de '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">Não é possível remover a restrição '{0}' no parâmetro de tipo '{1}' de '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">O elemento não deve ser nulo. Nulo encontrado no índice: {0}.</target>
+        <target state="translated">O elemento no índice {0} não deve ser nulo.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
+        <target state="translated">O índice {0} deve estar no intervalo de zero até {1} inclusivo.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">O valor de '{0}' deve ser maior que 0.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

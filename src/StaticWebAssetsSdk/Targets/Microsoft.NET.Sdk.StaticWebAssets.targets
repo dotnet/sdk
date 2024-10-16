@@ -694,7 +694,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets" Condition="'$(DesignTimeBuild)' != 'true'">
+  <Target Name="UpdateExistingPackageStaticWebAssets">
     <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
