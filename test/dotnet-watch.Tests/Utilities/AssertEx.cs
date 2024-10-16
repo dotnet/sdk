@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public static void Contains(string expected, IEnumerable<string> items)
         {
-            if (items.Any(item => item == expected))
+            if (items.Any(item => item.Contains(expected)))
             {
                 return;
             }
