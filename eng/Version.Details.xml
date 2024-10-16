@@ -260,26 +260,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24514.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.24515.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eedb883b1a1f3b0b241ce5e4c8145734802aa4f4</Sha>
+      <Sha>19372fe078344546594740b5cf5f0b7860587ee8</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24514.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.24515.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eedb883b1a1f3b0b241ce5e4c8145734802aa4f4</Sha>
+      <Sha>19372fe078344546594740b5cf5f0b7860587ee8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24514.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.24515.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eedb883b1a1f3b0b241ce5e4c8145734802aa4f4</Sha>
+      <Sha>19372fe078344546594740b5cf5f0b7860587ee8</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24514.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.24515.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>eedb883b1a1f3b0b241ce5e4c8145734802aa4f4</Sha>
+      <Sha>19372fe078344546594740b5cf5f0b7860587ee8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.24513.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.24515.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>c906ad6f35fa5ca135537c15470c274b34524829</Sha>
+      <Sha>ab6c13e933676fd6eecc223246d3a008fc0a6cb8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-alpha.2.24513.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -331,22 +331,22 @@
       <Sha>049814ca468cad1ea1e29412e0aa3eea182a63c1</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24509.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24515.11">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a7648d0ddc50f60c651bc2a25f4f36bdc2b496d7</Sha>
+      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24509.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24515.11">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a7648d0ddc50f60c651bc2a25f4f36bdc2b496d7</Sha>
+      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24509.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24515.11">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a7648d0ddc50f60c651bc2a25f4f36bdc2b496d7</Sha>
+      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24509.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24515.11">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>a7648d0ddc50f60c651bc2a25f4f36bdc2b496d7</Sha>
+      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.24513.1">
@@ -400,9 +400,9 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>f73363f4cb56a3649c8039bd47c39de4f4db810f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.24513.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.24515.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>c906ad6f35fa5ca135537c15470c274b34524829</Sha>
+      <Sha>ab6c13e933676fd6eecc223246d3a008fc0a6cb8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -597,34 +597,34 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.24511.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.24514.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>712dea25b14a59fe642f2d28e8a3f3c931c03759</Sha>
+      <Sha>964e434191bd3ca5675743d08ff742ec0f1e79a9</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
@@ -641,14 +641,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24476.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24515.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>b7ce67571aff209313584ed0ee34f714270099dd</Sha>
+      <Sha>9ab92c12b6bf992abc84d52f5b42d86ca708255c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="10.0.0-preview.24476.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="10.0.0-preview.24515.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>b7ce67571aff209313584ed0ee34f714270099dd</Sha>
+      <Sha>9ab92c12b6bf992abc84d52f5b42d86ca708255c</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
