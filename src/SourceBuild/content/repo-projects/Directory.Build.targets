@@ -381,7 +381,7 @@
 
     <!-- Repos that are skipped in later build passes and don't build, still need to be called in order to
          extract tool packages (i.e. Arcade.Sdk). This is necessary as we use a custom sdk resolver. -->
-    <MSBuild Projects="@(_DependentProjectToSkip)"
+    <MSBuild Projects="@(_DependentProjectToSkip->Metadata('Project'))"
              Targets="ExtractToolPackage"
              BuildInParallel="$(BuildInParallel)"
              Condition="'@(_DependentProjectToSkip)' != ''" />
