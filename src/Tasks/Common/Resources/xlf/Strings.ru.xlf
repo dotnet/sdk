@@ -762,9 +762,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="translated">NETSDK1214: PreferNativeArm64 применяется только к целевым объектам .NET Framework. Для целевых объектов .NET Core он не поддерживается и не оказывает влияния.</target>
-        <note>{StrBegin="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="new">NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</target>
+        <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
