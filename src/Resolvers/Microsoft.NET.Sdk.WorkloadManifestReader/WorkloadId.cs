@@ -35,9 +35,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override string ToString() => _id;
 
-        public string ToSafeId() => ToSafeId(includeVisualStudioPrefix: false);
-
-        public string ToSafeId(bool includeVisualStudioPrefix)
+        public string ToSafeId(bool includeVisualStudioPrefix = false)
         {
             string safeId = _id.Replace('-', '.').Replace(' ', '.').Replace('_', '.');
 
