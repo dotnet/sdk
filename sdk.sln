@@ -210,9 +210,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishProfiles", "PublishP
 		src\WebSdk\Publish\Targets\PublishProfiles\Default.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\Default.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeployPackage.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeployPackage.pubxml
-		src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultOneDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultOneDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultWebJobOneDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultWebJobOneDeploy.pubxml
+		src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishTargets", "PublishTargets", "{40E6E4B1-286B-4542-B814-2A3DA29510D1}"
@@ -222,8 +222,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishTargets", "PublishTa
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.Kudu.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.Kudu.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeploy.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeployPackage.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeployPackage.targets
-		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.OneDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.OneDeploy.targets
+		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TransformTargets", "TransformTargets", "{DFA91CC3-D6E4-45B7-AF6F-4385288886E4}"
@@ -415,6 +415,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Web.Tests", "test\Microsoft.NET.Sdk.Web.Tests\Microsoft.NET.Sdk.Web.Tests.csproj", "{B8A61A5C-A9A4-45C5-97E3-CB368358682F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StaticWebAssetsSdk", "StaticWebAssetsSdk", "{9E9F3BB2-6FED-47BC-869C-BFAF6E7C85FC}"
+	ProjectSection(SolutionItems) = preProject
+		src\StaticWebAssetsSdk\.editorconfig = src\StaticWebAssetsSdk\.editorconfig
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{CA976F33-7BFA-4F56-8F86-AE132B3B4CBE}"
 	ProjectSection(SolutionItems) = preProject

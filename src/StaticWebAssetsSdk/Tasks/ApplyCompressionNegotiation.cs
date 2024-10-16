@@ -218,7 +218,7 @@ public class ApplyCompressionNegotiation : Task
         long length;
         if(_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
         {
-            length = long.Parse(assetFileDetail.GetMetadata("FileLength"));
+            length = long.Parse(assetFileDetail.GetMetadata("FileLength"), CultureInfo.InvariantCulture);
         }
         else if (TestResolveFileLength != null)
         {
