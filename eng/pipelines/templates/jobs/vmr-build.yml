@@ -200,15 +200,15 @@ jobs:
 
   - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
     - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
-      - download: current
-        artifact: ${{ reuseBuildArtifacts }}_Artifacts
-        patterns: |
-          **/Private.SourceBuilt.Artifacts.*.tar.gz
-          **/dotnet-sdk-*.tar.gz
-          **/*.nupkg
-        displayName: Download Previous Build (${{ reuseBuildArtifacts }})
-
       - ${{ if eq(parameters.buildSourceOnly, true) }}:
+        - download: current
+          artifact: ${{ reuseBuildArtifacts }}_Artifacts
+          patterns: |
+            **/Private.SourceBuilt.Artifacts.*.tar.gz
+            **/dotnet-sdk-*.tar.gz
+            **/*.nupkg
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
+
         - task: CopyFiles@2
           displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
           inputs:
@@ -217,6 +217,10 @@ jobs:
             TargetFolder: $(sourcesPath)/prereqs/packages/archive/
 
       - ${{ else }}:
+        - download: current
+          artifact: ${{ reuseBuildArtifacts }}_Artifacts
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
+
         - task: CopyFiles@2
           displayName: Copy Previous Build (${{ reuseBuildArtifacts }})
           inputs:
@@ -494,11 +498,6 @@ jobs:
             CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "Updated*.txt"
             CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.trx"
         }
-
-        # check if we have assets to publish
-        if (Test-Path "artifacts/assets/Release/*") {
-          echo "##vso[task.setvariable variable=hasAssets]true"
-        }
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true
       condition: succeededOrFailed()
@@ -536,12 +535,6 @@ jobs:
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-        fi
-
-
-        # check if we have assets to publish
-        if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then
-          echo "##vso[task.setvariable variable=hasAssets]true"
         fi
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true
