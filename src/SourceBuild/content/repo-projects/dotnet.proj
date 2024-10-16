@@ -17,7 +17,7 @@
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
     <RepositoryReference Remove="@(RepositoryReference)" />
-    <RepositoryReference Include="sdk" />
+    <RepositoryReference Include="sdk" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>
