@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="DeletingWorkloadSet">
         <source>Deleting workload version {0}.</source>
-        <target state="new">Deleting workload version {0}.</target>
+        <target state="translated">Excluindo a versão de carga de trabalho {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
