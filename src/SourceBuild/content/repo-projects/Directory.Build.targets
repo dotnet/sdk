@@ -83,7 +83,7 @@
          reference. To prevent this from happening, we need to remove the extra metadata so the two references can be seen as duplicates. -->
     <ItemGroup>
       <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
-                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
+                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec;DotNetBuildPass" />
       <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
@@ -367,7 +367,7 @@
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
     </ItemGroup>
 
-    <Message Importance="High" Text="Building dependencies [@(_DependentProject)] needed by '$(RepositoryName)'." />
+    <Message Importance="High" Text="Building dependencies [@(_DependentProject)] needed by '$(RepositoryName)'." Condition="'@(_DependentProject)' != ''" />
 
     <MSBuild Projects="@(_DependentProject->Metadata('Project'))"
              Targets="Build"
