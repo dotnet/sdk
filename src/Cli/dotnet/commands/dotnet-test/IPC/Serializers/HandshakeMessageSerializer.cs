@@ -5,42 +5,41 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal sealed class HandshakeInfoSerializer : BaseSerializer, INamedPipeSerializer
+    internal sealed class HandshakeMessageSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 9;
+        public int Id => HandshakeMessageFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<byte, string> properties = new();
 
             ushort fieldCount = ReadShort(stream);
 
             for (int i = 0; i < fieldCount; i++)
             {
-                properties.Add(ReadString(stream), ReadString(stream));
+                properties.Add(ReadByte(stream), ReadString(stream));
             }
 
-            return new HandshakeInfo(properties);
+            return new HandshakeMessage(properties);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
         {
             Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
 
-            var handshakeInfo = (HandshakeInfo)objectToSerialize;
+            var handshakeMessage = (HandshakeMessage)objectToSerialize;
 
-            if (handshakeInfo.Properties is null || handshakeInfo.Properties.Count == 0)
+            if (handshakeMessage.Properties is null || handshakeMessage.Properties.Count == 0)
             {
                 return;
             }
 
-            WriteShort(stream, (ushort)handshakeInfo.Properties.Count);
-            foreach (KeyValuePair<string, string> property in handshakeInfo.Properties)
+            WriteShort(stream, (ushort)handshakeMessage.Properties.Count);
+            foreach (KeyValuePair<byte, string> property in handshakeMessage.Properties)
             {
                 WriteField(stream, property.Key);
                 WriteField(stream, property.Value);
             }
         }
     }
-
 }

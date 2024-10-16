@@ -6,12 +6,8 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-    <!--
-      References assets from multiple architectures and can't be built inside the VMR until we have a join point job
-      that can pull assets from multiple legs. https://github.com/dotnet/source-build/issues/4336
-    -->
-    <ExcludeFromDotNetBuild>true</ExcludeFromDotNetBuild>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' == ''">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <ItemGroup>

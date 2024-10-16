@@ -89,12 +89,12 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <!-- Used by ResolveHostfxrCopyLocalContent below -->
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />

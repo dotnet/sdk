@@ -12,6 +12,10 @@ parameters:
 - name: buildName
   type: string
 
+- name: buildPass
+  type: string
+  default: ''
+
 - name: container
   type: string
   default: ''
@@ -66,10 +70,10 @@ parameters:
   type: boolean
   default: false
 
-# Name of a previous job (from the same template as this) whose output will be used to build this job
+# Name of previous job(s) (from the same template as this) whose output will be used to build this job
 # The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
 - name: reuseBuildArtifactsFrom
-  type: string
+  type: object
   default: ''
 
 # Allow downloading artifacts from the internet during the build
@@ -116,7 +120,7 @@ jobs:
     # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
     # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
     condition: succeededOrFailed()
-    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}
+    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -146,6 +150,13 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
+  - ${{ if ne(parameters.buildPass, '') }}:
+    - name: artifactsSuffix
+      value: '_buildpass${{ parameters.buildPass }}'
+  - ${{ else }}:
+    - name: artifactsSuffix
+      value: ''
+
   templateContext:
     outputs:
     - output: pipelineArtifact
@@ -157,7 +168,7 @@ jobs:
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       sbomEnabled: true
 
@@ -194,20 +205,32 @@ jobs:
       displayName: Export VMR sources
       workingDirectory: $(Build.StagingDirectory)
 
-  - ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
-    - download: current
-      artifact: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}_Artifacts
-      patterns: |
-        **/Private.SourceBuilt.Artifacts.*.tar.gz
-        **/dotnet-sdk-*.tar.gz
-      displayName: Download Previous Build
+  - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
+    - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
+      - download: current
+        artifact: ${{ reuseBuildArtifacts }}_Artifacts
+        patterns: |
+          **/Private.SourceBuilt.Artifacts.*.tar.gz
+          **/dotnet-sdk-*.tar.gz
+          **/*.nupkg
+        displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
-    - task: CopyFiles@2
-      displayName: Copy Previous Build
-      inputs:
-        SourceFolder: $(Pipeline.Workspace)/${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}_Artifacts/assets/Release
-        Contents: '*.tar.gz'
-        TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+      - ${{ if eq(parameters.buildSourceOnly, true) }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
+            Contents: '*.tar.gz'
+            TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+
+      - ${{ else }}:
+        - task: CopyFiles@2
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
+            Contents: '**/*.nupkg'
+            OverWrite: false
+            TargetFolder: $(sourcesPath)/artifacts/packages/
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
@@ -247,7 +270,9 @@ jobs:
         versionSpec: 20.x
 
     - script: |
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
+        set extraBuildProperties=
+        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
       env:
@@ -280,7 +305,7 @@ jobs:
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
-          elif [[ -n '${{ parameters.reuseBuildArtifactsFrom }}' ]]; then
+          elif [[ '${{ length(parameters.reuseBuildArtifactsFrom) }}' -gt '0' ]]; then
             customPrepArgs="${customPrepArgs} --no-sdk --no-artifacts"
             prepSdk=false
           fi
@@ -346,6 +371,10 @@ jobs:
 
         if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
           extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
+        fi
+
+        if [[ -n "${{ parameters.buildPass }}" ]]; then
+          extraBuildProperties="$extraBuildProperties /p:DotNetBuildPass=${{ parameters.buildPass }}"
         fi
 
         if [[ -n "${{ parameters.extraProperties }}" ]]; then
@@ -461,8 +490,6 @@ jobs:
         cd "$(sourcesPath)"
 
         CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.binlog"
-        CopyWithRelativeFolders "src/"                       $targetFolder "*.log"
 
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
@@ -488,7 +515,7 @@ jobs:
 
     # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
     - script: |
-        set -x
+        set -ex
 
         targetFolder=$(Build.StagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
@@ -500,23 +527,25 @@ jobs:
         fi
 
         cd "$(sourcesPath)"
+
         find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
+
         if [ -d "artifacts/scenario-tests/" ]; then
           find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
-        find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+
+        if [ -d "artifacts/TestResults/" ]; then
+          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+        fi
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/log/binary-report/ -exec rsync -R {} -t ${targetFolder} \;
         fi
 
-        find src/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find src/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
 
         # check if we have assets to publish
         if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then
@@ -578,6 +607,6 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
       displayName: Publish Artifacts
       continueOnError: true

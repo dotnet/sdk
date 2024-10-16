@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.IO;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.Build.Framework;
@@ -232,11 +235,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
         {
-            using var file = File.Exists(identity) ?
-                File.OpenRead(identity) :
-                (File.Exists(originalItemSpec) ?
-                    File.OpenRead(originalItemSpec) :
-                    throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
+            var fileInfo = ResolveFile(identity, originalItemSpec);
+            return ComputeFingerprintAndIntegrity(fileInfo);
+        }
+
+        internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(FileInfo fileInfo)
+        {
+            using var file = fileInfo.OpenRead();
 
 #if NET6_0_OR_GREATER
             var hash = SHA256.HashData(file);
@@ -249,11 +254,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static string ComputeIntegrity(string identity, string originalItemSpec)
         {
-            using var file = File.Exists(identity) ?
-    File.OpenRead(identity) :
-    (File.Exists(originalItemSpec) ?
-        File.OpenRead(originalItemSpec) :
-        throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
+            var fileInfo = ResolveFile(identity, originalItemSpec);
+            return ComputeIntegrity(fileInfo);
+        }
+
+        internal static string ComputeIntegrity(FileInfo fileInfo)
+        {
+            using var file = fileInfo.OpenRead();
+
 #if NET6_0_OR_GREATER
             var hash = SHA256.HashData(file);
 #else
@@ -914,6 +922,24 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var resolver = StaticWebAssetTokenResolver.Instance;
             pattern.EmbedTokens(this, resolver);
             return pattern.RawPattern;
+        }
+
+        internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
+
+        internal static FileInfo ResolveFile(string identity, string originalItemSpec)
+        {
+            var fileInfo = new FileInfo(identity);
+            if (fileInfo.Exists)
+            {
+                return fileInfo;
+            }
+            fileInfo = new FileInfo(originalItemSpec);
+            if (fileInfo.Exists)
+            {
+                return fileInfo;
+            }
+
+            throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
         }
 
         [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
