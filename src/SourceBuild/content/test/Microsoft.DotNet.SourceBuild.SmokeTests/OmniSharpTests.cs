@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class OmniSharpTests : SdkTests
 {
     // Update version as new releases become available: https://github.com/OmniSharp/omnisharp-roslyn/releases
-    private const string OmniSharpReleaseVersion = "1.39.11";
+    private const string OmniSharpReleaseVersion = "1.39.12";
 
     private string OmniSharpDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), nameof(OmniSharpTests));
 
