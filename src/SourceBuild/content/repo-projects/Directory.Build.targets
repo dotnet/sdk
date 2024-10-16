@@ -363,6 +363,9 @@
     <!-- Filter out projects that aren't part of the current build pass. -->
     <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
       <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
+
+      <_DependentProjectToSkip Include="@(_DependentProject)" Exclude="@(_DependentProjectCurrentBuildPass)" />
+
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
     </ItemGroup>
@@ -375,6 +378,13 @@
              StopOnFirstFailure="true"
              RunEachTargetSeparately="$(RunEachTargetSeparately)"
              Condition="'@(_DependentProject)' != ''" />
+
+    <!-- Repos that are skipped in later build passes and don't build, still need to be called in order to
+         extract tool packages (i.e. Arcade.Sdk). This is necessary as we use a custom sdk resolver. -->
+    <MSBuild Projects="@(_DependentProjectToSkip)"
+             Targets="ExtractToolPackage"
+             BuildInParallel="$(BuildInParallel)"
+             Condition="'@(_DependentProjectToSkip)' != ''" />
   </Target>
 
   <Target Name="DiscoverBuiltSdkOverrides"
@@ -632,7 +642,7 @@
   </Target>
 
   <Target Name="ExtractToolPackageCore"
-          DependsOnTargets="RepoBuild;DiscoverToolPackageVersions"
+          DependsOnTargets="DiscoverToolPackageVersions"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
