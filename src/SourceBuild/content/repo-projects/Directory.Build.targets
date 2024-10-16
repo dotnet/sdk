@@ -361,8 +361,8 @@
     </ItemGroup>
 
     <!-- Filter out projects that aren't part of the current build pass. -->
-    <ItemGroup Condition="'$(_DotNetBuildPassNormalized)' != '1'">
-      <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(_DotNetBuildPassNormalized)'))" />
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+      <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
     </ItemGroup>
