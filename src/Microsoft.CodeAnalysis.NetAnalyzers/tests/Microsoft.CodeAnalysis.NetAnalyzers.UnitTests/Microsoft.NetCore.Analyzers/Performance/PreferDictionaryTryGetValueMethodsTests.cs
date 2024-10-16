@@ -1821,6 +1821,123 @@ namespace UnitTests {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
+        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public Task WhenDifferentPropertyInstanceContainingDictionary_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+
+                                class Test
+                                {
+                                    private Dictionary<int, int> PermissionsData => throw null;
+                                
+                                    void M(int objId) {
+                                        Test otherTest = new Test();
+                                        if (PermissionsData.ContainsKey(objId))
+                                        {
+                                            Console.WriteLine(otherTest.PermissionsData[objId]);
+                                        }
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public Task WhenDifferentFieldInstanceContainingDictionary_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+
+                                class Test
+                                {
+                                    private Dictionary<int, int> permissionsData;
+                                
+                                    void M(int objId) {
+                                        Test otherTest = new Test();
+                                        if (permissionsData.ContainsKey(objId))
+                                        {
+                                            Console.WriteLine(otherTest.permissionsData[objId]);
+                                        }
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public Task WhenDifferentLocalInstancesContainingDictionary_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+
+                                class Test
+                                {
+                                    private Dictionary<int, int> permissionsData;
+                                
+                                    void M(int objId) {
+                                        Test test1 = new Test();
+                                        Test test2 = new Test();
+                                        if (test1.permissionsData.ContainsKey(objId))
+                                        {
+                                            Console.WriteLine(test2.permissionsData[objId]);
+                                        }
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public Task WhenReferencingSameInstanceWithThisQualifier_Diagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+
+                                class Test
+                                {
+                                    private Dictionary<int, int> permissionsData;
+                                
+                                    void M(int objId) {
+                                        if ({|#0:permissionsData.ContainsKey(objId)|})
+                                        {
+                                            Console.WriteLine({|#1:this.permissionsData[objId]|});
+                                        }
+                                    }
+                                }
+                                """;
+
+            const string fixedCode = """
+                                using System;
+                                using System.Collections.Generic;
+
+                                class Test
+                                {
+                                    private Dictionary<int, int> permissionsData;
+                                
+                                    void M(int objId) {
+                                        if (permissionsData.TryGetValue(objId, out int value))
+                                        {
+                                            Console.WriteLine(value);
+                                        }
+                                    }
+                                }
+                                """;
+
+            var result = new DiagnosticResult(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic)
+                    .WithLocation(0)
+                    .WithLocation(1);
+
+            return VerifyCS.VerifyCodeFixAsync(code, result, fixedCode);
+        }
+
         private static string CreateCSharpCode(string content)
         {
             return string.Format(CultureInfo.InvariantCulture, CSharpTemplate, content);

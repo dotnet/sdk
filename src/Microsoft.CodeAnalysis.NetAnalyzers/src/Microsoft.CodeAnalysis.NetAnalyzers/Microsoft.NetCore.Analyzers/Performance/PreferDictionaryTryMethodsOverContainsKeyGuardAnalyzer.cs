@@ -556,9 +556,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 case IParameterReferenceOperation source when targetReference is IParameterReferenceOperation target:
                     return target.Parameter.Equals(source.Parameter, SymbolEqualityComparer.Default);
                 case IFieldReferenceOperation source when targetReference is IFieldReferenceOperation target:
-                    return target.Field.Equals(source.Field, SymbolEqualityComparer.Default);
+                    return target.Field.Equals(source.Field, SymbolEqualityComparer.Default) && AreInstancesEqual(source, target);
                 case IPropertyReferenceOperation source when targetReference is IPropertyReferenceOperation target:
-                    return target.Property.Equals(source.Property, SymbolEqualityComparer.Default);
+                    return target.Property.Equals(source.Property, SymbolEqualityComparer.Default) && AreInstancesEqual(source, target);
                 case IMemberReferenceOperation source when targetReference is IMemberReferenceOperation target:
                     return target.Member.Equals(source.Member, SymbolEqualityComparer.Default);
                 case IArrayElementReferenceOperation source when targetReference is IArrayElementReferenceOperation target:
@@ -605,6 +605,20 @@ namespace Microsoft.NetCore.Analyzers.Performance
             });
 
             return[operation, .. childOperations];
+        }
+
+        private static bool AreInstancesEqual(IOperation instance1, IOperation instance2)
+        {
+            string syntax1 = instance1.Syntax
+                .ToString()
+                .Replace("this.", string.Empty)
+                .Replace("Me.", string.Empty);
+            string syntax2 = instance2.Syntax
+                .ToString()
+                .Replace("this.", string.Empty)
+                .Replace("Me.", string.Empty);
+
+            return syntax1 == syntax2;
         }
 
         private enum SearchContext
