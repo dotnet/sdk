@@ -34,12 +34,7 @@
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="needs-review-translation">{0}, {1} NuGet akışlarında bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NotATool">
-        <source>Package {0} is not a .NET tool.</source>
-        <target state="new">Package {0} is not a .NET tool.</target>
+        <target state="translated">{0}, {1} NuGet akışlarında bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">

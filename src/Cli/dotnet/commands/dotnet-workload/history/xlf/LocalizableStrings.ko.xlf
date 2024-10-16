@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="Command">
         <source>Command</source>
-        <target state="new">Command</target>
+        <target state="translated">명령</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
-        <target state="new">Shows a history of workload installation actions.</target>
+        <target state="translated">워크로드 설치 작업의 기록을 표시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
-        <target state="new">Date</target>
+        <target state="translated">날짜</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
-        <target state="new">Global.json Version</target>
+        <target state="translated">Global.json 버전</target>
         <note />
       </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
-        <target state="new">Id</target>
+        <target state="translated">ID</target>
         <note />
       </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
-        <target state="new">No workload history found</target>
+        <target state="translated">워크로드 기록을 찾을 수 없음</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
-        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">워크로드 버전</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
-        <target state="new">Workloads</target>
+        <target state="translated">워크로드</target>
         <note />
       </trans-unit>
     </body>
