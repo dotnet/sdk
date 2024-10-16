@@ -162,20 +162,6 @@ jobs:
     - name: artifactsSuffix
       value: ''
 
-  - ${{ if parameters.sign }}:
-    - name: signArgument
-      value: '-sign'
-  - ${{ else }}:
-    - name: signArgument
-      value: ''
-
-  - ${{ if parameters.useDevVersions }}:
-    - name: devArgument
-      value: '-dev'
-  - ${{ else }}:
-    - name: devArgument
-      value: ''
-
   templateContext:
     outputs:
     - output: pipelineArtifact
@@ -289,9 +275,12 @@ jobs:
         versionSpec: 20.x
 
     - script: |
+        set extraBuildArguments=
+        if /I '${{ parameters.sign }}'=='True' set extraBuildArguments=%extraBuildArguments% -sign
+        if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
-        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine {{ variables.devArgument }} {{ variables.signArgument }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
+        if ${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
