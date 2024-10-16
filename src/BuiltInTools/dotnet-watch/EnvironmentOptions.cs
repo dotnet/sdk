@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -11,6 +12,11 @@ namespace Microsoft.DotNet.Watcher
         None = 0,
         RunningAsTest = 1 << 0,
         MockBrowser = 1 << 1,
+
+        /// <summary>
+        /// Elevates the severity of <see cref="MessageDescriptor.WaitingForChanges"/> from <see cref="MessageSeverity.Output"/>.
+        /// </summary>
+        ElevateWaitingForChangesMessageSeverity = 1 << 2,
     }
 
     internal sealed record EnvironmentOptions(

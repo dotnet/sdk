@@ -562,7 +562,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
                         var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
 
-                        if (!WorkloadSetVersion.GetFeatureBand(workloadSet.Version!).Equals(featureBand))
+                        if (!WorkloadSet.GetWorkloadSetFeatureBand(workloadSet.Version!).Equals(featureBand))
                         {
                             //  We have a workload set version where the feature band doesn't match the feature band folder that it's in.
                             //  Skip it, as if we try to actually load it via the workload set version, we'll fail
