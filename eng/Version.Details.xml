@@ -255,7 +255,7 @@
       <Sha>047d8dc076167a16e9fa09f5bd3d348fc262f80a</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rtm.24515.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rtm.24515.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>047d8dc076167a16e9fa09f5bd3d348fc262f80a</Sha>
     </Dependency>
@@ -263,7 +263,7 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>047d8dc076167a16e9fa09f5bd3d348fc262f80a</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rtm.24515.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rtm.24515.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>047d8dc076167a16e9fa09f5bd3d348fc262f80a</Sha>
     </Dependency>
