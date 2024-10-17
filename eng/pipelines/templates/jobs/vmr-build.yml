@@ -598,7 +598,7 @@ jobs:
 
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     - powershell: |
-        $sourcePath = "$(sourcesPath)/artifacts/VerticalManifest.xml"
+        $sourcePath = "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml"
         $targetPath = "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
         New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/manifests" -Force | Out-Null
         Copy-Item $sourcePath -Destination $targetPath -Force
@@ -606,7 +606,7 @@ jobs:
   - ${{ else }}:
     - script: |
         mkdir -p "$(Build.ArtifactStagingDirectory)/manifests"
-        cp "$(sourcesPath)/artifacts/VerticalManifest.xml" "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
+        cp "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml" "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
       displayName: Copy vertical manifest to Artifact Staging Directory
 
   # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
