@@ -65,7 +65,7 @@ stages:
       helixTargetQueue: osx.13.amd64.open
 
   ############### SOURCE BUILD ###############
-  - template: /eng/common/templates-official/job/source-build.yml@self
+  - template: /eng/common/templates/job/source-build.yml@self
     parameters:
       platform:
         name: Managed
