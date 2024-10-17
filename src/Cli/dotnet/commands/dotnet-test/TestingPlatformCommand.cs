@@ -41,11 +41,6 @@ namespace Microsoft.DotNet.Cli
                 CompleteRun();
             };
 
-            if (Environment.GetEnvironmentVariable("Debug") == "1")
-            {
-                DebuggerUtility.AttachCurrentProcessToParentVSProcess();
-            }
-
             if (parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
             {
                 VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
