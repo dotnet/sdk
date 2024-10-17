@@ -84,7 +84,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "Content-Type",
-                        Value = "application/javascript"
+                        Value = "text/javascript"
                     },
                     new() {
                         Name = "ETag",
@@ -168,7 +168,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                     },
                     new() {
                         Name = "Content-Type",
-                        Value = "application/javascript"
+                        Value = "text/javascript"
                     },
                     new() {
                         Name = "ETag",
@@ -238,12 +238,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         {
             CandidateAssets = assets.Select(a => a.ToTaskItem()).ToArray(),
             ExistingEndpoints = [],
-            ContentTypeMappings = new TaskItem[]
-            {
-                    CreateContentMapping("*.html", "text/html"),
-                    CreateContentMapping("*.js", "application/javascript"),
-                    CreateContentMapping("*.css", "text/css")
-            }
+            ContentTypeMappings = []
         };
         defineStaticWebAssetEndpoints.BuildEngine = Mock.Of<IBuildEngine>();
         defineStaticWebAssetEndpoints.TestLengthResolver = name => 10;
@@ -252,16 +247,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         defineStaticWebAssetEndpoints.Execute();
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
-
-    private TaskItem CreateContentMapping(string pattern, string contentType)
-    {
-        return new TaskItem(contentType, new Dictionary<string, string>
-            {
-                { "Pattern", pattern },
-                { "Priority", "0" }
-            });
-    }
-
 
     private static StaticWebAsset CreateAsset(
         string itemSpec,
