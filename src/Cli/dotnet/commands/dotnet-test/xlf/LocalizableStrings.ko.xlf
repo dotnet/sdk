@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">전달할 추가 msbuild 매개 변수입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArchitectureDescription">
@@ -115,7 +115,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -267,12 +267,12 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">ID '{0}'(으)로 등록된 직렬 변환기가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">'{0}' 형식으로 등록된 직렬 변환기가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

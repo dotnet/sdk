@@ -591,6 +591,33 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
+        [WindowsOnlyFact]
+        public void ItHandlesProfilesWithSelfContained()
+        {
+            TestProject testProject = new()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows",
+                IsExe = true,
+                SelfContained = "true",
+                RuntimeIdentifier = "win-x64"
+            };
+            //  Setting both UseWpf and UseWindowsForms to true will add a FrameworkReference to Microsoft.WindowsDesktop.App
+            testProject.AdditionalProperties["UseWpf"] = "true";
+            testProject.AdditionalProperties["UseWindowsForms"] = "true";
+
+            //  Add reference to Windows Forms, which is a profile of Microsoft.WindowsDesktop.App
+            testProject.AddItem("FrameworkReference", "Include", "Microsoft.WindowsDesktop.App.WindowsForms");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            //  PresentationFramework should be included in output, even though it's not in the WindowsForms profile,
+            //  it should be included because of the Microsoft.WindowsDesktop.App FrameworkReference
+            buildCommand.GetOutputDirectory().Should().HaveFile("PresentationFramework.dll");
+        }
+
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)
         {
             var getValueCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item)

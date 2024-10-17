@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Watcher
                         return;
                     }
 
-                    fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter);
+                    fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter, Context.EnvironmentOptions.TestFlags);
 
                     // Hot Reload loop - exits when the root process needs to be restarted.
                     while (true)
@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Watcher
 
                             ReportFileChanges(changedFiles);
 
-                            fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter);
+                            fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter, Context.EnvironmentOptions.TestFlags);
                         }
                         else
                         {
@@ -323,7 +323,7 @@ namespace Microsoft.DotNet.Watcher
                             !shutdownCancellationToken.IsCancellationRequested &&
                             !forceRestartCancellationSource.IsCancellationRequested)
                         {
-                            fileSetWatcher ??= new HotReloadFileSetWatcher(evaluationResult.Files, DateTime.MinValue, Context.Reporter);
+                            fileSetWatcher ??= new HotReloadFileSetWatcher(evaluationResult.Files, DateTime.MinValue, Context.Reporter, Context.EnvironmentOptions.TestFlags);
                             Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
                             using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);

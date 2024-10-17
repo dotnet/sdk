@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">Další parametry msbuild, které se mají předat.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArchitectureDescription">
@@ -115,7 +115,7 @@ Příklady:
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">Maximální počet testovacích modulů, které je možné spustit paralelně.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -267,12 +267,12 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">Není zaregistrovaný žádný serializátor s ID {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">Není zaregistrovaný žádný serializátor s typem {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

@@ -48,7 +48,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">Mithilfe der Option „-p“ kann jeweils nur ein Projekt angegeben werden.</target>
+        <target state="translated">Nur jeweils ein Projekt kann mithilfe der Option „-p“ angegeben werden.</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -63,7 +63,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
-        <target state="new">Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</target>
+        <target state="translated">Das {0} Ziel ausführen, um zu ermitteln, dass ein Fehler bei den Ausführungsbefehlen für dieses Projekt aufgetreten ist. Beheben Sie die Fehler und Warnungen, und führen Sie dies erneut aus.</target>
         <note>{0} is the name of an MSBuild target</note>
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -78,7 +78,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">Erstellt das Projekt nicht vor der Ausführung. Impliziert "--no-restore".</target>
+        <target state="translated">Erstellt das Projekt nicht vor der Ausführung. Impliziert "--no-restore".</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,12 +138,12 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den Outp
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
+        <target state="translated">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
-        <target state="new">'{0}' is not a valid project file.</target>
+        <target state="translated">"{0}" ist keine gültige Projektdatei.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">

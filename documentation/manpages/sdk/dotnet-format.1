@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-format" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-format" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet format
 .PP
@@ -26,14 +26,14 @@ dotnet-format - Formats code to match \f[V]editorconfig\f[R] settings.
 .IP
 .nf
 \f[C]
-dotnet format [options] [<PROJECT | SOLUTION>]
+dotnet format [<PROJECT | SOLUTION>] [command] [options]
 
 dotnet format -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-\f[V]dotnet format\f[R] is a code formatter that applies style preferences to a project or solution.
+\f[V]dotnet format\f[R] is a code formatter that applies style preferences and static analysis recommendations to a project or solution.
 Preferences will be read from an \f[I].editorconfig\f[R] file, if present, otherwise a default set of preferences will be used.
 For more information, see the EditorConfig documentation.
 .SH ARGUMENTS
@@ -127,7 +127,7 @@ Shows help and usage information
 \f[V]dotnet format whitespace\f[R] - Formats code to match \f[V]editorconfig\f[R] settings for whitespace.
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet format whitespace\f[R] subcommand will only run formatting rules associated with whitespace formatting.
+The \f[V]dotnet format whitespace\f[R] subcommand only runs formatting rules associated with whitespace formatting.
 For a complete list of possible formatting options that you can specify in your \f[I].editorconfig\f[R] file, see the C# formatting options.
 .SH OPTIONS
 .IP \[bu] 2
@@ -141,16 +141,16 @@ Treat the \f[V]<PROJECT | SOLUTION>\f[R] argument as a path to a simple folder o
 \f[V]dotnet format style\f[R] - Formats code to match EditorConfig settings for code style.
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet format style\f[R] subcommand will only run formatting rule associated with code style formatting.
+The \f[V]dotnet format style\f[R] subcommand only runs formatting rules associated with code style formatting.
 For a complete list of formatting options that you can specify in your \f[V]editorconfig\f[R] file, see Code style rules.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]--diagnostics <DIAGNOSTICS>\f[B]\f[R]
 .RS 2
 .PP
-A space-separated list of diagnostic IDs to use as a filter when fixing code style or third-party issues.
+A space-separated list of diagnostic IDs to use as a filter when fixing code style issues.
 Default value is whichever IDs are listed in the \f[I].editorconfig\f[R] file.
-For a list of built-in analyzer rule IDs that you can specify, see the list of IDs for code-analysis style rules.
+For a list of built-in code style analyzer rule IDs that you can specify, see the list of IDs for code-analysis style rules.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--severity\f[B]\f[R]
@@ -162,19 +162,20 @@ The default value is \f[V]warn\f[R]
 .RE
 .SS Analyzers
 .PP
-\f[V]dotnet format analyzers\f[R] - Formats code to match \f[V]editorconfig\f[R] settings for analyzers.
+\f[V]dotnet format analyzers\f[R] - Formats code to match \f[V]editorconfig\f[R] settings for analyzers (excluding code style rules).
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet format analyzers\f[R] subcommand will only run formatting rule associated with analyzers.
-For a list of analyzer rules that you can specify in your \f[V]editorconfig\f[R] file, see Code style rules.
+The \f[V]dotnet format analyzers\f[R] subcommand only runs formatting rules associated with analyzers.
+For a list of analyzer rules that you can specify in your \f[V]editorconfig\f[R] file, see Quality rules.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]--diagnostics <DIAGNOSTICS>\f[B]\f[R]
 .RS 2
 .PP
-A space-separated list of diagnostic IDs to use as a filter when fixing code style or third-party issues.
+A space-separated list of diagnostic IDs to use as a filter when fixing non code style issues.
 Default value is whichever IDs are listed in the \f[I].editorconfig\f[R] file.
-For a list of built-in analyzer rule IDs that you can specify, see the list of IDs for code-analysis style rules.
+For a list of built-in analyzer rule IDs that you can specify, see the list of IDs for quality rules.
+For third-party analyzers refer to their documentation.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--severity\f[B]\f[R]
@@ -222,6 +223,46 @@ Clean up all code in the \f[I]src\f[R] and \f[I]tests\f[R] directory but not in 
 .nf
 \f[C]
 dotnet format --include ./src/ ./tests/ --exclude ./src/submodule-a/
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Fix a specific \f[B]code style\f[R] issue:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet format style --diagnostics IDE0005 --severity info
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Fix all \f[B]code style\f[R] issues that have severity \f[V]info\f[R], \f[V]warning\f[R] or \f[V]error\f[R]:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet format style --severity info
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Fix a specific (non code style) analyzer issue:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet format analyzers --diagnostics CA1831 --severity warn
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Fix all non code style issues that have severity \f[V]info\f[R], \f[V]warning\f[R] or \f[V]error\f[R]:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet format analyzers --severity info
 \f[R]
 .fi
 .RE

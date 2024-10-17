@@ -23,7 +23,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                         ilDelta: new byte[] { 1, 0, 0 },
                         metadataDelta: new byte[] { 1, 0, 1 },
                         updatedTypes: Array.Empty<int>())
-                });
+                },
+                responseLoggingLevel: ResponseLoggingLevel.Verbose);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -50,7 +51,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                         ilDelta: new byte[] { 1, 0, 0 },
                         metadataDelta: new byte[] { 1, 0, 1 },
                         updatedTypes: new int[] { -18 })
-                });
+                },
+                responseLoggingLevel: ResponseLoggingLevel.WarningsAndErrors);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -72,7 +74,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                         ilDelta: Enumerable.Range(0, 68200).Select(c => (byte)(c%2)).ToArray(),
                         metadataDelta: new byte[] { 0, 1, 1 },
                         updatedTypes: Array.Empty<int>())
-                });
+                },
+                responseLoggingLevel: ResponseLoggingLevel.Verbose);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -104,6 +107,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                     Assert.Equal(e.UpdatedTypes, a.UpdatedTypes);
                 }
             }
+
+            Assert.Equal(initial.ResponseLoggingLevel, read.ResponseLoggingLevel);
         }
     }
 }

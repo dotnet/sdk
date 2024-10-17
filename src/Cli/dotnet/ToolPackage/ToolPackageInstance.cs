@@ -23,17 +23,6 @@ namespace Microsoft.DotNet.ToolPackage
 
             return new ToolPackageInstance(id, version, packageDirectory, assetsJsonParentDirectory);
         }
-
-        /// <summary>
-        /// Validates that the nuspec XML represents a .NET tool package.
-        /// </summary>
-        /// <param name="nuspec">The nuspec XML to check.</param>
-        /// <returns><see langword="true"/> if the nuspec represents a .NET tool package; otherwise, <see langword="false"/>.</returns>
-        public static bool IsToolPackage(XDocument nuspec) =>
-            nuspec.Root.Descendants().Where(
-                e => e.Name.LocalName == "packageType" &&
-                e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any();
-
         private const string PackagedShimsDirectoryConvention = "shims";
 
         public IEnumerable<string> Warnings => _toolConfiguration.Value.Warnings;

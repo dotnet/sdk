@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -67,21 +69,39 @@ namespace Microsoft.DotNet.Tools.Test
                 var hasUserMSBuildOutputProperty = properties.TryGetValue("VsTestUseMSBuildOutput", out var propertyValue);
 
                 string[] additionalBuildProperties;
-                if (!forceLegacyOutput && !hasUserMSBuildOutputProperty)
+
+                var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+
+                if (useTerminalLogger == TerminalLoggerMode.Invalid)
                 {
-                    additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
-                }
-                else if (!forceLegacyOutput && propertyValue.ToLowerInvariant() == "true")
-                {
-                    // User specified the property themselves. Do nothing.
+                    // TL option is invalid we want terminal logger to fail in its own way and don't want to disable it.
+                    // Do noting.
                     additionalBuildProperties = Array.Empty<string>();
+                }
+                else if (forceLegacyOutput)
+                {
+                    additionalBuildProperties = SetLegacyVSTestWorkarounds(NodeWindowEnvironmentName);
+                }
+                else if (useTerminalLogger == TerminalLoggerMode.Off)
+                {
+                    additionalBuildProperties = SetLegacyVSTestWorkarounds(NodeWindowEnvironmentName);
+                }
+                else if (hasUserMSBuildOutputProperty)
+                {                   
+                    if (propertyValue.ToLowerInvariant() == "false")
+                    {
+                        additionalBuildProperties = SetLegacyVSTestWorkarounds(NodeWindowEnvironmentName);
+                    }
+                    else
+                    {
+                        // the property is already present don't add it.
+                        additionalBuildProperties = Array.Empty<string>();
+                    }
                 }
                 else
                 {
-                    // User explicitly disabled the new logger. Use workarounds needed for old logger.
-                    // Workaround for https://github.com/Microsoft/vstest/issues/1503
-                    Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
-                    additionalBuildProperties = ["-nodereuse:false"];
+                    // Enable TL mode.
+                    additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
                 }
 
                 int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
@@ -94,6 +114,16 @@ namespace Microsoft.DotNet.Tools.Test
             finally
             {
                 Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, previousNodeWindowSetting);
+            }
+
+            static string[] SetLegacyVSTestWorkarounds(string NodeWindowEnvironmentName)
+            {
+                string[] additionalBuildProperties;
+                // User explicitly disabled the new logger. Use workarounds needed for old logger.
+                // Workaround for https://github.com/Microsoft/vstest/issues/1503
+                Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
+                additionalBuildProperties = ["-nodereuse:false"];
+                return additionalBuildProperties;
             }
         }
 
@@ -329,5 +359,337 @@ namespace Microsoft.DotNet.Tools.Test
             }
             return globalProperties;
         }
+    }
+
+    public class TerminalLoggerDetector
+    {
+        public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(ParseResult parseResult)
+        {
+            string terminalLoggerArg = null;
+            if (!TryFromCommandLine(parseResult.UnmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
+            {
+                terminalLoggerArg = FindDefaultValue(parseResult.UnmatchedTokens) ?? "auto";
+            }
+
+            terminalLoggerArg = NormalizeIntoBooleanValues(terminalLoggerArg!);
+
+            TerminalLoggerMode useTerminalLogger = TerminalLoggerMode.Off;
+            if (bool.TryParse(terminalLoggerArg, out bool boolOption))
+            {
+                // When true, terminal logger will be forced, when false it won't be used.
+                useTerminalLogger = boolOption ? TerminalLoggerMode.On : TerminalLoggerMode.Off;
+            }
+            else
+            {
+                //  When we could not parse the value to bool. It can be either "auto" or invalid.
+                if (!terminalLoggerArg.Equals("auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Value is not one of: true (or on), false (or off) or auto, MSBuild should fail.
+                    // We should not return false, because that will suppress TerminalLogger from trying to setup.
+                    useTerminalLogger = TerminalLoggerMode.Invalid;
+                }
+                else
+                {
+                    useTerminalLogger = CheckIfTerminalIsSupportedAndTryEnableAnsiColorCodes() ? TerminalLoggerMode.On : TerminalLoggerMode.Off;
+                }
+            }
+
+            return useTerminalLogger;
+
+            static bool CheckIfTerminalIsSupportedAndTryEnableAnsiColorCodes()
+            {
+                if (Environment.GetEnvironmentVariable("MSBUILDENSURESTDOUTFORTASKPROCESSES") == "1")
+                {
+                    return false;
+                }
+
+                (var acceptAnsiColorCodes, var outputIsScreen, var originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
+                if (originalConsoleMode != null)
+                {
+                    // Restore to previous state, so MSBuild can set it themselves.
+                    NativeMethods.RestoreConsoleMode(originalConsoleMode);
+                }
+
+                if (!outputIsScreen)
+                {
+                    return false;
+                }
+
+                // TerminalLogger is not used if the terminal does not support ANSI/VT100 escape sequences.
+                if (!acceptAnsiColorCodes)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            string FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
+            {
+                // Find default configuration so it is part of telemetry even when default is not used.
+                // Default can be stored in /tlp:default=true|false|on|off|auto
+                Switch terminalLoggerDefault = Find(unmatchedTokens, "tlp", "terminalloggerparameters");
+                if (terminalLoggerDefault == null)
+                {
+                    return null;
+                }
+
+                if (terminalLoggerDefault.Value == null)
+                {
+                    return null;
+                }
+
+                foreach (string parameter in terminalLoggerDefault.Value.Split(':'))
+                {
+                    if (string.IsNullOrWhiteSpace(parameter))
+                    {
+                        continue;
+                    }
+
+                    string[] parameterAndValue = parameter.Split('=');
+                    if (parameterAndValue[0].Equals("default", StringComparison.InvariantCultureIgnoreCase) && parameterAndValue.Length > 1)
+                    {
+                        return parameterAndValue[1];
+                    }
+                }
+
+                return null;
+            }
+
+            bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, out string value)
+            {
+                Switch terminalLogger = Find(unmatchedTokens, ["tl", "terminalLogger", "ll", "livelogger"]);
+                if (terminalLogger == null)
+                {
+                    value = null;
+                    return false;
+                }
+
+                if (terminalLogger.Value == null)
+                {
+                    // if the switch was set but not to an explicit value, the value is "auto"
+                    value = "auto";
+                    return true;
+                }
+
+                value = terminalLogger.Value;
+                return true;
+            }
+
+            bool TryFromEnvironmentVariables(out string terminalLoggerArg)
+            {
+                // Keep MSBUILDLIVELOGGER supporting existing use. But MSBUILDTERMINALLOGGER takes precedence.
+                string liveLoggerArg = Environment.GetEnvironmentVariable("MSBUILDLIVELOGGER");
+                terminalLoggerArg = Environment.GetEnvironmentVariable("MSBUILDTERMINALLOGGER");
+                if (!string.IsNullOrEmpty(terminalLoggerArg))
+                {
+                    return true;
+                }
+                else if (!string.IsNullOrEmpty(liveLoggerArg))
+                {
+                    terminalLoggerArg = liveLoggerArg;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            string NormalizeIntoBooleanValues(string terminalLoggerArg)
+            {
+                // We now have a string`. It can be "true" or "false" which means just that:
+                if (terminalLoggerArg.Equals("on", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    terminalLoggerArg = bool.TrueString;
+                }
+                else if (terminalLoggerArg.Equals("off", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    terminalLoggerArg = bool.FalseString;
+                }
+
+                return terminalLoggerArg;
+            }
+        }
+
+        private static Switch Find(IReadOnlyList<string> unmatchedTokens, params string[] names)
+        {
+            foreach (string prefix in new string[] { "-", "--", "/" })
+            {
+                foreach (var name in names)
+                {
+                    var found = unmatchedTokens.FirstOrDefault(t => t.StartsWith(prefix + name, StringComparison.OrdinalIgnoreCase));
+                    if (found != null)
+                    {
+                        var param = found.Substring(prefix.Length);
+                        if (!param.Contains(":"))
+                        {
+                            return new Switch(param, null);
+                        }
+                        else
+                        {
+                            var parts = param.Split(":", 2);
+                            return new Switch(parts[0], parts[1]);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        internal static class NativeMethods
+        {
+            internal const uint FILE_TYPE_CHAR = 0x0002;
+            internal const int STD_OUTPUT_HANDLE = -11;
+            internal const int STD_ERROR_HANDLE = -12;
+            internal const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
+
+            private static bool? s_isWindows;
+
+            /// <summary>
+            /// Gets a value indicating whether we are running under some version of Windows.
+            /// </summary>
+            [SupportedOSPlatformGuard("windows")]
+            internal static bool IsWindows
+            {
+                get
+                {
+                    s_isWindows ??= RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                    return s_isWindows.Value;
+                }
+            }
+
+            internal static (bool AcceptAnsiColorCodes, bool OutputIsScreen, uint? OriginalConsoleMode) QueryIsScreenAndTryEnableAnsiColorCodes(StreamHandleType handleType = StreamHandleType.StdOut)
+            {
+                if (System.Console.IsOutputRedirected)
+                {
+                    // There's no ANSI terminal support if console output is redirected.
+                    return (AcceptAnsiColorCodes: false, OutputIsScreen: false, OriginalConsoleMode: null);
+                }
+
+                bool acceptAnsiColorCodes = false;
+                bool outputIsScreen = false;
+                uint? originalConsoleMode = null;
+                if (IsWindows)
+                {
+                    try
+                    {
+                        nint outputStream = GetStdHandle((int)handleType);
+                        if (GetConsoleMode(outputStream, out uint consoleMode))
+                        {
+                            if ((consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+                            {
+                                // Console is already in required state.
+                                acceptAnsiColorCodes = true;
+                            }
+                            else
+                            {
+                                originalConsoleMode = consoleMode;
+                                consoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                                if (SetConsoleMode(outputStream, consoleMode) && GetConsoleMode(outputStream, out consoleMode))
+                                {
+                                    // We only know if vt100 is supported if the previous call actually set the new flag, older
+                                    // systems ignore the setting.
+                                    acceptAnsiColorCodes = (consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                                }
+                            }
+
+                            uint fileType = GetFileType(outputStream);
+                            // The std out is a char type (LPT or Console).
+                            outputIsScreen = fileType == FILE_TYPE_CHAR;
+                            acceptAnsiColorCodes &= outputIsScreen;
+                        }
+                    }
+                    catch
+                    {
+                        // In the unlikely case that the above fails we just ignore and continue.
+                    }
+                }
+                else
+                {
+                    // On posix OSes detect whether the terminal supports VT100 from the value of the TERM environment variable.
+#pragma warning disable RS0030 // Do not use banned APIs
+                    acceptAnsiColorCodes = AnsiDetector.IsAnsiSupported(Environment.GetEnvironmentVariable("TERM"));
+#pragma warning restore RS0030 // Do not use banned APIs
+                    // It wasn't redirected as tested above so we assume output is screen/console
+                    outputIsScreen = true;
+                }
+
+                return (acceptAnsiColorCodes, outputIsScreen, originalConsoleMode);
+            }
+
+            internal static void RestoreConsoleMode(uint? originalConsoleMode, StreamHandleType handleType = StreamHandleType.StdOut)
+            {
+                if (IsWindows && originalConsoleMode is not null)
+                {
+                    nint stdOut = GetStdHandle((int)handleType);
+                    _ = SetConsoleMode(stdOut, originalConsoleMode.Value);
+                }
+            }
+
+            [DllImport("kernel32.dll")]
+            [SupportedOSPlatform("windows")]
+            internal static extern nint GetStdHandle(int nStdHandle);
+
+            [DllImport("kernel32.dll")]
+            [SupportedOSPlatform("windows")]
+            internal static extern uint GetFileType(nint hFile);
+
+            internal enum StreamHandleType
+            {
+                /// <summary>
+                /// StdOut.
+                /// </summary>
+                StdOut = STD_OUTPUT_HANDLE,
+
+                /// <summary>
+                /// StdError.
+                /// </summary>
+                StdErr = STD_ERROR_HANDLE,
+            }
+
+            [DllImport("kernel32.dll")]
+            internal static extern bool GetConsoleMode(nint hConsoleHandle, out uint lpMode);
+
+            [DllImport("kernel32.dll")]
+            internal static extern bool SetConsoleMode(nint hConsoleHandle, uint dwMode);
+        }
+
+        internal static class AnsiDetector
+        {
+            private static readonly Regex[] TerminalsRegexes =
+            {
+        new("^xterm"), // xterm, PuTTY, Mintty
+        new("^rxvt"), // RXVT
+        new("^(?!eterm-color).*eterm.*"), // Accepts eterm, but not eterm-color, which does not support moving the cursor, see #9950.
+        new("^screen"), // GNU screen, tmux
+        new("tmux"), // tmux
+        new("^vt100"), // DEC VT series
+        new("^vt102"), // DEC VT series
+        new("^vt220"), // DEC VT series
+        new("^vt320"), // DEC VT series
+        new("ansi"), // ANSI
+        new("scoansi"), // SCO ANSI
+        new("cygwin"), // Cygwin, MinGW
+        new("linux"), // Linux console
+        new("konsole"), // Konsole
+        new("bvterm"), // Bitvise SSH Client
+        new("^st-256color"), // Suckless Simple Terminal, st
+        new("alacritty"), // Alacritty
+    };
+
+            public static bool IsAnsiSupported(string termType)
+                => !String.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
+        }
+
+        private record class Switch(string Name, string Value);
+    }
+
+    public enum TerminalLoggerMode
+    {
+        Off,
+        On,
+        Invalid
     }
 }

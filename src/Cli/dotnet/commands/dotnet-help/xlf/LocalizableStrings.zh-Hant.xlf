@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SDKOptionsHelpDefinition">
         <source>Show command line help.</source>
-        <target state="new">Show command line help.</target>
+        <target state="translated">顯示命令列說明。</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="needs-review-translation">顯示命令列說明。</target>
+        <target state="translated">在瀏覽器中開啟指定命令的參考頁面。</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List packages or references of a .NET project.</source>
-        <target state="needs-review-translation">列出 .NET 專案的專案參考。</target>
+        <target state="translated">列出 .NET 專案的套件或參考。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

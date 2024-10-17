@@ -221,6 +221,7 @@
           ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
           ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
         )"
+      Code="CONTAINER005"
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
 
     <PropertyGroup>

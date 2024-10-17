@@ -126,9 +126,6 @@
   <data name="IsNotFoundInNuGetFeeds" xml:space="preserve">
     <value>{0} is not found in NuGet feeds {1}.</value>
   </data>
-  <data name="NotATool" xml:space="preserve">
-    <value>Package {0} is not a .NET tool.</value>
-  </data>
   <data name="DownloadVersionFailed" xml:space="preserve">
     <value>Downloading {0} version {1} failed.</value>
   </data>
