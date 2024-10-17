@@ -501,7 +501,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Ins
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdkResolver", "src\Installer\redist-installer\projects\SdkResolver.csproj", "{27E399C0-6F91-45D6-A63D-041DA41CCFDF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator.csproj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator\VSTemplateLocator.csproj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
 EndProject

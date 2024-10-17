@@ -111,7 +111,7 @@ parameters:
   type: string
 
 jobs:
-- job: ${{ parameters.buildName }}_${{ parameters.architecture }}
+- job: ${{ parameters.buildName }}_${{ parameters.architecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
   pool: ${{ parameters.pool }}
 
   # Currently, CodeQL slows the build down too much
@@ -122,9 +122,12 @@ jobs:
     timeoutInMinutes: 240
 
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
-    # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
-    # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
-    condition: succeededOrFailed()
+    ${{ if eq(parameters.buildPass, '') }}:
+      # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
+      # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
+      condition: succeededOrFailed()
+    ${{ else }}:
+      condition: succeeded()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
@@ -155,13 +158,6 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
-  - ${{ if ne(parameters.buildPass, '') }}:
-    - name: artifactsSuffix
-      value: '_buildpass${{ parameters.buildPass }}'
-  - ${{ else }}:
-    - name: artifactsSuffix
-      value: ''
-
   templateContext:
     outputs:
     - output: pipelineArtifact
@@ -173,7 +169,7 @@ jobs:
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
+      artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       sbomEnabled: true
 
@@ -212,15 +208,15 @@ jobs:
 
   - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
     - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
-      - download: current
-        artifact: ${{ reuseBuildArtifacts }}_Artifacts
-        patterns: |
-          **/Private.SourceBuilt.Artifacts.*.tar.gz
-          **/dotnet-sdk-*.tar.gz
-          **/*.nupkg
-        displayName: Download Previous Build (${{ reuseBuildArtifacts }})
-
       - ${{ if eq(parameters.buildSourceOnly, true) }}:
+        - download: current
+          artifact: ${{ reuseBuildArtifacts }}_Artifacts
+          patterns: |
+            **/Private.SourceBuilt.Artifacts.*.tar.gz
+            **/dotnet-sdk-*.tar.gz
+            **/*.nupkg
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
+
         - task: CopyFiles@2
           displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
           inputs:
@@ -229,13 +225,16 @@ jobs:
             TargetFolder: $(sourcesPath)/prereqs/packages/archive/
 
       - ${{ else }}:
+        - download: current
+          artifact: ${{ reuseBuildArtifacts }}_Artifacts
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
+
         - task: CopyFiles@2
-          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - NuGet Packages)
+          displayName: Copy Previous Build (${{ reuseBuildArtifacts }})
           inputs:
-            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/packages
-            Contents: '**/*.nupkg'
+            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/
             OverWrite: false
-            TargetFolder: $(sourcesPath)/artifacts/packages/
+            TargetFolder: $(sourcesPath)/artifacts/
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
@@ -509,11 +508,6 @@ jobs:
             CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "Updated*.txt"
             CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.trx"
         }
-
-        # check if we have assets to publish
-        if (Test-Path "artifacts/assets/Release/*") {
-          echo "##vso[task.setvariable variable=hasAssets]true"
-        }
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true
       condition: succeededOrFailed()
@@ -551,12 +545,6 @@ jobs:
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-        fi
-
-
-        # check if we have assets to publish
-        if [ -n "$(ls -A 'artifacts/assets/Release/')" ]; then
-          echo "##vso[task.setvariable variable=hasAssets]true"
         fi
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true
@@ -599,8 +587,8 @@ jobs:
     inputs:
       SourceFolder: $(sourcesPath)/artifacts
       Contents: |
-        VerticalManifest.xml
         assets/**
+        manifests/**
       TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
     displayName: Copy artifacts to Artifact Staging Directory
 
@@ -614,6 +602,6 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts$(artifactsSuffix)
+      artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       continueOnError: true
