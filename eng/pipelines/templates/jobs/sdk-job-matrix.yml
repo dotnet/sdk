@@ -82,7 +82,7 @@ parameters:
   - categoryName: TestBuild
     buildArchitecture: arm64
     runtimeIdentifier: osx-arm64
-    helixTargetQueue: ${{ if eq(variables['System.TeamProject'], 'public') }}osx.13.arm64.open${{ else }}osx.13.arm64${{ end }}
+    helixTargetQueue: osx.13.arm64.open
 
 jobs:
 ### ONELOCBUILD ###
