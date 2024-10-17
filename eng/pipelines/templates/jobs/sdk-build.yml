@@ -138,11 +138,18 @@ jobs:
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: |
+            echo "runtimeIdentifier: ${{ parameters.runtimeIdentifier }}"
+            echo "helixQueue: ${{ parameters.helixQueue }}"
+            echo "helixTargetQueue: ${{ parameters.helixTargetQueue }}"
+            echo "helixTargetContainer: ${{ parameters.helixTargetContainer }}"
             if [ "${{ parameters.runtimeIdentifier }}" == "osx-arm64" ]; then
-              export CustomHelixTargetQueue='osx.13.arm64.open'${{ parameters.helixTargetContainer }}
+              CustomHelixTargetQueue='osx.13.arm64.open'${{ parameters.helixTargetContainer }}
             else
-              export CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+              CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             fi
+            echo "CustomHelixTargetQueue set to: $CustomHelixTargetQueue"
+            echo "##vso[task.setvariable variable=CustomHelixTargetQueue]$CustomHelixTargetQueue"
+          displayName: 'Set CustomHelixTargetQueue'
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
@@ -151,7 +158,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=$CustomHelixTargetQueue
+            /p:CustomHelixTargetQueue=$(CustomHelixTargetQueue)
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
