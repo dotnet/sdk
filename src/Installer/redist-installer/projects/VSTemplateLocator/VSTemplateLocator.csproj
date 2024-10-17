@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' == ''">true</ExcludeFromDotNetBuild>
+    <!-- For product build, this project only builds in the second build pass as it depends on assets other
+         verticals that are built in the first build pass. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,10 +21,13 @@
     <ProjectReference Include="$(RepoRoot)src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="GenerateLayout"
-          Condition="'$(OS)' == 'Windows_NT' and '$(_SuppressAllTargets)' != 'true'"
-          BeforeTargets="AfterBuild">
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
+  <Target Name="GenerateLayout">
+    <!-- Set these here early enough for inputs & outputs in the GenerateVSTemplateLocatorNupkg target. -->
+    <PropertyGroup>
+      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
+      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
+      <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)../../packaging/windows/generatenupkg.ps1</GenerateNupkgPowershellScript>
+    </PropertyGroup>
 
     <RemoveDir Directories="$(OutputPath)" />
     <MakeDir Directories="$(OutputPath)" />
@@ -41,6 +44,30 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(_VSTemplateLocatorSrc)" DestinationFiles="@(_VSTemplateLocatorDst)" />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
+  </Target>
+
+  <!-- For product build, this only builds in the second build pass as it depends on assets
+       from other verticals that are built in the first build pass. -->
+  <Target Name="GenerateVSTemplateLocatorNupkg"
+          DependsOnTargets="GenerateLayout"
+          Condition="'$(OS)' == 'Windows_NT' and
+                     '$(Architecture)' == 'x64' and
+                     '$(PgoInstrument)' != 'true' and
+                     ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2') and
+                     '$(_SuppressAllTargets)' != 'true'"
+          Inputs="$(OutputPath)/**/*;
+                  $(VSTemplateLocatorNuspecFile);
+                  $(GenerateNupkgPowershellScript)"
+          Outputs="$(VSTemplateLocatorNupkgFile)"
+          AfterTargets="Build">
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ArtifactsDir)' ^
+                      '$(OutputPath.TrimEnd('\'))' ^
+                      '$(FullNugetVersion)' ^
+                      '$(VSTemplateLocatorNuspecFile)' ^
+                      '$(VSTemplateLocatorNupkgFile)'" />
   </Target>
 
 </Project>

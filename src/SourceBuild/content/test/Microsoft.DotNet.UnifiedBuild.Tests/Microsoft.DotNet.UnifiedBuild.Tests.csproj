@@ -40,7 +40,7 @@
         <Value>$(UBTestsWarnOnContentDiffs)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).AssetManifestPath">
-        <Value>$(ArtifactsDir)VerticalManifest.xml</Value>
+        <Value>$(MergedAssetManifestOutputPath)</Value>
       </RuntimeHostConfigurationOption>
 
       <!-- SDK archive test configs -->
