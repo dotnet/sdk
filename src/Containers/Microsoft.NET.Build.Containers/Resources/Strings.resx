@@ -341,8 +341,16 @@
     <value>Pushed image '{0}' to registry '{1}'.</value>
     <comment/>
   </data>
+  <data name="ImageIndexUploadedToRegistry" xml:space="preserve">
+    <value>Pushed image index '{0}' to registry '{1}'.</value>
+    <comment/>
+  </data>
   <data name="ContainerBuilder_StartBuildingImage" xml:space="preserve">
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
+    <comment/>
+  </data>
+  <data name="BuildingImageIndex" xml:space="preserve">
+    <value>Building image index '{0}' on top of manifests : '{1}'.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

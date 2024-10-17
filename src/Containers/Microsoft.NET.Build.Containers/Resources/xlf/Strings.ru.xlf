@@ -57,6 +57,11 @@
         <target state="translated">CONTAINER1001: не удалось отправить BLOB-объект с помощью {0}; получен код состояния "{1}".</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
+      <trans-unit id="BuildingImageIndex">
+        <source>Building image index '{0}' on top of manifests : '{1}'.</source>
+        <target state="new">Building image index '{0}' on top of manifests : '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
         <target state="translated">Изображение "{0}" отправлено в {1}.</target>
@@ -150,6 +155,11 @@
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Объект узла не обнаружен.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndexUploadedToRegistry">
+        <source>Pushed image index '{0}' to registry '{1}'.</source>
+        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
