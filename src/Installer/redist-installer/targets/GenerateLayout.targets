@@ -11,7 +11,7 @@
     <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
     <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
 
-    <NetRuntimeBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</NetRuntimeBlobVersion>
+    <NetRuntimeBlobVersion>$(MicrosoftNETCorePlatformsPackageVersion)</NetRuntimeBlobVersion>
 
     <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion)</WindowsDesktopBlobVersion>
     <WindowsDesktopBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
