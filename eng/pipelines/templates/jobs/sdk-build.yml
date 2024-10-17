@@ -27,6 +27,7 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
+  helixQueue: ''
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -138,12 +139,8 @@ jobs:
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: |
-            echo "runtimeIdentifier: ${{ parameters.runtimeIdentifier }}"
-            echo "helixQueue: ${{ parameters.helixQueue }}"
-            echo "helixTargetQueue: ${{ parameters.helixTargetQueue }}"
-            echo "helixTargetContainer: ${{ parameters.helixTargetContainer }}"
             if [ "${{ parameters.runtimeIdentifier }}" == "osx-arm64" ]; then
-              CustomHelixTargetQueue='osx.13.arm64.open'${{ parameters.helixTargetContainer }}
+              CustomHelixTargetQueue=${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}
             else
               CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             fi
