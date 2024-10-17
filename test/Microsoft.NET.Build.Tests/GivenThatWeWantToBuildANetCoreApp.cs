@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.DotNet.Configurer;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -166,7 +166,8 @@ namespace Microsoft.NET.Build.Tests
 
                 var additionalProbingPaths = ((JArray)devruntimeConfig["runtimeOptions"]["additionalProbingPaths"]).Values<string>();
                 // can't use Path.Combine on segments with an illegal `|` character
-                var expectedPath = $"{Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "store")}{Path.DirectorySeparatorChar}|arch|{Path.DirectorySeparatorChar}|tfm|";
+                var homePath = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
+                var expectedPath = $"{Path.Combine(homePath, ".dotnet", "store")}{Path.DirectorySeparatorChar}|arch|{Path.DirectorySeparatorChar}|tfm|";
                 additionalProbingPaths.Should().Contain(expectedPath);
             }
 
