@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
+using Microsoft.DotNet.Configurer;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -165,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
 
                 var additionalProbingPaths = ((JArray)devruntimeConfig["runtimeOptions"]["additionalProbingPaths"]).Values<string>();
                 // can't use Path.Combine on segments with an illegal `|` character
-                var expectedPath = $"{Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "store")}{Path.DirectorySeparatorChar}|arch|{Path.DirectorySeparatorChar}|tfm|";
+                var expectedPath = $"{Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "store")}{Path.DirectorySeparatorChar}|arch|{Path.DirectorySeparatorChar}|tfm|";
                 additionalProbingPaths.Should().Contain(expectedPath);
             }
 
@@ -267,7 +268,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net7.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_from_the_output_folder(string targetFramework)
-        {         
+        {
             RunAppFromOutputFolder("RunFromOutputFolderWithRID_" + targetFramework, true, false, targetFramework);
         }
 
@@ -999,7 +1000,7 @@ class Program
                 IsExe = true
             };
 
-            // Reference the package, add it to restore sources, and use a test-specific packages folder 
+            // Reference the package, add it to restore sources, and use a test-specific packages folder
             testProject.PackageReferences.Add(package);
             testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
@@ -1052,7 +1053,7 @@ class Program
                 IsExe = true
             };
 
-            // Reference the package, add it to restore sources, and use a test-specific packages folder 
+            // Reference the package, add it to restore sources, and use a test-specific packages folder
             testProject.PackageReferences.Add(package);
             testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";

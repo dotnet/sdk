@@ -25,8 +25,7 @@ namespace Microsoft.DotNet.Tests
 
             var command = new DotnetCommand(log)
                 .WithWorkingDirectory(TestDirectory)
-                .WithEnvironmentVariable("HOME", testNuGetHome)
-                .WithEnvironmentVariable("USERPROFILE", testNuGetHome)
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", testNuGetHome)
                 .WithEnvironmentVariable("APPDATA", testNuGetHome)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER", cliTestFallbackFolder)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_LINUX_PROFILED_PATH", profiled)
