@@ -1,7 +1,11 @@
 parameters:
   ### GENERAL ###
   variables:
-    customHelixTargetQueue: ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
+    customHelixTargetQueue:
+    ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}:
+      value: ${{ parameters.helixTargetContainer }}
+    ${{ else }}:
+      value: ${{ parameters.helixQueue }}
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
