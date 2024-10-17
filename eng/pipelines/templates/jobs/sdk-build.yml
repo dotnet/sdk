@@ -1,6 +1,7 @@
 parameters:
   ### GENERAL ###
-  variables: {}
+  variables:
+    customHelixTargetQueue: ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
@@ -146,7 +147,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
+            /p:CustomHelixTargetQueue=$(customHelixTargetQueue)${{ parameters.helixTargetContainer }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
