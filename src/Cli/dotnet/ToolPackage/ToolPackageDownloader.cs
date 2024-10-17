@@ -111,7 +111,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (isGlobalTool)
                     {
-                        // TODO: NuGetv3LocalRepository already has a VersionFolderPathResolver member, so this can probably be simplified
                         NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
                         var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 

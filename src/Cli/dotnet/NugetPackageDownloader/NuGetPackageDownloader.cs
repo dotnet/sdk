@@ -306,7 +306,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return (source, packageVersion);
         }
 
-        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => new VersionFolderPathResolver(baseUri).GetPackageFilePath(id.ToString(), version);
+        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
+            "." + version.ToNormalizedString().ToLowerInvariant() + ".nupkg";
 
         internal IEnumerable<FilePath> FindAllFilesNeedExecutablePermission(IEnumerable<string> files,
             string targetPath)
