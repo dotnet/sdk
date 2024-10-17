@@ -22,8 +22,11 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
+            // check that all app output is printed out:
+            await App.AssertOutputLine(line => line.Contains("Content root path:"));
+
             // Verify we launched the browser.
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: https://localhost:5001/");
+            Assert.Contains(App.Process.Output, line => line.Contains("Launching browser: https://localhost:5001/"));
         }
 
         [Fact]
