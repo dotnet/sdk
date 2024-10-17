@@ -20,17 +20,22 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.ProjectModel" />
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" />
+  </ItemGroup>
+
+  <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
-    <ProjectReference Include="..\..\Tests\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\..\..\test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\Tests\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
