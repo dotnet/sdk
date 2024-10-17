@@ -241,7 +241,7 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</target>
       </trans-unit>
       <trans-unit id="DeploymentStatus_Polling">
         <source>Polling for deployment status...</source>
-        <target state="new">Polling for deployment status...</target>
+        <target state="translated">Sondando o status da implantação...</target>
         <note />
       </trans-unit>
       <trans-unit id="EFSCRIPT_Generating">
