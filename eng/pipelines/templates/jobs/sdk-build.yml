@@ -138,26 +138,7 @@ jobs:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
-        - ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}:
-          - script: eng/common/build.sh
-              -restore -test -ci -prepareMachine
-              -configuration $(buildConfiguration)
-              /p:Projects="${{ parameters.testProjects }}"'
-              /p:Architecture=${{ parameters.buildArchitecture }}
-              /p:Rid=${{ parameters.runtimeIdentifier }}
-              ${{ parameters.osProperties }}
-              ${{ parameters.runtimeSourceProperties }}
-              /p:CustomHelixTargetQueue=${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}
-              /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-            displayName: Run ${{ parameters.categoryName }} Tests
-            condition: succeeded()
-            env:
-              # Required by Arcade for running in Helix.
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-              HelixAccessToken: $(HelixApiAccessToken)
-              RunAoTTests: ${{ parameters.runAoTTests }}
-        - ${{ else }}:
-          - script: eng/common/build.sh
+        - script: eng/common/build.sh
               -restore -test -ci -prepareMachine
               -configuration $(buildConfiguration)
               '/p:Projects="${{ parameters.testProjects }}"'
@@ -165,7 +146,7 @@ jobs:
               /p:Rid=${{ parameters.runtimeIdentifier }}
               ${{ parameters.osProperties }}
               ${{ parameters.runtimeSourceProperties }}
-              /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+              /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
               /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
             displayName: Run ${{ parameters.categoryName }} Tests
             condition: succeeded()
