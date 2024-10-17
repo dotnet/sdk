@@ -12,7 +12,6 @@
     <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
 
     <NetRuntimeBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</NetRuntimeBlobVersion>
-    <NetRuntimeBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeBlobVersion>
 
     <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion)</WindowsDesktopBlobVersion>
     <WindowsDesktopBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
