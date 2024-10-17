@@ -117,9 +117,12 @@ jobs:
     timeoutInMinutes: 240
 
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
-    # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
-    # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
-    condition: succeededOrFailed()
+    ${{ if eq(parameters.buildPass, '') }}:
+      # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
+      # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
+      condition: succeededOrFailed()
+    ${{ else }}:
+      condition: succeeded()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:

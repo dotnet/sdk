@@ -464,7 +464,6 @@ stages:
         - Windows_x64
         - Windows_x86
         - Windows_arm64
-        condition: succeeded()
 
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
@@ -1149,4 +1148,3 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
-            condition: succeeded()
