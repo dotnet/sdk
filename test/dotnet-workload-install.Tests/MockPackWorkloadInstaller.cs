@@ -119,6 +119,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => WorkloadSet.FromJson(workloadSetContents, new SdkFeatureBand("6.0.100"));
+
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
             InstallWorkloadSetCalled = true;
@@ -231,6 +233,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
+        }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            return new();
         }
     }
 

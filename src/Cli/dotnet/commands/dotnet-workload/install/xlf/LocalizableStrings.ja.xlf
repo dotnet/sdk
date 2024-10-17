@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndVersion">
         <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
-        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。いずれかのオプションを削除してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
+        <target state="translated">ワークロードのバージョンが global.json で指定されている場合、{0} オプションは使用できません。{0} オプションを削除するか、{1} から 'workloadVersion' 要素を削除してください。</target>
         <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">更新されたワークロード マニフェストを確認しています。</target>
+        <target state="translated">更新されたワークロード バージョンを確認しています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -50,6 +50,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">ワークロード パック {0} バージョン {1} をアンインストールしています...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">ワークロード バージョン {0} を削除しています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -94,7 +99,7 @@
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadSet">
         <source>Failed to install workload version {0}: {1}</source>
-        <target state="new">Failed to install workload version {0}: {1}</target>
+        <target state="translated">ワークロード バージョン {0} をインストールできませんでした: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">

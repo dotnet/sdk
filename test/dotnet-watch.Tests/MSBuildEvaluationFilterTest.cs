@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Test.csproj" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Test.csproj" }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
 
             Assert.False(evaluator.RequiresRevaluation);
             Assert.Equal(1, counter);
@@ -77,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
             Assert.Equal(2, counter);
@@ -118,7 +119,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             evaluator.RequiresRevaluation = false;
             evaluator.Timestamps["Proj.csproj"] = new DateTime(1007);
 
-            await evaluator.EvaluateAsync(new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }

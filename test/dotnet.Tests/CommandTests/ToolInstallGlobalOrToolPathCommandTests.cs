@@ -118,6 +118,45 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithSourceItShouldFindOnlyTheProvidedSource()
+        {
+            const string sourcePath1 = "https://sourceOne.com";
+            const string sourcePath2 = "https://sourceTwo.com";
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --source {sourcePath1}");
+
+            var toolPackageDownloader = CreateToolPackageDownloader(
+                feeds: new List<MockFeed>
+                {
+                    new MockFeed
+                    {
+                        Type = MockFeedType.ImplicitAdditionalFeed,
+                        Uri = sourcePath2,
+                        Packages = new List<MockFeedPackage>
+                        {
+                            new MockFeedPackage
+                            {
+                                PackageId = PackageId,
+                                Version = PackageVersion,
+                                ToolCommandName = ToolCommandName,
+                            }
+                        }
+                    }
+                });
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                _packageId,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                _reporter);
+
+            // Should not find the package because it is in the wrong feed
+            var ex = Assert.Throws<GracefulException>(() => toolInstallGlobalOrToolPathCommand.Execute());
+            ex.Message.Should().Contain(PackageId);
+        }
+
+        [Fact]
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
             const string sourcePath = "http://mysource.com";

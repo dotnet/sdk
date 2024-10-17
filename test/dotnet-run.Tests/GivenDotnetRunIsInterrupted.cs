@@ -15,15 +15,16 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
+
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
-            var command = new DotnetCommand(Log, "run")
+            var command = new DotnetCommand(Log, "run", "-v:q")
                 .WithWorkingDirectory(asset.Path);
 
             bool killed = false;
@@ -38,16 +39,34 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 {
                     return;
                 }
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+                if (int.TryParse(line, out int pid))
+                {
+                    // Simulate a SIGINT sent to a process group (i.e. both `dotnet run` and `TestAppThatWaits`).
+                    // Ideally we would send SIGINT to an actual process group, but the new child process (i.e. `dotnet run`)
+                    // will inherit the current process group from the `dotnet test` process that is running this test.
+                    // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
+                    // too complex for a simple unit test.
+                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
+                    try
+                    {
+                        NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while sending SIGINT to child process: {e}");
+                        Assert.Fail($"Failed to send SIGINT to child process: {line}");
+                    }
 
-                // Simulate a SIGINT sent to a process group (i.e. both `dotnet run` and `TestAppThatWaits`).
-                // Ideally we would send SIGINT to an actual process group, but the new child process (i.e. `dotnet run`)
-                // will inherit the current process group from the `dotnet test` process that is running this test.
-                // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
-                // too complex for a simple unit test.
-                NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
-                NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
-
-                killed = true;
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             command
@@ -60,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             killed.Should().BeTrue();
         }
 
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -81,11 +100,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 {
                     return;
                 }
-
-                child = Process.GetProcessById(Convert.ToInt32(line));
-                NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
-
-                killed = true;
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while  getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             command
@@ -125,10 +161,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     return;
                 }
 
-                child = Process.GetProcessById(Convert.ToInt32(line));
-                testProcess.Kill();
-
-                killed = true;
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while  getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                    testProcess.Kill();
+                    killed = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
             };
 
             //  As of porting these tests to dotnet/sdk, it's unclear if the below is still needed

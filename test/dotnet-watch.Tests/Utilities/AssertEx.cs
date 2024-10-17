@@ -222,5 +222,26 @@ namespace Microsoft.DotNet.Watcher.Tools
                     banner: "File sets should be equal");
             }
         }
+
+        public static void Contains(string expected, IEnumerable<string> items)
+        {
+            if (items.Any(item => item.Contains(expected)))
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine($"'{expected}' not found in:");
+
+            foreach (var item in items)
+            {
+                message.AppendLine($"'{item}'");
+            }
+
+            Fail(message.ToString());
+        }
+
+        public static void DoesNotContain(string expected, IEnumerable<string> items)
+            => Assert.DoesNotContain(expected, items);
     }
 }

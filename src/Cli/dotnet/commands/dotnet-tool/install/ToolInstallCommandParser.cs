@@ -29,7 +29,13 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.ConfigFileOptionName
         };
 
-        private static readonly CliOption<string[]> addSourceOption = new CliOption<string[]>("--add-source")
+        public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source")
+        {
+            Description = LocalizableStrings.SourceOptionDescription,
+            HelpName = LocalizableStrings.SourceOptionName
+        }.AllowSingleArgPerToken();
+
+        public static readonly CliOption<string[]> AddSourceOption = new CliOption<string[]>("--add-source")
         {
             Description = LocalizableStrings.AddSourceOptionDescription,
             HelpName = LocalizableStrings.AddSourceOptionName
@@ -81,8 +87,6 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-        public static CliOption<string[]> AddSourceOption => addSourceOption;
-
         public static CliCommand GetCommand()
         {
             return Command;
@@ -115,6 +119,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ConfigOption);
             command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
             command.Options.Add(AddSourceOption);
+            command.Options.Add(SourceOption);
             command.Options.Add(FrameworkOption);
             command.Options.Add(PrereleaseOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);

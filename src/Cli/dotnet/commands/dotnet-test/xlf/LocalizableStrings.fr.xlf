@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">Paramètres msbuild supplémentaires à transmettre.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
@@ -105,7 +105,7 @@ Exemples :
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">Nombre maximal de modules de test qui peuvent s’exécuter en parallèle.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -237,12 +237,12 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">Aucun sérialiseur inscrit avec l’ID « {0} »</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">Aucun sérialiseur inscrit avec le type « {0} »</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">
