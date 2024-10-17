@@ -27,7 +27,7 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
-  HelixQueue: ''
+  helixQueue: ''
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
