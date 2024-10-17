@@ -1,11 +1,6 @@
 parameters:
   ### GENERAL ###
-  variables:
-    customHelixTargetQueue:
-    ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}:
-      value: ${{ parameters.helixTargetContainer }}
-    ${{ else }}:
-      value: ${{ parameters.helixQueue }}
+  variables: []
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
@@ -116,6 +111,12 @@ jobs:
           BuildConfig: $(buildConfiguration)
 
     ############### TESTING ###############
+    variables:
+      customHelixTargetQueue:
+        ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}:
+          value: ${{ parameters.helixQueue }}
+        ${{ else }}:
+          value: ${{ parameters.helixTargetQueue }}
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
