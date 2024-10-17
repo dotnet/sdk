@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Tests
                               e.Properties.ContainsKey("argument") &&
                               e.Properties["argument"] == Sha256Hasher.Hash(argumentToSend.ToUpper()) &&
                               e.Properties.ContainsKey("verb") &&
-                              e.Properties["verb"] == Sha256Hasher.Hash("SLN"));
+                              e.Properties["verb"] == Sha256Hasher.Hash("SOLUTION"));
         }
 
         [Fact]
