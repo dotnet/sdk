@@ -40,6 +40,10 @@
     <PackageReference Include="Microsoft.Css.Parser" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.NET.Sdk.Razor.Tests" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
