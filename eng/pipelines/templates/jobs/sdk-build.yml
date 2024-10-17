@@ -1,6 +1,5 @@
 parameters:
   ### GENERAL ###
-  variables: []
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
