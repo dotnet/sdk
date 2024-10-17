@@ -27,6 +27,7 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
+  helixQueue: ''
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -137,6 +138,15 @@ jobs:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
+        - script: |
+            if [ "${{ parameters.runtimeIdentifier }}" == "osx-arm64" ]; then
+              CustomHelixTargetQueue=${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}
+            else
+              CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            fi
+            echo "CustomHelixTargetQueue set to: $CustomHelixTargetQueue"
+            echo "##vso[task.setvariable variable=CustomHelixTargetQueue]$CustomHelixTargetQueue"
+          displayName: 'Set CustomHelixTargetQueue'
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
