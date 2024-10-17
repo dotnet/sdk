@@ -139,22 +139,22 @@ jobs:
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: eng/common/build.sh
-              -restore -test -ci -prepareMachine
-              -configuration $(buildConfiguration)
-              '/p:Projects="${{ parameters.testProjects }}"'
-              /p:Architecture=${{ parameters.buildArchitecture }}
-              /p:Rid=${{ parameters.runtimeIdentifier }}
-              ${{ parameters.osProperties }}
-              ${{ parameters.runtimeSourceProperties }}
-              /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
-              /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-            displayName: Run ${{ parameters.categoryName }} Tests
-            condition: succeeded()
-            env:
+            -restore -test -ci -prepareMachine
+            -configuration $(buildConfiguration)
+            '/p:Projects="${{ parameters.testProjects }}"'
+            /p:Architecture=${{ parameters.buildArchitecture }}
+            /p:Rid=${{ parameters.runtimeIdentifier }}
+            ${{ parameters.osProperties }}
+            ${{ parameters.runtimeSourceProperties }}
+            /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixQueue }}${{ end }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+          displayName: Run ${{ parameters.categoryName }} Tests
+          condition: succeeded()
+          env:
             # Required by Arcade for running in Helix.
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-              HelixAccessToken: $(HelixApiAccessToken)
-              RunAoTTests: ${{ parameters.runAoTTests }}
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:
