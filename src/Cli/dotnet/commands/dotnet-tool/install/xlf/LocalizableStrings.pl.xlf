@@ -12,6 +12,11 @@
         <target state="translated">Utwórz manifest narzędzi, jeśli nie zostanie znaleziony podczas instalacji narzędzia. Aby uzyskać informacje o lokalizacji manifestów, zobacz https://aka.ms/dotnet/tools/create-manifest-if-needed</target>
         <note />
       </trans-unit>
+      <trans-unit id="ForceInstallOptionName">
+        <source>Forces a tool to be installed even if a compatible .NET runtime is not installed.</source>
+        <target state="new">Forces a tool to be installed even if a compatible .NET runtime is not installed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstallToolCommandInvalidGlobalAndLocalAndToolPath">
         <source>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</source>
         <target state="translated">Można określić tylko jedną opcję jednocześnie: opcję lokalną (--local), opcję globalną (--global) lub opcję ścieżki do narzędzia (--tool-path). Podaj tylko jedną z opcji: {0}.</target>
