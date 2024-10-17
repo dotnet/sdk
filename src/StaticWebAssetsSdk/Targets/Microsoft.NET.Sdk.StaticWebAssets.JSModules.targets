@@ -285,6 +285,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_JSModulePubishManifestPath>$(IntermediateOutputPath)jsmodules\jsmodules.publish.manifest.json</_JSModulePubishManifestPath>
+      <JSModuleManifestRelativePath Condition="'$(JSModuleManifestRelativePath)' == ''">$(PackageId).modules.json</JSModuleManifestRelativePath>
     </PropertyGroup>
 
     <ItemGroup>
