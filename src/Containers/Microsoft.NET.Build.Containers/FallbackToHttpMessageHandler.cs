@@ -12,13 +12,16 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
 {
+    private readonly string _registryName;
     private readonly string _host;
     private readonly int _port;
     private readonly ILogger _logger;
     private bool _fallbackToHttp;
 
-    public FallbackToHttpMessageHandler(string host, int port, HttpMessageHandler innerHandler, ILogger logger) : base(innerHandler)
+    public FallbackToHttpMessageHandler(string registryName, string host, int port, HttpMessageHandler innerHandler, ILogger logger)
+        : base(innerHandler)
     {
+        _registryName = registryName;
         _host = host;
         _port = port;
         _logger = logger;
@@ -38,7 +41,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
             {
                 if (canFallback && _fallbackToHttp)
                 {
-                    FallbackToHttp(request);
+                    FallbackToHttp(_registryName, request);
                     canFallback = false;
                 }
 
@@ -51,7 +54,7 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
                 {
                     // Try falling back.
                     _logger.LogTrace("Attempt to fall back to http for {uri}.", uri);
-                    FallbackToHttp(request);
+                    FallbackToHttp(_registryName, request);
                     HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                     // Fall back was successful. Use http for all new requests.
@@ -76,10 +79,22 @@ internal sealed partial class FallbackToHttpMessageHandler : DelegatingHandler
         return exception.HttpRequestError == HttpRequestError.SecureConnectionError;
     }
 
-    private static void FallbackToHttp(HttpRequestMessage request)
+    private static bool RegistryNameContainsPort(string registryName)
+    {
+        // use `container` scheme which does not have a default port.
+        return new Uri($"container://{registryName}").Port != -1;
+    }
+
+    private static void FallbackToHttp(string registryName, HttpRequestMessage request)
     {
         var uriBuilder = new UriBuilder(request.RequestUri!);
         uriBuilder.Scheme = "http";
+        if (RegistryNameContainsPort(registryName) == false)
+        {
+            // registeryName does not contains port number, so reset the port number to -1, otherwise it will be https default port 443
+            uriBuilder.Port = -1;
+        }
+
         request.RequestUri = uriBuilder.Uri;
     }
 }

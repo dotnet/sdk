@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 
@@ -63,7 +64,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     var relativePath = NormalizePath(bundle.GetMetadata("RelativePath"));
                     var importPath = NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
 
+#if !NET9_0_OR_GREATER
                     builder.AppendLine($"@import '{importPath}';");
+#else
+                    builder.AppendLine(CultureInfo.InvariantCulture, $"@import '{importPath}';");
+#endif
                 }
 
                 builder.AppendLine();
@@ -72,7 +77,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             for (var i = 0; i < ScopedCssFiles.Length; i++)
             {
                 var current = ScopedCssFiles[i];
+#if !NET9_0_OR_GREATER
                 builder.AppendLine($"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
+#else
+                builder.AppendLine(CultureInfo.InvariantCulture, $"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
+#endif
                 foreach (var line in File.ReadLines(current.GetMetadata("FullPath")))
                 {
                     builder.AppendLine(line);

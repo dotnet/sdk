@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 MessageArgs = messageArgs;
             }
 
-            public override string ToString() => string.Format(Message, MessageArgs);
+            public override string ToString() => string.Format(CultureInfo.InvariantCulture, Message, MessageArgs);
         }
     }
 }
