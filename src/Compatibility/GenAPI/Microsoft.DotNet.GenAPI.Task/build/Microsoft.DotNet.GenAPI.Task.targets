@@ -49,6 +49,8 @@
       ExceptionMessage="$(GenAPIExceptionMessage)"
       ExcludeApiFiles="@(GenAPIExcludeApiList)"
       ExcludeAttributesFiles="@(GenAPIExcludeAttributesList)"
+      ExcludeInternalCompilerAttributes="$(GenAPIExcludeInternalCompilerAttributes)"
+      IncludeApiFiles="@(GenAPIIncludeApiList)"
       RespectInternals="$(GenAPIRespectInternals)"
       IncludeAssemblyAttributes="$(GenAPIIncludeAssemblyAttributes)" />
 
