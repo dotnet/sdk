@@ -1,14 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "test -bl:S:\\t\\mstest184\\log.binlog",
-      "workingDirectory": "S:\\t\\mstest184",
-      "environmentVariables": {
-        "DOTNET_CLI_TESTINGPLATFORM_ENABLE": "1",
-        "DOTNET_CLI_VSTEST_TRACE": "1",
-        "DOTNET_ROOT": "S:\\p\\dotnet-sdk\\artifacts\\bin\\redist\\Debug\\dotnet",
-      }
+      "commandName": "Project"
     }
   }
 }
