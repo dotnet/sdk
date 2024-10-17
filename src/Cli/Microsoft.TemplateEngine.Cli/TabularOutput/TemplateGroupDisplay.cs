@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Cli.TabularOutput
 {
@@ -27,14 +28,23 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             IEnumerable<TemplateGroup> templateGroups,
             TabularOutputSettings helpFormatterSettings,
             IReporter reporter,
-            string? selectedLanguage = null)
+            string? selectedLanguage = null,
+            FormatOptions format = FormatOptions.Console)
         {
             IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay = GetTemplateGroupsForListDisplay(
                 templateGroups,
                 selectedLanguage,
                 engineEnvironmentSettings.GetDefaultLanguage(),
                 engineEnvironmentSettings.Environment);
+
+            if (format == FormatOptions.Json)
+            {
+                DisplayJsonTemplateList(groupsForDisplay, reporter);
+                return;
+            }
+
             DisplayTemplateList(groupsForDisplay, helpFormatterSettings, reporter);
+
         }
 
         /// <summary>
@@ -54,14 +64,28 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             IEnumerable<ITemplateInfo> templates,
             TabularOutputSettings helpFormatterSettings,
             IReporter reporter,
-            string? selectedLanguage = null)
+            string? selectedLanguage = null,
+            FormatOptions format = FormatOptions.Console)
         {
             IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay = GetTemplateGroupsForListDisplay(
                 templates,
                 selectedLanguage,
                 engineEnvironmentSettings.GetDefaultLanguage(),
                 engineEnvironmentSettings.Environment);
+            if (format == FormatOptions.Json)
+            {
+                DisplayJsonTemplateList(groupsForDisplay, reporter);
+                return;
+            }
+
             DisplayTemplateList(groupsForDisplay, helpFormatterSettings, reporter);
+        }
+
+        internal static void DisplayJsonTemplateList(IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay, IReporter reporter)
+        {
+            //var result = JsonSerializer.Serialize(groupsForDisplay);
+            var result = JsonConvert.SerializeObject(groupsForDisplay);
+            reporter.WriteLine(result);
         }
 
         /// <summary>
