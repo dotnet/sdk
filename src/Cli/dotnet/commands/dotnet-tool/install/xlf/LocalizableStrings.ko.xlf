@@ -13,8 +13,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForceInstallOptionName">
-        <source>Forces a tool to be installed even if the runtime is not compatible with your machine.</source>
-        <target state="new">Forces a tool to be installed even if the runtime is not compatible with your machine.</target>
+        <source>Forces a tool to be installed even if a compatible .NET runtime is not installed.</source>
+        <target state="new">Forces a tool to be installed even if a compatible .NET runtime is not installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallToolCommandInvalidGlobalAndLocalAndToolPath">

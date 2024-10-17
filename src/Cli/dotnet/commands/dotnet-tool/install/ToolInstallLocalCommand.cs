@@ -22,8 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly PackageId? _packageId;
         private readonly bool _allowPackageDowngrade;
-        private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly bool _forceInstall;
+         private readonly bool _forceInstall;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
