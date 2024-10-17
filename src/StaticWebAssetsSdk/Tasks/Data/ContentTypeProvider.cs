@@ -28,6 +28,7 @@ internal class ContentTypeProvider
             ["*.jsx"] = new ContentTypeMapping("text/jscript", null, "*.jsx", 1),
             ["*.markdown"] = new ContentTypeMapping("text/markdown", null, "*.markdown", 1),
             ["*.gz"] = new ContentTypeMapping("application/x-gzip", null, "*.gz", 1),
+            ["*.br"] = new ContentTypeMapping("application/octet-stream", null, "*.br", 1),
             ["*.md"] = new ContentTypeMapping("text/markdown", null, "*.md", 1),
             ["*.bmp"] = new ContentTypeMapping("image/bmp", null, "*.bmp", 1),
             ["*.jpeg"] = new ContentTypeMapping("image/jpeg", null, "*.jpeg", 1),
@@ -423,7 +424,13 @@ internal class ContentTypeProvider
 
     internal ContentTypeMapping ResolveContentTypeMapping(string relativePath, TaskLoggingHelper log)
     {
-        var (resolvePathWithoutCompressedExtension, hasCompressedExtension) = ResolvePathWithoutCompressedExtension(relativePath);
+#if NET9_0_OR_GREATER
+        var fileNameSpan = Path.GetFileName(relativePath.AsSpan());
+        var fileName = relativePath.AsMemory().Slice(relativePath.Length - fileNameSpan.Length);
+#else
+        var fileName = Path.GetFileName(relativePath);
+#endif
+        var (resolvePathWithoutCompressedExtension, hasCompressedExtension) = ResolvePathWithoutCompressedExtension(fileName);
 
         var match = _matcher.Match(resolvePathWithoutCompressedExtension);
         if (match.IsMatch)
@@ -431,6 +438,7 @@ internal class ContentTypeProvider
             if (_builtInMappings.TryGetValue(match.Pattern, out var mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
             {
                 log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
+                return mapping;
             }
             else
             {
@@ -439,12 +447,13 @@ internal class ContentTypeProvider
         }
         else if (hasCompressedExtension)
         {
-            match = _matcher.Match(relativePath);
+            match = _matcher.Match(fileName);
             if (match.IsMatch)
             {
                 if (_builtInMappings.TryGetValue(match.Pattern, out var mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
                 {
                     log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
+                    return mapping;
                 }
                 else
                 {
@@ -457,36 +466,37 @@ internal class ContentTypeProvider
     }
 
 #if NET9_0_OR_GREATER
-    private (ReadOnlyMemory<char> relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(string relativePath)
+    private (ReadOnlyMemory<char> relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(ReadOnlyMemory<char> fileName)
     {
-        var memory = relativePath.AsMemory();
-        var extension = Path.GetExtension(memory.Span);
+        var extension = Path.GetExtension(fileName.Span);
         bool hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
         if (hasCompressedExtension)
         {           
-            var fileName = Path.GetFileNameWithoutExtension(memory.Span);
-            if (!Path.GetExtension(fileName).Equals("", StringComparison.Ordinal))
+            var candidate = fileName.Slice(fileName.Length - fileName.Length);
+            var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName.Span);
+            if (!Path.GetExtension(fileNameNoExtension).Equals("", StringComparison.Ordinal))
             {
-                return (memory.Slice(0, fileName.Length), hasCompressedExtension);
+                return (candidate.Slice(0, fileNameNoExtension.Length), hasCompressedExtension);
             }
         }
 
-        return (memory, hasCompressedExtension);
+        return (fileName, hasCompressedExtension);
     }
 #else
     private (string relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(string relativePath)
     { 
-        var extension = Path.GetExtension(relativePath);
+        var fileName = Path.GetFileName(relativePath);
+        var extension = Path.GetExtension(fileName);
         var hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
         if (hasCompressedExtension)
         {
-            var fileName = Path.GetFileNameWithoutExtension(relativePath);
+            fileName = Path.GetFileNameWithoutExtension(relativePath);
             if (!Path.GetExtension(fileName).Equals("", StringComparison.Ordinal))
             {
                 return (fileName, hasCompressedExtension);
             }
         }
-        return (relativePath, hasCompressedExtension);
+        return (fileName, hasCompressedExtension);
     }
 #endif
 }
