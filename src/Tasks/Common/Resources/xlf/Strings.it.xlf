@@ -642,9 +642,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
-        <source>NETSDK1222: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="new">NETSDK1222: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</target>
-        <note>{StrBegin="NETSDK1222: "}</note>
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="new">NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</target>
+        <note>{StrBegin="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -762,9 +762,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="translated">NETSDK1214: PreferNativeArm64 si applica solo alle destinazioni .NET Framework. Non è supportato e non ha alcun effetto quando si usa .NET Core come destinazione.</target>
-        <note>{StrBegin="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="needs-review-translation">NETSDK1214: PreferNativeArm64 si applica solo alle destinazioni .NET Framework. Non è supportato e non ha alcun effetto quando si usa .NET Core come destinazione.</target>
+        <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
