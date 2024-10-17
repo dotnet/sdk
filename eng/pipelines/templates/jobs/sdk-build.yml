@@ -138,6 +138,12 @@ jobs:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
+        - script: |
+            if [ "${{ parameters.runtimeIdentifier }}" == "osx-arm64" ]; then
+              export CustomHelixTargetQueue=${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}
+            else
+              export CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            fi
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
@@ -146,7 +152,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}${{ end }}
+            /p:CustomHelixTargetQueue=$CustomHelixTargetQueue
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
