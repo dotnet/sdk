@@ -511,7 +511,7 @@
   </Target>
 
   <Target Name="GenerateVersionFile"
-          DependsOnTargets="SetupBundledComponents;GenerateFullNuGetVersion">
+          DependsOnTargets="SetupBundledComponents">
     <WriteLinesToFile File="$(SdkOutputDirectory).version"
                       Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
                       Overwrite="true" />
@@ -611,7 +611,6 @@
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
                             LayoutBundledComponents;
-                            GenerateFullNuGetVersion;
                             GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;

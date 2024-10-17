@@ -16,8 +16,6 @@
       <InnerBuildArgs>$(InnerBuildArgs) /p:SkipBuildingInstallers=true</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:IncludeAdditionalSharedFrameworks=false</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:DISABLE_CROSSGEN=true</InnerBuildArgs>
-      <InnerBuildArgs Condition="'$(PgoInstrument)' == 'true'">$(InnerBuildArgs) /p:PgoInstrument=true</InnerBuildArgs>
-      <InnerBuildArgs Condition="'$(DotNetBuildPass)' != ''">$(InnerBuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 

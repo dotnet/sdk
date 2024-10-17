@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 contentTypeMappings.ItemSpec,
                 contentTypeMappings.GetMetadata(nameof(Cache)),
                 contentTypeMappings.GetMetadata(nameof(Pattern)),
-                int.Parse(contentTypeMappings.GetMetadata(nameof(Priority))));
+                int.Parse(contentTypeMappings.GetMetadata(nameof(Priority)), CultureInfo.InvariantCulture));
 
         internal bool Matches(string identity)
         {
