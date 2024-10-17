@@ -10,13 +10,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="SdkResolver.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <PackageDownload Include="NETStandard.Library.NETFramework" Version="[$(NETStandardLibraryNETFrameworkVersion)]" />
+
+    <ProjectReference Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
+  <!-- SdkResolver -->
   <ItemGroup>
-    <PackageDownload Include="NETStandard.Library.NETFramework" Version="[$(NETStandardLibraryNETFrameworkVersion)]" />
     <PackageDownload Include="Microsoft.Deployment.DotNet.Releases" Version="[$(MicrosoftDeploymentDotNetReleasesVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+
+    <ProjectReference Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the BuildCoreSdkTasks -->
@@ -33,32 +39,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <!-- The VSMSBuildExtensionsContent item is for the files that will be included in the VS.Redist.Common.Net.Core.SDK.MSBuildExtensions
-           package and inserted into Visual Studio -->
+      <!-- Don't include .NET MS.NET.Build.Extensions tasks in Full Framework MSBuild layout. -->
       <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsOutputPath)\msbuildExtensions\**\*.*"
-                                  Exclude="$(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net*\**"
+                                  Exclude="$(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net*\**;
+                                           $(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\net*.*\**"
                                   DeploymentSubpath="msbuildExtensions/" />
 
-      <!-- Don't include .NET Core MS.NET.Build.Extensions tasks in Full Framework MSBuild layout -->
-      <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\netcoreapp*\**" />
-      <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\net*.*\**" />
-
+      <!-- Don't include .NET targets in the Full Framework MSBuild layout. -->
       <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsOutputPath)\msbuildExtensions-ver\**\*.*"
+                                  Exclude="$(MSBuildExtensionsOutputPath)\msbuildExtensions-ver\SolutionFile\**"
                                   DeploymentSubpath="msbuildExtensions-ver/" />
-
-      <!-- Don't include .NET Core targets in the Full Framework MSBuild layout-->
-      <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsOutputPath)\msbuildExtensions-ver\SolutionFile\**" />
 
       <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.*"
                                   Exclude="$(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.props;
                                            $(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.targets"
                                   DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
 
-      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.deployment.dotNet.releases\$(MicrosoftDeploymentDotNetReleasesVersion)\lib\netstandard2.0\**\*.*"
-                                  DeploymentSubpath="MSBuildSdkResolver/" />
-
-      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)SdkResolver/$(Configuration)/$(TargetFramework)/**/*"
-                                  DeploymentSubpath="MSBuildSdkResolver/" />
+      <!-- SdkResolver -->
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.deployment.dotNet.releases\$(MicrosoftDeploymentDotNetReleasesVersion)\lib\netstandard2.0\**\*.*" DeploymentSubpath="MSBuildSdkResolver/" />
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-x86\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-x86\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x86/" />
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-x64\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-x64\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x64/" />
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-arm64\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-arm64\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/arm64/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Update="@(VSMSBuildExtensionsContent)">
         <DestinationPath>$(OutputPath)/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
