@@ -145,7 +145,6 @@ jobs:
               CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             fi
             echo "CustomHelixTargetQueue set to: $CustomHelixTargetQueue"
-            echo "##vso[task.setvariable variable=CustomHelixTargetQueue]$CustomHelixTargetQueue"
           displayName: 'Set CustomHelixTargetQueue'
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
