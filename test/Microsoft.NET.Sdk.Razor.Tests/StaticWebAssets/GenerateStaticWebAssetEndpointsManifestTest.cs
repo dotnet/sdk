@@ -248,16 +248,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
-    {
-        return new TaskItem(contentType, new Dictionary<string, string>
-            {
-                { "Pattern", pattern },
-                { "Priority", "0" }
-            });
-    }
-
-
     private static StaticWebAsset CreateAsset(
         string itemSpec,
         string sourceId = "MyApp",
