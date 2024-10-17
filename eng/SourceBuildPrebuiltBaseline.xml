@@ -37,6 +37,9 @@
     <UsagePattern IdentityGlob="System.Reflection.Metadata/8.0.0" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
 
+    <!-- Transitive dependencies from MSBuild -->
+	  <UsagePattern IdentityGlob="Microsoft.VisualStudio.SolutionPersistence/1.0.9" />
+
     <!-- Transitive dependencies from roslyn -->
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/8.0.0" />
