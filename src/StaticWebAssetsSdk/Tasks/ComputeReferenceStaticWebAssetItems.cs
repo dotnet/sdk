@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             if (!StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetAsReference(candidate, ProjectMode))
             {
                 reason = string.Format(
+                    CultureInfo.InvariantCulture,
                     "Skipping candidate asset '{0}' because project mode is '{1}' and asset mode is '{2}'",
                     candidate.Identity,
                     ProjectMode,
@@ -122,6 +124,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             reason = string.Format(
+                CultureInfo.InvariantCulture,
                 "Accepted candidate asset '{0}' because project mode is '{1}' and asset mode is '{2}'",
                 candidate.Identity,
                 ProjectMode,

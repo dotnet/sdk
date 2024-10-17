@@ -27,7 +27,7 @@
 
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
-    <RepoConsoleLogFile>$(DotNetBuildArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
+    <RepoConsoleLogFile>$(ArtifactsLogRepoDir)$(RepositoryName).log</RepoConsoleLogFile>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">$(BuildInParallel)</MinimalConsoleLogOutput>
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
@@ -83,7 +83,7 @@
          reference. To prevent this from happening, we need to remove the extra metadata so the two references can be seen as duplicates. -->
     <ItemGroup>
       <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
-                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
+                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec;DotNetBuildPass" />
       <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
@@ -355,17 +355,36 @@
   <Target Name="BuildRepoReferences"
           DependsOnTargets="GetTransitiveRepositoryReferences"
           Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
-    <Message Importance="High" Text="Building dependencies [@(TransitiveRepositoryReference)] needed by '$(RepositoryName)'." />
-
     <ItemGroup>
-      <_DependentProject Include="@(TransitiveRepositoryReference -> '%(Identity).proj')" />
+      <_DependentProject Include="@(TransitiveRepositoryReference)"
+                         Project="%(Identity).proj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(_DependentProject)"
+    <!-- Filter out projects that aren't part of the current build pass. -->
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+      <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
+
+      <_DependentProjectToSkip Include="@(_DependentProject)" Exclude="@(_DependentProjectCurrentBuildPass)" />
+
+      <_DependentProject Remove="@(_DependentProject)" />
+      <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Building dependencies [@(_DependentProject)] needed by '$(RepositoryName)'." Condition="'@(_DependentProject)' != ''" />
+
+    <MSBuild Projects="@(_DependentProject->Metadata('Project'))"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
              StopOnFirstFailure="true"
-             RunEachTargetSeparately="$(RunEachTargetSeparately)" />
+             RunEachTargetSeparately="$(RunEachTargetSeparately)"
+             Condition="'@(_DependentProject)' != ''" />
+
+    <!-- Repos that are skipped in later build passes and don't build, still need to be called in order to
+         extract tool packages (i.e. Arcade.Sdk). This is necessary as we use a custom sdk resolver. -->
+    <MSBuild Projects="@(_DependentProjectToSkip->Metadata('Project'))"
+             Targets="ExtractToolPackage"
+             BuildInParallel="$(BuildInParallel)"
+             Condition="'@(_DependentProjectToSkip)' != ''" />
   </Target>
 
   <Target Name="DiscoverBuiltSdkOverrides"
@@ -553,12 +572,12 @@
 
     <!-- Move the build logs -->
     <Move SourceFiles="@(LogFilesToMove)"
-          DestinationFolder="$(DotNetBuildArtifactsLogDir)"
+          DestinationFolder="$(ArtifactsLogRepoDir)"
           Condition="'@(LogFilesToMove)' != ''" />
 
     <!-- Move the prebuilt reports -->
     <Move SourceFiles="@(PrebuiltReportsToMove)"
-          DestinationFolder="$(DotNetBuildPrebuiltReportDir)"
+          DestinationFolder="$(PackageReportRepoDir)"
           Condition="'@(PrebuiltReportsToMove)' != ''" />
   </Target>
 
@@ -623,7 +642,7 @@
   </Target>
 
   <Target Name="ExtractToolPackageCore"
-          DependsOnTargets="RepoBuild;DiscoverToolPackageVersions"
+          DependsOnTargets="DiscoverToolPackageVersions"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">

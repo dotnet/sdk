@@ -121,6 +121,27 @@ namespace Microsoft.DotNet.Watcher.Tests
             //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
         }
 
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        public async Task BlazorWasm_MSBuildWarning()
+        {
+            var testAsset = TestAssets
+                .CopyTestAsset("WatchBlazorWasm")
+                .WithSource()
+                .WithProjectChanges(proj =>
+                {
+                    proj.Root.Descendants()
+                        .Single(e => e.Name.LocalName == "ItemGroup")
+                        .Add(XElement.Parse("""
+                            <AdditionalFiles Include="Pages\Index.razor" />
+                            """));
+                });
+
+            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
+            await App.AssertWaitingForChanges();
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleMissingAssemblyFailure()

@@ -30,12 +30,10 @@
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>
-      <BuildPassInfoText Condition="'$(DotNetBuildPass)' == ''">1</BuildPassInfoText>
-      <BuildPassInfoText Condition="'$(DotNetBuildPass)' != ''">$(DotNetBuildPass)</BuildPassInfoText>
     </PropertyGroup>
 
     <Message Text="Build Mode: $(BuildModeInfoText)" Importance="high" />
-    <Message Text="Build Pass: $(BuildPassInfoText)" Importance="high" />
+    <Message Text="Build Pass: $(DotNetBuildPass)" Importance="high" Condition="'$(DotNetBuildPass)' != ''" />
     <Message Text="Build Environment: $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
     <Message Condition="'$(EnablePoison)' == 'true'" Text="Crossgen is disabled due to incompatibility with poison checks." Importance="high" />
   </Target>

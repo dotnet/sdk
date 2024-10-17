@@ -171,7 +171,6 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-component
 
 # False positive
 src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
-src/sdk/src/SourceBuild/patches/fsharp/0001-Fix17713-Reverting-PR-17649-Make-the-interaction-bet.patch|unknown-license-reference
 
 # Configuration, doesn't apply to source directly
 src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
@@ -191,6 +190,9 @@ src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unk
 # relying on the Spectre.Console distribution.
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
 src/source-build-externals/src/spectre-console/README.md|unknown-license-reference
+
+# Configuration, doesn't apply to source directly
+src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 
 #
 # source-build-reference-packages

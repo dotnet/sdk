@@ -19,8 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' != ''" />
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +29,6 @@
   <Import Project="targets\BuildCoreSdkTasks.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
-  <Import Project="targets\Versions.targets" />
   <Import Project="targets\Branding.targets" />
   <Import Project="targets\BundledTemplates.targets" />
   <Import Project="targets\BundledManifests.targets" />
