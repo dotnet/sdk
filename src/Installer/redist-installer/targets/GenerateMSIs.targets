@@ -27,12 +27,6 @@
       <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
 
-      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
-
-      <SdkMSBuildExtensionsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
-      <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
-      <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
-
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
       <!-- Directory for the zipped up light command package -->
@@ -436,29 +430,6 @@
     </ItemGroup>
   </Target>
 
-  <!-- For product build, this only builds in the second build pass as it depends on assets
-       from other verticals that are built in the first build pass. -->
-  <Target Name="GenerateSdkMSBuildExtensionsNupkg"
-          DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
-          Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2')"
-          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                  $(SdkMSBuildExtensionsNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
-    <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
-                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
-
-    <!-- Include the swr file in the nuget package for VS authoring -->
-    <Copy SourceFiles="$(SdkMSBuildExtensionsSwrFile)" DestinationFolder="$(MSBuildExtensionsLayoutDirectory)" />
-
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(SdkMSBuildExtensionsNuspecFile)' ^
-                      '$(SdkMSBuildExtensionsNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateMsis"
         DependsOnTargets="GenerateLayout;
                             MsiTargetsSetupInputOutputs;
@@ -469,8 +440,7 @@
                             GenerateSdkPlaceholderMsi;
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
-                            GenerateSdkPlaceholderNupkg;
-                            GenerateSdkMSBuildExtensionsNupkg"
+                            GenerateSdkPlaceholderNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 
 </Project>
