@@ -1,5 +1,6 @@
 parameters:
   ### GENERAL ###
+  variables: {}
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
@@ -110,12 +111,6 @@ jobs:
           BuildConfig: $(buildConfiguration)
 
     ############### TESTING ###############
-    variables:
-      customHelixTargetQueue:
-        ${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}:
-          value: ${{ parameters.helixQueue }}
-        ${{ else }}:
-          value: ${{ parameters.helixTargetQueue }}
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
@@ -151,7 +146,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=$(customHelixTargetQueue)${{ parameters.helixTargetContainer }}
+            /p:CustomHelixTargetQueue=${{ if eq(parameters.runtimeIdentifier, 'osx-arm64') }}${{ parameters.helixQueue }}${{ parameters.helixTargetContainer }}${{ else }}${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}${{ end }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
