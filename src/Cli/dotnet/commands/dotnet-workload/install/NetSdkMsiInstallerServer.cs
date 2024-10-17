@@ -93,6 +93,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated dependent '{request.Dependent}' for provider key '{request.ProviderKeyName}'");
                             break;
 
+                        case InstallRequestType.SaveInstallStateManifestVersions:
+                            SaveInstallStateManifestVersions(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateManifestVersions);
+                            Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.RemoveManifestsFromInstallStateFile:
+                            RemoveManifestsFromInstallState(new SdkFeatureBand(request.SdkFeatureBand));
+                            Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.AdjustWorkloadMode:
+                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
+                            string newMode = request.UseWorkloadSets ? "workload sets" : "loose manifests";
+                            Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
+                            break;
+
+                        case InstallRequestType.AdjustWorkloadSetVersion:
+                            AdjustWorkloadSetInInstallState(new SdkFeatureBand(request.SdkFeatureBand), request.WorkloadSetVersion);
+                            Dispatcher.ReplySuccess($"Updated workload set version in install state to {request.WorkloadSetVersion}.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }
