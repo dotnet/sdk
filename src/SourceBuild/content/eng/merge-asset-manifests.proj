@@ -22,7 +22,8 @@
     <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
       AssetManifest="@(RepoAssetManifest)" 
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
-      VmrBuildNumber="$(BUILD_BUILDNUMBER)" />
+      VmrBuildNumber="$(BUILD_BUILDNUMBER)"
+      VerticalName="$(VerticalName)" />
   </Target>
 
 </Project>

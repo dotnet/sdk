@@ -42,11 +42,11 @@
           Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
 
     <!-- Don't warn on warnings that can be generated in source-build
-         but not necessarily in repo builds. 
+         but not necessarily in repo builds.
          NU1603 - See https://github.com/dotnet/source-build/issues/2766.
          NU5104 - During preview builds, some packages have pre-release versions.
-                  Some repos with stable versions may need to uptake these packages 
-                  with pre-release versions because of PVP when building with 
+                  Some repos with stable versions may need to uptake these packages
+                  with pre-release versions because of PVP when building with
                   source-build.  -->
     <PropertyGroup>
       <OldText><![CDATA[</Project>]]></OldText>
@@ -523,7 +523,7 @@
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
-    <Error Text="Repository asset manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
+    <Error Text="No repository asset manifest files found at $(RepoAssetManifestsDir)*.xml. This often means the build failed but did not log an error." Condition="'@(RepoAssetManifest)' == ''" />
 
     <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
