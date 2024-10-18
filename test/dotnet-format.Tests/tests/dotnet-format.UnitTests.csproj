@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
     <!-- Copy nuget assemblies to build directory so that Microsoft.CodeAnalysis.Features.* can be located when running tests. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -20,11 +20,11 @@
     <ProjectReference Include="..\..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
-  <!-- Tests depend on the NetCurrent reference assemblies -->
-  <Target Name="AddRuntimeConfigurationOptionForNetCurrent" BeforeTargets="GenerateBuildRuntimeConfigurationFiles" DependsOnTargets="ResolveFrameworkReferences">
+  <!-- Tests depend on the SdkTargetFramework reference assemblies -->
+  <Target Name="AddRuntimeConfigurationOptionForSdkTargetFramework" BeforeTargets="GenerateBuildRuntimeConfigurationFiles" DependsOnTargets="ResolveFrameworkReferences">
     <ItemGroup>
-      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetingPackVersion" Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(NetCurrent)')-&gt;Metadata('NuGetPackageVersion'))" />
-      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetFramework" Value="$(NetCurrent)" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.SdkTargetFramework.TargetingPackVersion" Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(SdkTargetFramework)')-&gt;Metadata('NuGetPackageVersion'))" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.SdkTargetFramework.TargetFramework" Value="$(SdkTargetFramework)" />
     </ItemGroup>
   </Target>
 

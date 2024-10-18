@@ -5,7 +5,7 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET9_0
+#if NET10_0
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
