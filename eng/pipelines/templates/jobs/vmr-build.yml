@@ -48,7 +48,7 @@ parameters:
 - name: sign
   displayName: True when build output should be signed
   type: boolean
-  default: false
+  default: true
 
 # Overrides the rid that is produced by the build.
 - name: targetRid
