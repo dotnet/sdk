@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Configurer;
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToUseAnalyzers : SdkTest
@@ -256,7 +258,7 @@ namespace Microsoft.NET.Build.Tests
         static readonly List<string> nugetRoots = new()
             {
                 TestContext.Current.NuGetCachePath,
-                Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder"),
+                Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder"),
                 Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
             };
 
