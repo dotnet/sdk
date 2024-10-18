@@ -65,7 +65,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
                     for (var j = 0; j < endpoints.Length; j++)
                     {
                         var endpoint = endpoints[j];
-                        if (HasFingerprint(endpoint))
+                        if (ResolveFingerprintedStaticWebAssetEndpointsForAssets.HasFingerprint(endpoint))
                         {
                             foundFingerprintedEndpoint = true;
                             var route = asset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
@@ -94,7 +94,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private bool HasFingerprint(StaticWebAssetEndpoint endpoint)
+    private static bool HasFingerprint(StaticWebAssetEndpoint endpoint)
     {
         for (var i = 0; i < endpoint.EndpointProperties.Length; i++)
         {

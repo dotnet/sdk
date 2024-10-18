@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -31,7 +31,7 @@ public class FilterStaticWebAssetEndpoints : Task
     public override bool Execute()
     {
         var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
-        var assetFiles = (Assets ?? []).ToDictionary(a => a.ItemSpec, a => StaticWebAsset.FromTaskItem(a));
+        var assetFiles = (Assets ?? []).ToDictionary(a => a.ItemSpec, StaticWebAsset.FromTaskItem);
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints ?? []);
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 
@@ -45,7 +45,7 @@ public class FilterStaticWebAssetEndpoints : Task
                 continue;
             }
 
-            if (MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
+            if (FilterStaticWebAssetEndpoints.MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
             {
                 if (asset != null && !endpointFoundMatchingAsset.ContainsKey(asset.Identity))
                 {
@@ -72,7 +72,7 @@ public class FilterStaticWebAssetEndpoints : Task
         return !Log.HasLoggedErrors;
     }
 
-    private bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, StaticWebAsset asset, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
+    private static bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, StaticWebAsset asset, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
     {
         for (int i = 0; i < filterCriteria.Length; i++)
         {
@@ -159,7 +159,7 @@ public class FilterStaticWebAssetEndpoints : Task
             string.Equals(name, criteria.Name, StringComparison.OrdinalIgnoreCase) &&
             (string.IsNullOrEmpty(criteria.Value) || string.Equals(value, criteria.Value, StringComparison.Ordinal));
 
-    private class FilterCriteria(string type, string name, string value, string mode)
+    private sealed class FilterCriteria(string type, string name, string value, string mode)
     {
         public string Type { get; } = type;
         public string Name { get; } = name;

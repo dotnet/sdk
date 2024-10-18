@@ -1,20 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
-internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
+internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
 {
-    private static Dictionary<string, ContentTypeMapping> _builtInMappings =
+    private static readonly Dictionary<string, ContentTypeMapping> _builtInMappings =
         new Dictionary<string, ContentTypeMapping>()
         {
             [".js"] = new ContentTypeMapping("text/javascript", null, "*.js", 1),
@@ -419,10 +414,10 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
             }
         }
 
-        return ResolveBuiltIn(relativePath, log);
+        return ContentTypeProvider.ResolveBuiltIn(relativePath, log);
     }
 
-    private ContentTypeMapping ResolveBuiltIn(string relativePath, TaskLoggingHelper log)
+    private static ContentTypeMapping ResolveBuiltIn(string relativePath, TaskLoggingHelper log)
     {
         var extension = Path.GetExtension(relativePath);
         if (extension == ".gz" || extension == ".br")
@@ -430,7 +425,7 @@ internal class ContentTypeProvider(ContentTypeMapping[] customMappings)
             var fileName = Path.GetFileNameWithoutExtension(relativePath);
             if (Path.GetExtension(fileName) != "")
             {
-                var result = ResolveBuiltIn(fileName, log);
+                var result = ContentTypeProvider.ResolveBuiltIn(fileName, log);
                 // If we don't have a specific mapping for the other extension, use any mapping available for `.gz` or `.br`
                 return result.MimeType == null && _builtInMappings.TryGetValue(extension, out var compressed) ?
                     compressed :

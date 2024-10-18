@@ -1,10 +1,10 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup>
     <StaticWebAssetsSdkRoot>$(RepoRoot)\src\StaticWebAssetsSdk\</StaticWebAssetsSdkRoot>
     <PackageId>Microsoft.NET.Sdk.StaticWebAssets</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
