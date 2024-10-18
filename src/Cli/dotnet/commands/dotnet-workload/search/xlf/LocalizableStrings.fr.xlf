@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="translated">Impossible de spécifier à la fois les arguments {0} et {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Search for available workloads.</source>
         <target state="translated">Recherchez les charges de travail disponibles.</target>
@@ -12,9 +17,29 @@
         <target state="translated">Description</target>
         <note />
       </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="translated">Modifie le format des versions de charge de travail générées. Accepte « json » ou « list »</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadVersionsFound">
+        <source>No workload versions found for SDK feature band {0}.</source>
+        <target state="translated">Aucune version de charge de travail trouvée pour la bande de fonctionnalités du Kit de développement logiciel (SDK) {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PlatformColumnName">
         <source>Platforms</source>
         <target state="translated">Plateformes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</source>
+        <target state="translated">Affiche la liste des dernières versions de charge de travail publiées. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.</target>
+        <note>Do not localize --take or --format</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="translated">L’option --take doit être positive.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumnName">
@@ -30,6 +55,26 @@
       <trans-unit id="WorkloadIdStubArgumentName">
         <source>SEARCH_STRING</source>
         <target state="translated">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="translated">Bande de fonctionnalités du manifeste</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="translated">ID du manifeste de charge de travail</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="translated">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="translated">Affiche le manifeste de charge de travail associé à la version de charge de travail fournie.</target>
         <note />
       </trans-unit>
     </body>

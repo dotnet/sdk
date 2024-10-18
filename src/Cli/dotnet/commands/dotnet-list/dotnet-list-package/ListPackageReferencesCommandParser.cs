@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdVulnerableDescription
         }.ForwardAs("--vulnerable");
 
-        public static readonly CliOption FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework")
+        public static readonly CliOption FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = LocalizableStrings.CmdFramework
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.CmdConfig
         }.ForwardAsMany(o => new[] { "--config", o });
 
-        public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+        public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
         {
             Description = LocalizableStrings.CmdSourceDescription,
             HelpName = LocalizableStrings.CmdSource

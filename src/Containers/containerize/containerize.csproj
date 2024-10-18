@@ -8,6 +8,7 @@
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
   <ItemGroup>
