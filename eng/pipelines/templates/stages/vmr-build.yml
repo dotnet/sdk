@@ -80,6 +80,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
+        sign: false
 
     jobs:
 
@@ -370,7 +371,6 @@ stages:
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
         runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
-        sign: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -382,7 +382,6 @@ stages:
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
-        sign: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -393,7 +392,6 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
-        sign: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -406,7 +404,6 @@ stages:
         targetOS: android
         targetArchitecture: arm64
         runTests: false
-        sign: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -420,7 +417,6 @@ stages:
         targetOS: browser
         targetArchitecture: wasm
         runTests: false
-        sign: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -432,7 +428,6 @@ stages:
         targetOS: iossimulator
         targetArchitecture: arm64
         runTests: false
-        sign: true
 
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
@@ -773,6 +768,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -867,6 +863,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1075,6 +1072,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1087,6 +1085,7 @@ stages:
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1099,6 +1098,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         # Build Pass 2 verticals
 
