@@ -438,6 +438,55 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void ItRestoresCorrectToolVersionWithOverriddenResolverCachePath()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            string configContents = """
+                {
+                  "version": 1,
+                  "isRoot": true,
+                  "tools": {
+                    "dotnet-ef": {
+                      "version": "8.0.0-rc.1.23419.6",
+                      "commands": [
+                        "dotnet-ef"
+                      ]
+                    }
+                  }
+                }
+                """;
+
+            File.WriteAllText(Path.Combine(testDir, "dotnet-tools.json"), configContents);
+
+            string CliHome = Path.Combine(testDir, ".home");
+            Directory.CreateDirectory(CliHome);
+
+            var toolsResolverCacheFolder = Path.Combine(testDir, "toolsResolverCache");
+            var toolRestoreCommand = new DotnetCommand(Log, "tool", "restore")
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", CliHome)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithEnvironmentVariable("DOTNET_TOOLS_RESOLVER_CACHE_FOLDER", toolsResolverCacheFolder)
+                .WithWorkingDirectory(testDir);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var cacheFilePath = Path.Combine(toolsResolverCacheFolder, "1", "dotnet-ef");
+
+            string json = File.ReadAllText(cacheFilePath);
+
+            var rows = JsonSerializer.Deserialize<List<CacheRow>>(json);
+
+            rows.Count.Should().Be(1);
+
+            rows[0].Name.Should().Be("dotnet-ef");
+            rows[0].Version.Should().Be("8.0.0-rc.1.23419.6");
+        }
+
+        [Fact]
         public void WhenCannotFindManifestFileItPrintsWarning()
         {
             IToolManifestFinder realManifestFinderImplementationWithMockFinderSystem =
