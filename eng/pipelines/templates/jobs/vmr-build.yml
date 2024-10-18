@@ -282,7 +282,7 @@ jobs:
 
     - script: |
         set extraBuildArguments=
-        if /I '${{ parameters.sign }}'=='True' IF /I '${{ parameters.buildSourceOnly }}' != 'True' set extraBuildArguments=%extraBuildArguments% -sign
+        if /I '${{ parameters.sign }}'=='True' IF /I NOT '${{ parameters.buildSourceOnly }}' == 'True' set extraBuildArguments=%extraBuildArguments% -sign
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
