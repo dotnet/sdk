@@ -59,7 +59,7 @@ public class ContentTypeProviderTests
         // Arrange
         var provider = new ContentTypeProvider([]);
         // Act
-        var contentType = provider.ResolveContentTypeMapping("_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency#[.{fingerprint}].bundle.scp.css.gz", _log);
+        var contentType = provider.ResolveContentTypeMapping("_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency#[.{fingerprint}].bundle.scp.css.gz", _log);
         // Assert
         Assert.Equal("text/css", contentType.MimeType);
     }

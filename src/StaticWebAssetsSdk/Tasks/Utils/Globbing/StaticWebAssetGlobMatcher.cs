@@ -190,7 +190,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             switch (part.Kind)
             {
                 case GlobSegmentPartKind.Literal:
-                    if (!span.Slice(index).StartsWith(part.Value.Span, StringComparison.Ordinal))
+                    if (!span.Slice(index).StartsWith(part.Value.Span, StringComparison.OrdinalIgnoreCase))
                     {
                         // Literal didn't match
                         return false;
@@ -219,7 +219,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                             case GlobSegmentPartKind.Literal:
                                 // Start searching after the current index + the minimum characters to consume
                                 var remainingSpan = span.Slice(index + minimumCharactersToConsume);
-                                var nextLiteralIndex = remainingSpan.IndexOf(nextPart.Value.Span);
+                                var nextLiteralIndex = remainingSpan.IndexOf(nextPart.Value.Span, StringComparison.OrdinalIgnoreCase);
                                 while (nextLiteralIndex != -1)
                                 {
                                     // Consume the characters before the literal and the literal itself before we try
@@ -235,7 +235,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
                                     if (!TryMatchParts(remainingSpan, parts, 0, j + 1))
                                     {
                                         // If we couldn't match the rest of the parts, try the next literal
-                                        nextLiteralIndex = remainingSpan.IndexOf(nextPart.Value.Span);
+                                        nextLiteralIndex = remainingSpan.IndexOf(nextPart.Value.Span, StringComparison.OrdinalIgnoreCase);
                                     }
                                     else
                                     {

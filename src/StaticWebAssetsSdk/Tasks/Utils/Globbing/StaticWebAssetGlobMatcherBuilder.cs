@@ -81,7 +81,7 @@ public class StaticWebAssetGlobMatcherBuilder
     }
     private bool TryAddLiteral(ReadOnlyMemory<char> segment, ReadOnlySpan<char> segmentSpan, string pattern, ref GlobNode current)
     {
-        current.Literals ??= new Dictionary<string, GlobNode>(OSPath.PathComparer);
+        current.Literals ??= new Dictionary<string, GlobNode>(StringComparer.OrdinalIgnoreCase);
         var literal = segment.ToString();
         if (!current.Literals.TryGetValue(literal, out var literalNode))
         {
@@ -149,7 +149,7 @@ public class StaticWebAssetGlobMatcherBuilder
     {
         if (segmentSpan.StartsWith("*.".AsSpan(), StringComparison.Ordinal) && segmentSpan.LastIndexOf('*') == 0)
         {
-            current.Extensions ??= new Dictionary<string, GlobNode>(OSPath.PathComparer);
+            current.Extensions ??= new Dictionary<string, GlobNode>(StringComparer.OrdinalIgnoreCase);
 
             var extension = segment.Slice(1).ToString();
             if (!current.Extensions.TryGetValue(extension, out var extensionNode))
