@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.WebTools.AspireServer.Contracts;
 using Microsoft.WebTools.AspireServer.Helpers;
 using Microsoft.WebTools.AspireServer.Models;
+using Microsoft.WebTools.AspireService.Helpers;
 using IAsyncDisposable = System.IAsyncDisposable;
 
 namespace Microsoft.WebTools.AspireServer;
@@ -32,7 +34,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
     private readonly IAspireServerEvents _aspireServerEvents;
 
-    private readonly Action<string>? _tracer;
+    private readonly Action<string>? _reporter;
 
     private readonly string _currentSecret;
     private readonly string _displayName;
@@ -47,7 +49,6 @@ internal partial class AspireServerService : IAsyncDisposable
     private readonly SocketConnectionManager _socketConnectionManager = new();
 
     private static readonly char[] s_charSeparator = { ' ' };
-    private int _isListening;
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
@@ -59,10 +60,10 @@ internal partial class AspireServerService : IAsyncDisposable
         }
     };
 
-    public AspireServerService(IAspireServerEvents aspireServerEvents, string displayName, Action<string>? tracer)
+    public AspireServerService(IAspireServerEvents aspireServerEvents, string displayName, Action<string>? reporter)
     {
         _aspireServerEvents = aspireServerEvents;
-        _tracer = tracer;
+        _reporter = reporter;
         _displayName = displayName;
 
         _port = SocketUtilities.GetNextAvailablePort();
@@ -79,8 +80,8 @@ internal partial class AspireServerService : IAsyncDisposable
         var certBytes = _certificate.Export(X509ContentType.Cert);
         _certificateEncodedBytes = Convert.ToBase64String(certBytes);
 
-        // Start the server
-        Initialize();
+        // Kick of the web server.
+        StartListening();
     }
 
     /// <inheritdoc/>
@@ -175,6 +176,12 @@ internal partial class AspireServerService : IAsyncDisposable
             });
         });
 
+        if (_reporter != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new LoggerProvider(_reporter));
+        }
+
         var app = builder.Build();
 
         app.MapGet("/", () => _displayName);
@@ -266,21 +273,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
     private void LogTrace(string traceMsg)
     {
-        _tracer?.Invoke($"AspireServer - {traceMsg}");
-    }
-
-    /// <summary>
-    /// starts the web server running
-    /// </summary>
-    private void Initialize()
-    {
-        if (Interlocked.CompareExchange(ref _isListening, 1, 0) == 1)
-        {
-            return;
-        }
-
-        // Kick of the web server.
-        StartListening();
+        _reporter?.Invoke($"AspireServer - {traceMsg}");
     }
 
     public ValueTask DisposeAsync()
