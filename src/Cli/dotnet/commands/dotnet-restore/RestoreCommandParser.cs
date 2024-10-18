@@ -62,6 +62,8 @@ namespace Microsoft.DotNet.Cli
             var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
 
             command.Arguments.Add(SlnOrProjectArgument);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             foreach (var option in FullRestoreOptions())
@@ -69,7 +71,6 @@ namespace Microsoft.DotNet.Cli
                 command.Options.Add(option);
             }
 
-            command.Options.Add(CommonOptions.ArchitectureOption);
             command.SetAction(RestoreCommand.Run);
 
             return command;
@@ -82,8 +83,11 @@ namespace Microsoft.DotNet.Cli
                 command.Options.Add(option);
             }
         }
+        
         private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
+
         private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
+
         public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
         {
             List<string> convertedRids = new();
