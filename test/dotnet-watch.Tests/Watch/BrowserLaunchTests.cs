@@ -25,8 +25,11 @@ namespace Microsoft.DotNet.Watcher.Tests
             // check that all app output is printed out:
             await App.AssertOutputLine(line => line.Contains("Content root path:"));
 
+            Assert.Contains(App.Process.Output, line => line.Contains("Application started. Press Ctrl+C to shut down."));
+            Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
+
             // Verify we launched the browser.
-            Assert.Contains(App.Process.Output, line => line.Contains("Launching browser: https://localhost:5001/"));
+            Assert.Contains(App.Process.Output, line => line.Contains("dotnet watch ⌚ Launching browser: https://localhost:5001/"));
         }
 
         [Fact]
