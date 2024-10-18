@@ -6,18 +6,18 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
     /// <summary>
     /// Represents a table row for template group display.
     /// </summary>
-    internal struct TemplateGroupTableRow
+    public struct TemplateGroupTableRow
     {
-        internal string Author { get; set; }
+        public string Author { get; set; }
 
-        internal string Classifications { get; set; }
+        public string Classifications { get; set; }
 
-        internal string Languages { get; set; }
+        public string Languages { get; set; }
 
-        internal string Name { get; set; }
+        public string Name { get; set; }
 
-        internal string ShortNames { get; set; }
+        public string ShortNames { get; set; }
 
-        internal string Type { get; set; }
+        public string Type { get; set; }
     }
 }

@@ -60,7 +60,8 @@ namespace Microsoft.TemplateEngine.Cli
                     resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters,
                     settings,
                     reporter: Reporter.Output,
-                    selectedLanguage: args.Language);
+                    selectedLanguage: args.Language,
+                    format: args.FormatOptions);
                 return NewCommandStatus.Success;
             }
             else
