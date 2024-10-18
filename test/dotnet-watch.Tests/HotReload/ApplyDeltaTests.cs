@@ -390,12 +390,16 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertWaitingForChanges();
 
+            // check that Aspire server output is logged via dotnet-watch reporter:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+
             var newSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
             newSource = newSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)");
             UpdateSourceFile(serviceSourcePath, newSource);
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
+            App.AssertOutputContains("Using Aspire process launcher.");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net9.0)");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net9.0)");
         }
