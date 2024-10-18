@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
@@ -99,6 +100,90 @@ namespace Microsoft.DotNet.Watcher.Tests
         }
 
         [Fact]
+        public async Task MetadataUpdateHandler_NoActions()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+            await App.AssertOutputLineStartsWith("Updated");
+
+            AssertEx.Contains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
+                App.Process.Output);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task MetadataUpdateHandler_Exception(bool verbose)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                    public static void ClearCache(Type[] types) => throw new System.InvalidOperationException("Bug!");
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            if (!verbose)
+            {
+                // remove default --verbose arg
+                App.DotnetWatchArgs.Clear();
+            }
+
+            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+            await App.AssertOutputLineStartsWith("Updated");
+
+            AssertEx.Contains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!",
+                App.Process.Output);
+
+            if (verbose)
+            {
+                AssertEx.Contains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.", App.Process.Output);
+            }
+            else
+            {
+                // shouldn't see any agent messages:
+                AssertEx.DoesNotContain("🕵️", App.Process.Output);
+            }
+        }
+
+        [Fact]
         public async Task BlazorWasm()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -106,19 +191,19 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: http://localhost:5000/");
             await App.AssertWaitingForChanges();
 
-            // TODO: enable once https://github.com/dotnet/razor/issues/10818 is fixed
-            //var newSource = """
-            //    @page "/"
-            //    <h1>Updated</h1>
-            //    """;
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains("dotnet watch ⌚ Launching browser: http://localhost:5000/");
 
-            //UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
+            var newSource = """
+                @page "/"
+                <h1>Updated</h1>
+                """;
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
         }
 
         [Fact]
@@ -284,6 +369,35 @@ namespace Microsoft.DotNet.Watcher.Tests
             Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
             await App.AssertOutputLineStartsWith("> NewSubdir");
+        }
+
+        [Fact]
+        public async Task Aspire()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+                .WithSource();
+
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "aspire", "--include-previews"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
+            var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
+            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost");
+
+            await App.AssertWaitingForChanges();
+
+            var newSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+            newSource = newSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)");
+            UpdateSourceFile(serviceSourcePath, newSource);
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net9.0)");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net9.0)");
         }
     }
 }

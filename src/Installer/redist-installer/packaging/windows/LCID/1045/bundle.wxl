@@ -4,23 +4,23 @@
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
   <String Id="HelpHeader">Instalator — Pomoc</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] — instaluje, naprawia, odinstalowuje
-   lub tworzy pełną lokalną kopię pakietu w katalogu. Domyślnie jest używany element „/install”.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] — instaluje, naprawia, odinstalowuje
+   lub tworzy pełną lokalną kopię pakietu w katalogu. „/install” jest wartością domyślną.
 
-/passive | /quiet — wyświetla ograniczony interfejs użytkownika bez monitów albo nie wyświetla interfejsu użytkownika i
-   żadnych monitów. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
+/passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów lub nie wyświetla interfejsu użytkownika
+   ani monitów. Domyślnie jest wyświetlany interfejs użytkownika i wszystkie monity.
 
-/norestart — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
-/log [\[]"log.txt"[\]] — tworzy dzienniki w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
+/norestart — wstrzymaj próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetli monit przed ponownym uruchomieniem.
+/log [\[]"log.txt"[\]] — rejestruje do określonego pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallAcceptCheckbox">Zg&amp;adzam się na warunki licencji</String>
+  <String Id="InstallAcceptCheckbox">Zg&amp;adzam się z warunkami licencji</String>
   <String Id="InstallOptionsButton">&amp;Opcje</String>
   <String Id="InstallInstallButton">Za&amp;instaluj</String>
   <String Id="InstallCloseButton">&amp;Zamknij</String>
   <String Id="ProgressHeader">Postęp instalacji</String>
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
-  <String Id="ProgressCancelButton">&amp;Anuluj</String>
+  <String Id="ProgressCancelButton">A&amp;nuluj</String>
   <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
   <String Id="ModifyRepairButton">Nap&amp;raw</String>
   <String Id="ModifyUninstallButton">O&amp;dinstaluj</String>
@@ -48,23 +48,23 @@
   <String Id="FilesInUseCancelButton">&amp;Anuluj</String>
   <String Id="FirstTimeWelcomeMessage">Instalacja zakończyła się pomyślnie.
 
-Następujące produkty zostały zainstalowane:
+Zainstalowano następujące produkty:
     • Zestaw SDK .NET [DOTNETSDKVERSION]
     • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
     • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
     • Środowisko uruchomieniowe platformy .NET dla komputerów z systemem Windows [WINFORMSANDWPFVERSION]
 
 Ten produkt zbiera dane użycia
-    • Więcej informacji i rezygnacja: https://aka.ms/dotnet-cli-telemetry
+    • Więcej informacji i niezgoda na uczestnictwo: https://aka.ms/dotnet-cli-telemetry
 
 Zasoby
-    • Dokumentacja dotycząca platformy .NET https://aka.ms/dotnet-docs
-    • Dokumentacja dotycząca zestawu SDK https://aka.ms/dotnet-sdk-docs
-    • Informacje o wersji https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Samouczki https://aka.ms/dotnet-tutorials</String>
+    • Dokumentacja platformy .NET: https://aka.ms/dotnet-docs
+    • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
+    • Informacje o wersji: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Samouczki: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    Zestaw SDK platformy .NET służy do tworzenia, uruchamiania i testowania aplikacji platformy .NET. Możesz wybierać spośród wielu języków, edytorów i narzędzi deweloperskich oraz korzystać z dużego ekosystemu bibliotek do tworzenia aplikacji internetowych, mobilnych, na komputer, gry i Internet rzeczy. Mamy nadzieję, że Ci się to spodoba!</String>
+    Zestaw SDK .NET służy do tworzenia, uruchamiania i testowania aplikacji platformy .NET. Możesz wybierać spośród wielu języków, edytorów i narzędzi deweloperskich oraz korzystać z dużego ekosystemu bibliotek, aby tworzyć aplikacje dla sieci Web, urządzeń przenośnych, komputerów, konsol i platformy IoT. Mamy nadzieję, że to Ci się spodoba!</String>
   <String Id="LearnMoreTitle">Dowiedz się więcej o platformie .NET</String>
   <String Id="ResourcesHeader">Zasoby</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Dokumentacja platformy .NET&lt;/A&gt;</String>
@@ -75,7 +75,7 @@ Zasoby
   <String Id="InstallationNoteTitle">Uwaga dotycząca instalacji</String>
   <String Id="InstallationNote">W trakcie procesu instalacji zostanie uruchomione polecenie, które zwiększy szybkość przywracania projektu i umożliwi dostęp do trybu offline. Zajmie to maksymalnie minutę.
   </String>
-  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET [VERSIONMAJOR].[VERSIONMINOR] z programem Visual Studio, wymagany jest program Visual Studio 2022 [MINIMUMVSVERSION] lub nowszy. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET [VERSIONMAJOR].[VERSIONMINOR] za pomocą programu Visual Studio, wymaga to wersji programu Visual Studio 2022 [MINIMUMVSVERSION] lub nowszej. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Klikając pozycję Zainstaluj, wyrażasz zgodę na następujące warunki:</String>
   <String Id="InstallPathx64x86">Ścieżka instalacji w przypadku instalacji zestawu SDK x64: „[DOTNETHOME_X64]” nie może być taka sama jak w przypadku instalacji zestawu SDK x86: „[DOTNETHOME_X86]”</String>

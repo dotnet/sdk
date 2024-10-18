@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -240,8 +240,20 @@ Defaults to 0.
 See the Diagnostic Port documentation for more information.
 .SS \f[V]DOTNET_EnableDiagnostics\f[R]
 .PP
-When set to \f[V]1\f[R], enables debugging, profiling, and other diagnostics via the Diagnostic Port.
-Defaults to 1.
+When set to \f[V]0\f[R], disables debugging, profiling, and other diagnostics via the Diagnostic Port and can\[cq]t be overridden by other diagnostics settings.
+Defaults to \f[V]1\f[R].
+.SS \f[V]DOTNET_EnableDiagnostics_IPC\f[R]
+.PP
+Starting with .NET 8, when set to \f[V]0\f[R], disables the Diagnostic Port and can\[cq]t be overridden by other diagnostics settings.
+Defaults to \f[V]1\f[R].
+.SS \f[V]DOTNET_EnableDiagnostics_Debugger\f[R]
+.PP
+Starting with .NET 8, when set to \f[V]0\f[R], disables debugging and can\[cq]t be overridden by other diagnostics settings.
+Defaults to \f[V]1\f[R].
+.SS \f[V]DOTNET_EnableDiagnostics_Profiler\f[R]
+.PP
+Starting with .NET 8, when set to \f[V]0\f[R], disables profiling and can\[cq]t be overridden by other diagnostics settings.
+Defaults to \f[V]1\f[R].
 .SS EventPipe variables
 .PP
 See EventPipe environment variables for more information.
@@ -253,11 +265,12 @@ See EventPipe environment variables for more information.
 \f[V]DOTNET_EventPipeOutputStreaming\f[R]: When set to \f[V]1\f[R], enables streaming to the output file while the app is running.
 By default trace information is accumulated in a circular buffer and the contents are written at app shutdown.
 .SS .NET SDK and CLI environment variables
-.SS \f[V]DOTNET_ROOT\f[R], \f[V]DOTNET_ROOT(x86)\f[R]
+.SS \f[V]DOTNET_ROOT\f[R], \f[V]DOTNET_ROOT(x86)\f[R], \f[V]DOTNET_ROOT_X86\f[R], \f[V]DOTNET_ROOT_X64\f[R]
 .PP
 Specifies the location of the .NET runtimes, if they are not installed in the default location.
 The default location on Windows is \f[V]C:\[rs]Program Files\[rs]dotnet\f[R].
 The default location on macOS is \f[V]/usr/local/share/dotnet\f[R].
+The default location for the x64 runtimes on an arm64 OS is under an x64 subfolder (so \f[V]C:\[rs]Program Files\[rs]dotnet\[rs]x64\f[R] on windows and \f[V]/usr/local/share/dotnet/x64\f[R] on macOS.
 The default location on Linux varies depending on distro and installment method.
 The default location on Ubuntu 22.04 is \f[V]/usr/share/dotnet\f[R] (when installed from \f[V]packages.microsoft.com\f[R]) or \f[V]/usr/lib/dotnet\f[R] (when installed from Jammy feed).
 For more information, see the following resources:
@@ -270,6 +283,7 @@ GitHub issue dotnet/runtime#79237 (https://github.com/dotnet/runtime/issues/7923
 .PP
 This environment variable is used only when running apps via generated executables (apphosts).
 \f[V]DOTNET_ROOT(x86)\f[R] is used instead when running a 32-bit executable on a 64-bit OS.
+\f[V]DOTNET_ROOT_X64\f[R] is used instead when running a 64-bit executable on an ARM64 OS.
 .SS \f[V]DOTNET_HOST_PATH\f[R]
 .PP
 Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS) that was used to launch the currently-running \f[V]dotnet\f[R] process.
@@ -285,6 +299,83 @@ otherwise, rely on \f[V]dotnet\f[R] via the system\[cq]s \f[V]PATH\f[R]
 .PP
 \f[V]DOTNET_HOST_PATH\f[R] is not a general solution for locating the \f[V]dotnet\f[R] host.
 It is only intended to be used by tools that are invoked by the .NET SDK.
+.RE
+.SS \f[V]DOTNET_LAUNCH_PROFILE\f[R]
+.PP
+The dotnet run command sets this variable to the selected launch profile.
+.PP
+Given the following \f[I]launchSettings.json\f[R] file:
+.IP
+.nf
+\f[C]
+{
+  \[dq]profiles\[dq]: {
+    \[dq]First\[dq]: {
+      \[dq]commandName\[dq]: \[dq]Project\[dq],
+    },
+    \[dq]Second\[dq]: {
+      \[dq]commandName\[dq]: \[dq]Project\[dq],
+    }
+  }
+}
+\f[R]
+.fi
+.PP
+And the following \f[I]Program.cs\f[R] file:
+.IP
+.nf
+\f[C]
+var value = Environment.GetEnvironmentVariable(\[dq]DOTNET_LAUNCH_PROFILE\[dq]);
+Console.WriteLine($\[dq]DOTNET_LAUNCH_PROFILE={value}\[dq]);
+\f[R]
+.fi
+.PP
+The following scenarios produce the output shown:
+.IP \[bu] 2
+Launch profile specified and exists
+.RS 2
+.IP
+.nf
+\f[C]
+$ dotnet run --launch-profile First
+DOTNET_LAUNCH_PROFILE=First
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Launch profile not specified, first one selected
+.RS 2
+.IP
+.nf
+\f[C]
+$ dotnet run
+DOTNET_LAUNCH_PROFILE=First
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Launch profile specified but does not exist
+.RS 2
+.IP
+.nf
+\f[C]
+$ dotnet run --launch-profile Third
+The launch profile \[dq]Third\[dq] could not be applied.
+A launch profile with the name \[aq]Third\[aq] doesn\[aq]t exist.
+DOTNET_LAUNCH_PROFILE=
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Launch with no profile
+.RS 2
+.IP
+.nf
+\f[C]
+$ dotnet run --no-launch-profile
+DOTNET_LAUNCH_PROFILE=
+\f[R]
+.fi
 .RE
 .SS \f[V]NUGET_PACKAGES\f[R]
 .PP
@@ -317,11 +408,16 @@ To not add global tools to the path, set to \f[V]0\f[R], \f[V]false\f[R], or \f[
 .PP
 Specifies whether data about the .NET tools usage is collected and sent to Microsoft.
 Set to \f[V]true\f[R] to opt-out of the telemetry feature (values \f[V]true\f[R], \f[V]1\f[R], or \f[V]yes\f[R] accepted).
-Otherwise, set to \f[V]false\f[R] to opt into the telemetry features (values \f[V]false\f[R], \f[V]0\f[R], or \f[V]no\f[R] accepted).
+Otherwise, set to \f[V]false\f[R] to opt in to the telemetry features (values \f[V]false\f[R], \f[V]0\f[R], or \f[V]no\f[R] accepted).
 If not set, the default is \f[V]false\f[R] and the telemetry feature is active.
 .SS \f[V]DOTNET_SKIP_FIRST_TIME_EXPERIENCE\f[R]
 .PP
 If \f[V]DOTNET_SKIP_FIRST_TIME_EXPERIENCE\f[R] is set to \f[V]true\f[R], the \f[V]NuGetFallbackFolder\f[R] won\[cq]t be expanded to disk and a shorter welcome message and telemetry notice will be shown.
+.RS
+.PP
+This environment variable is no longer supported in .NET Core 3.0 and later.
+Use \f[V]DOTNET_NOLOGO\f[R] as a replacement.
+.RE
 .SS \f[V]DOTNET_MULTILEVEL_LOOKUP\f[R]
 .PP
 Specifies whether the .NET runtime, shared framework, or SDK are resolved from the global location.
@@ -382,6 +478,16 @@ List of assemblies to load and execute startup hooks from.
 Specifies a directory to which a single-file application is extracted before it is executed.
 .PP
 For more information, see Single-file executables.
+.SS \f[V]DOTNET_CLI_HOME\f[R]
+.PP
+Specifies the location that supporting files for .NET CLI commands should be written to.
+For example:
+.IP \[bu] 2
+User-writable paths for workload packs, manifests, and other supporting data.
+.IP \[bu] 2
+First-run sentinel/lock files for aspects of the .NET CLI\[cq]s first-run migrations and notification experiences.
+.IP \[bu] 2
+The default .NET local tool installation location.
 .SS \f[V]DOTNET_CLI_CONTEXT_*\f[R]
 .IP \[bu] 2
 \f[V]DOTNET_CLI_CONTEXT_VERBOSE\f[R]: To enable a verbose context, set to \f[V]true\f[R].

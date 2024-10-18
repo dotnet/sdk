@@ -4,21 +4,21 @@
   <String Id="ConfirmCancelMessage">是否确实要取消?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]]  - 在目录中安装、修复、卸载
-   或创建安装包的完整本地副本。'/Install' 为默认选择。
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
+   或在目录中创建捆绑包的完整本地副本。'/install' 是默认值。
 
-/passive | /quiet - 显示最少的 UI 且无提示，或不显示 UI 且
-   无提示。默认显示 UI 及全部提示。
+/passive | /quiet - 显示最小 UI 且无提示，或不显示 UI 和
+   提示。默认情况下，将显示 UI 和所有提示。
 
-/norestart - 禁止任何重新启动。默认在重新启动前显示提示 UI。
-/log [\[]"log.txt"[\]] - 向特定文件写入日志。默认在 %TEMP% 中创建日志文件。</String>
+/norestart - 抑制任何重启尝试。默认情况下，UI 将在重启前提示。
+/log [\[]"log.txt"[\]] - 记录到特定文件。默认情况下在 %TEMP% 中创建日志文件。</String>
   <String Id="HelpCloseButton">关闭(&amp;C)</String>
   <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
   <String Id="InstallOptionsButton">选项(&amp;O)</String>
   <String Id="InstallInstallButton">安装(&amp;I)</String>
   <String Id="InstallCloseButton">关闭(&amp;C)</String>
   <String Id="ProgressHeader">安装进度</String>
-  <String Id="ProgressLabel">正在处理:</String>
+  <String Id="ProgressLabel">正在处理: </String>
   <String Id="OverallProgressPackageText">正在初始化...</String>
   <String Id="ProgressCancelButton">取消(&amp;C)</String>
   <String Id="ModifyHeader">修改安装程序</String>
@@ -46,22 +46,22 @@
   <String Id="FilesInUseDontCloseRadioButton">不关闭应用程序(&amp;D)。需要重启。</String>
   <String Id="FilesInUseOkButton">确定(&amp;O)</String>
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
-  <String Id="FirstTimeWelcomeMessage">已成功安装。
+  <String Id="FirstTimeWelcomeMessage">安装成功。
 
-下列产品已安装: 
+已安装以下产品:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
     • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
-此产品会收集用法数据
-    • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
+此产品会收集使用情况数据
+    • 详细信息和选择退出 https://aka.ms/dotnet-cli-telemetry
 
 资源
-    • .NET 文档: https://aka.ms/dotnet-docs
-    • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • 教程: https://aka.ms/dotnet-tutorials</String>
+    • .NET 文档 https://aka.ms/dotnet-docs
+    • SDK 文档 https://aka.ms/dotnet-sdk-docs
+    • 发行说明 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • 教程 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK 用于生成、运行和测试 .NET 应用程序。有多种语言、编辑器和开发人员工具可供选择，你也可使用由库构成的大型生态系统来构建面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你喜欢它!</String>
@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果你计划使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio、Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本是必需的。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果你计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则 Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本是必需的。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;了解详细信息&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">单击“安装”即表示你同意以下条款:</String>
   <String Id="InstallPathx64x86">x64 SDK 安装的安装路径: "[DOTNETHOME_X64]" 不能与 x86 SDK 安装的路径相同: "[DOTNETHOME_X86]"</String>

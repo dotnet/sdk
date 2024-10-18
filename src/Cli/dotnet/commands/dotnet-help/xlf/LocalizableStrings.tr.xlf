@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SDKOptionsHelpDefinition">
         <source>Show command line help.</source>
-        <target state="new">Show command line help.</target>
+        <target state="translated">Komut satırı yardımını gösterir.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="needs-review-translation">Komut satırı yardımını gösterir.</target>
+        <target state="translated">Başvuru sayfasını belirtilen komut için bir tarayıcıda açar.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List packages or references of a .NET project.</source>
-        <target state="needs-review-translation">Bir .NET projesinin proje başvurularını listeler.</target>
+        <target state="translated">Bir .NET projesinin paketlerini veya başvurularını listeleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">
