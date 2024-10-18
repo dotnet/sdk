@@ -4,7 +4,7 @@
 using System.Net;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using Microsoft.Build.Utilities;
 using Moq;
 using NuGet.ContentModel;
 
@@ -168,7 +168,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         errorMessages[0].Should().Be($"""The asset file '{Path.GetFullPath(Path.Combine("wwwroot", "js", "sample.js"))}' specified in the endpoint '{Path.Combine("js","sample.js").Replace('\\', '/')}' does not exist.""");
     }
 
-    private ITaskItem CreateStaticWebAsset(
+    private static ITaskItem CreateStaticWebAsset(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -204,7 +204,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         return result.ToTaskItem();
     }
 
-    private ITaskItem CreateStaticWebAssetEndpoint(
+    private static TaskItem CreateStaticWebAssetEndpoint(
         string route,
         string assetFile,
         StaticWebAssetEndpointResponseHeader[] responseHeaders = null,

@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEndpointResponseHeader>, IComparable<StaticWebAssetEndpointResponseHeader>
@@ -18,15 +17,9 @@ public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEnd
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value)
-    {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
-    }
+    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders)
-    {
-        return JsonSerializer.Serialize(responseHeaders ?? []);
-    }
+    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
 
     private string GetDebuggerDisplay() => $"{Name}: {Value}";
 

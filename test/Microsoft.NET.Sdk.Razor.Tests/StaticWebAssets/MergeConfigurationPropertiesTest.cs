@@ -258,7 +258,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("RuntimeIdentifier;TargetFramework");
         }
 
-        private ITaskItem CreateCandidateProjectConfiguration(string project)
+        private static ITaskItem CreateCandidateProjectConfiguration(string project)
         {
             return new TaskItem(Path.GetFullPath(project), new Dictionary<string, string>
             {
@@ -273,7 +273,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             });
         }
 
-        private ITaskItem CreateProjectReference(
+        private static ITaskItem CreateProjectReference(
             string project,
             string msBuildSourceProjectFile,
             string undefineProperties = "",

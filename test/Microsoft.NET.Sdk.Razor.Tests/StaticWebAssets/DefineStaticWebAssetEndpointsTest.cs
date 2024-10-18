@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
@@ -481,7 +480,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -519,7 +518,7 @@ public class DefineStaticWebAssetEndpointsTest
         return result.ToTaskItem();
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {
@@ -528,7 +527,7 @@ public class DefineStaticWebAssetEndpointsTest
         });
     }
 
-    private ITaskItem CreateCandidateEndpoint(
+    private static ITaskItem CreateCandidateEndpoint(
         string route,
         string assetFile,
         StaticWebAssetEndpointResponseHeader[] responseHeaders = null,

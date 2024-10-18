@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -545,8 +544,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         {
             if (!readFromDevManifest)
             {
-                return new(Directory.GetFiles(Path.Combine(outputDirectory, "wwwroot"), "*", SearchOption.AllDirectories)
-                        .Select(a => StaticWebAsset.Normalize(Path.GetRelativePath(Path.Combine(outputDirectory, "wwwroot"), a))));
+                return [.. Directory.GetFiles(Path.Combine(outputDirectory, "wwwroot"), "*", SearchOption.AllDirectories)
+                        .Select(a => StaticWebAsset.Normalize(Path.GetRelativePath(Path.Combine(outputDirectory, "wwwroot"), a)))];
             }
             else
             {

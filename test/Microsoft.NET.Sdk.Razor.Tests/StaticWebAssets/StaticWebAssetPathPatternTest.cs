@@ -717,5 +717,5 @@ public class StaticWebAssetPathPatternTest
         Assert.Equal(expected, routePatterns);
     }
 
-    private StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
+    private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
 }
