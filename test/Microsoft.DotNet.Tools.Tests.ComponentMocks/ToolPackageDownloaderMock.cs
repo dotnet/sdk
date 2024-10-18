@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -98,7 +99,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            bool verifySignatures = false
+            bool verifySignatures = false,
+            RestoreActionConfig restoreActionConfig = null
             )
         {
             string rollbackDirectory = null;
