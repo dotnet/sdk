@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Cli
                     }
                 }
             }
-            return null;  // If nothing can be found: that's caught by MSBuild XMake::ProcessProjectSwitch -- don't change the behavior by failing here. 
+            return null;  // If nothing can be found: that's caught by MSBuild XMake::ProcessProjectSwitch -- don't change the behavior by failing here.
         }
 
         /// <returns>An arbitrary existant project in a solution file. Returns null if no projects exist.
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Cli
         /// <summary>
         /// Returns an arbitrary project for the solution. Relies on the .NET SDK PrepareForPublish or _VerifyPackReleaseConfigurations MSBuild targets to catch conflicting values of a given property, like PublishRelease or PackRelease.
         /// </summary>
-        /// <param name="sln">The solution to get an arbitrary project from.</param>
+        /// <param name="solution">The solution to get an arbitrary project from.</param>
         /// <param name="globalProps">The global properties to load into the project.</param>
         /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
         private ProjectInstance? GetSingleProjectFromSolution(SlnFile sln, Dictionary<string, string> globalProps)
@@ -253,13 +253,13 @@ namespace Microsoft.DotNet.Cli
             return null;
         }
 
-        /// <returns>Returns true if the path exists and is a project file type.</returns> 
+        /// <returns>Returns true if the path exists and is a project file type.</returns>
         private bool IsValidProjectFilePath(string path)
         {
             return File.Exists(path) && Path.GetExtension(path).EndsWith("proj");
         }
 
-        /// <returns>Returns true if the path exists and is a sln file type.</returns> 
+        /// <returns>Returns true if the path exists and is a sln file type.</returns>
         private bool IsValidSlnFilePath(string path)
         {
             return File.Exists(path) && Path.GetExtension(path).EndsWith("sln");
@@ -271,7 +271,7 @@ namespace Microsoft.DotNet.Cli
             Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
 
             string[]? globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
-            
+
             if ( globalPropEnumerable != null )
             {
                 foreach (var keyEqValString in globalPropEnumerable)
