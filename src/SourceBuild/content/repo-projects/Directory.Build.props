@@ -70,6 +70,7 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)build</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
+    <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
     <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
     <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
@@ -93,6 +94,7 @@
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
     <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

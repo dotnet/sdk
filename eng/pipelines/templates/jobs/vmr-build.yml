@@ -45,6 +45,11 @@ parameters:
   type: boolean
   default: false
 
+- name: sign
+  displayName: True when build output should be signed
+  type: boolean
+  default: false
+
 # Overrides the rid that is produced by the build.
 - name: targetRid
   type: string
@@ -276,16 +281,14 @@ jobs:
         versionSpec: 20.x
 
     - script: |
+        set extraBuildArguments=
+        if /I '${{ parameters.sign }}'=='True' set extraBuildArguments=%extraBuildArguments% -sign
+        if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %devArgument% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
-      env:
-        ${{ if eq(parameters.useDevVersions, 'True') }}:
-          devArgument: -dev
-        ${{ else }}:
-          devArgument: ''
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
@@ -358,6 +361,10 @@ jobs:
 
         if [[ '${{ parameters.useDevVersions }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --dev"
+        fi
+
+        if [[ '${{ parameters.sign }}' == 'True' ]]; then
+          customBuildArgs="$customBuildArgs --sign"
         fi
 
         if [[ -n "${{ parameters.targetRid }}" ]]; then
