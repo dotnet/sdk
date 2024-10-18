@@ -4,7 +4,7 @@
 using System.Numerics;
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 internal static class FileHasher
 {

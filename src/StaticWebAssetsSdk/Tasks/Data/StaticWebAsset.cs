@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 

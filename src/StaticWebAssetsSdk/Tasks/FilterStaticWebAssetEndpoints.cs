@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -36,7 +35,7 @@ public class FilterStaticWebAssetEndpoints : Task
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 
         var filteredEndpoints = new List<StaticWebAssetEndpoint>();
-        for (int i = 0; i < endpoints.Length; i++)
+        for (var i = 0; i < endpoints.Length; i++)
         {
             StaticWebAsset asset = null;
             var endpoint = endpoints[i];
@@ -74,7 +73,7 @@ public class FilterStaticWebAssetEndpoints : Task
 
     private static bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, StaticWebAsset asset, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
     {
-        for (int i = 0; i < filterCriteria.Length; i++)
+        for (var i = 0; i < filterCriteria.Length; i++)
         {
             var criteria = filterCriteria[i];
             switch (criteria.Type)

@@ -25,12 +25,12 @@ public class UpdateServiceWorkerFileWithVersion : Task
         }
 
         Log.LogMessage(MessageImportance.Low, "Reading ServiceWorkerSource from disk: {0}", ServiceWorkerSource);
-        string sourceContent = File.ReadAllText(ServiceWorkerSource);
+        var sourceContent = File.ReadAllText(ServiceWorkerSource);
 
-        string versionedContent = $"/* Manifest version: {ManifestVersion} */{Environment.NewLine}{sourceContent}";
+        var versionedContent = $"/* Manifest version: {ManifestVersion} */{Environment.NewLine}{sourceContent}";
 
         Log.LogMessage(MessageImportance.Low, "Reading ServiceWorkerDestination from disk: {0}", ServiceWorkerDestination);
-        string destinationContent = File.Exists(ServiceWorkerDestination) ? File.ReadAllText(ServiceWorkerDestination) : null;
+        var destinationContent = File.Exists(ServiceWorkerDestination) ? File.ReadAllText(ServiceWorkerDestination) : null;
 
         if (!string.Equals(destinationContent, versionedContent, StringComparison.Ordinal))
         {

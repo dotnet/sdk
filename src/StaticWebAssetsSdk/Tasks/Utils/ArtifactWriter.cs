@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Build.Framework;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Utils;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 public static class ArtifactWriter
 {

@@ -35,8 +35,8 @@ public class ResolveAllScopedCssAssets : Task
             }
         }
 
-        ScopedCssAssets = scopedCssAssets.ToArray();
-        ScopedCssProjectBundles = scopedCssProjectBundles.ToArray();
+        ScopedCssAssets = [.. scopedCssAssets];
+        ScopedCssProjectBundles = [.. scopedCssProjectBundles];
 
         return !Log.HasLoggedErrors;
     }

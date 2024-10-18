@@ -63,8 +63,8 @@ public class StaticWebAssetsGeneratePackManifest : Task
 
         var manifest = new StaticWebAssetsPackManifest
         {
-            Files = packageFiles.ToArray(),
-            ElementsToRemove = AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).OrderBy(id => id).ToArray()
+            Files = [.. packageFiles],
+            ElementsToRemove = [.. AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).OrderBy(id => id)]
         };
 
         PersistManifest(manifest);

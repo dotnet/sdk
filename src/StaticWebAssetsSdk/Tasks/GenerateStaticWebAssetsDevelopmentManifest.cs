@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -225,7 +226,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                     };
                     patterns.Add(assetPattern);
                 }
-                currentNode.Patterns = patterns.ToArray();
+                currentNode.Patterns = [.. patterns];
             }
             else
             {
@@ -256,13 +257,13 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                         {
                             childNode = new StaticWebAssetNode
                             {
-                                Patterns = patterns.ToArray(),
+                                Patterns = [.. patterns],
                             };
                             currentNode.Children.Add(segment, childNode);
                         }
                         else
                         {
-                            childNode.Patterns = patterns.ToArray();
+                            childNode.Patterns = [.. patterns];
                         }
 
                         break;

@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -54,7 +54,7 @@ public class GenerateStaticWebAssetsManifest : Task
             var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
             foreach (var group in assetsByTargetPath)
             {
-                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.ToArray(), out var reason))
+                if (!StaticWebAsset.ValidateAssetGroup(group.Key, [.. group], out var reason))
                 {
                     Log.LogError(reason);
                     return false;
@@ -78,7 +78,7 @@ public class GenerateStaticWebAssetsManifest : Task
                     ManifestType,
                     referencedProjectsConfiguration,
                     discoveryPatterns,
-                    assets.ToArray(),
+                    [.. assets],
                     endpoints));
         }
         catch (Exception ex)
@@ -127,7 +127,7 @@ public class GenerateStaticWebAssetsManifest : Task
         if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
         {
             var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
-            if(!fileExists)
+            if (!fileExists)
             {
                 Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
             }
@@ -136,7 +136,7 @@ public class GenerateStaticWebAssetsManifest : Task
                 Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
             }
             File.WriteAllBytes(ManifestPath, data);
-            if(!string.IsNullOrEmpty(ManifestCacheFilePath))
+            if (!string.IsNullOrEmpty(ManifestCacheFilePath))
             {
                 File.WriteAllText(ManifestCacheFilePath, manifest.Hash);
             }

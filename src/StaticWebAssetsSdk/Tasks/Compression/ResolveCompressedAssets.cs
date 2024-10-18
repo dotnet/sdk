@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -155,7 +156,7 @@ public class ResolveCompressedAssets : Task
             assetsToCompress.Count,
             matchingCandidateAssets.Count);
 
-        AssetsToCompress = assetsToCompress.ToArray();
+        AssetsToCompress = [.. assetsToCompress];
 
         return !Log.HasLoggedErrors;
     }

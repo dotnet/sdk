@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
@@ -158,7 +158,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             return assetFileComparison;
         }
 
-        if(Selectors.Length > other.Selectors.Length)
+        if (Selectors.Length > other.Selectors.Length)
         {
             return 1;
         }
@@ -182,7 +182,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             }
         }
 
-        if(EndpointProperties.Length > other.EndpointProperties.Length)
+        if (EndpointProperties.Length > other.EndpointProperties.Length)
         {
             return 1;
         }
@@ -191,7 +191,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             return -1;
         }
 
-        for (var i = 0; i < EndpointProperties.Length;i++)
+        for (var i = 0; i < EndpointProperties.Length; i++)
         {
             var propertyComparison = EndpointProperties[i].Name.CompareTo(other.EndpointProperties[i].Name);
             if (propertyComparison != 0)

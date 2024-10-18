@@ -78,7 +78,7 @@ public class CollectStaticWebAssetsToCopy : Task
                 }
             }
 
-            AssetsToCopy = copyToOutputFolder.ToArray();
+            AssetsToCopy = [.. copyToOutputFolder];
         }
         catch (Exception ex)
         {

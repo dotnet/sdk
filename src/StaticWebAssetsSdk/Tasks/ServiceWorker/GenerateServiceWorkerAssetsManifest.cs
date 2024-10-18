@@ -51,7 +51,7 @@ public partial class GenerateServiceWorkerAssetsManifest : Task
 
         Array.Sort(entries, (a, b) =>
         {
-            int urlComparison = string.Compare(a.Url, b.Url, StringComparison.Ordinal);
+            var urlComparison = string.Compare(a.Url, b.Url, StringComparison.Ordinal);
             if (urlComparison != 0)
             {
                 return urlComparison;

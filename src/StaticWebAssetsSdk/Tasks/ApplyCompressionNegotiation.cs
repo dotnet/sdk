@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -29,7 +29,7 @@ public class ApplyCompressionNegotiation : Task
         if (AssetFileDetails != null)
         {
             _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (int i = 0; i < AssetFileDetails.Length; i++)
+            for (var i = 0; i < AssetFileDetails.Length; i++)
             {
                 var item = AssetFileDetails[i];
                 _assetFileDetails[item.ItemSpec] = item;
@@ -154,10 +154,7 @@ public class ApplyCompressionNegotiation : Task
         // Add the preserved endpoints to the list of updated endpoints.
         foreach (var preservedEndpoint in preservedEndpoints.Values)
         {
-            if (!updatedEndpoints.Contains(preservedEndpoint))
-            {
-                updatedEndpoints.Add(preservedEndpoint);
-            }
+            updatedEndpoints.Add(preservedEndpoint);
         }
 
         // Before we return the updated endpoints we need to capture any other endpoint whose asset is not associated
@@ -215,17 +212,15 @@ public class ApplyCompressionNegotiation : Task
     private string ResolveQuality(StaticWebAsset compressedAsset)
     {
         long length;
-        if(_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
+        if (_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
         {
             length = long.Parse(assetFileDetail.GetMetadata("FileLength"), CultureInfo.InvariantCulture);
         }
-        else if (TestResolveFileLength != null)
-        {
-            length = TestResolveFileLength(compressedAsset.Identity);
-        }
         else
         {
-            length = new FileInfo(compressedAsset.Identity).Length;
+            length = TestResolveFileLength != null
+                ? TestResolveFileLength(compressedAsset.Identity)
+                : new FileInfo(compressedAsset.Identity).Length;
         }
 
         return Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture);

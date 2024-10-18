@@ -107,7 +107,7 @@ public class ConcatenateCssFiles : Task
         var outputContent = File.ReadAllText(outputFilePath);
         var outputContentHash = GetContentHash(outputContent);
 
-        for (int i = 0; i < outputContentHash.Length; i++)
+        for (var i = 0; i < outputContentHash.Length; i++)
         {
             if (outputContentHash[i] != contentHash[i])
             {

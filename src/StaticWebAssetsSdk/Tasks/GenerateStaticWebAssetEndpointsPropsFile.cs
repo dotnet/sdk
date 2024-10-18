@@ -4,7 +4,6 @@
 using System.Security.Cryptography;
 using System.Xml;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 

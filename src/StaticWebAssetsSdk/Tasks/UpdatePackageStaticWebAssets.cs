@@ -34,8 +34,8 @@ public class UpdatePackageStaticWebAssets : Task
                 updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
             }
 
-            OriginalAssets = originalAssets.ToArray();
-            UpdatedAssets = updatedAssets.ToArray();
+            OriginalAssets = [.. originalAssets];
+            UpdatedAssets = [.. updatedAssets];
         }
         catch (Exception ex)
         {

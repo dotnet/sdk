@@ -40,7 +40,7 @@ public class DiscoverDefaultScopedCssItems : Task
             }
         }
 
-        DiscoveredScopedCssInputs = discoveredInputs.ToArray();
+        DiscoveredScopedCssInputs = [.. discoveredInputs];
 
         return !Log.HasLoggedErrors;
     }

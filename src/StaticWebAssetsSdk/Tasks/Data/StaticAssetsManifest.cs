@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -137,7 +136,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
     public override int GetHashCode()
     {
 #if NET6_0_OR_GREATER
-        HashCode hash = new HashCode();
+        var hash = new HashCode();
         hash.Add(Version);
         hash.Add(Hash);
         hash.Add(Source);

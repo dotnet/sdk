@@ -1,10 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.Build.Framework;
 using System.Collections.Concurrent;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -33,7 +33,7 @@ public class DefineStaticWebAssetEndpoints : Task
         if (AssetFileDetails != null)
         {
             _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (int i = 0; i < AssetFileDetails.Length; i++)
+            for (var i = 0; i < AssetFileDetails.Length; i++)
             {
                 var item = AssetFileDetails[i];
                 _assetFileDetails[item.ItemSpec] = item;
@@ -95,7 +95,7 @@ public class DefineStaticWebAssetEndpoints : Task
                 assets.Add(asset.ItemSpec);
             }
 
-            for (int i = 0; i < ExistingEndpoints.Length; i++)
+            for (var i = 0; i < ExistingEndpoints.Length; i++)
             {
                 var endpointCandidate = ExistingEndpoints[i];
                 var assetFile = endpointCandidate.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile));

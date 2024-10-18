@@ -4,9 +4,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
@@ -66,7 +65,7 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
         return hashCode;
 #else
         return HashCode.Combine(Name, Value, Quality);
-        #endif
+#endif
     }
 
     private string GetDebuggerDisplay() => $"Name: {Name}, Value: {Value}, Quality: {Quality}";

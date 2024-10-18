@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
 {
@@ -414,7 +413,7 @@ internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
             }
         }
 
-        return ContentTypeProvider.ResolveBuiltIn(relativePath, log);
+        return ResolveBuiltIn(relativePath, log);
     }
 
     private static ContentTypeMapping ResolveBuiltIn(string relativePath, TaskLoggingHelper log)
@@ -425,7 +424,7 @@ internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
             var fileName = Path.GetFileNameWithoutExtension(relativePath);
             if (Path.GetExtension(fileName) != "")
             {
-                var result = ContentTypeProvider.ResolveBuiltIn(fileName, log);
+                var result = ResolveBuiltIn(fileName, log);
                 // If we don't have a specific mapping for the other extension, use any mapping available for `.gz` or `.br`
                 return result.MimeType == null && _builtInMappings.TryGetValue(extension, out var compressed) ?
                     compressed :

@@ -100,8 +100,8 @@ public class ApplyCssScopes : Task
             Log.LogError(null, "BLAZOR102", "", unmatched.ItemSpec, 0, 0, 0, 0, $"The scoped css file '{unmatched.ItemSpec}' was defined but no associated razor component or view was found for it.");
         }
 
-        RazorComponentsWithScopes = razorComponentsWithScopes.ToArray();
-        RazorGenerateWithScopes = razorGenerateWithScopes.ToArray();
+        RazorComponentsWithScopes = [.. razorComponentsWithScopes];
+        RazorGenerateWithScopes = [.. razorGenerateWithScopes];
 
         return !Log.HasLoggedErrors;
     }
