@@ -80,6 +80,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
+        sign: false
 
     jobs:
 

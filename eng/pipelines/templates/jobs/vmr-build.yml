@@ -367,7 +367,7 @@ jobs:
           customBuildArgs="$customBuildArgs --dev"
         fi
 
-        if [[ '${{ parameters.sign }}' == 'True' ]]; then
+        if [[ '${{ parameters.sign }}' == 'True' and '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
         fi
 
