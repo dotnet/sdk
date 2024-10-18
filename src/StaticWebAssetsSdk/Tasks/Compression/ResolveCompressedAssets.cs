@@ -275,7 +275,7 @@ public class ResolveCompressedAssets : Task
             OriginalItemSpec = asset.Identity,
             RelatedAsset = asset.Identity,
             AssetRole = "Alternative",
-            AssetTraitName = "Content-Encoding",            
+            AssetTraitName = "Content-Encoding",
             AssetTraitValue = assetTraitValue,
             ContentRoot = outputPath,
             // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.

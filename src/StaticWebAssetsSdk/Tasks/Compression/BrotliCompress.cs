@@ -42,7 +42,11 @@ public class BrotliCompress : ToolTask
 
     private static string Quote(string path)
     {
+#if NET9_0_OR_GREATER
+        if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[^1] == '\"'))
+#else
         if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[path.Length - 1] == '\"'))
+#endif
         {
             // it's already quoted
             return path;

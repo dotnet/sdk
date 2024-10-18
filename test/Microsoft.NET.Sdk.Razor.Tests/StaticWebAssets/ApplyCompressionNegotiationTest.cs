@@ -1371,7 +1371,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    private StaticWebAssetEndpointSelector[] CreateContentEcondingSelector(string name, string value)
+    private static StaticWebAssetEndpointSelector[] CreateContentEcondingSelector(string name, string value)
     {
         return
         [
@@ -1384,7 +1384,7 @@ public class ApplyCompressionNegotiationTest
         ];
     }
 
-    private StaticWebAssetEndpointResponseHeader[] CreateHeaders(string contentType, params (string name, string value)[] AdditionalHeaders)
+    private static StaticWebAssetEndpointResponseHeader[] CreateHeaders(string contentType, params (string name, string value)[] AdditionalHeaders)
     {
         return
         [
@@ -1396,7 +1396,7 @@ public class ApplyCompressionNegotiationTest
         ];
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -1437,7 +1437,7 @@ public class ApplyCompressionNegotiationTest
         return result.ToTaskItem();
     }
 
-    private ITaskItem CreateCandidateEndpoint(
+    private static ITaskItem CreateCandidateEndpoint(
         string route,
         string assetFile,
         StaticWebAssetEndpointResponseHeader[] responseHeaders = null,

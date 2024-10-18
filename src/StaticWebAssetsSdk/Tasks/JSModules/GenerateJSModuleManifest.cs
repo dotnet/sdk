@@ -34,13 +34,22 @@ public class GenerateJSModuleManifest : Task
     private void PersistModules(string[] modules)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(modules, ManifestSerializationOptions);
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
         var currentHash = sha256.ComputeHash(data);
-
+#else
+        var currentHash = SHA256.HashData(data);
+#endif
         Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
 
         var fileExists = File.Exists(OutputFile);
-        var existingManifestHash = fileExists ? sha256.ComputeHash(File.ReadAllBytes(OutputFile)) : Array.Empty<byte>();
+        var existingManifestHash = fileExists ?
+#if !NET9_0_OR_GREATER
+            sha256.ComputeHash(File.ReadAllBytes(OutputFile)) :
+#else
+            SHA256.HashData(File.ReadAllBytes(OutputFile)) :
+#endif
+            [];
 
         if (!fileExists)
         {

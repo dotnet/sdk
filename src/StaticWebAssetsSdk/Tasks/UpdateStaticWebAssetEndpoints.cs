@@ -358,15 +358,12 @@ public class UpdateStaticWebAssetEndpoints : Task
 
         public string Quality { get; } = quality;
 
-        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item)
-        {
-            return new StaticWebAssetEndpointOperation(
+        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item) => new(
                 item.ItemSpec,
                 item.GetMetadata("UpdateTarget"),
                 item.GetMetadata("Name"),
                 item.GetMetadata("Value"),
                 item.GetMetadata("NewValue"),
                 item.GetMetadata("Quality"));
-        }
     }
 }

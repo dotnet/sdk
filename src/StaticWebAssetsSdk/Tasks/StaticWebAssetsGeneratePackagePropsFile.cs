@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
@@ -76,9 +76,12 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task
 
     private static string ComputeHash(byte[] data)
     {
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
-
         var result = sha256.ComputeHash(data);
+#else
+        var result = SHA256.HashData(data);
+#endif
         return Convert.ToBase64String(result);
     }
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -11,14 +11,11 @@ public partial class StaticWebAssetsManifest
 {
     public class ReferencedProjectConfiguration
     {
-        internal static ReferencedProjectConfiguration Create(string identity, string source)
+        internal static ReferencedProjectConfiguration Create(string identity, string source) => new()
         {
-            return new ReferencedProjectConfiguration()
-            {
-                Identity = identity,
-                Source = source
-            };
-        }
+            Identity = identity,
+            Source = source
+        };
 
         public string Identity { get; set; }
 
@@ -65,7 +62,7 @@ public partial class StaticWebAssetsManifest
 
             return hashCode.ToHashCode();
 #else
-            int hashCode = -868952447;
+            var hashCode = -868952447;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
             hashCode = hashCode * -1521134295 + EqualityComparer<int>.Default.GetHashCode(Version);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);

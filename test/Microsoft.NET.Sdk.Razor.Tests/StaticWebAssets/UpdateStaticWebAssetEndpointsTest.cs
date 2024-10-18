@@ -290,7 +290,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    private ITaskItem CreateOperation(string type, string target, string name, string value, string newValue = null)
+    private static ITaskItem CreateOperation(string type, string target, string name, string value, string newValue = null)
     {
         return new TaskItem(type, new Dictionary<string, string>
         {
@@ -322,7 +322,7 @@ public class UpdateStaticWebAssetEndpointsTest
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {

@@ -70,18 +70,24 @@ public partial class GenerateServiceWorkerAssetsManifest : Task
         return version;
     }
 
-    private static string ComputeVersion(ManifestEntry [] assets)
+    private static string ComputeVersion(ManifestEntry[] assets)
     {
-            // If a version isn't specified (which is likely the most common case), construct a Version by combining
-            // the file names + hashes of all the inputs.
+        // If a version isn't specified (which is likely the most common case), construct a Version by combining
+        // the file names + hashes of all the inputs.
 
-            var combinedHash = string.Join(
-                Environment.NewLine,
-                assets.OrderBy(f => f.Url, StringComparer.Ordinal).Select(f => f.Hash));
+        var combinedHash = string.Join(
+            Environment.NewLine,
+            assets.OrderBy(f => f.Url, StringComparer.Ordinal).Select(f => f.Hash));
 
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(combinedHash));
-            var version = Convert.ToBase64String(bytes).Substring(0, 8);
+        var data = Encoding.UTF8.GetBytes(combinedHash);
+#if !NET9_0_OR_GREATER
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(data);
+        var version = Convert.ToBase64String(bytes).Substring(0, 8);
+#else
+        var bytes = SHA256.HashData(data);
+        var version = Convert.ToBase64String(bytes)[..8];
+#endif
 
         return version;
     }
@@ -112,8 +118,13 @@ public partial class GenerateServiceWorkerAssetsManifest : Task
 
     private static string ComputeFileHash(string contents)
     {
-        using var sha = SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(contents));
+        var data = Encoding.UTF8.GetBytes(contents);
+#if !NET9_0_OR_GREATER
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(data);
+#else
+        var bytes = SHA256.HashData(data);
+#endif
         return Convert.ToBase64String(bytes);
     }
 

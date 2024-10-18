@@ -87,7 +87,11 @@ public class DefineStaticWebAssets : Task
             var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
             var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
             var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
+#if NET9_0_OR_GREATER
+            var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern[1..], p => p.Expression);
+#else
             var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
+#endif
             Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
             for (var i = 0; i < CandidateAssets.Length; i++)
@@ -276,7 +280,7 @@ public class DefineStaticWebAssets : Task
         string relativePathCandidate,
         string identity,
         FingerprintPattern[] fingerprintPatterns,
-        IDictionary<string, string> tokensByPattern)
+        Dictionary<string, string> tokensByPattern)
     {
         if (relativePathCandidate.Contains("#["))
         {
@@ -311,7 +315,11 @@ public class DefineStaticWebAssets : Task
         while (!string.IsNullOrEmpty(extension) || extensionCount < 2)
         {
             extensionCount++;
+#if NET9_0_OR_GREATER
+            stem = stem[..^extension.Length];
+#else
             stem = stem.Substring(0, stem.Length - extension.Length);
+#endif
             extension = Path.GetExtension(stem);
         }
 
@@ -340,8 +348,13 @@ public class DefineStaticWebAssets : Task
             var matchResult = pattern.Matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
             if (matchResult.HasMatches)
             {
-                stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
+#if NET9_0_OR_GREATER
+                stem = relativePathCandidate[..(1 + relativePathCandidate.Length - pattern.Pattern.Length)];
+                extension = relativePathCandidate[stem.Length..];
+#else
+                stem = relativePathCandidate.Substring(0, 1 + relativePathCandidate.Length - pattern.Pattern.Length);
                 extension = relativePathCandidate.Substring(stem.Length);
+#endif
                 if (!tokensByPattern.TryGetValue(extension, out var expression))
                 {
                     expression = DefaultFingerprintExpression;
@@ -476,7 +489,11 @@ public class DefineStaticWebAssets : Task
         var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
         if (normalizedAssetPath.StartsWith(normalizedContentRoot))
         {
+#if NET9_0_OR_GREATER
+            var result = normalizedAssetPath[normalizedContentRoot.Length..];
+#else
             var result = normalizedAssetPath.Substring(normalizedContentRoot.Length);
+#endif
             Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedContentRoot, candidate.ItemSpec, result);
             return result;
         }

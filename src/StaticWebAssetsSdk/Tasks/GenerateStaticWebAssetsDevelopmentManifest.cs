@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public class GenerateStaticWebAssetsDevelopmentManifest : Task
 {
     private static readonly char[] _separator = ['/'];
-    
+
     [Required]
     public string Source { get; set; }
 
@@ -126,11 +126,20 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
     private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsDevelopmentManifest);
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
         var currentHash = sha256.ComputeHash(data);
-
+#else
+        var currentHash = SHA256.HashData(data);
+#endif
         var fileExists = File.Exists(ManifestPath);
-        var existingManifestHash = fileExists ? sha256.ComputeHash(File.ReadAllBytes(ManifestPath)) : Array.Empty<byte>();
+        var existingManifestHash = fileExists ?
+#if !NET9_0_OR_GREATER
+            sha256.ComputeHash(File.ReadAllBytes(ManifestPath)) :
+#else
+            SHA256.HashData(File.ReadAllBytes(ManifestPath)) :
+#endif
+            [];
 
         if (!fileExists)
         {
@@ -304,7 +313,11 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                     // We need an extra check that the file exist to avoid pointing out to a non-existing file. This can happen
                     // when the asset is defined with an identity that doesn't exist yet, but that will be materialized later
                     // when the asset is copied to the wwwroot folder.
+#if NET9_0_OR_GREATER
+                    return StaticWebAsset.Normalize(asset.Identity[asset.ContentRoot.Length..]);
+#else
                     return StaticWebAsset.Normalize(asset.Identity.Substring(asset.ContentRoot.Length));
+#endif
                 }
                 else
                 {
@@ -350,21 +363,15 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
         public StaticWebAssetPattern[] Patterns { get; set; }
     }
 
-    private struct SegmentsAssetPair : IComparable<SegmentsAssetPair>
+    private readonly struct SegmentsAssetPair(string path, StaticWebAsset asset) : IComparable<SegmentsAssetPair>
     {
         private static readonly char[] separator = ['/'];
 
-        public SegmentsAssetPair(string path, StaticWebAsset asset)
-        {
-            PathSegments = path.Split(separator, options: StringSplitOptions.RemoveEmptyEntries);
-            Asset = asset;
-        }
+        public string[] PathSegments { get; } = path.Split(separator, options: StringSplitOptions.RemoveEmptyEntries);
 
-        public string[] PathSegments { get; }
+        public StaticWebAsset Asset { get; } = asset;
 
-        public StaticWebAsset Asset { get; }
-
-        public int CompareTo(SegmentsAssetPair other)
+        public readonly int CompareTo(SegmentsAssetPair other)
         {
             if (PathSegments.Length != other.PathSegments.Length)
             {
@@ -383,7 +390,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             return 0;
         }
 
-        public void Deconstruct(out string[] segments, out StaticWebAsset asset)
+        public readonly void Deconstruct(out string[] segments, out StaticWebAsset asset)
         {
             asset = Asset;
             segments = PathSegments;

@@ -64,11 +64,20 @@ public class GenerateV1StaticWebAssetsManifest : Task
         memory.Seek(0, SeekOrigin.Begin);
         var data = memory.ToArray();
 
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
         var currentHash = sha256.ComputeHash(data);
-
+#else
+        var currentHash = SHA256.HashData(data);
+#endif
         var fileExists = File.Exists(TargetManifestPath);
-        var existingManifestHash = fileExists ? sha256.ComputeHash(File.ReadAllBytes(TargetManifestPath)) : Array.Empty<byte>();
+        var existingManifestHash = fileExists ?
+#if !NET9_0_OR_GREATER
+            sha256.ComputeHash(File.ReadAllBytes(TargetManifestPath)) :
+#else
+            SHA256.HashData(File.ReadAllBytes(TargetManifestPath)) :
+#endif
+            [];
 
         if (!fileExists)
         {

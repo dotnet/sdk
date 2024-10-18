@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class ConcatenateCssFiles : Task
 {
+    private static readonly char[] _separator = ['/'];
+
     private static readonly IComparer<ITaskItem> _fullPathComparer =
         Comparer<ITaskItem>.Create((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.GetMetadata("FullPath"), y.GetMetadata("FullPath")));
 
@@ -57,7 +59,7 @@ public class ConcatenateCssFiles : Task
             // We could produce shorter paths if we detected common segments between the final bundle base path and the imported bundle
             // base paths, but its more work and it will not have a significant impact on the bundle size size.
             var normalizedBasePath = ConcatenateCssFiles.NormalizePath(ScopedCssBundleBasePath);
-            var currentBasePathSegments = normalizedBasePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var currentBasePathSegments = normalizedBasePath.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
             var prefix = string.Join("/", Enumerable.Repeat("..", currentBasePathSegments.Length));
             for (var i = 0; i < ProjectBundles.Length; i++)
             {
@@ -119,8 +121,14 @@ public class ConcatenateCssFiles : Task
 
         static byte[] GetContentHash(string content)
         {
+            var data = Encoding.UTF8.GetBytes(content);
+#if !NET9_0_OR_GREATER
             using var sha256 = SHA256.Create();
-            return sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+            var result = sha256.ComputeHash(data);
+#else
+            var result = SHA256.HashData(data);
+#endif
+            return result;
         }
     }
 }

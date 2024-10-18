@@ -129,7 +129,7 @@ public class ApplyCssScopes : Task
                 unmatchedScopedCss.RemoveAt(j);
                 if (!scopedCssByItem.TryGetValue(itemCandidate.ItemSpec, out var existing))
                 {
-                    scopedCssByItem[itemCandidate.ItemSpec] = new List<ITaskItem>() { scopedCssCandidate };
+                    scopedCssByItem[itemCandidate.ItemSpec] = [scopedCssCandidate];
                     var item = new TaskItem(itemCandidate);
                     item.SetMetadata("CssScope", scopedCssCandidate.GetMetadata("CssScope"));
                     itemsWithScopes.Add(item);

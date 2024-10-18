@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -26,9 +26,9 @@ public class ResolveStaticWebAssetsEmbeddedProjectConfiguration : Task
 
     public string TargetFramework { get; set; }
 
-    public ITaskItem[] TargetFrameworks { get; set; } = Array.Empty<ITaskItem>();
+    public ITaskItem[] TargetFrameworks { get; set; } = [];
 
-    public ITaskItem[] CrossTargetingBuildConfigurations { get; set; } = Array.Empty<ITaskItem>();
+    public ITaskItem[] CrossTargetingBuildConfigurations { get; set; } = [];
 
     [Output]
     public ITaskItem[] EmbeddedProjectAssetConfigurations { get; set; }
@@ -50,7 +50,7 @@ public class ResolveStaticWebAssetsEmbeddedProjectConfiguration : Task
             embeddingRules[i] = StaticWebAssetEmbeddingConfiguration.FromTaskItem(EmbeddingConfiguration[i]);
         }
 
-        var targetFrameworks = TargetFrameworks.Any() ? TargetFrameworks.Select(t => t.ItemSpec).ToArray() : new[] { TargetFramework };
+        var targetFrameworks = TargetFrameworks.Length > 0 ? TargetFrameworks.Select(t => t.ItemSpec).ToArray() : [TargetFramework];
 
         var matchingConfigurations = new List<EmbeddedStaticWebAssetProjectConfiguration>();
         foreach (var targetFramework in targetFrameworks)
@@ -73,7 +73,7 @@ public class ResolveStaticWebAssetsEmbeddedProjectConfiguration : Task
             }
         }
 
-        if (CrossTargetingBuildConfigurations.Any())
+        if (CrossTargetingBuildConfigurations.Length > 0)
         {
             var filteredConfigurations = new List<ITaskItem>();
             foreach (var configurationsToRemove in CrossTargetingBuildConfigurations)
@@ -178,26 +178,23 @@ public class EmbeddedStaticWebAssetProjectConfiguration
         return result;
     }
 
-    public static EmbeddedStaticWebAssetProjectConfiguration FromTaskItem(ITaskItem source)
+    public static EmbeddedStaticWebAssetProjectConfiguration FromTaskItem(ITaskItem source) => new()
     {
-        return new EmbeddedStaticWebAssetProjectConfiguration
-        {
-            Id = source.ItemSpec,
-            Version = source.GetMetadata(nameof(Version)),
-            Source = source.GetMetadata(nameof(Source)),
-            GetEmbeddedBuildAssetsTargets = source.GetMetadata(nameof(GetEmbeddedBuildAssetsTargets)),
-            AdditionalEmbeddedBuildProperties = source.GetMetadata(nameof(AdditionalEmbeddedBuildProperties)),
-            AdditionalEmbeddedBuildPropertiesToRemove = source.GetMetadata(nameof(AdditionalEmbeddedBuildPropertiesToRemove)),
-            GetEmbeddedPublishAssetsTargets = source.GetMetadata(nameof(GetEmbeddedPublishAssetsTargets)),
-            AdditionalEmbeddedPublishProperties = source.GetMetadata(nameof(AdditionalEmbeddedPublishProperties)),
-            AdditionalEmbeddedPublishPropertiesToRemove = source.GetMetadata(nameof(AdditionalEmbeddedPublishPropertiesToRemove)),
-            TargetFramework = source.GetMetadata(nameof(TargetFramework)),
-            TargetFrameworkIdentifier = source.GetMetadata(nameof(TargetFrameworkIdentifier)),
-            TargetFrameworkVersion = source.GetMetadata(nameof(TargetFrameworkVersion)),
-            Platform = source.GetMetadata(nameof(Platform)),
-            PlatformVersion = source.GetMetadata(nameof(PlatformVersion))
-        };
-    }
+        Id = source.ItemSpec,
+        Version = source.GetMetadata(nameof(Version)),
+        Source = source.GetMetadata(nameof(Source)),
+        GetEmbeddedBuildAssetsTargets = source.GetMetadata(nameof(GetEmbeddedBuildAssetsTargets)),
+        AdditionalEmbeddedBuildProperties = source.GetMetadata(nameof(AdditionalEmbeddedBuildProperties)),
+        AdditionalEmbeddedBuildPropertiesToRemove = source.GetMetadata(nameof(AdditionalEmbeddedBuildPropertiesToRemove)),
+        GetEmbeddedPublishAssetsTargets = source.GetMetadata(nameof(GetEmbeddedPublishAssetsTargets)),
+        AdditionalEmbeddedPublishProperties = source.GetMetadata(nameof(AdditionalEmbeddedPublishProperties)),
+        AdditionalEmbeddedPublishPropertiesToRemove = source.GetMetadata(nameof(AdditionalEmbeddedPublishPropertiesToRemove)),
+        TargetFramework = source.GetMetadata(nameof(TargetFramework)),
+        TargetFrameworkIdentifier = source.GetMetadata(nameof(TargetFrameworkIdentifier)),
+        TargetFrameworkVersion = source.GetMetadata(nameof(TargetFrameworkVersion)),
+        Platform = source.GetMetadata(nameof(Platform)),
+        PlatformVersion = source.GetMetadata(nameof(PlatformVersion))
+    };
 }
 
 // Defines the rules for which other TFM's assets should be embedded into the current TFM.
@@ -231,18 +228,15 @@ public class StaticWebAssetEmbeddingConfiguration
 
     public string TargetFrameworkVersion { get; set; }
 
-    public static StaticWebAssetEmbeddingConfiguration FromTaskItem(ITaskItem item)
+    public static StaticWebAssetEmbeddingConfiguration FromTaskItem(ITaskItem item) => new()
     {
-        return new StaticWebAssetEmbeddingConfiguration
-        {
-            Id = item.ItemSpec,
-            TargetFramework = item.GetMetadata("TargetFramework"),
-            Platform = item.GetMetadata("Platform"),
-            PlatformVersion = item.GetMetadata("PlatformVersion"),
-            TargetFrameworkIdentifier = item.GetMetadata("TargetFrameworkIdentifier"),
-            TargetFrameworkVersion = item.GetMetadata("TargetFrameworkVersion"),
-        };
-    }
+        Id = item.ItemSpec,
+        TargetFramework = item.GetMetadata("TargetFramework"),
+        Platform = item.GetMetadata("Platform"),
+        PlatformVersion = item.GetMetadata("PlatformVersion"),
+        TargetFrameworkIdentifier = item.GetMetadata("TargetFrameworkIdentifier"),
+        TargetFrameworkVersion = item.GetMetadata("TargetFrameworkVersion"),
+    };
 
     public static ITaskItem2 ToTaskItem(StaticWebAssetEmbeddingConfiguration configuration)
     {

@@ -128,9 +128,12 @@ public class GenerateStaticWebAssetsPropsFile50 : Task
 
     private static string ComputeHash(byte[] data)
     {
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
-
         var result = sha256.ComputeHash(data);
+#else
+        var result = SHA256.HashData(data);
+#endif
         return Convert.ToBase64String(result);
     }
 

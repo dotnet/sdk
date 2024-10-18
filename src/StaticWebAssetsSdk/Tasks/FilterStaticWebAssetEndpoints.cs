@@ -167,13 +167,10 @@ public class FilterStaticWebAssetEndpoints : Task
 
         public bool ExcludeOnMatch() => string.Equals(Mode, "Exclude", StringComparison.OrdinalIgnoreCase);
 
-        public static FilterCriteria FromTaskItem(ITaskItem item)
-        {
-            return new FilterCriteria(
+        public static FilterCriteria FromTaskItem(ITaskItem item) => new(
                 item.ItemSpec,
                 item.GetMetadata("Name"),
                 item.GetMetadata("Value"),
                 item.GetMetadata("Mode"));
-        }
     }
 }

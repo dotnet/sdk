@@ -258,7 +258,7 @@ public class FilterStaticWebAssetEndpointsTest
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {

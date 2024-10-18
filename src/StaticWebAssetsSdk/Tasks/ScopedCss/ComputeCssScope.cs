@@ -40,10 +40,13 @@ public class ComputeCssScope : Task
 
     private static string GenerateScope(string targetName, string relativePath)
     {
-        using var hash = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(relativePath + targetName);
-        var hashBytes = hash.ComputeHash(bytes);
-
+#if !NET9_0_OR_GREATER
+        using var sha256 = SHA256.Create();
+        var hashBytes = sha256.ComputeHash(bytes);
+#else
+        var hashBytes = SHA256.HashData(bytes);
+#endif
         var builder = new StringBuilder();
         builder.Append("b-");
 
@@ -57,7 +60,11 @@ public class ComputeCssScope : Task
         const string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
         var result = new char[10];
-        var dividend = BigInteger.Abs(new BigInteger(hash.AsSpan().Slice(0, 9).ToArray()));
+#if NET9_0_OR_GREATER
+        var dividend = BigInteger.Abs(new BigInteger([.. hash.AsSpan()[..9]]));
+#else
+        var dividend = BigInteger.Abs(new BigInteger([.. hash.AsSpan(0, 9)]));
+#endif
         for (var i = 0; i < 10; i++)
         {
             dividend = BigInteger.DivRem(dividend, 36, out var remainder);

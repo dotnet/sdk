@@ -26,31 +26,24 @@ public class ResolveStaticWebAssetsEffectiveTargetFramework : Task
         // use as representative the framework with the highest static web assets version (net6.0 in this case).
         // Platform identifier and version, don't matter because as mentioned above, the list of assets should be identical in those cases
         // and we can pick among any of them to act as a representative for packing purposes.
-        var selectedFramework = TargetFrameworks
+        var (version, framework) = TargetFrameworks
             .Select(tf => new FrameworkItem(tf))
             .Select(fi => (version: fi.GetStaticWebAssetsVersion(), framework: fi))
             .OrderByDescending(p => p.version)
             .FirstOrDefault(p => p.version > 0);
 
-        EffectiveTargetFramework = selectedFramework.framework?.Moniker;
+        EffectiveTargetFramework = framework?.Moniker;
 
         return !Log.HasLoggedErrors;
     }
 
-    private sealed class FrameworkItem
+    private sealed class FrameworkItem(ITaskItem item)
     {
-        public FrameworkItem(ITaskItem item)
-        {
-            Moniker = item.ItemSpec;
-            TargetFrameworkIdentifier = item.GetMetadata("TargetFrameworkIdentifier");
-            TargetFrameworkVersion = item.GetMetadata("TargetFrameworkVersion");
-        }
+        public string Moniker { get; set; } = item.ItemSpec;
 
-        public string Moniker { get; set; }
+        public string TargetFrameworkIdentifier { get; set; } = item.GetMetadata("TargetFrameworkIdentifier");
 
-        public string TargetFrameworkIdentifier { get; set; }
-
-        public string TargetFrameworkVersion { get; set; }
+        public string TargetFrameworkVersion { get; set; } = item.GetMetadata("TargetFrameworkVersion");
 
         internal double GetStaticWebAssetsVersion() =>
             (TargetFrameworkIdentifier, TargetFrameworkVersion) switch

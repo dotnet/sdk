@@ -52,7 +52,7 @@ public class DefineStaticWebAssetEndpoints : Task
 
             if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
-                for (var j = routes.Count -1; j >= 0; j--)
+                for (var j = routes.Count - 1; j >= 0; j--)
                 {
                     var (label, route, values) = routes[j];
                     // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a

@@ -47,7 +47,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
         {
             var asset = assets[element.AssetFile];
             var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
-            var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/","\\")}'))""";
+            var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/", "\\")}'))""";
 
             itemGroup.Add(new XElement(nameof(StaticWebAssetEndpoint),
                 new XAttribute("Include", element.Route),
@@ -108,9 +108,12 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
 
     private static string ComputeHash(byte[] data)
     {
+#if !NET9_0_OR_GREATER
         using var sha256 = SHA256.Create();
-
         var result = sha256.ComputeHash(data);
+#else
+        var result = SHA256.HashData(data);
+#endif
         return Convert.ToBase64String(result);
     }
 

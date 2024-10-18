@@ -878,7 +878,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         hash.Add(OriginalItemSpec);
         return hash.ToHashCode();
 #else
-        int hashCode = 1447485498;
+        var hashCode = 1447485498;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceType);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceId);

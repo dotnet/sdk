@@ -17,24 +17,15 @@ public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpoint
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value)
-    {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
-    }
+    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders)
-    {
-        return JsonSerializer.Serialize(responseHeaders ?? []);
-    }
+    internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
 
-    public int CompareTo(StaticWebAssetEndpointProperty other)
+    public int CompareTo(StaticWebAssetEndpointProperty other) => string.Compare(Name, other.Name, StringComparison.Ordinal) switch
     {
-        return string.Compare(Name, other.Name, StringComparison.Ordinal) switch
-        {
-            0 => string.Compare(Value, other.Value, StringComparison.Ordinal),
-            int result => result
-        };
-    }
+        0 => string.Compare(Value, other.Value, StringComparison.Ordinal),
+        int result => result
+    };
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointProperty);
 

@@ -71,7 +71,11 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         if (nextToken > 0)
         {
             var literalSegment = new StaticWebAssetPathSegment();
+#if NET9_0_OR_GREATER
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath[..nextToken], IsLiteral = true });
+#else
             literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath.Substring(0, nextToken), IsLiteral = true });
+#endif
             pattern.Segments.Add(literalSegment);
         }
         while (nextToken != -1)
@@ -360,7 +364,11 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         var nextToken = tokenExpression.IndexOf('{');
         if (nextToken is not (-1) and > 0)
         {
+#if NET9_0_OR_GREATER
+            var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression[..nextToken], IsLiteral = true };
+#else
             var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Substring(0, nextToken), IsLiteral = true };
+#endif
             token.Parts.Add(literalPart);
         }
         while (nextToken != -1)
@@ -465,8 +473,5 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     private string GetDebuggerDisplay() => string.Concat(Segments.Select(s => s.GetDebuggerDisplay()));
 
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
-    internal static string PathWithoutTokens(string path)
-    {
-        return Parse(path).ComputePatternLabel();
-    }
+    internal static string PathWithoutTokens(string path) => Parse(path).ComputePatternLabel();
 }

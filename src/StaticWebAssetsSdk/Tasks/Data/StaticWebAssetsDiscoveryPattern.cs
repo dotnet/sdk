@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -33,7 +33,7 @@ public class StaticWebAssetsDiscoveryPattern
 #if NET6_0_OR_GREATER
         return HashCode.Combine(Name, Source, ContentRoot, BasePath, Pattern);
 #else
-        int hashCode = 1513180540;
+        var hashCode = 1513180540;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContentRoot);

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
 {
     private static readonly Dictionary<string, ContentTypeMapping> _builtInMappings =
-        new Dictionary<string, ContentTypeMapping>()
+        new()
         {
             [".js"] = new ContentTypeMapping("text/javascript", null, "*.js", 1),
             [".css"] = new ContentTypeMapping("text/css", null, "*.css", 1),

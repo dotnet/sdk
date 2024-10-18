@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -149,7 +149,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         hash.Add(Endpoints);
         return hash.ToHashCode();
 #else
-        int hashCode = 1467594941;
+        var hashCode = 1467594941;
         hashCode = hashCode * -1521134295 + Version.GetHashCode();
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Hash);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Source);
@@ -188,10 +188,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         internal static bool IsRoot(string projectMode) =>
             string.Equals(Root, projectMode, StringComparison.Ordinal);
 
-        internal static bool ShouldIncludeAssetInCurrentProject(StaticWebAsset asset, string projectMode)
-        {
-            return IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly();
-        }
+        internal static bool ShouldIncludeAssetInCurrentProject(StaticWebAsset asset, string projectMode) => IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly();
 
         internal static bool ShouldIncludeAssetAsReference(StaticWebAsset asset, string projectMode) =>
             IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly() ||
@@ -199,8 +196,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
 
     }
 
-    private string GetDebuggerDisplay()
-    {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
-    }
+    private static readonly JsonSerializerOptions _debuggerDisplayJsonOptions = new() { WriteIndented = true };
+
+    private string GetDebuggerDisplay() => JsonSerializer.Serialize(this, _debuggerDisplayJsonOptions);
 }

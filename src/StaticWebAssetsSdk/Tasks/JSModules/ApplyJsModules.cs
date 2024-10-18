@@ -123,7 +123,7 @@ public class ApplyJsModules : Task
                 unmatchedJsModules.RemoveAt(i);
                 if (!jsModuleByItem.TryGetValue(itemCandidate.ItemSpec, out var existing))
                 {
-                    jsModuleByItem[itemCandidate.ItemSpec] = new List<ITaskItem>() { jsModuleCandidate };
+                    jsModuleByItem[itemCandidate.ItemSpec] = [jsModuleCandidate];
                     var item = new TaskItem(itemCandidate);
                     item.SetMetadata("JSModule", jsModuleCandidate.GetMetadata("JSModule"));
                     itemsWithScopes.Add(item);

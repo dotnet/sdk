@@ -142,7 +142,7 @@ public class RewriteCss : Task
 
     private sealed class FindScopeInsertionEdits : Visitor
     {
-        public List<CssEdit> Edits { get; } = new List<CssEdit>();
+        public List<CssEdit> Edits { get; } = [];
 
         private readonly HashSet<string> _keyframeIdentifiers;
 
@@ -230,18 +230,11 @@ public class RewriteCss : Task
                 || string.Equals(selectorText, ":first-line", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsTrailingCombinator(CssTokenType tokenType)
+        private static bool IsTrailingCombinator(CssTokenType tokenType) => tokenType switch
         {
-            switch (tokenType)
-            {
-                case CssTokenType.Plus:
-                case CssTokenType.Tilde:
-                case CssTokenType.Greater:
-                    return true;
-                default:
-                    return false;
-            }
-        }
+            CssTokenType.Plus or CssTokenType.Tilde or CssTokenType.Greater => true,
+            _ => false,
+        };
 
         protected override void VisitAtDirective(AtDirective item)
         {
@@ -283,13 +276,9 @@ public class RewriteCss : Task
         }
     }
 
-    private sealed class FindKeyframesIdentifiersVisitor : Visitor
+    private sealed class FindKeyframesIdentifiersVisitor(ComplexItem root) : Visitor(root)
     {
-        public FindKeyframesIdentifiersVisitor(ComplexItem root) : base(root)
-        {
-        }
-
-        public List<ParseItem> KeyframesIdentifiers { get; } = new List<ParseItem>();
+        public List<ParseItem> KeyframesIdentifiers { get; } = [];
 
         protected override void VisitAtDirective(AtDirective item)
         {
@@ -304,18 +293,11 @@ public class RewriteCss : Task
         }
     }
 
-    private sealed class EnsureNoImports : Visitor
+    private sealed class EnsureNoImports(string filePath, in RewriteCss.SourceFile sourceFile, ComplexItem root, List<RewriteCss.ErrorMessage> diagnostics) : Visitor(root)
     {
-        private readonly string _filePath;
-        private readonly SourceFile _sourceFile;
-        private readonly List<ErrorMessage> _diagnostics;
-
-        public EnsureNoImports(string filePath, in SourceFile sourceFile, ComplexItem root, List<ErrorMessage> diagnostics) : base(root)
-        {
-            _filePath = filePath;
-            _sourceFile = sourceFile;
-            _diagnostics = diagnostics;
-        }
+        private readonly string _filePath = filePath;
+        private readonly SourceFile _sourceFile = sourceFile;
+        private readonly List<ErrorMessage> _diagnostics = diagnostics;
 
         protected override void VisitAtDirective(AtDirective item)
         {
@@ -333,34 +315,17 @@ public class RewriteCss : Task
         }
     }
 
-    private class Visitor
+    private class Visitor(ComplexItem root)
     {
-        private readonly ComplexItem _root;
+        private readonly ComplexItem _root = root ?? throw new ArgumentNullException(nameof(root));
 
-        public Visitor(ComplexItem root)
-        {
-            _root = root ?? throw new ArgumentNullException(nameof(root));
-        }
+        public void Visit() => VisitDefault(_root);
 
-        public void Visit()
-        {
-            VisitDefault(_root);
-        }
+        protected virtual void VisitSelector(Selector item) => VisitDefault(item);
 
-        protected virtual void VisitSelector(Selector item)
-        {
-            VisitDefault(item);
-        }
+        protected virtual void VisitAtDirective(AtDirective item) => VisitDefault(item);
 
-        protected virtual void VisitAtDirective(AtDirective item)
-        {
-            VisitDefault(item);
-        }
-
-        protected virtual void VisitDeclaration(Declaration item)
-        {
-            VisitDefault(item);
-        }
+        protected virtual void VisitDeclaration(Declaration item) => VisitDefault(item);
 
         protected virtual void VisitDefault(ParseItem item)
         {
@@ -411,16 +376,11 @@ public class RewriteCss : Task
         public int DeleteLength { get; set; }
     }
 
-    private sealed class SourceFile
+    private sealed class SourceFile(string text)
     {
         private List<int> _lineStartIndices;
 
-        public string Text { get; }
-
-        public SourceFile(string text)
-        {
-            Text = text;
-        }
+        public string Text { get; } = text;
 
         public SourceLocation GetLocation(int charIndex)
         {
@@ -452,30 +412,18 @@ public class RewriteCss : Task
         }
     }
 
-    private readonly struct SourceLocation
+    private readonly struct SourceLocation(int line, int character)
     {
-        public int Line { get; }
-        public int Character { get; }
-
-        public SourceLocation(int line, int character)
-        {
-            Line = line;
-            Character = character;
-        }
+        public int Line { get; } = line;
+        public int Character { get; } = character;
     }
 
     // Public for testing.
-    public readonly struct ErrorMessage
+    public readonly struct ErrorMessage(string message, params object[] messageArgs)
     {
-        public string Message { get; }
+        public string Message { get; } = message;
 
-        public object[] MessageArgs { get; }
-
-        public ErrorMessage(string message, params object[] messageArgs)
-        {
-            Message = message;
-            MessageArgs = messageArgs;
-        }
+        public object[] MessageArgs { get; } = messageArgs;
 
         public override string ToString() => string.Format(CultureInfo.InvariantCulture, Message, MessageArgs);
     }

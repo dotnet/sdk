@@ -17,15 +17,9 @@ public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEnd
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value)
-    {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
-    }
+    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders)
-    {
-        return JsonSerializer.Serialize(responseHeaders ?? []);
-    }
+    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
 
     private string GetDebuggerDisplay() => $"{Name}: {Value}";
 

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -37,5 +37,5 @@ internal struct ContentTypeMapping(string mimeType, string cache, string pattern
         return _matcher.Match(identity).HasMatches;
     }
 
-    private string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
+    private readonly string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
 }

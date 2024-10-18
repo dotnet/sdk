@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -18,7 +18,7 @@ public class UpdateServiceWorkerFileWithVersion : Task
 
     public override bool Execute()
     {
-        if(!File.Exists(ServiceWorkerSource))
+        if (!File.Exists(ServiceWorkerSource))
         {
             Log.LogError("ServiceWorkerSource does not exist: {0}", ServiceWorkerSource);
             return false;
