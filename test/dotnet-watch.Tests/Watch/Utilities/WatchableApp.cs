@@ -37,14 +37,22 @@ namespace Microsoft.DotNet.Watcher.Tests
         public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
             => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure);
-
         public void AssertOutputContains(string message)
             => AssertEx.Contains(message, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
+
+        public async ValueTask WaitUntilOutputContains(string message)
+        {
+            if (!Process.Output.Any(line => line.Contains(message)))
+            {
+                _ = await AssertOutputLine(line => line.Contains(message));
+            }
+        }
+
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.

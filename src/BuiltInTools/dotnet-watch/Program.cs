@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Watcher
                 if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
                 {
                     runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
-                    reporter.Verbose("Use Aspire process launcher.");
+                    reporter.Verbose("Using Aspire process launcher.");
                 }
             }
 
