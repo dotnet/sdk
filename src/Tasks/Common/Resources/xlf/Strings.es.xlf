@@ -763,7 +763,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
         <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="needs-review-translation">NETSDK1214: PreferNativeArm64 solo se aplica a destinos de .NET Framework. No se admite y no tiene efecto cuando el destino es .NET Core.</target>
+        <target state="translated">NETSDK1222: PreferNativeArm64 solo se aplica a destinos de .NET Framework. No se admite y no tiene efecto cuando el destino es .NET Core.</target>
         <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
