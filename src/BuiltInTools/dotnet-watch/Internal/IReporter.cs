@@ -28,11 +28,23 @@ namespace Microsoft.Extensions.Tools.Internal
         [MemberNotNullWhen(true, nameof(Format), nameof(Emoji))]
         public bool TryGetMessage(string? prefix, object?[] args, [NotNullWhen(true)] out string? message)
         {
+            // Messages without Id are created by IReporter.Verbose|Output|Warn|Error helpers.
+            // They do not have arguments and we shouldn't interpret Format as a string with holes.
+            // Eventually, all messages should have a descriptor (so we can localize them) and this can be removed.
+            if (Id == null)
+            {
+                Debug.Assert(args is null or []);
+                Debug.Assert(HasMessage);
+                message = prefix + Format;
+                return true;
+            }
+
             if (!HasMessage)
             {
                 message = null;
                 return false;
             }
+
 
             message = prefix + string.Format(Format, args);
             return true;
