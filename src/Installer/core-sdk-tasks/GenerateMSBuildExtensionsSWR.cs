@@ -28,7 +28,9 @@ namespace Microsoft.DotNet.Cli.Build
                       @"msbuildExtensions-ver",
                       @"MSBuild\Current");
 
-            File.WriteAllText(OutputFile, sb.ToString());
+            FileInfo outputFileInfo = new FileInfo(OutputFile);
+            outputFileInfo.Directory.Create();
+            File.WriteAllText(outputFileInfo.FullName, sb.ToString());
 
             return true;
         }
