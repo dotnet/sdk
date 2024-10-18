@@ -255,25 +255,25 @@
       <Sha>64edceb090bcd73e7f842a47b31b4fc865f48b08</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0">
-      <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5307f2abc4387e29964c6f46cb1f63cfdc218602</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
+      <Sha>62df8b9a0cf4a9959e74ff5ea8d661acb6282261</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rtm.24516.7">
-      <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5307f2abc4387e29964c6f46cb1f63cfdc218602</Sha>
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-rtm.24517.6">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
+      <Sha>62df8b9a0cf4a9959e74ff5ea8d661acb6282261</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0">
-      <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5307f2abc4387e29964c6f46cb1f63cfdc218602</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
+      <Sha>62df8b9a0cf4a9959e74ff5ea8d661acb6282261</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rtm.24516.7">
-      <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5307f2abc4387e29964c6f46cb1f63cfdc218602</Sha>
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-rtm.24517.6">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
+      <Sha>62df8b9a0cf4a9959e74ff5ea8d661acb6282261</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-rtm.24515.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
-      <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>375aed28c289639ec572af58067a31c3d7742ef9</Sha>
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-rtm.24517.7" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
+      <Sha>d2b1665f79e35cba8f8aac2c03ade7fcd26a4e8c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -390,13 +390,13 @@
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-rtm.24515.14" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>5f03f3d8a99d8094fd0067e2497c4ea9b440e324</Sha>
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-rtm.24517.4" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
+      <Sha>d23e6a34d404b5feffbd13c121b13d3f1963eb2f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-rtm.24515.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>375aed28c289639ec572af58067a31c3d7742ef9</Sha>
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-rtm.24517.7" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
+      <Sha>d2b1665f79e35cba8f8aac2c03ade7fcd26a4e8c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24476.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
