@@ -183,6 +183,11 @@ namespace Microsoft.DotNet.Watcher
                 reporter.Verbose("Hot Reload disabled by command line switch.");
                 enableHotReload = false;
             }
+            else if (projectGraph == null)
+            {
+                reporter.Warn($"Hot Reload disabled due to project graph load failure.");
+                enableHotReload = false;
+            }
             else
             {
                 reporter.Report(MessageDescriptor.WatchingWithHotReload);
@@ -221,10 +226,21 @@ namespace Microsoft.DotNet.Watcher
             {
                 return new ProjectGraph(options.ProjectPath, globalOptions);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                reporter.Verbose("Reading the project instance failed.");
-                reporter.Verbose(ex.ToString());
+                reporter.Warn("Failed to load project graph.");
+
+                if (e is AggregateException { InnerExceptions: var innerExceptions })
+                {
+                    foreach (var inner in innerExceptions)
+                    {
+                        reporter.Warn(inner.Message);
+                    }
+                }
+                else
+                {
+                    reporter.Warn(e.Message);
+                }
             }
 
             return null;
