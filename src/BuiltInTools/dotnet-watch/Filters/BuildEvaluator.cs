@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     return result;

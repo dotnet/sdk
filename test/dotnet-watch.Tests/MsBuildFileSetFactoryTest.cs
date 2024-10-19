@@ -330,7 +330,7 @@ $@"<ItemGroup>
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: null, options, _reporter, output, trace: true);
 
-            var result = await filesetFactory.TryCreateAsync(CancellationToken.None);
+            var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
 
             _reporter.Output(string.Join(
@@ -374,7 +374,7 @@ $@"<ItemGroup>
                 WorkingDirectory: Path.GetDirectoryName(projectPath));
 
             var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: null, options, _reporter, new OutputSink(), trace: false);
-            var result = await factory.TryCreateAsync(CancellationToken.None);
+            var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;
         }
