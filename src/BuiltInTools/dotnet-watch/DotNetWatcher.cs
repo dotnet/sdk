@@ -31,27 +31,27 @@ namespace Microsoft.DotNet.Watcher
             var buildEvaluator = new BuildEvaluator(Context, RootFileSetFactory);
             await using var browserConnector = new BrowserConnector(Context);
 
-            StaticFileHandler? staticFileHandler;
-            ProjectGraphNode? projectRootNode;
-            if (Context.ProjectGraph != null)
-            {
-                projectRootNode = Context.ProjectGraph.GraphRoots.Single();
-                var projectMap = new ProjectNodeMap(Context.ProjectGraph, Context.Reporter);
-                staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
-            }
-            else
-            {
-                Context.Reporter.Verbose("Unable to determine if this project is a webapp.");
-                projectRootNode = null;
-                staticFileHandler = null;
-            }
-
             for (var iteration = 0;;iteration++)
             {
                 if (await buildEvaluator.EvaluateAsync(changedFile, cancellationToken) is not { } evaluationResult)
                 {
                     Context.Reporter.Error("Failed to find a list of files to watch");
                     return;
+                }
+
+                StaticFileHandler? staticFileHandler;
+                ProjectGraphNode? projectRootNode;
+                if (evaluationResult.ProjectGraph != null)
+                {
+                    projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
+                    staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
+                }
+                else
+                {
+                    Context.Reporter.Verbose("Unable to determine if this project is a webapp.");
+                    projectRootNode = null;
+                    staticFileHandler = null;
                 }
 
                 var processSpec = new ProcessSpec
