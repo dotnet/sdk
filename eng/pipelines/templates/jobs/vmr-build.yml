@@ -298,7 +298,7 @@ jobs:
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ else }}:
-    - ${{ if eq(variables['Agent.Os'], 'Darwin') }}:
+    - ${{ if eq(parameters.targetOS, 'osx') }}:
       - script: |
           $(sourcesPath)/src/runtime/eng/install-native-dependencies.sh osx
         displayName: Install dependencies
