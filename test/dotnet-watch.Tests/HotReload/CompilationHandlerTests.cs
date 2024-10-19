@@ -21,7 +21,16 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
-        var projectGraph = Program.TryReadProject(options, reporter);
+        var factory = new MSBuildFileSetFactory(
+            rootProjectFile: options.ProjectPath,
+            targetFramework: null,
+            buildProperties: [],
+            environmentOptions: new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
+            reporter,
+            outputSink: null,
+            trace: false);
+
+        var projectGraph = factory.TryLoadProjectGraph();
         var handler = new CompilationHandler(reporter);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);

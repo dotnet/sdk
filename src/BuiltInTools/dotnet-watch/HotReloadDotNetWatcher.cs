@@ -35,8 +35,6 @@ namespace Microsoft.DotNet.Watcher
 
         public override async Task WatchAsync(CancellationToken shutdownCancellationToken)
         {
-            Debug.Assert(Context.ProjectGraph != null);
-
             CancellationTokenSource? forceRestartCancellationSource = null;
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
@@ -78,21 +76,35 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
+                    var rootProjectOptions = Context.RootProjectOptions;
+                    var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
+
                     // Evaluate the target to find out the set of files to watch.
                     // In case the app fails to start due to build or other error we can wait for these files to change.
                     evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
+                    Debug.Assert(evaluationResult.ProjectGraph != null);
+
+                    var rootProject = evaluationResult.ProjectGraph.GraphRoots.Single();
+
+                    // use normalized MSBuild path so that we can index into the ProjectGraph
+                    rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
+
+                    if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
+                    {
+                        runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
+                        Context.Reporter.Verbose("Using Aspire process launcher.");
+                    }
 
                     await using var browserConnector = new BrowserConnector(Context);
-                    var projectMap = new ProjectNodeMap(Context.ProjectGraph, Context.Reporter);
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     await using var compilationHandler = new CompilationHandler(Context.Reporter);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
 
-                    var rootProjectOptions = Context.RootProjectOptions;
-                    var rootProjectNode = Context.ProjectGraph.GraphRoots.Single();
+                    var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    await using var runtimeProcessLauncher = _runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
+                    await using var runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = await runtimeProcessLauncher.GetEnvironmentVariablesAsync(iterationCancellationToken);
@@ -381,9 +393,10 @@ namespace Microsoft.DotNet.Watcher
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await RootFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await RootFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
+                    Debug.Assert(result.ProjectGraph != null);
                     return result;
                 }
 
