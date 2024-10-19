@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
@@ -51,6 +51,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     "msbuild",
                     "/restore",
                     "/nologo",
+                    "/v:m",
                     rootProjectFile,
                     $"/p:_DotNetWatchListFile={watchList}",
                 };
@@ -149,7 +150,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    projectGraph = TryLoadProjectGraph();
+                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -211,7 +212,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         // internal for testing
-        internal ProjectGraph? TryLoadProjectGraph()
+        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
         {
             var globalOptions = new Dictionary<string, string>();
             if (targetFramework != null)
@@ -230,18 +231,30 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
             catch (Exception e)
             {
-                reporter.Warn("Failed to load project graph.");
+                reporter.Verbose("Failed to load project graph.");
 
                 if (e is AggregateException { InnerExceptions: var innerExceptions })
                 {
                     foreach (var inner in innerExceptions)
                     {
-                        reporter.Warn(inner.Message);
+                        Report(inner);
                     }
                 }
                 else
                 {
-                    reporter.Warn(e.Message);
+                    Report(e);
+                }
+
+                void Report(Exception e)
+                {
+                    if (projectGraphRequired)
+                    {
+                        reporter.Error(e.Message);
+                    }
+                    else
+                    {
+                        reporter.Warn(e.Message);
+                    }
                 }
             }
 

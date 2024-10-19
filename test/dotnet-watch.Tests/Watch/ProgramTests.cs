@@ -257,10 +257,10 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Hot Reload disabled due to project graph load failure.");
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
 
             App.AssertOutputContains(@"dotnet watch ⌚ Failed to load project graph.");
-            App.AssertOutputContains(@"AppWithDeps\NonExistentDirectory\X.csproj");
+            App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
         }
     }
 }
