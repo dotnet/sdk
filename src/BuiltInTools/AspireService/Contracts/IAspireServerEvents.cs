@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.WebTools.AspireServer.Contracts;
 
 /// <summary>
@@ -13,17 +9,15 @@ namespace Microsoft.WebTools.AspireServer.Contracts;
 internal interface IAspireServerEvents
 {
     /// <summary>
-    /// Called when a request to stop a session is received. Returns false if the session does not exist. Note that the dcpId identifies
-    /// which DCP/AppHost is making the request.
+    /// Called when a request to stop a session is received. 
     /// </summary>
-    ValueTask<bool> StopSessionAsync(string dcpId, string sessionId, CancellationToken cancelToken);
+    /// <param name="dcpId">DCP/AppHost making the request. May be empty for older DCP versions.</param>
+    ValueTask StopSessionAsync(string dcpId, string sessionId, CancellationToken cancelToken);
 
     /// <summary>
-    /// Called when a request to start a project is received. Returns the sessionId of the started project. Note that the dcpId identifies
-    /// which DCP/AppHost is making the request. The format of this string is <appHostAssemblyName>;<unique string>. The first token can
-    /// be used to identify the AppHost project in the solution. The 2nd is just a unique string so that running the same project multiple times
-    /// generates a unique dcpId. Note that for older DCP's the dcpId will be the empty string
+    /// Called when a request to start a project is received. Returns the sessionId of the started project.
     /// </summary>
+    /// <param name="dcpId">DCP/AppHost making the request. May be empty for older DCP versions.</param>
     ValueTask<string> StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancelToken);
 }
 
