@@ -37,7 +37,7 @@ using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli.Sln.Internal
 {
-    public class SlnFile
+    public partial class SlnFile
     {
         private SlnProjectCollection _projects = new();
         private SlnSectionCollection _sections = new();
@@ -180,6 +180,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
                             var sec = new SlnSection();
                             sec.Read(reader, line, ref curLineNum);
                             _sections.Add(sec);
+                            LoadConfigurations(sec);
                         }
                         else // Ignore text that's out of place
                         {
@@ -241,7 +242,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
         }
     }
 
-    public class SlnProject
+    public partial class SlnProject
     {
         private SlnSectionCollection _sections = new();
 
@@ -392,7 +393,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
     {
         private SlnPropertySetCollection _nestedPropertySets;
         private SlnPropertySet _properties;
-        private List<string> _sectionLines;
+        internal List<string> _sectionLines;
         private int _baseIndex;
 
         public string Id { get; set; }
@@ -511,7 +512,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
                 string.Format(LocalizableStrings.InvalidSectionTypeError, s));
         }
 
-        private string FromSectionType(bool isProjectSection, SlnSectionType type)
+        internal string FromSectionType(bool isProjectSection, SlnSectionType type)
         {
             if (type == SlnSectionType.PreProcess)
             {
@@ -637,7 +638,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
     /// <summary>
     /// A collection of properties
     /// </summary>
-    public class SlnPropertySet : IDictionary<string, string>
+    public partial class SlnPropertySet : IDictionary<string, string>
     {
         private OrderedDictionary _values = new();
         private bool _isMetadata;
