@@ -80,6 +80,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
+        sign: false
 
     jobs:
 
@@ -767,6 +768,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -861,6 +863,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1069,6 +1072,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1081,6 +1085,7 @@ stages:
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1093,6 +1098,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         # Build Pass 2 verticals
 
