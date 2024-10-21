@@ -60,9 +60,10 @@ public class ResolveCompressedAssets : Task
         var includePatterns = SplitPattern(IncludePatterns);
         var excludePatterns = SplitPattern(ExcludePatterns);
 
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includePatterns);
-        matcher.AddExcludePatterns(excludePatterns);
+        var matcher = new StaticWebAssetGlobMatcherBuilder()
+            .AddIncludePatterns(includePatterns)
+            .AddExcludePatterns(excludePatterns)
+            .Build();
 
         var matchingCandidateAssets = new List<StaticWebAsset>();
 
@@ -82,7 +83,7 @@ public class ResolveCompressedAssets : Task
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
             var match = matcher.Match(relativePath);
 
-            if (!match.HasMatches)
+            if (!match.IsMatch)
             {
                 Log.LogMessage(
                     MessageImportance.Low,

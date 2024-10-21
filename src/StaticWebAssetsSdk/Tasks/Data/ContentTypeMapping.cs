@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     internal struct ContentTypeMapping(string mimeType, string cache, string pattern, int priority)
     {
-        private Matcher _matcher;
-
         public string Pattern { get; set; } = pattern;
 
         public string MimeType { get; set; } = mimeType;
@@ -26,16 +24,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 contentTypeMappings.GetMetadata(nameof(Cache)),
                 contentTypeMappings.GetMetadata(nameof(Pattern)),
                 int.Parse(contentTypeMappings.GetMetadata(nameof(Priority)), CultureInfo.InvariantCulture));
-
-        internal bool Matches(string identity)
-        {
-            if (_matcher == null)
-            {
-                _matcher = new Matcher();
-                _matcher.AddInclude(Pattern);
-            }
-            return _matcher.Match(identity).HasMatches;
-        }
 
         private string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
     }
