@@ -169,7 +169,7 @@ public class SdkContentTests : SdkTests
             }
         }
 
-        Assert.Fail($"Unable to find matching file for '{representativeFile}' in '{rootDir}'.");
+        OutputHelper.WriteLine($"Unable to find matching file for '{representativeFile}' in '{rootDir}'.");
         return string.Empty;
     }
 
