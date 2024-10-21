@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.New
         {
             PathUtility.EnsureAllPathsExist(new[] { solutionPath }, CommonLocalizableStrings.FileNotFound, allowDirectories: false);
             PathUtility.EnsureAllPathsExist(projectsToAdd, CommonLocalizableStrings.FileNotFound, allowDirectories: false);
-            IEnumerable<string> commandArgs = new[] { "sln", solutionPath, "add" }.Concat(projectsToAdd);
+            IEnumerable<string> commandArgs = new[] { "solution", solutionPath, "add" }.Concat(projectsToAdd);
             if (!string.IsNullOrWhiteSpace(solutionFolder))
             {
                 commandArgs = commandArgs.Append(SlnAddParser.SolutionFolderOption.Name).Append(solutionFolder);
