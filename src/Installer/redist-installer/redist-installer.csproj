@@ -19,7 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +35,6 @@
   <Import Project="targets\GenerateBundledVersions.targets" />
   <Import Project="targets\Crossgen.targets" />
   <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\GenerateMSBuildExtensions.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />
