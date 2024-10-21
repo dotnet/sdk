@@ -7,9 +7,11 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
-    public static class SlnListParser
+    internal static class SlnListParser
     {
         public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders") { Description = LocalizableStrings.ListSolutionFoldersArgumentDescription };
+
+        public static readonly CliOption<SlnListReportOutputFormat> OutputFormatOption = new("--format") { Description = LocalizableStrings.CmdFormatDescription };
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -23,6 +25,7 @@ namespace Microsoft.DotNet.Cli
             CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
             command.Options.Add(SolutionFolderOption);
+            command.Options.Add(OutputFormatOption);
             command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
 
             return command;
