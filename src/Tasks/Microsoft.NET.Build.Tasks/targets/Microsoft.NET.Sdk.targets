@@ -254,6 +254,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
   </Target>
 
+  <Target Name="_AddGenerateSbomTask" BeforeTargets="CollectPackageReferences">
+    <ItemGroup Condition=" '$(GenerateSbom)' == 'true' ">
+      <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists"
           Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true'"
           BeforeTargets="CoreCompile">
