@@ -98,7 +98,11 @@ public class SdkContentTests : SdkTests
         {
             string assemblyPath = sbSdkFileArray[i];
             Version? sbVersion = sbSdkAssemblyVersions[assemblyPath];
-            Version? msftVersion = msftSdkAssemblyVersions[assemblyPath];
+            if (!msftSdkAssemblyVersions.TryGetValue(assemblyPath, out Version? msftVersion))
+            {
+                sbSdkAssemblyVersions.Remove(assemblyPath);
+                continue;
+            }
 
             if (sbVersion is not null &&
                 msftVersion is not null &&
