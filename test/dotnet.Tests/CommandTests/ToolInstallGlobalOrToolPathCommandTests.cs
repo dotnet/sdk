@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string LowerPackageVersion = "1.0.0";
         private const string ToolCommandName = "SimulatorCommand";
         private readonly string UnlistedPackageId = "elemental.sysinfotool";
+        private readonly string CompatiblePackageId = "dotnet-ef";
 
         public ToolInstallGlobalOrToolPathCommandTests(ITestOutputHelper log): base(log)
         {
@@ -611,7 +612,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
-            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "[0.5.0]", "--add-source", nugetSourcePath)
+            // This test also validates that the tool install command can install incompatible tools with the --force option
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "[0.5.0]", "--add-source", nugetSourcePath, "--force")
                 .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
@@ -623,12 +625,42 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void WhenRunWithValidBareVersionItShouldInterpretAsNuGetExactVersion()
+        public void WhenInstallIncompatibleToolWithoutForceItShouldFail()
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "0.5.0", "--add-source", nugetSourcePath)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Fail()
+                .And.HaveStdErrContaining(string.Format(
+                    CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
+                    UnlistedPackageId, "2.1", " -g").Black());
+        }
+
+        [Fact]
+        public void WhenInstallCompatibleToolWithoutForceItShouldSucceed()
+        {
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", CompatiblePackageId, "--add-source", nugetSourcePath)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Pass();
+        }
+    
+
+        [Fact]
+        public void WhenRunWithValidBareVersionItShouldInterpretAsNuGetExactVersion()
+        {
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "0.5.0", "--add-source", nugetSourcePath, "--force")
                 .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 

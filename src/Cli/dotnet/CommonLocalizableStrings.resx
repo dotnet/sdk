@@ -735,5 +735,23 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="ToolSettingsNotFound" xml:space="preserve">
     <value>Tool settings file does not exist for the tool {0}.</value>
+   </data>
+  <data name="ToolPackageRuntimeConfigIncompatible" xml:space="preserve">
+    <value>Installation failed.
+
+This app wasn't installed because it requires .NET {1} to run, which is not installed. This can be resolved by one of the following:
+
+1. Install .NET {1} with the following link
+
+https://aka.ms/dotnet/download/sdk 
+
+2. Install with the `--allow-roll-forward` flag, using with the following command.
+
+dotnet tool install {0}{2} --allow-roll-forward
+
+3. Install with `--force` and manually configure the tool to run, using with the following command.
+
+dotnet tool install {0}{2} --force 
+</value>
   </data>
 </root>
