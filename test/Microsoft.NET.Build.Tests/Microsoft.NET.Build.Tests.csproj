@@ -34,9 +34,10 @@
   <ItemGroup>
     <!-- Make sure tasks project is built, but don't directly reference it as an assembly. -->
     <ProjectReference Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
-    
+
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\TelemetryStdOutLogger\TelemetryStdOutLogger.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,5 +54,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>

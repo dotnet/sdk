@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -32,8 +33,8 @@ namespace Microsoft.DotNet.Cli
             if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
             {
                 string sudoHome = PathUtilities.CreateTempSubdirectory();
-                var homeBeforeOverride = Path.Combine(Environment.GetEnvironmentVariable("HOME"));
-                Environment.SetEnvironmentVariable("HOME", sudoHome);
+                var homeBeforeOverride = Path.Combine(Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName));
+                Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
 
                 CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
             }
