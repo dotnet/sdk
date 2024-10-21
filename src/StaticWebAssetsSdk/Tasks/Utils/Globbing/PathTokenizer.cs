@@ -1,11 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public ref struct PathTokenizer(ReadOnlyMemory<char> path)
 {
-    ReadOnlyMemory<char> _path = path;
+    private readonly ReadOnlyMemory<char> _path = path;
     int _index = -1;
     int _nextSeparatorIndex = -1;
 
@@ -38,7 +40,7 @@ public ref struct PathTokenizer(ReadOnlyMemory<char> path)
         }
     }
 
-    private int GetSeparator()
+    private readonly int GetSeparator()
     {
         var separatorIndex = _path.Span.Slice(_index).IndexOfAny(OSPath.DirectoryPathSeparators.Span);
         if (separatorIndex == -1)

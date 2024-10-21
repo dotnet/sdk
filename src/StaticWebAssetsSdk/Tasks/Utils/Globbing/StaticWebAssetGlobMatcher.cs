@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -33,7 +33,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         return MatchCore(includes, segments);
     }
 
-    private GlobMatch MatchCore(GlobNode includes, List<ReadOnlyMemory<char>> segments)
+    private static GlobMatch MatchCore(GlobNode includes, List<ReadOnlyMemory<char>> segments)
     {
         var stateStack = new Stack<MatchState>();
         stateStack.Push(new(includes));
@@ -104,7 +104,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         return new(false, null);
     }
 
-    private string ComputeStem(List<ReadOnlyMemory<char>> segments, int stemStartIndex)
+    private static string ComputeStem(List<ReadOnlyMemory<char>> segments, int stemStartIndex)
     {
         if (stemStartIndex == -1)
         {
@@ -112,7 +112,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
 #if NET9_0_OR_GREATER
         var stemLength = 0;
-        for(var i = stemStartIndex; i < segments.Count; i++)
+        for (var i = stemStartIndex; i < segments.Count; i++)
         {
             stemLength += segments[i].Length;
         }
@@ -148,7 +148,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 #endif
     }
 
-    private void MatchComplex(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchComplex(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
     {
         // We need to try all the complex segments until we find one that matches or we run out of segments to try.
         // If we find a match for the current segment, we need to make sure that the rest of the segments match the remainder of the pattern.
@@ -176,7 +176,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
     }
 
-    private bool TryMatchParts(ReadOnlySpan<char> span, List<GlobSegmentPart> parts, int index = 0, int partIndex = 0)
+    private static bool TryMatchParts(ReadOnlySpan<char> span, List<GlobSegmentPart> parts, int index = 0, int partIndex = 0)
     {
         for (var i = partIndex; i < parts.Count; i++)
         {
@@ -278,13 +278,13 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
     }
 
-    private void MatchWildCard(Stack<MatchState> stateStack, MatchState state)
+    private static void MatchWildCard(Stack<MatchState> stateStack, MatchState state)
     {
         // A wildcard matches any segment, so we can continue with the next
         stateStack.Push(state.NextSegment(state.Node.WildCard));
     }
 
-    private void MatchExtension(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchExtension(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
     {
         var node = state.Node;
         var currentIndex = state.SegmentIndex;
@@ -313,7 +313,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
     }
 
-    private void MatchLiteral(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchLiteral(List<ReadOnlyMemory<char>> segments, Stack<MatchState> stateStack, MatchState state)
     {
         var currentIndex = state.SegmentIndex;
         var node = state.Node;
@@ -326,7 +326,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
     }
 
-    private void PushNextStageIfAvailable(Stack<MatchState> stateStack, MatchState state)
+    private static void PushNextStageIfAvailable(Stack<MatchState> stateStack, MatchState state)
     {
         if (state.ExtensionSegmentIndex == 0 && state.ComplexSegmentIndex == 0)
         {
@@ -358,7 +358,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 
         internal readonly bool HasValue => Node != null;
 
-        public void Deconstruct(out GlobNode node, out MatchStage stage, out int segmentIndex, out int extensionIndex, out int complexIndex)
+        public readonly void Deconstruct(out GlobNode node, out MatchStage stage, out int segmentIndex, out int extensionIndex, out int complexIndex)
         {
             node = Node;
             stage = Stage;
@@ -475,11 +475,11 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             return MatchStage.Done;
         }
 
-        internal MatchState NextExtension(int extensionIndex) => new(Node, MatchStage.Extension, SegmentIndex, extensionIndex, ComplexSegmentIndex);
+        internal readonly MatchState NextExtension(int extensionIndex) => new(Node, MatchStage.Extension, SegmentIndex, extensionIndex, ComplexSegmentIndex);
 
-        internal MatchState NextComplex() => new(Node, MatchStage.Complex, SegmentIndex, ExtensionSegmentIndex, ComplexSegmentIndex + 1);
+        internal readonly MatchState NextComplex() => new(Node, MatchStage.Complex, SegmentIndex, ExtensionSegmentIndex, ComplexSegmentIndex + 1);
 
-        private string GetDebuggerDisplay()
+        private readonly string GetDebuggerDisplay()
         {
             return $"Node: {Node}, Stage: {Stage}, SegmentIndex: {SegmentIndex}, ExtensionIndex: {ExtensionSegmentIndex}, ComplexSegmentIndex: {ComplexSegmentIndex}";
         }
@@ -496,21 +496,18 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         RecursiveWildCard
     }
 
-    private bool TryMatchExtension(GlobNode node, ReadOnlyMemory<char> extension, out GlobNode extensionCandidate)
-    {
+    private static bool TryMatchExtension(GlobNode node, ReadOnlyMemory<char> extension, out GlobNode extensionCandidate) =>
 #if NET9_0_OR_GREATER
-        return node.Extensions.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(extension.Span, out extensionCandidate);
+        node.Extensions.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(extension.Span, out extensionCandidate);
 #else
-        return node.Extensions.TryGetValue(extension.ToString(), out extensionCandidate);
+        node.Extensions.TryGetValue(extension.ToString(), out extensionCandidate);
 #endif
-    }
 
-    private bool TryMatchLiteral(GlobNode node, ReadOnlyMemory<char> current, out GlobNode nextNode)
-    {
+    private static bool TryMatchLiteral(GlobNode node, ReadOnlyMemory<char> current, out GlobNode nextNode) =>
 #if NET9_0_OR_GREATER
-        return node.Literals.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(current.Span, out nextNode);
+        node.Literals.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(current.Span, out nextNode);
 #else
-        return node.Literals.TryGetValue(current.ToString(), out nextNode);
+        node.Literals.TryGetValue(current.ToString(), out nextNode);
 #endif
-    }
+
 }

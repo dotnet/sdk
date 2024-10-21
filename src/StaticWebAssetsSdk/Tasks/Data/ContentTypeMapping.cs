@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -25,5 +24,5 @@ internal struct ContentTypeMapping(string mimeType, string cache, string pattern
             contentTypeMappings.GetMetadata(nameof(Pattern)),
             int.Parse(contentTypeMappings.GetMetadata(nameof(Priority)), CultureInfo.InvariantCulture));
 
-    private string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
+    private readonly string GetDebuggerDisplay() => $"Pattern: {Pattern}, MimeType: {MimeType}, Cache: {Cache}, Priority: {Priority}";
 }

@@ -5,7 +5,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -282,7 +281,7 @@ public class DefineStaticWebAssets : Task
         string relativePathCandidate,
         string identity,
         FingerprintPattern[] fingerprintPatterns,
-        IDictionary<string, string> tokensByPattern)
+        Dictionary<string, string> tokensByPattern)
     {
         if (relativePathCandidate.Contains("#["))
         {

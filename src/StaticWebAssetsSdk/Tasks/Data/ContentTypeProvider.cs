@@ -6,7 +6,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
+internal sealed class ContentTypeProvider
 {
     private static readonly Dictionary<string, ContentTypeMapping> _builtInMappings =
         new()
@@ -425,7 +425,7 @@ internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
     {
 #if NET9_0_OR_GREATER
         var fileNameSpan = Path.GetFileName(relativePath.AsSpan());
-        var fileName = relativePath.AsMemory().Slice(relativePath.Length - fileNameSpan.Length);
+        var fileName = relativePath.AsMemory()[(relativePath.Length - fileNameSpan.Length)..];
 #else
         var fileName = Path.GetFileName(relativePath);
 #endif
@@ -465,17 +465,17 @@ internal sealed class ContentTypeProvider(ContentTypeMapping[] customMappings)
     }
 
 #if NET9_0_OR_GREATER
-    private (ReadOnlyMemory<char> relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(ReadOnlyMemory<char> fileName)
+    private static (ReadOnlyMemory<char> relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(ReadOnlyMemory<char> fileName)
     {
         var extension = Path.GetExtension(fileName.Span);
-        bool hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
+        var hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
         if (hasCompressedExtension)
         {
-            var candidate = fileName.Slice(fileName.Length - fileName.Length);
+            var candidate = fileName[^fileName.Length..];
             var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName.Span);
             if (!Path.GetExtension(fileNameNoExtension).Equals("", StringComparison.Ordinal))
             {
-                return (candidate.Slice(0, fileNameNoExtension.Length), hasCompressedExtension);
+                return (candidate[..fileNameNoExtension.Length], hasCompressedExtension);
             }
         }
 

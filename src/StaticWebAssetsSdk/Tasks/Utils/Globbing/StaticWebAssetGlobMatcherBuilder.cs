@@ -1,21 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class StaticWebAssetGlobMatcherBuilder
 {
-    private readonly List<string> _includePatterns = new();
-    private readonly List<string> _excludePatterns = new();
+    private readonly List<string> _includePatterns = [];
+    private readonly List<string> _excludePatterns = [];
 
     public StaticWebAssetGlobMatcherBuilder AddIncludePatterns(params string[] patterns)
     {
@@ -43,11 +34,11 @@ public class StaticWebAssetGlobMatcherBuilder
         return new StaticWebAssetGlobMatcher(includeRoot, _excludePatterns.Count > 0 ? excludeRoot : null);
     }
 
-    private void BuildTree(GlobNode includes, List<string> includePatterns, List<ReadOnlyMemory<char>> segments)
+    private static void BuildTree(GlobNode root, List<string> patterns, List<ReadOnlyMemory<char>> segments)
     {
-        for (var i = 0; i < includePatterns.Count; i++)
+        for (var i = 0; i < patterns.Count; i++)
         {
-            var pattern = includePatterns[i];
+            var pattern = patterns[i];
             var patternMemory = pattern.AsMemory();
             var tokenizer = new PathTokenizer(patternMemory);
             segments.Clear();
@@ -56,7 +47,7 @@ public class StaticWebAssetGlobMatcherBuilder
             {
                 segments.Add("**".AsMemory());
             }
-            var current = includes;
+            var current = root;
             for (var j = 0; j < segments.Count; j++)
             {
                 var segment = segments[j];
@@ -70,7 +61,7 @@ public class StaticWebAssetGlobMatcherBuilder
                     TryAddWildcard(segmentSpan, ref current) ||
                     TryAddExtension(segment, segmentSpan, ref current) ||
                     TryAddComplexSegment(segment, segmentSpan, ref current) ||
-                    TryAddLiteral(segment, segmentSpan, pattern, ref current))
+                    TryAddLiteral(segment, ref current))
                 {
                     continue;
                 }
@@ -79,7 +70,7 @@ public class StaticWebAssetGlobMatcherBuilder
             current.Match = pattern;
         }
     }
-    private bool TryAddLiteral(ReadOnlyMemory<char> segment, ReadOnlySpan<char> segmentSpan, string pattern, ref GlobNode current)
+    private static bool TryAddLiteral(ReadOnlyMemory<char> segment, ref GlobNode current)
     {
         current.Literals ??= new Dictionary<string, GlobNode>(StringComparer.OrdinalIgnoreCase);
         var literal = segment.ToString();
@@ -93,7 +84,7 @@ public class StaticWebAssetGlobMatcherBuilder
         return true;
     }
 
-    private bool TryAddComplexSegment(ReadOnlyMemory<char> segment, ReadOnlySpan<char> segmentSpan, ref GlobNode current)
+    private static bool TryAddComplexSegment(ReadOnlyMemory<char> segment, ReadOnlySpan<char> segmentSpan, ref GlobNode current)
     {
         var searchValues = "*?".AsSpan();
         var variableIndex = segmentSpan.IndexOfAny(searchValues);

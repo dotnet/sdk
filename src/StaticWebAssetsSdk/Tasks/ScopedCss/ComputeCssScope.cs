@@ -28,7 +28,7 @@ public class ComputeCssScope : Task
             var input = ScopedCssInput[i];
             var relativePath = input.ItemSpec.ToLowerInvariant().Replace("\\", "//");
             var scope = input.GetMetadata("CssScope");
-            scope = !string.IsNullOrEmpty(scope) ? scope : ComputeCssScope.GenerateScope(TargetName, relativePath);
+            scope = !string.IsNullOrEmpty(scope) ? scope : GenerateScope(TargetName, relativePath);
 
             var outputItem = new TaskItem(input);
             outputItem.SetMetadata("CssScope", scope);
