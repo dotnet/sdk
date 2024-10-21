@@ -1,9 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -82,7 +80,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return !Log.HasLoggedErrors;
     }
 
-    private bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
+    private static bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
     {
         var updated = false;
         for (var i = 0; i < operations.Length; i++)
@@ -95,13 +93,13 @@ public class UpdateStaticWebAssetEndpoints : Task
                     updated = true;
                     break;
                 case "Remove":
-                    updated |= RemoveFromEndpoint(endpoint, operation);
+                    updated |= UpdateStaticWebAssetEndpoints.RemoveFromEndpoint(endpoint, operation);
                     break;
                 case "Replace":
-                    updated |= ReplaceInEndpoint(endpoint, operation);
+                    updated |= UpdateStaticWebAssetEndpoints.ReplaceInEndpoint(endpoint, operation);
                     break;
                 case "RemoveAll":
-                    updated |= RemoveAllFromEndpoint(endpoint, operation);
+                    updated |= UpdateStaticWebAssetEndpoints.RemoveAllFromEndpoint(endpoint, operation);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown operation {operation.Type}");
@@ -116,12 +114,12 @@ public class UpdateStaticWebAssetEndpoints : Task
         return updated;
     }
 
-    private bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorRemoved) = RemoveAllIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
+                var (selectors, selectorRemoved) = UpdateStaticWebAssetEndpoints.RemoveAllIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
                 if (selectorRemoved)
                 {
                     endpoint.Selectors = selectors;
@@ -129,7 +127,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Header":
-                var (headers, headerRemoved) = RemoveAllIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
+                var (headers, headerRemoved) = UpdateStaticWebAssetEndpoints.RemoveAllIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
                 if (headerRemoved)
                 {
                     endpoint.ResponseHeaders = headers;
@@ -137,7 +135,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Property":
-                var (properties, propertyRemoved) = RemoveAllIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
+                var (properties, propertyRemoved) = UpdateStaticWebAssetEndpoints.RemoveAllIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
                 if (propertyRemoved)
                 {
                     endpoint.EndpointProperties = properties;
@@ -151,7 +149,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private (T[], bool replaced) RemoveAllIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static (T[], bool replaced) RemoveAllIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
         List<T> selectors = null;
         for (var i = 0; i < elements.Length; i++)
@@ -181,7 +179,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private (T[], bool replaced) RemoveFirstIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static (T[], bool replaced) RemoveFirstIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
         for (var i = 0; i < elements.Length; i++)
         {
@@ -197,12 +195,12 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorReplaced) = ReplaceFirstIfFound(
+                var (selectors, selectorReplaced) = UpdateStaticWebAssetEndpoints.ReplaceFirstIfFound(
                     endpoint.Selectors,
                     s => s.Name,
                     s => s.Value,
@@ -217,7 +215,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Header":
-                var (headers, headerReplaced) = ReplaceFirstIfFound(
+                var (headers, headerReplaced) = UpdateStaticWebAssetEndpoints.ReplaceFirstIfFound(
                     endpoint.ResponseHeaders,
                     h => h.Name,
                     h => h.Value,
@@ -232,7 +230,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Property":
-                var (properties, propertyReplaced) = ReplaceFirstIfFound(
+                var (properties, propertyReplaced) = UpdateStaticWebAssetEndpoints.ReplaceFirstIfFound(
                     endpoint.EndpointProperties,
                     p => p.Name,
                     p => p.Value,
@@ -253,7 +251,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private (T[], bool replaced) ReplaceFirstIfFound<T>(
+    private static (T[], bool replaced) ReplaceFirstIfFound<T>(
         T[] elements,
         Func<T, string> getName,
         Func<T, string> getValue,
@@ -274,12 +272,12 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorRemoved) = RemoveFirstIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
+                var (selectors, selectorRemoved) = UpdateStaticWebAssetEndpoints.RemoveFirstIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
                 if (selectorRemoved)
                 {
                     endpoint.Selectors = selectors;
@@ -287,7 +285,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Header":
-                var (headers, headerRemoved) = RemoveFirstIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
+                var (headers, headerRemoved) = UpdateStaticWebAssetEndpoints.RemoveFirstIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
                 if (headerRemoved)
                 {
                     endpoint.ResponseHeaders = headers;
@@ -295,7 +293,7 @@ public class UpdateStaticWebAssetEndpoints : Task
                 }
                 break;
             case "Property":
-                var (properties, propertyRemoved) = RemoveFirstIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
+                var (properties, propertyRemoved) = UpdateStaticWebAssetEndpoints.RemoveFirstIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
                 if (propertyRemoved)
                 {
                     endpoint.EndpointProperties = properties;
@@ -346,7 +344,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         }
     }
 
-    private class StaticWebAssetEndpointOperation(string type, string target, string name, string value, string newValue, string quality)
+    private sealed class StaticWebAssetEndpointOperation(string type, string target, string name, string value, string newValue, string quality)
     {
         public string Type { get; } = type;
 
@@ -360,15 +358,12 @@ public class UpdateStaticWebAssetEndpoints : Task
 
         public string Quality { get; } = quality;
 
-        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item)
-        {
-            return new StaticWebAssetEndpointOperation(
+        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item) => new(
                 item.ItemSpec,
                 item.GetMetadata("UpdateTarget"),
                 item.GetMetadata("Name"),
                 item.GetMetadata("Value"),
                 item.GetMetadata("NewValue"),
                 item.GetMetadata("Quality"));
-        }
     }
 }

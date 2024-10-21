@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 #if WASM_TASKS
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+internal sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #else
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #endif
 {
     public StaticWebAssetPathPattern(string path) => RawPattern = path;
@@ -71,7 +71,11 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
         if (nextToken > 0)
         {
             var literalSegment = new StaticWebAssetPathSegment();
+#if NET9_0_OR_GREATER
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath[..nextToken], IsLiteral = true });
+#else
             literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath.Substring(0, nextToken), IsLiteral = true });
+#endif
             pattern.Segments.Add(literalSegment);
         }
         while (nextToken != -1)
@@ -360,7 +364,11 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
         var nextToken = tokenExpression.IndexOf('{');
         if (nextToken is not (-1) and > 0)
         {
+#if NET9_0_OR_GREATER
+            var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression[..nextToken], IsLiteral = true };
+#else
             var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Substring(0, nextToken), IsLiteral = true };
+#endif
             token.Parts.Add(literalPart);
         }
         while (nextToken != -1)
@@ -465,8 +473,5 @@ public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
     private string GetDebuggerDisplay() => string.Concat(Segments.Select(s => s.GetDebuggerDisplay()));
 
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
-    internal static string PathWithoutTokens(string path)
-    {
-        return Parse(path).ComputePatternLabel();
-    }
+    internal static string PathWithoutTokens(string path) => Parse(path).ComputePatternLabel();
 }
