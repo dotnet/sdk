@@ -1,9 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -107,7 +106,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         }
     }
 
-    private class TargetPathAssetPair(string targetPath, StaticWebAsset asset)
+    private sealed class TargetPathAssetPair(string targetPath, StaticWebAsset asset)
     {
         public string TargetPath { get; } = targetPath;
         public StaticWebAsset ResolvedAsset { get; } = asset;
