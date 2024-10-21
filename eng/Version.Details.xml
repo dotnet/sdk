@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-rc.2.24466.6">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>a23da1c15c737b5e121650cfa5a86805e74e34fc</Sha>
+      <Sha>e07a90b4df2f1b41a83064cfa3164611756c3746</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-rc.2.24466.6">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-rtm.24518.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>a23da1c15c737b5e121650cfa5a86805e74e34fc</Sha>
+      <Sha>e07a90b4df2f1b41a83064cfa3164611756c3746</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-rc.2.24466.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-rtm.24518.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>a23da1c15c737b5e121650cfa5a86805e74e34fc</Sha>
+      <Sha>e07a90b4df2f1b41a83064cfa3164611756c3746</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0">
@@ -325,22 +325,22 @@
       <Sha>1e7a7af6d2417242b244d2a0f4f23fcce8e88d2f</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24515.11">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24518.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
+      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24515.11">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24518.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
+      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24515.11">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24518.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
+      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24515.11">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24518.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>3094e2df9783ab0c966fafe5f51f148030686444</Sha>
+      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0">
@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24511.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24517.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>c43ee853e96528e2f2eb0f6d8c151ddc07b6a844</Sha>
+      <Sha>a2ad736b86ce484df4d2dfc967bd29cd9d1b5de9</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24406.1">
