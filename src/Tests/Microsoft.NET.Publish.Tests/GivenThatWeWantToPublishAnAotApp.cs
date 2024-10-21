@@ -43,7 +43,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")

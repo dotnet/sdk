@@ -11,7 +11,7 @@
   </PropertyGroup>
   <!-- Repo Version Information -->
   <PropertyGroup>
-    <VersionPrefix>8.0.403</VersionPrefix>
+    <VersionPrefix>8.0.404</VersionPrefix>
     <WorkloadsFeatureBand>8.0.400</WorkloadsFeatureBand>
     <!-- Enable to remove prerelease label. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
@@ -36,13 +36,13 @@
     <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
     <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
-    <MicrosoftDotNetSignToolVersion>8.0.0-beta.24461.2</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetSignToolVersion>8.0.0-beta.24516.1</MicrosoftDotNetSignToolVersion>
     <MicrosoftWebXdtPackageVersion>7.0.0-preview.22423.2</MicrosoftWebXdtPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>8.0.0</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
     <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
-    <SystemReflectionMetadataLoadContextVersion>8.0.0</SystemReflectionMetadataLoadContextVersion>
+    <SystemReflectionMetadataLoadContextVersion>8.0.1</SystemReflectionMetadataLoadContextVersion>
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.23463.1</MicrosoftDeploymentDotNetReleasesVersion>
@@ -51,35 +51,36 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.8</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>8.0.8-servicing.24366.12</VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>8.0.8</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>8.0.10</MicrosoftNETCoreAppRefPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>8.0.10-servicing.24466.10</VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>8.0.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>8.0.1</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.8</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETHostModelVersion>8.0.8-servicing.24366.12</MicrosoftNETHostModelVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>8.0.2</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.10</MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <MicrosoftNETHostModelVersion>8.0.10-servicing.24466.10</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>8.0.1</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>8.0.0</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftNETILLinkTasksPackageVersion>8.0.8</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.1</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>8.0.2</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>8.0.1</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftNETILLinkTasksPackageVersion>8.0.10</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>8.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>8.0.8</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>8.0.10</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>8.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>8.0.0</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>8.0.0</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>8.0.0</SystemCompositionHostingPackageVersion>
     <SystemCompositionRuntimePackageVersion>8.0.0</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>8.0.0</SystemCompositionTypedPartsPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>8.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>8.0.1</SystemDiagnosticsEventLogPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>8.0.1</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemDrawingCommonPackageVersion>8.0.7</SystemDrawingCommonPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>8.0.0</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>8.0.1</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>8.0.1</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>8.0.2</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>8.0.0</SystemSecurityPermissionsPackageVersion>
-    <SystemServiceProcessServiceControllerVersion>8.0.0</SystemServiceProcessServiceControllerVersion>
-    <SystemTextJsonPackageVersion>8.0.4</SystemTextJsonPackageVersion>
+    <SystemServiceProcessServiceControllerVersion>8.0.1</SystemServiceProcessServiceControllerVersion>
+    <SystemTextJsonPackageVersion>8.0.5</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>8.0.0</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>8.0.1</SystemFormatsAsn1Version>
   </PropertyGroup>
@@ -114,7 +115,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/format -->
-    <dotnetformatVersion>8.3.536002</dotnetformatVersion>
+    <dotnetformatVersion>8.3.546805</dotnetformatVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
@@ -140,51 +141,51 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>8.0.403</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>8.0.404</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineEdgePackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineEdgePackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>8.0.403-servicing.24461.9</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>8.0.404-servicing.24511.10</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>12.8.401-beta.24421.7</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>12.8.403-beta.24509.1</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.11.0-3.24460.3</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.11.0-3.24460.3</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.11.0-3.24510.3</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.11.0-3.24510.3</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefPackageVersion>8.0.8</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>8.0.8-servicing.24369.8</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>8.0.8-servicing.24369.8</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>8.0.8-servicing.24369.8</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>8.0.8-servicing.24369.8</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>8.0.8-servicing.24369.8</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>8.0.8</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion>8.0.10</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>8.0.10-servicing.24468.4</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>8.0.10-servicing.24468.4</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>8.0.10-servicing.24468.4</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>8.0.10-servicing.24468.4</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>8.0.10-servicing.24468.4</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>8.0.10</MicrosoftAspNetCoreTestHostPackageVersion>
   </PropertyGroup>
   <!-- Dependencies from https://github.com/dotnet/razor -->
   <PropertyGroup>
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24453.9</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24453.9</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24453.9</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24515.6</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24515.6</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24515.6</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>8.0.8-servicing.24366.7</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>8.0.10-servicing.24468.10</MicrosoftNETSdkWindowsDesktopPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
@@ -212,7 +213,7 @@
   <PropertyGroup>
     <FluentAssertionsVersion>6.12.0</FluentAssertionsVersion>
     <FluentAssertionsJsonVersion>6.1.0</FluentAssertionsJsonVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>8.0.0-beta.24461.2</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>8.0.0-beta.24516.1</MicrosoftDotNetXUnitExtensionsVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
@@ -228,7 +229,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>8.0.8</MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>8.0.9</MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>8.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-rtm|-[A-z]*\.*\d*`))</EmscriptenWorkloadFeatureBand>
