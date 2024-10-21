@@ -12,4 +12,6 @@ internal static class OSPath
     public static StringComparison PathComparison { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
         ? StringComparison.OrdinalIgnoreCase :
         StringComparison.Ordinal;
+
+    public static ReadOnlyMemory<char> DirectoryPathSeparators { get; } = "/\\".AsMemory();
 }

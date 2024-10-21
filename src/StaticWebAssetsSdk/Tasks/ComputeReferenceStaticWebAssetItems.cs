@@ -44,7 +44,7 @@ public class ComputeReferenceStaticWebAssetItems : Task
             var resultAssets = new List<StaticWebAsset>();
             foreach (var (key, group) in existingAssets)
             {
-                if (!ComputeReferenceStaticWebAssetItems.TryGetUniqueAsset(group, out var selected))
+                if (!TryGetUniqueAsset(group, out var selected))
                 {
                     if (selected == null)
                     {

@@ -96,9 +96,9 @@ public partial class GenerateServiceWorkerAssetsManifest : Task
     {
         var data = JsonSerializer.Serialize(manifest, ManifestSerializationOptions);
         var content = $"self.assetsManifest = {data};{Environment.NewLine}";
-        var contentHash = GenerateServiceWorkerAssetsManifest.ComputeFileHash(content);
+        var contentHash = ComputeFileHash(content);
         var fileExists = File.Exists(OutputPath);
-        var existingManifestHash = fileExists ? GenerateServiceWorkerAssetsManifest.ComputeFileHash(File.ReadAllText(OutputPath)) : "";
+        var existingManifestHash = fileExists ? ComputeFileHash(File.ReadAllText(OutputPath)) : "";
 
         if (!fileExists)
         {
