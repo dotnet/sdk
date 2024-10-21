@@ -29,6 +29,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             Arguments.Add(NameArgument);
             Options.Add(IgnoreConstraintsOption);
+            Options.Add(FormatOption);
             Options.Add(SharedOptions.OutputOption);
             Options.Add(SharedOptions.ProjectPathOption);
             SetupTabularOutputOptions(this);
@@ -44,6 +45,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
             Arity = new ArgumentArity(0, 1)
+        };
+
+        internal static CliOption<FormatOptions> FormatOption { get; } = new("--format")
+        {
+            AllowMultipleArgumentsPerToken = true,
+            Description = SymbolStrings.ListCommand_Option_Format,
+            Arity = new ArgumentArity(1, 1),
         };
 
         internal static CliArgument<string> NameArgument { get; } = new("template-name")
@@ -72,4 +80,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         protected override ListCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
 
     }
+
+#pragma warning disable SA1201 // Elements should appear in the correct order
+    public enum FormatOptions
+    {
+        Console,
+        Json
+    }
+#pragma warning restore SA1201 // Elements should appear in the correct order
 }
