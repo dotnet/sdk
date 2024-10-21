@@ -135,78 +135,69 @@ internal partial class AspireServerService : IAsyncDisposable
     }
 
     /// <inheritdoc/>
-    public ValueTask<List<KeyValuePair<string, string>>> GetServerConnectionEnvironmentAsync(CancellationToken cancelToken)
-    {
-        return new ValueTask<List<KeyValuePair<string, string>>>(new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>(DebugSessionPortEnvVar,$"localhost:{_port}"),
-            new KeyValuePair<string, string>(DebugSessionTokenEnvVar, _currentSecret),
-            new KeyValuePair<string, string>(DebugSessionServerCertEnvVar, _certificateEncodedBytes),
-        });
-    }
+    public List<KeyValuePair<string, string>> GetServerConnectionEnvironment()
+        => 
+        [
+            new(DebugSessionPortEnvVar, $"localhost:{_port}"),
+            new(DebugSessionTokenEnvVar, _currentSecret),
+            new(DebugSessionServerCertEnvVar, _certificateEncodedBytes),
+        ];
 
-    public async ValueTask SessionEndedAsync(string dcpId, string sessionId, int processId, int? exitCode, CancellationToken cancelToken)
-    {
-        var payload = new SessionChangeNotification()
-        {
-            NotificationType = NotificationType.SessionTerminated,
-            SessionId = sessionId,
-            PID = processId,
-            ExitCode = exitCode
-        };
+    public ValueTask NotifySessionEndedAsync(string dcpId, string sessionId, int processId, int exitCode, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new SessionTerminatedNotification()
+            {
+                NotificationType = NotificationType.SessionTerminated,
+                SessionId = sessionId,
+                Pid = processId,
+                ExitCode = exitCode
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
 
+    public ValueTask NotifySessionStartedAsync(string dcpId, string sessionId, int processId, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new ProcessRestartedNotification()
+            {
+                NotificationType = NotificationType.ProcessRestarted,
+                SessionId = sessionId,
+                PID = processId
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
+
+    public ValueTask NotifyLogMessageAsync(string dcpId, string sessionId, bool isStdErr, string data, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new ServiceLogsNotification()
+            {
+                NotificationType = NotificationType.ServiceLogs,
+                SessionId = sessionId,
+                IsStdErr = isStdErr,
+                LogMessage = data
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
+
+    private async ValueTask SendNotificationAsync<TNotification>(TNotification notification, string dcpId, string sessionId, CancellationToken cancelationToken)
+        where TNotification : SessionNotification
+    {
         try
         {
-            Log($"Sending SessionEndedAsync for session {sessionId}");
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
+            Log($"Sending '{notification.NotificationType}' for session {sessionId}");
+            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(notification, JsonSerializerOptions);
+            await SendMessageAsync(dcpId, jsonSerialized, cancelationToken);
         }
-        catch (Exception ex)
+        catch (Exception e) when (LogAndPropagate(e))
         {
-            // Send messageAsync can fail if the connection is lost
-            Log($"Sending session ended failed: {ex}");
         }
-    }
 
-    public async ValueTask SessionStartedAsync(string dcpId, string sessionId, int processId, CancellationToken cancelToken)
-    {
-        var payload = new SessionChangeNotification()
+        bool LogAndPropagate(Exception e)
         {
-            NotificationType = NotificationType.ProcessRestarted,
-            SessionId = sessionId,
-            PID = processId
-        };
-
-        try
-        {
-            Log($"Sending SessionStartedAsync for session {sessionId}");
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
-        }
-        catch (Exception ex)
-        {
-            Log($"Sending session started failed: {ex}");
-        }
-    }
-
-    public async ValueTask SendLogMessageAsync(string dcpId, string sessionID, bool isStdErr, string data, CancellationToken cancelToken)
-    {
-        var payload = new SessionLogsNotification()
-        {
-            NotificationType = NotificationType.ServiceLogs,
-            SessionId = sessionID,
-            IsStdErr = isStdErr,
-            LogMessage = data
-        };
-
-        try
-        {
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
-        }
-        catch (Exception ex)
-        {
-            Log($"Sending service logs failed {ex}");
+            Log($"Sending notification '{notification.NotificationType}' failed: {e.Message}");
+            return false;
         }
     }
 
@@ -242,7 +233,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
         runSessionApi.MapPut("/", RunSessionPutAsync);
         runSessionApi.MapDelete("/{sessionId}", RunSessionDeleteAsync);
-        runSessionApi.Map(SessionNotificationBase.Url, RunSessionNotifyAsync);
+        runSessionApi.Map(SessionNotification.Url, RunSessionNotifyAsync);
 
         app.UseWebSockets(new WebSocketOptions
         {

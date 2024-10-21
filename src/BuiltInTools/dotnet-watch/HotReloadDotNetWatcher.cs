@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Watcher
                     await using var runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
                     if (runtimeProcessLauncher != null)
                     {
-                        var launcherEnvironment = await runtimeProcessLauncher.GetEnvironmentVariablesAsync(iterationCancellationToken);
+                        var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
                         rootProjectOptions = rootProjectOptions with
                         {
                             LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment]
