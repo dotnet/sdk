@@ -18,5 +18,7 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
         public string? DotNetRunMessages { get; set; }
 
         public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        public string WorkingDirectory { get; set; }
     }
 }
