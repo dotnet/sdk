@@ -83,15 +83,17 @@ public class DefineStaticWebAssets : Task
             var copyCandidates = new List<ITaskItem>();
             var assetDetails = new List<ITaskItem>();
 
-            var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
-            var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
+            var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
+                new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
+                null;
+
+            var filter = !string.IsNullOrEmpty(RelativePathFilter) ?
+                new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathFilter).Build() :
+                null;
+
             var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
             var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
-#if NET9_0_OR_GREATER
-            var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern[1..], p => p.Expression);
-#else
             var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
-#endif
             Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
             for (var i = 0; i < CandidateAssets.Length; i++)
@@ -105,15 +107,15 @@ public class DefineStaticWebAssets : Task
                     if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                     {
                         var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(candidateMatchPath));
-                        if (!match.HasMatches)
+                        if (!match.IsMatch)
                         {
                             Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, RelativePathPattern);
                             continue;
                         }
 
-                        Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Files.Single().Stem);
+                        Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Stem);
 
-                        relativePathCandidate = StaticWebAsset.Normalize(match.Files.Single().Stem);
+                        relativePathCandidate = StaticWebAsset.Normalize(match.Stem);
                     }
                 }
                 else
@@ -122,9 +124,9 @@ public class DefineStaticWebAssets : Task
                     if (matcher != null)
                     {
                         var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
-                        if (match.HasMatches)
+                        if (match.IsMatch)
                         {
-                            var newRelativePathCandidate = match.Files.Single().Stem;
+                            var newRelativePathCandidate = match.Stem;
                             Log.LogMessage(
                                 MessageImportance.Low,
                                 "The relative path '{0}' matched the pattern '{1}'. Replacing relative path with '{2}'.",
@@ -136,7 +138,7 @@ public class DefineStaticWebAssets : Task
                         }
                     }
 
-                    if (filter != null && !filter.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate)).HasMatches)
+                    if (filter != null && !filter.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate)).IsMatch)
                     {
                         Log.LogMessage(
                             MessageImportance.Low,
@@ -280,7 +282,7 @@ public class DefineStaticWebAssets : Task
         string relativePathCandidate,
         string identity,
         FingerprintPattern[] fingerprintPatterns,
-        Dictionary<string, string> tokensByPattern)
+        IDictionary<string, string> tokensByPattern)
     {
         if (relativePathCandidate.Contains("#["))
         {
@@ -315,11 +317,7 @@ public class DefineStaticWebAssets : Task
         while (!string.IsNullOrEmpty(extension) || extensionCount < 2)
         {
             extensionCount++;
-#if NET9_0_OR_GREATER
-            stem = stem[..^extension.Length];
-#else
             stem = stem.Substring(0, stem.Length - extension.Length);
-#endif
             extension = Path.GetExtension(stem);
         }
 
@@ -346,15 +344,10 @@ public class DefineStaticWebAssets : Task
         foreach (var pattern in fingerprintPatterns)
         {
             var matchResult = pattern.Matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
-            if (matchResult.HasMatches)
+            if (matchResult.IsMatch)
             {
-#if NET9_0_OR_GREATER
-                stem = relativePathCandidate[..(1 + relativePathCandidate.Length - pattern.Pattern.Length)];
-                extension = relativePathCandidate[stem.Length..];
-#else
-                stem = relativePathCandidate.Substring(0, 1 + relativePathCandidate.Length - pattern.Pattern.Length);
+                stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
                 extension = relativePathCandidate.Substring(stem.Length);
-#endif
                 if (!tokensByPattern.TryGetValue(extension, out var expression))
                 {
                     expression = DefaultFingerprintExpression;
@@ -376,7 +369,7 @@ public class DefineStaticWebAssets : Task
         return result;
     }
 
-    private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
+    private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, StaticWebAssetGlobMatcher matcher)
     {
         var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
         if (contentRoot == null)
@@ -410,14 +403,14 @@ public class DefineStaticWebAssets : Task
                 Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
                 return (finalIdentity, true);
             }
-            else if (!matchResult.HasMatches)
+            else if (!matchResult.Value.IsMatch)
             {
                 Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it didn't match the relative path pattern", candidate.ItemSpec, candidateFullPath);
                 return (candidateFullPath, false);
             }
             else
             {
-                var stem = matchResult.Files.Single().Stem;
+                var stem = matchResult.Value.Stem;
                 var assetIdentity = Path.GetFullPath(Path.Combine(normalizedContentRoot, stem));
                 Log.LogMessage(MessageImportance.Low, "Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
 
@@ -489,11 +482,7 @@ public class DefineStaticWebAssets : Task
         var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
         if (normalizedAssetPath.StartsWith(normalizedContentRoot))
         {
-#if NET9_0_OR_GREATER
-            var result = normalizedAssetPath[normalizedContentRoot.Length..];
-#else
             var result = normalizedAssetPath.Substring(normalizedContentRoot.Length);
-#endif
             Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedContentRoot, candidate.ItemSpec, result);
             return result;
         }
@@ -619,15 +608,15 @@ public class DefineStaticWebAssets : Task
         return computedPath;
     }
 
-    private sealed class FingerprintPattern(ITaskItem pattern)
+    private class FingerprintPattern(ITaskItem pattern)
     {
-        Matcher _matcher;
+        StaticWebAssetGlobMatcher _matcher;
         public string Name { get; set; } = pattern.ItemSpec;
 
         public string Pattern { get; set; } = pattern.GetMetadata(nameof(Pattern));
 
         public string Expression { get; set; } = pattern.GetMetadata(nameof(Expression));
 
-        public Matcher Matcher => _matcher ??= new Matcher().AddInclude(Pattern);
+        public StaticWebAssetGlobMatcher Matcher => _matcher ??= new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(Pattern).Build();
     }
 }
