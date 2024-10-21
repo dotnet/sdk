@@ -7,7 +7,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
-    internal sealed class WatchableApp : IDisposable
+    internal sealed class WatchableApp(ITestOutputHelper logger) : IDisposable
     {
         // Test apps should output this message as soon as they start running:
         private const string StartedMessage = "Started";
@@ -18,19 +18,13 @@ namespace Microsoft.DotNet.Watcher.Tests
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
-        public readonly ITestOutputHelper Logger;
-        private bool _prepared;
-
-        public WatchableApp(ITestOutputHelper logger)
-        {
-            Logger = logger;
-        }
+        public ITestOutputHelper Logger => logger;
 
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = new() { "--verbose" };
+        public List<string> DotnetWatchArgs { get; } = ["--verbose", "/bl:DotnetRun.binlog"];
 
-        public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
         public bool UsePollingWatcher { get; set; }
 
@@ -97,24 +91,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        private void Prepare(string projectDirectory)
-        {
-            if (_prepared)
-            {
-                return;
-            }
-
-            var buildCommand = new BuildCommand(Logger, projectDirectory);
-            buildCommand.Execute().Should().Pass();
-
-            _prepared = true;
-        }
-
         public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
         {
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
-
-            Prepare(projectDirectory);
 
             var commandSpec = new DotnetCommand(Logger, ["watch", .. DotnetWatchArgs, .. arguments])
             {
