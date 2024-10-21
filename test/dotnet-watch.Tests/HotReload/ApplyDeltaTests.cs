@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -402,6 +403,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             App.AssertOutputContains("Using Aspire process launcher.");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net9.0)");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net9.0)");
+
+            // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
+            Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
         }
     }
 }

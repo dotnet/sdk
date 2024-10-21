@@ -65,8 +65,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
 
-            // Attach trigger to the process that launches browser on URL found in the process output:
-            processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
+            // Attach trigger to the process that launches browser on URL found in the process output.
+            // Only do so for root projects, not for child processes.
+            if (projectOptions.IsRootProject)
+            {
+                processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
+            }
 
             if (server == null)
             {
