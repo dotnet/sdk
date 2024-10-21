@@ -184,7 +184,6 @@ src/source-build-externals/src/abstractions-xunit/README.md|free-unknown
 src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown
 src/source-build-externals/src/humanizer/NuSpecs/*.nuspec*
 src/source-build-externals/src/xunit/README.md|free-unknown
-src/source-build-externals/src/xunit/src/xunit/tools/builder/common/README.md|free-unknown
 src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unknown
 
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
