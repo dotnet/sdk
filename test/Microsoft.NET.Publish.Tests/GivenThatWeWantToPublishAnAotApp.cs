@@ -49,7 +49,11 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
                 .And.NotHaveStdErrContaining("warning")
-                .And.NotHaveStdOutContaining("warning", new[] { "ld: warning: __LD,__compact_unwind entries for" });
+                .And.NotHaveStdOutContaining("warning", new[]
+                {
+                    "ld: warning: __LD,__compact_unwind entries for",
+                    "ld: warning: -ld_classic is deprecated and will be removed in a future release"
+                });
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
