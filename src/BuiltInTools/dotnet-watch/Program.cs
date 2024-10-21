@@ -156,20 +156,6 @@ namespace Microsoft.DotNet.Watcher
                 reporter.Output("Polling file watcher is enabled");
             }
 
-            var projectGraph = TryReadProject(rootProjectOptions, reporter);
-            if (projectGraph != null)
-            {
-                var rootProject = projectGraph.GraphRoots.Single();
-
-                // use normalized MSBuild path so that we can index into the ProjectGraph
-                rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
-
-                if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
-                {
-                    runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
-                }
-            }
-
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.TargetFramework,
@@ -198,7 +184,6 @@ namespace Microsoft.DotNet.Watcher
 
             var context = new DotNetWatchContext
             {
-                ProjectGraph = projectGraph,
                 Reporter = reporter,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
@@ -208,33 +193,6 @@ namespace Microsoft.DotNet.Watcher
             return enableHotReload
                 ? new HotReloadDotNetWatcher(context, console, fileSetFactory, runtimeProcessLauncherFactory)
                 : new DotNetWatcher(context, fileSetFactory);
-        }
-
-        // internal for testing
-        internal static ProjectGraph? TryReadProject(ProjectOptions options, IReporter reporter)
-        {
-            var globalOptions = new Dictionary<string, string>();
-            if (options.TargetFramework != null)
-            {
-                globalOptions.Add("TargetFramework", options.TargetFramework);
-            }
-
-            foreach (var (name, value) in options.BuildProperties)
-            {
-                globalOptions[name] = value;
-            }
-
-            try
-            {
-                return new ProjectGraph(options.ProjectPath, globalOptions);
-            }
-            catch (Exception ex)
-            {
-                reporter.Verbose("Reading the project instance failed.");
-                reporter.Verbose(ex.ToString());
-            }
-
-            return null;
         }
 
         private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
@@ -248,7 +206,7 @@ namespace Microsoft.DotNet.Watcher
                 outputSink: null,
                 trace: false);
 
-            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not { } evaluationResult)
+            if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
                 return 1;
             }

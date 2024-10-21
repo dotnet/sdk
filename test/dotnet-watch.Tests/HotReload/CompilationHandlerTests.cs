@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -21,7 +23,16 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
-        var projectGraph = Program.TryReadProject(options, reporter);
+        var factory = new MSBuildFileSetFactory(
+            rootProjectFile: options.ProjectPath,
+            targetFramework: null,
+            buildProperties: [],
+            environmentOptions: new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
+            reporter,
+            outputSink: null,
+            trace: false);
+
+        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false);
         var handler = new CompilationHandler(reporter);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);

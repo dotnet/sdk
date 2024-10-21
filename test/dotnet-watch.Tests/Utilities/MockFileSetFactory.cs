@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Watcher.Tools;
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
     targetFramework: null,
-    buildProperties: null,
+    buildProperties: [],
     new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
     NullReporter.Singleton,
     outputSink: null,
@@ -16,6 +16,6 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
 {
     public Func<EvaluationResult> TryCreateImpl;
 
-    public override ValueTask<EvaluationResult> TryCreateAsync(CancellationToken cancellationToken)
+    public override ValueTask<EvaluationResult> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
         => ValueTask.FromResult(TryCreateImpl?.Invoke());
 }
