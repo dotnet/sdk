@@ -21,60 +21,37 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
         string? targetFramework,
-        IReadOnlyList<(string, string)> buildProperties,
+        IReadOnlyList<(string name, string value)> buildProperties,
         EnvironmentOptions environmentOptions,
-        IReporter reporter,
-        OutputSink? outputSink,
-        bool trace)
+        IReporter reporter)
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
-        private readonly OutputSink _outputSink = outputSink ?? new OutputSink();
-        private readonly IReadOnlyList<string> _buildFlags = InitializeArgs(FindTargetsFile(), targetFramework, buildProperties, trace);
-
         public string RootProjectFile => rootProjectFile;
 
         // Virtual for testing.
-
         public virtual async ValueTask<EvaluationResult?> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
         {
             var watchList = Path.GetTempFileName();
             try
             {
                 var projectDir = Path.GetDirectoryName(rootProjectFile);
-
-                var capture = _outputSink.StartCapture();
-                var arguments = new List<string>
-                {
-                    "msbuild",
-                    "/restore",
-                    "/nologo",
-                    "/v:m",
-                    rootProjectFile,
-                    $"/p:_DotNetWatchListFile={watchList}",
-                };
-
-#if !DEBUG
-                if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
-#endif
-                {
-                    arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
-                }
-
-                if (environmentOptions.SuppressHandlingStaticContentFiles)
-                {
-                    arguments.Add("/p:DotNetWatchContentFiles=false");
-                }
-
-                arguments.AddRange(_buildFlags);
+                var arguments = GetMSBuildArguments(watchList);
+                var capturedOutput = new List<OutputLine>();
 
                 var processSpec = new ProcessSpec
                 {
                     Executable = environmentOptions.MuxerPath,
                     WorkingDirectory = projectDir,
                     Arguments = arguments,
-                    OutputCapture = capture
+                    OnOutput = line =>
+                    {
+                        lock (capturedOutput)
+                        {
+                            capturedOutput.Add(line);
+                        }
+                    }
                 };
 
                 reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
@@ -88,9 +65,17 @@ namespace Microsoft.DotNet.Watcher.Tools
                     reporter.Output($"MSBuild output from target '{TargetName}':");
                     reporter.Output(string.Empty);
 
-                    foreach (var line in capture.Lines)
+                    foreach (var (line, isError) in capturedOutput)
                     {
-                        reporter.Output($"   {line}");
+                        var message = "   " + line;
+                        if (isError)
+                        {
+                            reporter.Error(message);
+                        }
+                        else
+                        {
+                            reporter.Output(message);
+                        }
                     }
 
                     reporter.Output(string.Empty);
@@ -164,33 +149,49 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        private static IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)> buildProperties, bool trace)
+        private IReadOnlyList<string> GetMSBuildArguments(string watchListFilePath)
         {
-            var args = new List<string>
+            var watchTargetsFile = FindTargetsFile();
+
+            var arguments = new List<string>
             {
+                "msbuild",
+                "/restore",
                 "/nologo",
-                "/v:n",
-                "/t:" + TargetName,
-                "/p:DotNetWatchBuild=true", // extensibility point for users
-                "/p:DesignTimeBuild=true", // don't do expensive things
-                "/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile,
-                "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile,
+                "/v:m",
+                rootProjectFile,
+                "/t:" + TargetName
             };
+
+#if !DEBUG
+            if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+#endif
+            {
+                arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
+            }
+
+            arguments.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
+
+            // Set dotnet-watch reserved properties after the user specified propeties,
+            // so that the former take precedence.
+
+            if (environmentOptions.SuppressHandlingStaticContentFiles)
+            {
+                arguments.Add("/p:DotNetWatchContentFiles=false");
+            }
 
             if (targetFramework != null)
             {
-                args.Add("/p:TargetFramework=" + targetFramework);
+                arguments.Add("/p:TargetFramework=" + targetFramework);
             }
 
-            args.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
+            arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
+            arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
+            arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
+            arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
+            arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
 
-            if (trace)
-            {
-                // enables capturing markers to know which projects have been visited
-                args.Add("/p:_DotNetWatchTraceOutput=true");
-            }
-
-            return args;
+            return arguments;
         }
 
         private static string FindTargetsFile()

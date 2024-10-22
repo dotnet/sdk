@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
         /// </summary>
-        public DataReceivedEventHandler? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
+        public Action<OutputLine>? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
         {
             if (!CanLaunchBrowser(context, projectNode, projectOptions, out var launchProfile))
             {
@@ -120,17 +121,17 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             return handler;
 
-            void handler(object sender, DataReceivedEventArgs eventArgs)
+            void handler(OutputLine line)
             {
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                Console.WriteLine(eventArgs.Data);
+                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
 
                 if (matchFound)
                 {
                     return;
                 }
 
-                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
+                var match = s_nowListeningRegex.Match(line.Content);
                 if (!match.Success)
                 {
                     return;

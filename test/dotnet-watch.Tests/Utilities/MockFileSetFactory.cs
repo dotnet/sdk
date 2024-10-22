@@ -10,9 +10,7 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
     targetFramework: null,
     buildProperties: [],
     new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
-    NullReporter.Singleton,
-    outputSink: null,
-    trace: false)
+    NullReporter.Singleton)
 {
     public Func<EvaluationResult> TryCreateImpl;
 

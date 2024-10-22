@@ -161,9 +161,7 @@ namespace Microsoft.DotNet.Watcher
                 rootProjectOptions.TargetFramework,
                 rootProjectOptions.BuildProperties,
                 environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: true);
+                reporter);
 
             bool enableHotReload;
             if (rootProjectOptions.Command != "run")
@@ -202,9 +200,7 @@ namespace Microsoft.DotNet.Watcher
                 rootProjectOptions.TargetFramework,
                 rootProjectOptions.BuildProperties,
                 environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: false);
+                reporter);
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

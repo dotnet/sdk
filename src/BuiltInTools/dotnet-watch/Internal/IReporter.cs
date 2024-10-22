@@ -3,8 +3,10 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Graph;
 using Microsoft.Build.Tasks;
 using Microsoft.DotNet.Watcher;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -79,16 +81,18 @@ namespace Microsoft.Extensions.Tools.Internal
     internal interface IReporter
     {
         void Report(MessageDescriptor descriptor, string prefix, object?[] args);
-        void ProcessOutput(string projectPath, string data);
 
         public bool IsVerbose
             => false;
 
         /// <summary>
-        /// True to call <see cref="ProcessOutput"/> when launched process writes to standard output.
+        /// True to call <see cref="ReportProcessOutput"/> when launched process writes to standard output.
         /// Used for testing.
         /// </summary>
-        bool ReportProcessOutput { get; }
+        bool EnableProcessOutputReporting { get; }
+
+        void ReportProcessOutput(OutputLine line);
+        void ReportProcessOutput(ProjectGraphNode project, OutputLine line);
 
         void Report(MessageDescriptor descriptor, params object?[] args)
             => Report(descriptor, prefix: "", args);

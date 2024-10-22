@@ -28,9 +28,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
             targetFramework: null,
             buildProperties: [],
             environmentOptions: new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
-            reporter,
-            outputSink: null,
-            trace: false);
+            reporter);
 
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false);
         var handler = new CompilationHandler(reporter);

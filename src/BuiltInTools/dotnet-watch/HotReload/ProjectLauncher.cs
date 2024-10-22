@@ -60,19 +60,6 @@ internal sealed class ProjectLauncher(
                 : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
         };
 
-        // allow tests to watch for application output:
-        if (Reporter.ReportProcessOutput)
-        {
-            var projectPath = projectNode.ProjectInstance.FullPath;
-            processSpec.OnOutput += (sender, args) =>
-            {
-                if (args.Data != null)
-                {
-                    Reporter.ProcessOutput(projectPath, args.Data);
-                }
-            };
-        }
-
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
         var namedPipeName = Guid.NewGuid().ToString();
 
@@ -117,7 +104,7 @@ internal sealed class ProjectLauncher(
         var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
         environmentBuilder.ConfigureProcess(processSpec);
 
-        var processReporter = new MessagePrefixingReporter($"[{projectNode.GetDisplayName()}] ", Reporter);
+        var processReporter = new ProjectSpecificReporter(projectNode, Reporter);
 
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,

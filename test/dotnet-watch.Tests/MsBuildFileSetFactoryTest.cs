@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
     {
-        private readonly IReporter _reporter = new TestReporter(output);
+        private readonly TestReporter _reporter = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
         private string MuxerPath
@@ -329,20 +329,17 @@ $@"<ItemGroup>
                 .Path;
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
-            var output = new OutputSink();
             var options = new EnvironmentOptions(
                 MuxerPath: MuxerPath,
                 WorkingDirectory: testDirectory);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: [], options, _reporter, output, trace: true);
+            var output = new List<string>();
+            _reporter.OnProcessOutput += line => output.Add(line.Content);
+
+            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: [("_DotNetWatchTraceOutput", "true")], options, _reporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
-            Assert.NotNull(output.Current);
-
-            _reporter.Output(string.Join(
-                Environment.NewLine,
-                output.Current.Lines.Select(l => "Sink output: " + l)));
 
             AssertEx.SequenceEqual(
             [
@@ -364,11 +361,17 @@ $@"<ItemGroup>
             ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
-            Assert.All(
-                ["A", "B", "C", "D", "E", "F", "G"],
-                projectName =>
-                    Assert.Single(output.Current.Lines,
-                        line => line.Contains($"Collecting watch items from '{projectName}'")));
+            AssertEx.SequenceEqual(
+                [
+                    "Collecting watch items from 'A'",
+                    "Collecting watch items from 'B'",
+                    "Collecting watch items from 'C'",
+                    "Collecting watch items from 'D'",
+                    "Collecting watch items from 'E'",
+                    "Collecting watch items from 'F'",
+                    "Collecting watch items from 'G'",
+                ],
+                output.Where(l => l.Contains("Collecting watch items from")).Select(l => l.Trim()).Order());
         }
 
         private Task<EvaluationResult> Evaluate(TestAsset projectPath)
@@ -380,7 +383,7 @@ $@"<ItemGroup>
                 MuxerPath: MuxerPath,
                 WorkingDirectory: Path.GetDirectoryName(projectPath)!);
 
-            var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: [], options, _reporter, new OutputSink(), trace: false);
+            var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: [], options, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;
