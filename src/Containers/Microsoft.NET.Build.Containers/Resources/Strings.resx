@@ -353,6 +353,18 @@
     <value>Building image index '{0}' on top of manifests : '{1}'.</value>
     <comment/>
   </data>
+  <data name="MixedMediaTypes" xml:space="preserve">
+    <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
+    <comment/>
+  </data>
+  <data name="UnsupportedMediaType" xml:space="preserve">
+    <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
+    <comment/>
+  </data>
+  <data name="GeneratedContainersEmpty" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because GeneratedContainers is empty.</value>
+    <comment/>
+  </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
     <value>Error while reading daemon config: {0}</value>
     <comment>{0} is the exception message that ends with period</comment>

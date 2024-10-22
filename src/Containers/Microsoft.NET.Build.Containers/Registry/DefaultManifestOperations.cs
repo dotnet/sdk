@@ -45,14 +45,7 @@ internal class DefaultManifestOperations : IManifestOperations
         await PutAsync(repositoryName, reference, jsonString, manifest.MediaType, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task PutAsync(string repositoryName, string reference, ManifestListV2 manifestList, CancellationToken cancellationToken)
-    {
-        string jsonString = JsonSerializer.SerializeToNode(manifestList)?.ToJsonString() ?? "";
-
-        await PutAsync(repositoryName, reference, jsonString, manifestList.mediaType, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
     {
         HttpContent manifestUploadContent = new StringContent(manifestJson);
         manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);

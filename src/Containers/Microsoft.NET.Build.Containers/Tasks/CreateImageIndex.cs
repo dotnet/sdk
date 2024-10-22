@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
@@ -43,28 +44,18 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        try
+        if (GeneratedContainers.Length == 0)
         {
-            using MSBuildLoggerProvider loggerProvider = new(Log);
-            ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
-            ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
-
-            var manifestList = GenerateImageIndex(logger);
-            GeneratedImageIndex = manifestList.ToJson();
-
-            await PushToRemoteRegistry(manifestList, logger, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            Log.LogErrorFromException(ex);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.GeneratedContainersEmpty));
+            return !Log.HasLoggedErrors;
         }
 
-        return !Log.HasLoggedErrors;
-    }
+        using MSBuildLoggerProvider loggerProvider = new(Log);
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
-    private ManifestListV2 GenerateImageIndex(ILogger logger)
-    {
         var manifests = new PlatformSpecificManifest[GeneratedContainers.Length];
+        string? manifestMediaType = null;
 
         for (int i = 0; i < GeneratedContainers.Length; i++)
         {
@@ -74,9 +65,19 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             var generatedManifest = generatedManifestStr.FromJson<ManifestV2>();
             var generatedConfig = new ImageConfig(image.GetMetadata("Configuration"));
 
+            if (manifestMediaType == null)
+            {
+                manifestMediaType = generatedManifest.MediaType;
+            }
+            else if (generatedManifest.MediaType != manifestMediaType)
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.MixedMediaTypes));
+                return !Log.HasLoggedErrors;
+            }
+
             var manifest = new PlatformSpecificManifest
             {
-                mediaType = generatedManifest.MediaType,
+                mediaType = manifestMediaType,
                 size = generatedManifestStr.Length,
                 digest = image.GetMetadata("Digest"),
                 platform = new PlatformInformation
@@ -90,22 +91,43 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), manifests.ToJson());
 
-        // TODO: set manifest list mediaType depending on other manifests mediaType
-
-        return new ManifestListV2
+        if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.DockerManifestListV2,
-            manifests = manifests
-        };
+            var dockerManifestList = new ManifestListV2
+            {
+                schemaVersion = 2,
+                mediaType = SchemaTypes.DockerManifestListV2,
+                manifests = manifests
+            };
+            GeneratedImageIndex = JsonSerializer.SerializeToNode(dockerManifestList)?.ToJsonString() ?? "";
+            await PushToRemoteRegistry(GeneratedImageIndex, dockerManifestList.mediaType, logger, cancellationToken);
+        }
+        else if (manifestMediaType == SchemaTypes.OciManifestV1)
+        {
+            var ociImageIndex = new ImageIndexV1
+            {
+                schemaVersion = 2,
+                mediaType = SchemaTypes.OciImageIndexV1,
+                manifests = manifests
+            };
+            GeneratedImageIndex = JsonSerializer.SerializeToNode(ociImageIndex)?.ToJsonString() ?? "";
+            await PushToRemoteRegistry(GeneratedImageIndex, ociImageIndex.mediaType, logger, cancellationToken);
+        }
+        else
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnsupportedMediaType), manifestMediaType);
+            return !Log.HasLoggedErrors;
+        }       
+
+        return !Log.HasLoggedErrors;
     }
 
-    private async Task PushToRemoteRegistry(ManifestListV2 manifestList, ILogger logger, CancellationToken cancellationToken)
+    private async Task PushToRemoteRegistry(string manifestList, string mediaType, ILogger logger, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Debug.Assert(ImageTags.Length > 0);
         var registry = new Registry(OutputRegistry, logger, RegistryMode.Push);   
-        await registry.PushAsync(Repository, ImageTags, manifestList, cancellationToken).ConfigureAwait(false);
+        await registry.PushManifestListAsync(Repository, ImageTags, manifestList, mediaType, cancellationToken).ConfigureAwait(false);
         logger.LogInformation(Strings.ImageIndexUploadedToRegistry, GetRepositoryAndTagsString(), OutputRegistry);
     }
 

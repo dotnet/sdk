@@ -331,6 +331,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) because GeneratedContainers is empty..
+        /// </summary>
+        internal static string GeneratedContainersEmpty {
+            get {
+                return ResourceManager.GetString("GeneratedContainersEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created..
         /// </summary>
         internal static string GenerateDigestLabelWithoutGenerateLabels {
@@ -525,6 +534,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string MissingPortNumber {
             get {
                 return ResourceManager.GetString("MissingPortNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;mediaType&apos; of manifests should be the same in manifest list (image index)..
+        /// </summary>
+        internal static string MixedMediaTypes {
+            get {
+                return ResourceManager.GetString("MixedMediaTypes", resourceCulture);
             }
         }
         
@@ -759,6 +777,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string UnrecognizedMediaType {
             get {
                 return ResourceManager.GetString("UnrecognizedMediaType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) for the provided &apos;mediaType&apos; = &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnsupportedMediaType {
+            get {
+                return ResourceManager.GetString("UnsupportedMediaType", resourceCulture);
             }
         }
     }

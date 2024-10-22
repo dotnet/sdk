@@ -16,5 +16,5 @@ internal interface IManifestOperations
 
     public Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, CancellationToken cancellationToken);
 
-    public Task PutAsync(string repositoryName, string reference, ManifestListV2 manifestList, CancellationToken cancellationToken);
+    public Task PutAsync(string repositoryName, string reference, string manifestListJson, string mediaType, CancellationToken cancellationToken);
 }

@@ -152,6 +152,11 @@
         <target state="translated">CONTAINER2030: GenerateLabels wurde deaktiviert, aber GenerateDigestLabel wurde aktiviert. Es wird keine Digestbezeichnung erstellt.</target>
         <note>{StrBegin="CONTAINER2030: "}</note>
       </trans-unit>
+      <trans-unit id="GeneratedContainersEmpty">
+        <source>Cannot create manifest list (image index) because GeneratedContainers is empty.</source>
+        <target state="new">Cannot create manifest list (image index) because GeneratedContainers is empty.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Es wurde kein Hostobjekt erkannt.</target>
@@ -256,6 +261,11 @@
         <source>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</source>
         <target state="translated">CONTAINER2016: Das ContainerPort-Element „{0}“ gibt keine Portnummer an. Stellen Sie sicher, dass der Include des Elements eine Portnummer ist, z. B. „&lt;ContainerPort Include="80" /&gt;“</target>
         <note>{StrBegin="CONTAINER2016: "}</note>
+      </trans-unit>
+      <trans-unit id="MixedMediaTypes">
+        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
+        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
         <source>CONTAINER1004: No RequestUri specified.</source>
@@ -386,6 +396,11 @@
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
         <target state="translated">CONTAINER2001: Unbekannter mediaType „{0}“.</target>
         <note>{StrBegin="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaType">
+        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
+        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <note />
       </trans-unit>
       <trans-unit id="_Test">
         <source>CONTAINER0000: Value for unit test {0}</source>

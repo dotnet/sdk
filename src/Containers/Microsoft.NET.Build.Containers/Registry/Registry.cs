@@ -491,13 +491,13 @@ internal sealed class Registry
 
     }
 
-    public async Task PushAsync(string repositoryName, string[] tags, ManifestListV2 manifestList, CancellationToken cancellationToken)
+    public async Task PushManifestListAsync(string repositoryName, string[] tags, string manifestListJson, string mediaType, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         foreach (var tag in tags)
         {
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestList, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestListJson, mediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
         }          
     }
