@@ -158,7 +158,7 @@
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
-    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'AssetManifests'))</AssetManifestsIntermediateDir>
+    <AssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests'))</AssetManifestsDir>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
     <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
 
@@ -171,16 +171,12 @@
 
     <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
     <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
-    <DotNetBuildPrebuiltReportDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', '$(MSBuildProjectName)'))</DotNetBuildPrebuiltReportDir>
-
     <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
 
     <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
-
-    <DotNetBuildArtifactsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', '$(MSBuildProjectName)'))</DotNetBuildArtifactsLogDir>
   </PropertyGroup>
 
   <!-- Build task assembly paths -->
@@ -197,7 +193,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+    <MergedAssetManifestOutputPath>$(AssetManifestsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
   </PropertyGroup>
 
 </Project>

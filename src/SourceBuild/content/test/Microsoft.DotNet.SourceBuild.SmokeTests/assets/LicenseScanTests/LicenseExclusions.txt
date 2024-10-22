@@ -83,7 +83,7 @@ src/fsharp/setup/resources/eula/*.rtf
 src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 
 # False positive
-src/msbuild/documentation/specs/BuildCheck/interactive-package-references.md|unknown-license-reference
+src/msbuild/documentation/specs/proposed/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
 
 #
@@ -135,7 +135,6 @@ src/roslyn/src/Setup/Roslyn.VsixLicense/EULA.rtf
 src/runtime/docs/project/copyright.md
 
 # Doc that references a license, not applicable to source
-src/runtime/docs/design/mono/web/llvm-backend.md|llvm-exception
 src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
 
 # Installer asset, not applicable to source
@@ -153,7 +152,6 @@ src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
 src/runtime/src/native/external/zlib-ng/cmake/detect-arch.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-coverage.cmake|other-permissive,tsl-2020,unknown-license-reference
-src/runtime/src/native/external/zlib-ng/cmake/detect-intrinsics.cmake|unknown-license-reference
 src/runtime/src/native/external/zlib-ng/cmake/detect-sanitizer.cmake|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
 
@@ -187,11 +185,15 @@ src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.tx
 src/source-build-externals/src/humanizer/NuSpecs/*.nuspec*
 src/source-build-externals/src/xunit/README.md|free-unknown
 src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unknown
+src/source-build-externals/src/xunit/tools/builder/common/README.md|free-unknown
 
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
 src/source-build-externals/src/spectre-console/README.md|unknown-license-reference
+
+# Configuration, doesn't apply to source directly
+src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 
 #
 # source-build-reference-packages

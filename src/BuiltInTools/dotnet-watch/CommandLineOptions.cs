@@ -34,7 +34,7 @@ internal sealed class CommandLineOptions
         "restore",
         "run",
         "sdk",
-        "sln",
+        "solution",
         "store",
         "test",
         "tool",
@@ -179,7 +179,7 @@ internal sealed class CommandLineOptions
             BuildProperties = ParseBuildProperties(parseResult.GetValue(propertyOption) ?? []).ToArray(),
         };
 
-        // Parses name=value pairs passed to --property. Skips invalid input. 
+        // Parses name=value pairs passed to --property. Skips invalid input.
         // We don't report error here as it will be reported by dotnet run.
         static IEnumerable<(string key, string value)> ParseBuildProperties(string[] properties)
             => from property in properties
@@ -240,7 +240,7 @@ internal sealed class CommandLineOptions
             {
                 explicitCommand = token;
             }
-            else 
+            else
             {
                 if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
                 {

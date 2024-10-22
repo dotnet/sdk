@@ -50,20 +50,25 @@ namespace Microsoft.DotNet.Cli
         {
             Run?.Invoke(this, EventArgs.Empty);
 
-            if (!ModulePathExists())
+            if (isFilterMode && !ModulePathExists())
             {
                 return 1;
             }
-            bool isDll = _module.DLLPath.EndsWith(".dll");
+
+            bool isDll = _module.DLLOrExe.EndsWith(".dll");
+
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = isDll ?
-                Environment.ProcessPath :
-                _module.DLLPath,
+                FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DLLOrExe : Environment.ProcessPath,
                 Arguments = enableHelp ? BuildHelpArgs(isDll) : isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(builtInOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
+
+            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            {
+                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+            }
 
             _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);
@@ -219,9 +224,9 @@ namespace Microsoft.DotNet.Cli
 
         private bool ModulePathExists()
         {
-            if (!File.Exists(_module.DLLPath))
+            if (!File.Exists(_module.DLLOrExe))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DLLPath}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DLLOrExe}' not found. Build the test application before or run 'dotnet test'." });
                 return false;
             }
             return true;
@@ -275,7 +280,7 @@ namespace Microsoft.DotNet.Cli
 
             if (isDll)
             {
-                builder.Append($"exec {_module.DLLPath} ");
+                builder.Append($"exec {_module.DLLOrExe} ");
             }
 
             builder.Append(_args.Count != 0
@@ -293,7 +298,7 @@ namespace Microsoft.DotNet.Cli
 
             if (isDll)
             {
-                builder.Append($"exec {_module.DLLPath} ");
+                builder.Append($"exec {_module.DLLOrExe} ");
             }
 
             builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
@@ -306,7 +311,7 @@ namespace Microsoft.DotNet.Cli
             if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
                 AddExecutionId(executionId);
-                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DLLPath, ExecutionId = executionId });
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DLLOrExe, ExecutionId = executionId });
             }
             HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
@@ -330,8 +335,8 @@ namespace Microsoft.DotNet.Cli
             TestResultsReceived?.Invoke(this, new TestResultEventArgs
             {
                 ExecutionId = testResultMessage.ExecutionId,
-                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.SessionUid)).ToArray()
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 
@@ -349,9 +354,9 @@ namespace Microsoft.DotNet.Cli
         {
             StringBuilder builder = new();
 
-            if (!string.IsNullOrEmpty(_module.DLLPath))
+            if (!string.IsNullOrEmpty(_module.DLLOrExe))
             {
-                builder.Append($"DLL: {_module.DLLPath}");
+                builder.Append($"DLL: {_module.DLLOrExe}");
             }
 
             if (!string.IsNullOrEmpty(_module.ProjectPath))
