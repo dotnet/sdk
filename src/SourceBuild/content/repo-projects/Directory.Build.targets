@@ -159,7 +159,7 @@
       -->
       <AddNetSdkSupportingFeed>true</AddNetSdkSupportingFeed>
       <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
-      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
+      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json</NetSdkSupportingFeed>
     </PropertyGroup>
 
     <ItemGroup>
