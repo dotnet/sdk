@@ -1210,7 +1210,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        [ConditionalFact()]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRidSpecifiedAsArgument_NoSelfContained_Works()
         {
             // Arrange

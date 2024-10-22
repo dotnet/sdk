@@ -396,7 +396,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         AssertManifest(publishManifest, LoadPublishManifest());
     }
 
-    [Fact]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Build_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
