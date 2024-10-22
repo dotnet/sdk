@@ -112,6 +112,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return null;
             }
 
+            bool matchFound = false;
+
             return handler;
 
             void handler(object sender, DataReceivedEventArgs eventArgs)
@@ -119,13 +121,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
                 Console.WriteLine(eventArgs.Data);
 
+                if (matchFound)
+                {
+                    return;
+                }
+
                 var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
                 if (!match.Success)
                 {
                     return;
                 }
 
-                ((Process)sender).OutputDataReceived -= handler;
+                matchFound = true;
 
                 var projectAddedToAttemptedSet = ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode);
                 if (projectAddedToAttemptedSet)
