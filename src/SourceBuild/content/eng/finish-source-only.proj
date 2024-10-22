@@ -30,34 +30,15 @@
                           OutputPath="$(ArtifactsLogDir)" />
   </Target>
 
-  <UsingTask TaskName="IndexItemGroup" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
-    <ParameterGroup>
-      <Items Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]"/>
-      <Index Required="true" ParameterType="System.Int32"/>
-      <Item Output="true" ParameterType="Microsoft.Build.Framework.ITaskItem"/>
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[Item = Items[ Index ];]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
   <Target Name="DetermineSourceBuiltSdkNonStableVersion"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
     <ItemGroup>
       <SdkVersionFileItem Include="$(DotNetSdkExtractDir)/sdk/**/.version" />
     </ItemGroup>
 
-    <ReadLinesFromFile File="%(SdkVersionFileItem.Identity)">
-      <Output
-          TaskParameter="Lines"
-          ItemName="VersionFileLines"/>
-    </ReadLinesFromFile>
-
-    <IndexItemGroup Items="@(VersionFileLines)" Index="3">
-      <Output PropertyName="SourceBuiltSdkNonStableVersion" TaskParameter="Item"/>
-    </IndexItemGroup>
+    <PropertyGroup>
+      <SourceBuiltSdkNonStableVersion>$([System.Text.RegularExpressions.Regex]::Split('$([System.IO.File]::ReadAllText('%(SdkVersionFileItem.Identity)'))', '\r\n|\r|\n')[3])</SourceBuiltSdkNonStableVersion>
+    </PropertyGroup>
   </Target>
 
   <!--
