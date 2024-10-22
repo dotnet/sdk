@@ -1161,6 +1161,7 @@ Global
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
+		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5
