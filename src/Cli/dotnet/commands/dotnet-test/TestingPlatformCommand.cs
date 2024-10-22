@@ -3,14 +3,11 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
-using Microsoft.Testing.Platform.IPC;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
-using Microsoft.Testing.TestInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -41,12 +38,6 @@ namespace Microsoft.DotNet.Cli
                 CompleteRun();
             };
 
-            if (parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
-            {
-                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not yet supported.");
-                return ExitCodes.GenericFailure;
-            }
-
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
@@ -57,6 +48,7 @@ namespace Microsoft.DotNet.Cli
             if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
             {
                 VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
+                return ExitCodes.GenericFailure;
             }
 
             BuiltInOptions builtInOptions = new(
@@ -209,7 +201,6 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (var testResult in args.SuccessfulTestResults)
             {
-
                 var testApp = (TestApplication)sender;
                 var appInfo = _executions[testApp];
                 // TODO: timespan for duration
@@ -227,7 +218,6 @@ namespace Microsoft.DotNet.Cli
 
             foreach (var testResult in args.FailedTestResults)
             {
-
                 var testApp = (TestApplication)sender;
                 // TODO: timespan for duration
                 // TODO: expected
@@ -244,7 +234,6 @@ namespace Microsoft.DotNet.Cli
                     standardOutput: null,
                     errorOutput: null);
             }
-
 
             if (!VSTestTrace.TraceEnabled)
             {
