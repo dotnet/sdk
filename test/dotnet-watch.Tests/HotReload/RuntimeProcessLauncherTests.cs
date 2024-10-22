@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests;
@@ -14,6 +15,47 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         HotReloadSessionStarting,
         HotReloadSessionStarted,
         WaitingForChanges,
+    }
+
+    private async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, TaskCompletionSource? completion, CancellationToken cancellationToken)
+    {
+        var projectOptions = new ProjectOptions()
+        {
+            IsRootProject = false,
+            ProjectPath = projectPath,
+            WorkingDirectory = workingDirectory,
+            BuildProperties = [],
+            Command = "run",
+            CommandArguments = ["--project", projectPath],
+            LaunchEnvironmentVariables = [],
+            LaunchProfileName = null,
+            NoLaunchProfile = true,
+            TargetFramework = null,
+        };
+
+        RestartOperation? startOp = null;
+        startOp = new RestartOperation(async (build, cancellationToken) =>
+        {
+            var result = await service.ProjectLauncher.TryLaunchProcessAsync(
+                projectOptions,
+                new CancellationTokenSource(),
+                onOutput: null,
+                restartOperation: startOp!,
+                build,
+                cancellationToken);
+
+            Assert.NotNull(result);
+
+            return result;
+        });
+
+        var runningProject = await startOp(build: false, cancellationToken);
+
+        await runningProject.WaitForProcessRunningAsync(cancellationToken);
+
+        completion?.SetResult();
+
+        return runningProject;
     }
 
     [Theory]
@@ -77,8 +119,11 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 return;
             }
 
-            Launch(serviceProjectA, launchCompletionA).Wait();
-            Launch(serviceProjectB, launchCompletionB).Wait();
+            // service should have been created before Hot Reload session started:
+            Assert.NotNull(service);
+
+            Launch(serviceProjectA, service, workingDirectory, launchCompletionA, watchCancellationSource.Token).Wait();
+            Launch(serviceProjectB, service, workingDirectory, launchCompletionB, watchCancellationSource.Token).Wait();
         });
 
         var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
@@ -117,34 +162,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
 
         Assert.Equal(4, launchedProcessCount);
-
-        async Task Launch(string projectPath, TaskCompletionSource completion)
-        {
-            // service should have been created before Hot Reload session started:
-            Assert.NotNull(service);
-
-            var processTerminationSource = new CancellationTokenSource();
-            var projectOptions = new ProjectOptions()
-            {
-                IsRootProject = false,
-                ProjectPath = projectPath,
-                WorkingDirectory = workingDirectory,
-                BuildProperties = [],
-                Command = "run",
-                CommandArguments = ["--project", projectPath],
-                LaunchEnvironmentVariables = [],
-                LaunchProfileName = null,
-                NoLaunchProfile = true,
-                TargetFramework = null,
-            };
-
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
-            Assert.NotNull(runningProject);
-
-            await runningProject.WaitForProcessRunningAsync(CancellationToken.None);
-
-            completion.SetResult();
-        }
 
         // Hot Reload shared dependency - should update both service projects
         async Task MakeValidDependencyChange()
@@ -302,7 +319,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         // let the host process start:
         await waitingForChanges.WaitAsync();
 
-        await Launch(serviceProjectA);
+        // service should have been created before Hot Reload session started:
+        Assert.NotNull(service);
+
+        await Launch(serviceProjectA, service, workingDirectory, completion: null, watchCancellationSource.Token);
 
         UpdateSourceFile(libSource,
             """
@@ -323,7 +343,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await updatesApplied.WaitAsync();
         await updatesApplied.WaitAsync();
 
-        await Launch(serviceProjectB);
+        await Launch(serviceProjectB, service, workingDirectory, completion: null, watchCancellationSource.Token);
 
         // ServiceB received updates:
         await updatesApplied.WaitAsync();
@@ -337,32 +357,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
         catch (OperationCanceledException)
         {
-        }
-
-        async Task Launch(string projectPath)
-        {
-            // service should have been created before Hot Reload session started:
-            Assert.NotNull(service);
-
-            var processTerminationSource = new CancellationTokenSource();
-            var projectOptions = new ProjectOptions()
-            {
-                IsRootProject = false,
-                ProjectPath = projectPath,
-                WorkingDirectory = workingDirectory,
-                BuildProperties = [],
-                Command = "run",
-                CommandArguments = ["--project", projectPath],
-                LaunchEnvironmentVariables = [],
-                LaunchProfileName = null,
-                NoLaunchProfile = true,
-                TargetFramework = null,
-            };
-
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
-            Assert.NotNull(runningProject);
-
-            await runningProject.WaitForProcessRunningAsync(CancellationToken.None);
         }
     }
 
@@ -478,6 +472,81 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
 
         await hasUpdate.WaitAsync();
+
+        // clean up:
+        watchCancellationSource.Cancel();
+        try
+        {
+            await watchTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    [Fact]
+    public async Task RudeEditInProjectWithoutRunningProcess()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
+            .WithSource();
+
+        var workingDirectory = testAsset.Path;
+        var hostDir = Path.Combine(testAsset.Path, "Host");
+        var hostProject = Path.Combine(hostDir, "Host.csproj");
+        var serviceDirA = Path.Combine(testAsset.Path, "ServiceA");
+        var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
+        var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
+
+        var console = new TestConsole(Logger);
+        var reporter = new TestReporter(Logger);
+
+        var program = Program.TryCreate(
+            TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
+            console,
+            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            reporter,
+            out var errorCode);
+
+        Assert.Equal(0, errorCode);
+        Assert.NotNull(program);
+
+        TestRuntimeProcessLauncher? service = null;
+        var factory = new TestRuntimeProcessLauncher.Factory(s =>
+        {
+            service = s;
+        });
+
+        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
+
+        var watchCancellationSource = new CancellationTokenSource();
+        var watchTask = watcher.WatchAsync(watchCancellationSource.Token);
+
+        var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+
+        var changeHandled = reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var sessionStarted = reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+
+        // let the host process start:
+        await waitingForChanges.WaitAsync();
+
+        // service should have been created before Hot Reload session started:
+        Assert.NotNull(service);
+
+        var runningProject = await Launch(serviceProjectA, service, workingDirectory, completion: null, watchCancellationSource.Token);
+        await sessionStarted.WaitAsync();
+
+        // Terminate the process:
+        await service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
+
+        // rude edit in A (changing assembly level attribute):
+        UpdateSourceFile(serviceSourceA2, """
+            [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
+            """);
+
+        await changeHandled.WaitAsync();
+
+        reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
+        reporter.ProcessOutput.Contains($"verbose ❌ {serviceSourceA2}(1,12): error ENC0003: Updating 'attribute' requires restarting the application.");
 
         // clean up:
         watchCancellationSource.Cancel();

@@ -20,12 +20,22 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
     }
 
     public Func<IEnumerable<(string name, string value)>>? GetEnvironmentVariablesImpl;
+    public Action? TerminateLaunchedProcessesImpl;
 
     public ProjectLauncher ProjectLauncher { get; } = projectLauncher;
+
+    public bool TerminateEntireProcessTreeOnShutdown
+        => false;
 
     public ValueTask DisposeAsync()
         => ValueTask.CompletedTask;
 
     public IEnumerable<(string name, string value)> GetEnvironmentVariables()
         => GetEnvironmentVariablesImpl?.Invoke() ?? [];
+
+    public ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken)
+    {
+        TerminateLaunchedProcessesImpl?.Invoke();
+        return ValueTask.CompletedTask;
+    }
 }

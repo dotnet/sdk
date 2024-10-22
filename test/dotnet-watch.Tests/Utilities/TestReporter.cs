@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Tools.Internal
     internal class TestReporter(ITestOutputHelper output) : IReporter
     {
         private readonly Dictionary<int, Action> _actions = [];
+        public readonly List<string> ProcessOutput = [];
 
         public bool EnableProcessOutputReporting
             => true;
@@ -23,12 +24,18 @@ namespace Microsoft.Extensions.Tools.Internal
         public void ReportProcessOutput(OutputLine line)
         {
             output.WriteLine(line.Content);
+            ProcessOutput.Add(line.Content);
+
             OnProcessOutput?.Invoke(line);
         }
 
         public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
         {
-            output.WriteLine($"[{project.GetDisplayName()}]: {line.Content}");
+            var content = $"[{project.GetDisplayName()}]: {line.Content}";
+
+            output.WriteLine(content);
+            ProcessOutput.Add(content);
+
             OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 

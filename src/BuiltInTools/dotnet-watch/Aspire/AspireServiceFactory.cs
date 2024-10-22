@@ -1,8 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Channels;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 using Microsoft.WebTools.AspireServer;
@@ -12,8 +16,26 @@ namespace Microsoft.DotNet.Watcher;
 
 internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 {
-    private sealed class ServerEvents(ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties) : IAspireServerEvents
+    private sealed class SessionManager : IAspireServerEvents, IRuntimeProcessLauncher
     {
+        private readonly struct Session(string dcpId, string sessionId, RunningProject runningProject, Task outputReader)
+        {
+            public string DcpId { get; } = dcpId;
+            public string Id { get; } = sessionId;
+            public RunningProject RunningProject { get; } = runningProject;
+            public Task OutputReader { get; } = outputReader;
+        }
+
+        private static readonly UnboundedChannelOptions s_outputChannelOptions = new()
+        {
+            SingleReader = true,
+            SingleWriter = true
+        };
+
+        private readonly ProjectLauncher _projectLauncher;
+        private readonly AspireServerService _service;
+        private readonly IReadOnlyList<(string name, string value)> _buildProperties;
+
         /// <summary>
         /// Lock to access:
         /// <see cref="_sessions"/>
@@ -21,56 +43,177 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         /// </summary>
         private readonly object _guard = new();
 
-        private readonly Dictionary<string, RunningProject> _sessions = [];
+        private readonly Dictionary<string, Session> _sessions = [];
         private int _sessionIdDispenser;
+        private volatile bool _isDisposed;
+
+        public SessionManager(ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
+        {
+            _projectLauncher = projectLauncher;
+            _buildProperties = buildProperties;
+
+            _service = new AspireServerService(
+                this,
+                displayName: ".NET Watch Aspire Server",
+                m => projectLauncher.Reporter.Verbose(m, MessageEmoji));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+#if DEBUG
+            lock (_guard)
+            {
+                Debug.Assert(_sessions.Count == 0);
+            }
+#endif
+            _isDisposed = true;
+
+            await _service.DisposeAsync();
+        }
+
+        public async ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+            ImmutableArray<Session> sessions;
+            lock (_guard)
+            {
+                // caller guarantees the session is active
+                sessions = [.. _sessions.Values];
+                _sessions.Clear();
+            }
+
+            foreach (var session in sessions)
+            {
+                await TerminateSessionAsync(session, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// When shutting down we terminate all processes created by Aspire service first.
+        /// Then we terminate the AppHost (root project) without terminating the entire process tree,
+        /// so that we don't kill DCP before it has a chance to clean up resources.
+        /// </summary>
+        public bool TerminateEntireProcessTreeOnShutdown
+            => false;
+
+        public IEnumerable<(string name, string value)> GetEnvironmentVariables()
+            => _service.GetServerConnectionEnvironment().Select(kvp => (kvp.Key, kvp.Value));
 
         private IReporter Reporter
-            => projectLauncher.Reporter;
+            => _projectLauncher.Reporter;
 
         /// <summary>
         /// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#create-session-request.
         /// </summary>
-        public async ValueTask<string> StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancellationToken)
+        async ValueTask<string> IAspireServerEvents.StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancellationToken)
         {
-            Reporter.Verbose($"Starting project: {projectLaunchInfo.ProjectPath}", MessageEmoji);
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             var projectOptions = GetProjectOptions(projectLaunchInfo);
+            var sessionId = Interlocked.Increment(ref _sessionIdDispenser).ToString(CultureInfo.InvariantCulture);
+            await StartProjectAsync(dcpId, sessionId, projectOptions, build: false, isRestart: false, cancellationToken);
+            return sessionId;
+        }
+
+        public async ValueTask<RunningProject> StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool build, bool isRestart, CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+            Reporter.Verbose($"Starting project: {projectOptions.ProjectPath}", MessageEmoji);
 
             var processTerminationSource = new CancellationTokenSource();
+            var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
 
-            var runningProject = await projectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, cancellationToken);
+            var runningProject = await _projectLauncher.TryLaunchProcessAsync(
+                projectOptions,
+                processTerminationSource,
+                onOutput: line =>
+                {
+                    var writeResult = outputChannel.Writer.TryWrite(line);
+                    Debug.Assert(writeResult);
+                },
+                restartOperation: (build, cancellationToken) =>
+                    StartProjectAsync(dcpId, sessionId, projectOptions, build, isRestart: true, cancellationToken),
+                build: build,
+                cancellationToken);
+
             if (runningProject == null)
             {
                 // detailed error already reported:
-                throw new ApplicationException($"Failed to launch project '{projectLaunchInfo.ProjectPath}'.");
+                throw new ApplicationException($"Failed to launch project '{projectOptions.ProjectPath}'.");
             }
 
-            string sessionId;
+            await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.ProcessId, cancellationToken);
+
+            // cancel reading output when the process terminates:
+            var outputReader = StartChannelReader(processTerminationSource.Token);
+
             lock (_guard)
             {
-                sessionId = _sessionIdDispenser++.ToString(CultureInfo.InvariantCulture);
-                _sessions.Add(sessionId, runningProject);
+                // When process is restarted we reuse the session id.
+                // The session already exists, it needs to be updated with new info.
+                Debug.Assert(_sessions.ContainsKey(sessionId) == isRestart);
+
+                _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
             }
 
-            Reporter.Verbose($"Session started: {sessionId}");
-            return sessionId;
+            Reporter.Verbose($"Session started: #{sessionId}");
+            return runningProject;
+
+            async Task StartChannelReader(CancellationToken cancellationToken)
+            {
+                try
+                {
+                    await foreach (var line in outputChannel.Reader.ReadAllAsync(cancellationToken))
+                    {
+                        await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // nop
+                }
+                catch (Exception e)
+                {
+                    Reporter.Error($"Unexpected error reading output of session '{sessionId}': {e}");
+                }
+            }
         }
 
         /// <summary>
         /// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#stop-session-request.
         /// </summary>
-        public async ValueTask StopSessionAsync(string dcpId, string sessionId, CancellationToken cancellationToken)
+        async ValueTask<bool> IAspireServerEvents.StopSessionAsync(string dcpId, string sessionId, CancellationToken cancellationToken)
         {
-            Reporter.Verbose($"Stop Session {sessionId}", MessageEmoji);
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            RunningProject? runningProject;
+            Session session;
             lock (_guard)
             {
-                runningProject = _sessions[sessionId];
+                if (!_sessions.TryGetValue(sessionId, out session))
+                {
+                    return false;
+                }
+
                 _sessions.Remove(sessionId);
             }
 
-            _ = await projectLauncher.TerminateProcessesAsync([runningProject.ProjectNode.ProjectInstance.FullPath], cancellationToken);
+            await TerminateSessionAsync(session, cancellationToken);
+            return true;
+        }
+
+        private async ValueTask TerminateSessionAsync(Session session, CancellationToken cancellationToken)
+        {
+            Reporter.Verbose($"Stop session #{session.Id}", MessageEmoji);
+
+            var exitCode = await _projectLauncher.TerminateProcessAsync(session.RunningProject, cancellationToken);
+
+            // Wait until the started notification has been sent so that we don't send out of order notifications:
+            await _service.NotifySessionEndedAsync(session.DcpId, session.Id, session.RunningProject.ProcessId, exitCode, cancellationToken);
+
+            // process termination should cancel output reader task:
+            await session.OutputReader;
         }
 
         private ProjectOptions GetProjectOptions(ProjectLaunchRequest projectLaunchInfo)
@@ -103,14 +246,15 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = projectLauncher.EnvironmentOptions.WorkingDirectory, // TODO: Should DCP protocol specify?
-                BuildProperties = buildProperties, // TODO: Should DCP protocol specify?
+                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory, // TODO: Should DCP protocol specify?
+                BuildProperties = _buildProperties, // TODO: Should DCP protocol specify?
                 Command = "run",
                 CommandArguments = arguments,
                 LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(kvp => (kvp.Key, kvp.Value)).ToArray() ?? [],
                 LaunchProfileName = projectLaunchInfo.LaunchProfile,
                 NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
                 TargetFramework = null, // TODO: Should DCP protocol specify?
+                TerminateEntireProcessTreeOnShutdown = TerminateEntireProcessTreeOnShutdown,
             };
         }
     }
@@ -121,15 +265,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
     public const string AppHostProjectCapability = "Aspire";
 
     public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
-    {
-        if (!projectNode.GetCapabilities().Contains(AppHostProjectCapability))
-        {
-            return null;
-        }
-
-        // TODO: implement notifications:
-        // 1) Process restarted notification
-        // 2) Session terminated notification
-        return new AspireServerService(new ServerEvents(projectLauncher, buildProperties), displayName: ".NET Watch Aspire Server", m => projectLauncher.Reporter.Verbose(m, MessageEmoji));
-    }
+        => projectNode.GetCapabilities().Contains(AppHostProjectCapability)
+            ? new SessionManager(projectLauncher, buildProperties)
+            : null;
 }
