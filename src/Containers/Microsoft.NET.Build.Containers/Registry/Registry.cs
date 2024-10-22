@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using NuGet.Configuration;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
@@ -488,6 +489,17 @@ internal sealed class Registry
         await _registryAPI.Blob.Upload.CompleteAsync(finalChunkUri.UploadUri, digest, cancellationToken).ConfigureAwait(false);
         _logger.LogTrace("Finalized upload session for {0}", digest);
 
+    }
+
+    public async Task PushManifestListAsync(string repositoryName, string[] tags, string manifestListJson, string mediaType, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var tag in tags)
+        {
+            _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
+            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestListJson, mediaType, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+        }          
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
