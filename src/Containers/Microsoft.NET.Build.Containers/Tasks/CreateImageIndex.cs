@@ -91,6 +91,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), manifests.ToJson());
 
+        string imageindexMediaType;
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
             var dockerManifestList = new ManifestListV2
@@ -100,7 +101,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 manifests = manifests
             };
             GeneratedImageIndex = JsonSerializer.SerializeToNode(dockerManifestList)?.ToJsonString() ?? "";
-            await PushToRemoteRegistry(GeneratedImageIndex, dockerManifestList.mediaType, logger, cancellationToken);
+            imageindexMediaType = dockerManifestList.mediaType;
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
@@ -111,13 +112,15 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 manifests = manifests
             };
             GeneratedImageIndex = JsonSerializer.SerializeToNode(ociImageIndex)?.ToJsonString() ?? "";
-            await PushToRemoteRegistry(GeneratedImageIndex, ociImageIndex.mediaType, logger, cancellationToken);
+            imageindexMediaType = ociImageIndex.mediaType;
         }
         else
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnsupportedMediaType), manifestMediaType);
             return !Log.HasLoggedErrors;
-        }       
+        }
+
+        await PushToRemoteRegistry(GeneratedImageIndex, imageindexMediaType, logger, cancellationToken);
 
         return !Log.HasLoggedErrors;
     }
