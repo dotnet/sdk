@@ -62,6 +62,11 @@
         <target state="translated">Wyświetl listę wszystkich projektów w rozwiązaniu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SlnxGenerated">
+        <source>Solution file {0} generated.</source>
+        <target state="new">Solution file {0} generated.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionArgumentName">
         <source>SLN_FILE</source>
         <target state="translated">SLN_FILE</target>

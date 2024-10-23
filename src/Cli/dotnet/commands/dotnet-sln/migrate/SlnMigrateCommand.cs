@@ -12,6 +12,7 @@ using Microsoft.DotNet.Tools;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -36,8 +37,7 @@ namespace Microsoft.DotNet.Cli
             }
             string slnxFileFullPath = Path.ChangeExtension(_slnFileFullPath, "slnx");
             Task task = ConvertToSlnxAsync(_slnFileFullPath, slnxFileFullPath, CancellationToken.None);
-            // TODO: Localize output...
-            _reporter.WriteLine($"Solution file {slnxFileFullPath} generated.");
+            _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFileFullPath);
             return 0;
         }
 

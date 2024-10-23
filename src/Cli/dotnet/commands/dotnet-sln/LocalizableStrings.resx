@@ -180,4 +180,7 @@
   <data name="MigrateAppFullName" xml:space="preserve">
     <value>Generate a .slnx solution file from a .sln solution file.</value>
   </data>
+  <data name="SlnxGenerated" xml:space="preserve">
+    <value>Solution file {0} generated.</value>
+  </data>
 </root>
