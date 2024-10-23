@@ -1,0 +1,13 @@
+﻿{
+  "author": "Microsoft",
+  "name": "xUnit-Testprojekt",
+  "description": "Ein Projekt, das xUnit.net-Tests enthält, die auf .NET unter Windows, Linux und macOS ausgeführt werden können.",
+  "symbols/TargetFrameworkOverride/description": "Überschreibt das Zielframework",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net9.0/description": "Ziel net9.0",
+  "symbols/EnablePack/description": "Gibt an, ob die Paketerstellung (über \"dotnet pack\") für das Projekt aktiviert werden soll.",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "postActions/restoreNugetPackages/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "\"dotnet restore\" ausführen",
+  "postActions/openInEditor/description": "Öffnet Tests.fs im Editor"
+}

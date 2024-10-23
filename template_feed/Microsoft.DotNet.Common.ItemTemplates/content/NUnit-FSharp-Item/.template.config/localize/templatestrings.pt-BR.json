@@ -1,0 +1,6 @@
+﻿{
+  "author": "Aleksei Kharlov, também conhecido como halex2005 (codeofclimber.ru)",
+  "name": "Item de Teste NUnit 3",
+  "description": "Cria uma nova classe de teste NUnit",
+  "postActions/openInEditor/description": "Abre a classe de acessório de teste criada no editor"
+}
