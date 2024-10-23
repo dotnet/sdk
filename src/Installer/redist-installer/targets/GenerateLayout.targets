@@ -166,7 +166,7 @@
       </BundledLayoutPackage>
 
       <!-- These apphost packages come from different verticals and require a join inside the VMR. Disable for now:
-           https://github.com/dotnet/source-build/issues/4694 -->
+           https://github.com/dotnet/source-build/issues/4114 -->
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
         <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
