@@ -30,7 +30,7 @@
 
   <!-- SdkResolver -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.Deployment.DotNet.Releases" Version="[$(MicrosoftDeploymentDotNetReleasesVersion)]" />
+    <PackageDownload Include="Microsoft.Deployment.DotNet.Releases" Version="[$(MicrosoftDeploymentDotNetReleasesToolsetVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
@@ -65,7 +65,7 @@
                                   DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
 
       <!-- SdkResolver -->
-      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.deployment.dotNet.releases\$(MicrosoftDeploymentDotNetReleasesVersion)\lib\netstandard2.0\**\*.*" DeploymentSubpath="MSBuildSdkResolver/" />
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.deployment.dotNet.releases\$(MicrosoftDeploymentDotNetReleasesToolsetVersion)\lib\netstandard2.0\**\*.*" DeploymentSubpath="MSBuildSdkResolver/" />
       <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-x86\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-x86\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x86/" />
       <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-x64\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-x64\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x64/" />
       <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)microsoft.netcore.app.runtime.win-arm64\$(MicrosoftNETCoreAppRuntimePackageVersion)\runtimes\win-arm64\native\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/arm64/" />
