@@ -325,22 +325,22 @@
       <Sha>1e7a7af6d2417242b244d2a0f4f23fcce8e88d2f</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24518.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24522.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
+      <Sha>6ab58e84b97012bbfe67bbbdeabfa633e2c03b8d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24518.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24522.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
+      <Sha>6ab58e84b97012bbfe67bbbdeabfa633e2c03b8d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24518.3">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24522.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
+      <Sha>6ab58e84b97012bbfe67bbbdeabfa633e2c03b8d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24518.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24522.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>13fe97052e82683ec4c9fc916531eba5c751037f</Sha>
+      <Sha>6ab58e84b97012bbfe67bbbdeabfa633e2c03b8d</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0">
@@ -398,14 +398,14 @@
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>375aed28c289639ec572af58067a31c3d7742ef9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24476.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24522.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>4ddd8113a29852380b7b929117bfe67f401ac320</Sha>
+      <Sha>1a54480f52703fb45fac2a6b955247d33758383e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24476.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24522.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>4ddd8113a29852380b7b929117bfe67f401ac320</Sha>
+      <Sha>1a54480f52703fb45fac2a6b955247d33758383e</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24508.2">
