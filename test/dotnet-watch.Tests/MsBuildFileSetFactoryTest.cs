@@ -374,6 +374,39 @@ $@"<ItemGroup>
                 output.Where(l => l.Contains("Collecting watch items from")).Select(l => l.Trim()).Order());
         }
 
+        [Fact]
+        public async Task MsbuildOutput()
+        {
+            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            {
+                TargetFrameworks = "netstandard2.1",
+            });
+
+            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            {
+                TargetFrameworks = $"net462",
+                ReferencedProjects = { project2.TestProject, },
+            });
+
+            var project1Path = GetTestProjectPath(project1);
+
+            var options = new EnvironmentOptions(
+                MuxerPath: MuxerPath,
+                WorkingDirectory: Path.GetDirectoryName(project1Path)!);
+
+            var output = new List<string>();
+            _reporter.OnProcessOutput += line => output.Add($"{(line.IsError ? "[stderr]" : "[stdout]")} {line.Content}");
+
+            var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildProperties: [], options, _reporter);
+            var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
+            Assert.Null(result);
+
+            // note: msbuild prints errors to stdout:
+            AssertEx.Equal(
+                $"[stdout] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
+                output.Single(l => l.Contains("error NU1201")));
+        }
+
         private Task<EvaluationResult> Evaluate(TestAsset projectPath)
             => Evaluate(GetTestProjectPath(projectPath));
 
