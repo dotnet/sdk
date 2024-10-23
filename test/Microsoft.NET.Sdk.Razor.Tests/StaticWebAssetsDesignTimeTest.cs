@@ -121,13 +121,13 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
-    private MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)
+    private static MSBuildCommand CreateMSBuildCommand(TestAsset testAsset, string relativeProjectPath, string targets)
     {
         return (MSBuildCommand)new MSBuildCommand(testAsset.Log, targets, testAsset.TestRoot, relativeProjectPath)
             .WithWorkingDirectory(testAsset.TestRoot);
     }
 
-    private TestAsset AddIntrospection(TestAsset testAsset)
+    private static TestAsset AddIntrospection(TestAsset testAsset)
     {
         return testAsset
             .WithProjectChanges((name, project) =>
