@@ -63,7 +63,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases">
+      <VersionOverride Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)</VersionOverride>
+    </PackageReference>
   </ItemGroup>
 
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
@@ -80,6 +82,7 @@
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
@@ -95,9 +98,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <!-- Used by ResolveHostfxrCopyLocalContent below -->
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2'" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2'" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" Condition="'$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -105,7 +108,9 @@
     <PackageReference Include="Microsoft.NETCore.Targets" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="ResolveHostfxrCopyLocalContent" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" BeforeTargets="AssignTargetPaths">
+  <Target Name="ResolveHostfxrCopyLocalContent"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2')"
+          BeforeTargets="AssignTargetPaths">
     <ItemGroup>
       <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x86/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x86/native/hostfxr.dll">
         <Link>x86/hostfxr.dll</Link>

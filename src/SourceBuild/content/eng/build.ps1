@@ -7,6 +7,7 @@ Param(
 
   # Actions
   [switch]$clean,
+  [switch]$sign,
   [switch][Alias('h')]$help,
   [switch][Alias('t')]$test,
 
@@ -29,6 +30,7 @@ function Get-Usage() {
 
   Write-Host "Actions:"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -sign                   Sign the build."
   Write-Host "  -help                   Print help and exit (short: -h)"
   Write-Host "  -test                   Run tests (repo tests omitted by default) (short: -t)"
   Write-Host ""
@@ -62,6 +64,15 @@ if ($test) {
   $targets += ";VSTest"
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
+}
+
+if ($sign) {
+  $arguments += "/p:Sign=true"
+  # Force dry run signing for now. In typical VMR builds, the official build ID is set for each repo, which
+  # tells the signing infra that it should expect to see signed bits. This won't be the case in CI builds,
+  # and won't be the case for official builds until more of the real signing infra is functional.
+  # https://github.com/dotnet/source-build/issues/4678
+  $arguments +=  "/p:ForceDryRunSigning=true"
 }
 
 if ($buildRepoTests) {

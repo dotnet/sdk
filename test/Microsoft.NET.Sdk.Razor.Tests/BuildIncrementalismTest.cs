@@ -155,7 +155,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(markerFileThumbPrint, FileThumbPrint.Create(markerFile));
         }
 
-        private IDisposable LockDirectory(string directory)
+        private static IDisposable LockDirectory(string directory)
         {
             var disposables = new List<IDisposable>();
             foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))

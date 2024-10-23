@@ -25,15 +25,14 @@
     <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
 
-    <!-- Pass through DotNetBuildPass due to conditional behaviour for this project on join points -->
-    <BuildArgs Condition="'$(DotNetBuildPass)' != ''">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
-
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
     <!-- sdk always wants to build portable on FreeBSD etc. -->
     <BuildArgs Condition="('$(TargetOS)' == 'freebsd' or '$(TargetOS)' == 'solaris') and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
     <!-- https://github.com/dotnet/source-build/issues/4138 -->
     <BuildArgs Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'osx'">$(BuildArgs) /p:SkipBuildingInstallers=true</BuildArgs>
+    <!-- https://github.com/dotnet/source-build/issues/4693 -->
+    <BuildArgs Condition="'$(TargetOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'true'">$(BuildArgs) /p:SkipBuildingInstallers=true /p:SkipBuildingSdkBundle=true</BuildArgs>
 
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
     <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
@@ -90,7 +89,8 @@
   <!-- Copy SDK archive to assets root. -->
   <Target Name="CopySdkArchive"
           AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
     <Copy SourceFiles="$(SdkTarballPath)"
           DestinationFolder="$(ArtifactsAssetsDir)"
           SkipUnchangedFiles="true"
