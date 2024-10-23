@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (!File.Exists(_slnFileFullPath) || !Path.GetExtension(_slnFileFullPath).EndsWith("sln"))
             {
-                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn);
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileFullPath);
             }
             string slnxFileFullPath = Path.ChangeExtension(_slnFileFullPath, "slnx");
             Task task = ConvertToSlnxAsync(_slnFileFullPath, slnxFileFullPath, CancellationToken.None);
