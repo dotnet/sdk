@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         private readonly IReporter _reporter;
         public SlnMigrateCommand(
             ParseResult parseResult,
-            IReporter reporter)
+            IReporter reporter = null)
             : base(parseResult)
         {
             _slnFileFullPath = Path.GetFullPath(parseResult.GetValue(SlnCommandParser.SlnArgument));
@@ -29,13 +30,13 @@ namespace Microsoft.DotNet.Cli
 
         public override int Execute()
         {
-            // TODO: Localize errors and outputs
             if (!File.Exists(_slnFileFullPath) || !Path.GetExtension(_slnFileFullPath).EndsWith("sln"))
             {
-                throw new Exception("File not found!");
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn);
             }
             string slnxFileFullPath = Path.ChangeExtension(_slnFileFullPath, "slnx");
             Task task = ConvertToSlnxAsync(_slnFileFullPath, slnxFileFullPath, CancellationToken.None);
+            // TODO: Localize output...
             _reporter.WriteLine($"Solution file {slnxFileFullPath} generated.");
             return 0;
         }

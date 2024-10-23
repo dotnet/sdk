@@ -1,0 +1,332 @@
+<Solution>
+  <Folder Name="/build/">
+    <File Path="eng/dogfood.cmd" />
+    <File Path="eng/dogfood.sh" />
+    <File Path="eng/Versions.props" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="build.cmd" />
+    <File Path="build.sh" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="LICENSE.TXT" />
+    <File Path="README.md" />
+    <File Path="restore.cmd" />
+    <File Path="restore.sh" />
+    <File Path="test.cmd" />
+    <File Path="test.sh" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
+    <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
+    <Project Path="src/Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" />
+  </Folder>
+  <Folder Name="/src/BlazorWasmSdk/">
+    <Project Path="src/BlazorWasmSdk/Tasks/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" />
+    <Project Path="src/BlazorWasmSdk/Tool/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj" />
+  </Folder>
+  <Folder Name="/src/BlazorWasmSdk/Targets (2)/">
+    <File Path="src/BlazorWasmSdk/Targets/BlazorWasm.web.config" />
+    <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.props" />
+    <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets" />
+    <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" />
+  </Folder>
+  <Folder Name="/src/BuiltInTools/">
+    <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.Package.csproj" />
+    <Project Path="src/BuiltInTools/AspireService/Microsoft.WebTools.AspireService.shproj" />
+    <Project Path="src/BuiltInTools/BrowserRefresh/Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
+    <Project Path="src/BuiltInTools/dotnet-format/dotnet-format.csproj" />
+    <Project Path="src/BuiltInTools/dotnet-watch/dotnet-watch.csproj" />
+    <Project Path="src/BuiltInTools/DotNetDeltaApplier/Microsoft.Extensions.DotNetDeltaApplier.csproj" />
+    <Project Path="src/BuiltInTools/DotNetWatchTasks/DotNetWatchTasks.csproj" />
+  </Folder>
+  <Folder Name="/src/Cli/">
+    <Project Path="src/Cli/dotnet-new3/dotnet-new3.csproj" />
+    <Project Path="src/Cli/dotnet/dotnet.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.Sln.Internal/Microsoft.DotNet.Cli.Sln.Internal.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.InternalAbstractions/Microsoft.DotNet.InternalAbstractions.csproj" />
+    <Project Path="src/Cli/Microsoft.TemplateEngine.Cli/Microsoft.TemplateEngine.Cli.csproj" />
+  </Folder>
+  <Folder Name="/src/Compatibility/">
+    <Project Path="src/Compatibility/Microsoft.DotNet.ApiSymbolExtensions/Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+  </Folder>
+  <Folder Name="/src/Compatibility/ApiCompat/">
+    <Project Path="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Shared/Microsoft.DotNet.ApiCompat.Shared.shproj" />
+    <Project Path="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj" />
+    <Project Path="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj" />
+    <Project Path="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompatibility/Microsoft.DotNet.ApiCompatibility.csproj" />
+    <Project Path="src/Compatibility/ApiCompat/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj" />
+  </Folder>
+  <Folder Name="/src/Compatibility/GenAPI/">
+    <Project Path="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.Task/Microsoft.DotNet.GenAPI.Task.csproj" />
+    <Project Path="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.Tool/Microsoft.DotNet.GenAPI.Tool.csproj" />
+    <Project Path="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj" />
+  </Folder>
+  <Folder Name="/src/Containers/">
+    <Project Path="src/Containers/containerize/containerize.csproj" />
+    <Project Path="src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" />
+    <Project Path="src/Containers/packaging/package.csproj" />
+  </Folder>
+  <Folder Name="/src/Installer/">
+    <Project Path="src/Installer/core-sdk-tasks/core-sdk-tasks.csproj" />
+    <Project Path="src/Installer/finalizer/finalizer-build.csproj" />
+    <Project Path="src/Installer/redist-installer/projects/SdkResolver.csproj" />
+    <Project Path="src/Installer/redist-installer/projects/VSTemplateLocator/VSTemplateLocator.csproj" />
+    <Project Path="src/Installer/redist-installer/redist-installer.csproj" />
+  </Folder>
+  <Folder Name="/src/Layout/">
+    <Project Path="src/Layout/redist/redist.csproj" />
+    <Project Path="src/Layout/toolset-tasks/toolset-tasks.csproj" />
+    <Project Path="src/Layout/tool_fsharp/tool_fsc.csproj" />
+    <Project Path="src/Layout/tool_msbuild/tool_msbuild.csproj" />
+    <Project Path="src/Layout/tool_nuget/tool_nuget.csproj" />
+  </Folder>
+  <Folder Name="/src/RazorSdk/" />
+  <Folder Name="/src/RazorSdk/Sdk (2)/">
+    <File Path="src/RazorSdk/Sdk/Sdk.props" />
+    <File Path="src/RazorSdk/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/RazorSdk/Targets (2)/">
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.CodeGeneration.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.Compilation.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.Component.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.Configuration.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.DesignTime.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" />
+    <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.props" />
+    <File Path="src/RazorSdk/Targets/Sdk.Razor.CurrentVersion.props" />
+    <File Path="src/RazorSdk/Targets/Sdk.Razor.CurrentVersion.targets" />
+  </Folder>
+  <Folder Name="/src/RazorSdk/Targets (2)/Rules/">
+    <File Path="src/RazorSdk/Targets/Rules/RazorComponentWithTargetPath.xaml" />
+    <File Path="src/RazorSdk/Targets/Rules/RazorConfiguration.xaml" />
+    <File Path="src/RazorSdk/Targets/Rules/RazorExtension.xaml" />
+    <File Path="src/RazorSdk/Targets/Rules/RazorGeneral.xaml" />
+    <File Path="src/RazorSdk/Targets/Rules/RazorGenerateWithTargetPath.xaml" />
+  </Folder>
+  <Folder Name="/src/RazorSdk/Tasks (2)/">
+    <Project Path="src/RazorSdk/Tasks/Microsoft.NET.Sdk.Razor.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/RazorSdk/Tool/">
+    <Project Path="src/RazorSdk/Tool/Microsoft.NET.Sdk.Razor.Tool.csproj" />
+  </Folder>
+  <Folder Name="/src/Resolvers/">
+    <Project Path="src/Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.csproj" />
+    <Project Path="src/Resolvers/Microsoft.DotNet.NativeWrapper/Microsoft.DotNet.NativeWrapper.csproj" />
+    <Project Path="src/Resolvers/Microsoft.DotNet.SdkResolver/Microsoft.DotNet.SdkResolver.csproj" />
+    <Project Path="src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
+    <Project Path="src/Resolvers/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/">
+    <File Path="src/StaticWebAssetsSdk/.editorconfig" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/Sdk/">
+    <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.props" />
+    <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.StaticWebAssets.StaticAssets.ProjectSystem.props" />
+    <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/Targets/">
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.5_0.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.CrossTargeting.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.props" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.5_0.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.targets" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Sdk.StaticWebAssets.CurrentVersion.props" />
+    <File Path="src/StaticWebAssetsSdk/Targets/Sdk.StaticWebAssets.CurrentVersion.targets" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/Tasks/">
+    <Project Path="src/StaticWebAssetsSdk/Tasks/Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/Tool/">
+    <Project Path="src/StaticWebAssetsSdk/Tool/Microsoft.NET.Sdk.StaticWebAssets.Tool.csproj" />
+  </Folder>
+  <Folder Name="/src/Tasks/">
+    <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj" />
+    <Project Path="src/Tasks/Microsoft.NET.Build.Tasks.UnitTests/Microsoft.NET.Build.Tasks.UnitTests.csproj" />
+    <Project Path="src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/WasmSdk/" />
+  <Folder Name="/src/WasmSdk/Sdk/" />
+  <Folder Name="/src/WasmSdk/Targets/">
+    <File Path="src/WasmSdk/Targets/Microsoft.NET.Sdk.WebAssembly.Current.props" />
+    <File Path="src/WasmSdk/Targets/Microsoft.NET.Sdk.WebAssembly.Current.targets" />
+    <File Path="src/WasmSdk/Targets/Wasm.web.config" />
+  </Folder>
+  <Folder Name="/src/WasmSdk/Tasks/">
+    <Project Path="src/WasmSdk/Tasks/Microsoft.NET.Sdk.WebAssembly.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/WebSdk/">
+    <File Path="src/WebSdk/CopyPackageLayout.targets" />
+    <File Path="src/WebSdk/Package.props" />
+  </Folder>
+  <Folder Name="/src/WebSdk/ProjectSystem/" />
+  <Folder Name="/src/WebSdk/ProjectSystem/Sdk/">
+    <File Path="src/WebSdk/ProjectSystem/Sdk/Sdk.props" />
+    <File Path="src/WebSdk/ProjectSystem/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/ProjectSystem/Targets/">
+    <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.BeforeCommon.targets" />
+    <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.DefaultItems.props" />
+    <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.ProjectSystem.props" />
+    <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.ProjectSystem.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/ProjectSystem/Tasks (2)/">
+    <Project Path="src/WebSdk/ProjectSystem/Tasks/Microsoft.NET.Sdk.Web.ProjectSystem.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/" />
+  <Folder Name="/src/WebSdk/Publish/Sdk (2)/">
+    <File Path="src/WebSdk/Publish/Sdk/Sdk.props" />
+    <File Path="src/WebSdk/Publish/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/">
+    <File Path="src/WebSdk/Publish/Targets/Microsoft.NET.Sdk.Publish.props" />
+    <File Path="src/WebSdk/Publish/Targets/Microsoft.NET.Sdk.Publish.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/ComputeTargets/">
+    <File Path="src/WebSdk/Publish/Targets/ComputeTargets/Microsoft.NET.Sdk.Publish.ComputeFiles.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/CopyTargets/">
+    <File Path="src/WebSdk/Publish/Targets/CopyTargets/Microsoft.NET.Sdk.Publish.CopyFiles.targets" />
+    <File Path="src/WebSdk/Publish/Targets/CopyTargets/Microsoft.NET.Sdk.Publish.FilterFiles.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/DotNetCLIToolTargets/">
+    <File Path="src/WebSdk/Publish/Targets/DotNetCLIToolTargets/Microsoft.NET.Sdk.DotNetCLITool.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/PublishProfiles/">
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/Default.pubxml" />
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultMSDeploy.pubxml" />
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultMSDeployPackage.pubxml" />
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultOneDeploy.pubxml" />
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultWebJobOneDeploy.pubxml" />
+    <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultZipDeploy.pubxml" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/PublishTargets/">
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.Docker.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.FileSystem.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.Kudu.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.MSDeploy.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.MSDeployPackage.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.OneDeploy.targets" />
+    <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.ZipDeploy.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/TransformTargets/">
+    <File Path="src/WebSdk/Publish/Targets/TransformTargets/Microsoft.NET.Sdk.Publish.TransformFiles.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Targets (2)/TransformTargets/Transforms/">
+    <File Path="src/WebSdk/Publish/Targets/TransformTargets/Transforms/EnvironmentNoLocation.transform" />
+    <File Path="src/WebSdk/Publish/Targets/TransformTargets/Transforms/EnvironmentWithLocation.transform" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Publish/Tasks (2)/">
+    <Project Path="src/WebSdk/Publish/Tasks/Microsoft.NET.Sdk.Publish.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Web/" />
+  <Folder Name="/src/WebSdk/Web/Sdk (2)/">
+    <File Path="src/WebSdk/Web/Sdk/Sdk.props" />
+    <File Path="src/WebSdk/Web/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Web/Targets (2)/">
+    <File Path="src/WebSdk/Web/Targets/Sdk.Browser.props" />
+    <File Path="src/WebSdk/Web/Targets/Sdk.Browser.targets" />
+    <File Path="src/WebSdk/Web/Targets/Sdk.Server.props" />
+    <File Path="src/WebSdk/Web/Targets/Sdk.Server.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Web/Tasks (2)/">
+    <Project Path="src/WebSdk/Web/Tasks/Microsoft.NET.Sdk.Web.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Worker/" />
+  <Folder Name="/src/WebSdk/Worker/Sdk (2)/">
+    <File Path="src/WebSdk/Worker/Sdk/Sdk.props" />
+    <File Path="src/WebSdk/Worker/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Worker/Targets (2)/">
+    <File Path="src/WebSdk/Worker/Targets/Microsoft.NET.Sdk.Worker.props" />
+    <File Path="src/WebSdk/Worker/Targets/Microsoft.NET.Sdk.Worker.targets" />
+  </Folder>
+  <Folder Name="/src/WebSdk/Worker/Tasks (2)/">
+    <Project Path="src/WebSdk/Worker/Tasks/Microsoft.NET.Sdk.Worker.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/template_feed/">
+    <Project Path="template_feed/Microsoft.DotNet.Common.ItemTemplates/Microsoft.DotNet.Common.ItemTemplates.csproj" />
+    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.9.0/Microsoft.DotNet.Common.ProjectTemplates.9.0.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />
+    <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
+    <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
+    <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />
+    <Project Path="test/core-sdk-tasks.Tests/core-sdk-tasks.Tests.csproj" />
+    <Project Path="test/dotnet-format.Tests/tests/dotnet-format.UnitTests.csproj" />
+    <Project Path="test/dotnet-msbuild.Tests/dotnet-msbuild.Tests.csproj" />
+    <Project Path="test/dotnet-MsiInstallation.Tests/dotnet-MsiInstallation.Tests.csproj" />
+    <Project Path="test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj" />
+    <Project Path="test/dotnet-sln.Tests/dotnet-sln.Tests.csproj" />
+    <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
+    <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
+    <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
+    <Project Path="test/HelixTasks/HelixTasks.csproj" />
+    <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Cli.Sln.Internal.Tests/Microsoft.DotNet.Cli.Sln.Internal.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.PackageInstall.Tests/Microsoft.DotNet.PackageInstall.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.TemplateLocator.Tests/Microsoft.DotNet.TemplateLocator.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Tools.Tests.ComponentMocks/Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
+    <Project Path="test/Microsoft.Extensions.DotNetDeltaApplier.Tests/Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Containers.IntegrationTests/Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Containers.UnitTests/Microsoft.NET.Build.Containers.UnitTests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Tests/Microsoft.NET.Build.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Clean.Tests/Microsoft.NET.Clean.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Pack.Tests/Microsoft.NET.Pack.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Publish.Tests/Microsoft.NET.Publish.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Rebuild.Tests/Microsoft.NET.Rebuild.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Restore.Tests/Microsoft.NET.Restore.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.Razor.Tests/Microsoft.NET.Sdk.Razor.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.Razor.Tool.Tests/Microsoft.NET.Sdk.Razor.Tool.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.Web.Tests/Microsoft.NET.Sdk.Web.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj" />
+    <Project Path="test/Microsoft.NET.ToolPack.Tests/Microsoft.NET.ToolPack.Tests.csproj" />
+    <Project Path="test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj" />
+    <Project Path="test/Microsoft.WebTools.AspireService.Tests/Microsoft.WebTools.AspireService.Tests.csproj" />
+    <Project Path="test/Microsoft.Win32.Msi.Manual.Tests/Microsoft.Win32.Msi.Manual.Tests.csproj" />
+    <Project Path="test/Microsoft.Win32.Msi.Tests/Microsoft.Win32.Msi.Tests.csproj" />
+    <Project Path="test/msbuild.Integration.Tests/msbuild.Integration.Tests.csproj" />
+    <Project Path="test/Msbuild.Tests.Utilities/Msbuild.Tests.Utilities.csproj" />
+    <Project Path="test/SDDLTests/SDDLTests.csproj" />
+    <Project Path="test/TelemetryStdOutLogger/TelemetryStdOutLogger.csproj" />
+    <Project Path="test/trustedroots.Tests/trustedroots.Tests.csproj" />
+  </Folder>
+  <Folder Name="/test/Assets/" />
+  <Folder Name="/test/Assets/dotnet-new/">
+    <Project Path="test/TestAssets/TestPackages/dotnet-new/Microsoft.TemplateEngine.TestTemplates.csproj" />
+  </Folder>
+  <Folder Name="/test/Common/">
+    <File Path="test/Common/Program.cs" />
+  </Folder>
+  <Folder Name="/test/Common/CommandLine/">
+    <File Path="test/Common/CommandLine/TestCommandLine.Default.cs" />
+  </Folder>
+  <Folder Name="/test/Compatibility/" />
+  <Folder Name="/test/Compatibility/ApiCompat/">
+    <Project Path="test/Microsoft.DotNet.ApiCompat.IntegrationTests/Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
+    <Project Path="test/Microsoft.DotNet.ApiCompat.Tests/Microsoft.DotNet.ApiCompat.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.ApiCompatibility.Tests/Microsoft.DotNet.ApiCompatibility.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.ApiSymbolExtensions.Tests/Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.PackageValidation.Tests/Microsoft.DotNet.PackageValidation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/test/Compatibility/GenAPI/">
+    <Project Path="test/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
+  </Folder>
+</Solution>
