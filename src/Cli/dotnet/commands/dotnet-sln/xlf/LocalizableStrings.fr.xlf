@@ -37,6 +37,11 @@
         <target state="translated">Afficher les chemins d'accès aux dossiers de solutions.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx solution file from a .sln solution file.</source>
+        <target state="new">Generate a .slnx solution file from a .sln solution file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RemoveAppFullName">
         <source>Remove one or more projects from a solution file.</source>
         <target state="translated">Supprimez un ou plusieurs projets d'un fichier solution.</target>

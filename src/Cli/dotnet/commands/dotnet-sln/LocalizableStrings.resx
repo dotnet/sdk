@@ -177,4 +177,7 @@
   <data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
   </data>
+  <data name="MigrateAppFullName" xml:space="preserve">
+    <value>Generate a .slnx solution file from a .sln solution file.</value>
+  </data>
 </root>

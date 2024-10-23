@@ -37,6 +37,11 @@
         <target state="translated">Visualizza i percorsi della cartella della soluzione.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx solution file from a .sln solution file.</source>
+        <target state="new">Generate a .slnx solution file from a .sln solution file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RemoveAppFullName">
         <source>Remove one or more projects from a solution file.</source>
         <target state="translated">Consente di rimuovere uno o più progetti da un file di soluzione.</target>

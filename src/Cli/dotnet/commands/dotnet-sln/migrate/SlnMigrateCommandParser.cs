@@ -9,13 +9,6 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnMigrateCommandParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.AddProjectPathArgumentName)
-        {
-            HelpName = LocalizableStrings.AddProjectPathArgumentName,
-            Description = LocalizableStrings.AddProjectPathArgumentDescription,
-            Arity = ArgumentArity.ZeroOrMore,
-        };
-
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -25,7 +18,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            CliCommand command = new("migrate", LocalizableStrings.AddAppFullName);
+            CliCommand command = new("migrate", LocalizableStrings.MigrateAppFullName);
 
             command.Arguments.Add(SlnCommandParser.SlnArgument);
 
