@@ -295,7 +295,7 @@
 
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
-          Condition=" '$(OS)' == 'Windows_NT' "
+          Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingSdkBundle)' != 'true'"
           Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
                     $(DownloadedHostFxrInstallerFile);
