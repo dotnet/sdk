@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(SlnAddParser.GetCommand());
             command.Subcommands.Add(SlnListParser.GetCommand());
             command.Subcommands.Add(SlnRemoveParser.GetCommand());
+            command.Subcommands.Add(SlnMigrateCommandParser.GetCommand());
 
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
