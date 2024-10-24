@@ -291,6 +291,19 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
+      ### ARM64 TESTBUILD ###
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: Azure Pipelines
+              vmImage: macOS-latest
+              os: macOS
+            helixTargetQueue: osx.13.arm64
+            macOSJobParameterSets:
+            - categoryName: TestBuild
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
 
       ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
