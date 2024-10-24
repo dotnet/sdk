@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "EnableSdkContainerSupport": {
+      "type": "bool",
+      "defaultValue": "false",
+      "description": "Enables the ability to package a project in a container. This is enabled by default if the project is an ASP.NET project or a Worker Project, or if the project includes a references to the Microsoft.NET.Build.Containers package."
+    },
+    "ContainerBaseImage": {
+      "type": "string",
+      "defaultValue": "mcr.microsoft.com/dotnet/runtime:8.0",
+      "description": "The base image to build the application container onto. If not specified the SDK will infer the best base image for your application.",
+      "helpUrl": "https://github.com/dotnet/sdk-container-builds/blob/main/docs/ContainerCustomization.md#containerbaseimage"
+    }
+  }
+}
