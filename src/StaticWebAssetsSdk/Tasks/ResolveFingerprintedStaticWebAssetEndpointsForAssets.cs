@@ -65,7 +65,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
                     for (var j = 0; j < endpoints.Length; j++)
                     {
                         var endpoint = endpoints[j];
-                        if (ResolveFingerprintedStaticWebAssetEndpointsForAssets.HasFingerprint(endpoint))
+                        if (HasFingerprint(endpoint))
                         {
                             foundFingerprintedEndpoint = true;
                             var route = asset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);

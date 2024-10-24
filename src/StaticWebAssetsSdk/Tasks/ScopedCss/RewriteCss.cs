@@ -171,7 +171,7 @@ public class RewriteCss : Task
             var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
             if (lastSimpleSelector != null)
             {
-                Edits.Add(new InsertSelectorScopeEdit { Position = FindScopeInsertionEdits.FindPositionToInsertInSelector(lastSimpleSelector) });
+                Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
             }
             else if (firstDeepCombinator != null)
             {

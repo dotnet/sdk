@@ -44,7 +44,7 @@ public class FilterStaticWebAssetEndpoints : Task
                 continue;
             }
 
-            if (FilterStaticWebAssetEndpoints.MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
+            if (MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
             {
                 if (asset != null && !endpointFoundMatchingAsset.ContainsKey(asset.Identity))
                 {
