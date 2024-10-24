@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
         {
             string testDependencySource = @"namespace PackageValidationTests { public class ItermediateBaseClass
 #if NETSTANDARD2_0
-: IBaseInterface 
+: IBaseInterface
 #endif
 { } }";
 
@@ -307,7 +307,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
 
             validator.Validate(new PackageValidatorOption(package));
 
-            Assert.Single(log.errors.Where(e => e.Contains("CP1002")));
+            Assert.Single(log.errors, e => e.Contains("CP1002"));
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

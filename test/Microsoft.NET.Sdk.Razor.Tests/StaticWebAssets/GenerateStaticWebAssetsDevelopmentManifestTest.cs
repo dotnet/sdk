@@ -715,7 +715,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Asset = new StaticWebAssetMatch { ContentRootIndex = index, SubPath = subpath }
         };
 
-        private StaticWebAsset CreateAsset(
+        private static StaticWebAsset CreateAsset(
             string identity,
             string relativePath,
             string assetKind = default,
