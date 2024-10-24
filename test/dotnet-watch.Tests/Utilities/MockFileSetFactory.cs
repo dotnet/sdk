@@ -16,6 +16,6 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
 {
     public Func<EvaluationResult> TryCreateImpl;
 
-    public override ValueTask<EvaluationResult> TryCreateAsync(CancellationToken cancellationToken)
+    public override ValueTask<EvaluationResult> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
         => ValueTask.FromResult(TryCreateImpl?.Invoke());
 }

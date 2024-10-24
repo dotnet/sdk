@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class MSBuildEvaluationFilterTest
     {
-        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>());
+        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
         [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
@@ -90,11 +90,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             // There's a chance that the watcher does not correctly report edits to msbuild files on
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
-            var result = new EvaluationResult(new Dictionary<string, FileItem>()
-            {
-                { "Controlller.cs", new FileItem { FilePath = "Controlller.cs" } },
-                { "Proj.csproj", new FileItem { FilePath = "Proj.csproj" } },
-            });
+            var result = new EvaluationResult(
+                new Dictionary<string, FileItem>()
+                {
+                    { "Controlller.cs", new FileItem { FilePath = "Controlller.cs" } },
+                    { "Proj.csproj", new FileItem { FilePath = "Proj.csproj" } },
+                },
+                projectGraph: null);
 
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => result };
 
