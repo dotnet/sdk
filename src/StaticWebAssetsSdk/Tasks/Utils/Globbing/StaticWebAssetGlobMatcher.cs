@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-using static Microsoft.AspNetCore.StaticWebAssets.Tasks.PathTokenizer;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -40,7 +37,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         return MatchCore(includes, segments, stateStack);
     }
 
-    private static GlobMatch MatchCore(GlobNode includes, SegmentCollection segments, Stack<MatchState> stateStack)
+    private static GlobMatch MatchCore(GlobNode includes, PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack)
     {
         stateStack.Push(new(includes));
         while (stateStack.Count > 0)
@@ -110,7 +107,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         return new(false, null);
     }
 
-    private static string ComputeStem(SegmentCollection segments, int stemStartIndex)
+    private static string ComputeStem(PathTokenizer.SegmentCollection segments, int stemStartIndex)
     {
         if (stemStartIndex == -1)
         {
@@ -153,7 +150,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
 #endif
     }
 
-    private static void MatchComplex(SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchComplex(PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
     {
         // We need to try all the complex segments until we find one that matches or we run out of segments to try.
         // If we find a match for the current segment, we need to make sure that the rest of the segments match the remainder of the pattern.
@@ -266,7 +263,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         return index == span.Length;
     }
 
-    private static void MatchRecursiveWildCard(SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchRecursiveWildCard(PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
     {
         var node = state.Node;
         for (var i = segments.Count - state.SegmentIndex; i >= 0; i--)
@@ -289,7 +286,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         stateStack.Push(state.NextSegment(state.Node.WildCard));
     }
 
-    private static void MatchExtension(SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchExtension(PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
     {
         var node = state.Node;
         var currentIndex = state.SegmentIndex;
@@ -318,7 +315,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         }
     }
 
-    private static void MatchLiteral(SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
+    private static void MatchLiteral(PathTokenizer.SegmentCollection segments, Stack<MatchState> stateStack, MatchState state)
     {
         var currentIndex = state.SegmentIndex;
         var node = state.Node;
@@ -525,7 +522,7 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
         public ReadOnlySpan<char> Path;
         public string PathString;
 
-        internal List<Segment> Segments { get; set; } = [];
+        internal List<PathTokenizer.Segment> Segments { get; set; } = [];
         internal Stack<MatchState> MatchStates { get; set; } = [];
 
         public void SetPathAndReinitialize(string path)
@@ -542,5 +539,13 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             Segments.Clear();
             MatchStates.Clear();
         }
+
+        public void SetPathAndReinitialize(ReadOnlyMemory<char> path)
+        {
+            Path = path.Span;
+            Segments.Clear();
+            MatchStates.Clear();
+        }
+
     }
 }

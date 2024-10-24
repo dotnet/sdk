@@ -16,16 +16,11 @@ public class PathTokenizerTest
     {
         var path = "/a/b/c";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("a", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("a", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 
     [Fact]
@@ -33,14 +28,11 @@ public class PathTokenizerTest
     {
         var path = "a/b/c";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("a", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("a", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 
     [Fact]
@@ -48,14 +40,11 @@ public class PathTokenizerTest
     {
         var path = "aa/b/c";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("aa", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("aa", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 
     [Fact]
@@ -63,16 +52,11 @@ public class PathTokenizerTest
     {
         var path = "aa//b/c";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("aa", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("aa", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 
     [Fact]
@@ -80,33 +64,22 @@ public class PathTokenizerTest
     {
         var path = "aa/b/c/";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("aa", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("aa", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 
-    [ConditionalFact]
-    [SkipOnPlatform(TestPlatforms.AnyUnix, "Windows only test")]
+    [Fact]
     public void NonRootSeparator_HandlesAlternativePathSeparators()
     {
         var path = "aa\\b\\c\\";
         var tokenizer = new PathTokenizer(path.AsMemory().Span);
-        ref var tokenizerRef = ref tokenizer;
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("aa", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("b", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("c", tokenizerRef.Current.ToString());
-        Assert.True(tokenizerRef.MoveNext());
-        Assert.Equal("", tokenizerRef.Current.ToString());
-        Assert.False(tokenizerRef.MoveNext());
+        var segments = new List<PathTokenizer.Segment>();
+        var collection = tokenizer.Fill(segments);
+        Assert.Equal("aa", collection[0]);
+        Assert.Equal("b", collection[1]);
+        Assert.Equal("c", collection[2]);
     }
 }

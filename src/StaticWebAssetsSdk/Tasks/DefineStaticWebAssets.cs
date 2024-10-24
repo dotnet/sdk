@@ -89,7 +89,7 @@ public class DefineStaticWebAssets : Task
                 null;
 
             var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
-            var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintPatterns);
+            var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
             for (var i = 0; i < CandidateAssets.Length; i++)
             {
@@ -234,7 +234,7 @@ public class DefineStaticWebAssets : Task
 
                 if (FingerprintCandidates)
                 {
-                    matchContext.SetPathAndReinitialize(candidate.ItemSpec);
+                    matchContext.SetPathAndReinitialize(relativePathCandidate);
                     relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
                 }
 

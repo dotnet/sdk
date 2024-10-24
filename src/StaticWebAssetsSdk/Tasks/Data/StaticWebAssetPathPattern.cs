@@ -7,12 +7,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 #if WASM_TASKS
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0057:Use range operator", Justification = "Can't use range syntax in full framework")]
 internal sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #else
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #endif
 {
+    private const string FingerprintStart = "#[";
+    private const string FingerprintEnd = "]";
+    private const char FingerprintOptional = '?';
+    private const char FingerprintPreferred = '!';
+    private const char FingerprintValueSeparator = '=';
+    private const char FingerprintParameterStart = '{';
+    private const char FingerprintParameterEnd = '}';
+
     public StaticWebAssetPathPattern(string path) : this(path.AsMemory()) { }
 
     public StaticWebAssetPathPattern(ReadOnlyMemory<char> rawPathMemory) => RawPattern = rawPathMemory;
@@ -61,11 +70,12 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     public static StaticWebAssetPathPattern Parse(ReadOnlyMemory<char> rawPathMemory, string assetIdentity = null)
     {
         var pattern = new StaticWebAssetPathPattern(rawPathMemory);
-        var nextToken = MemoryExtensions.IndexOf(rawPathMemory.Span, "#[".AsSpan(), StringComparison.OrdinalIgnoreCase);
+        var current = rawPathMemory;
+        var nextToken = MemoryExtensions.IndexOf(current.Span, FingerprintStart.AsSpan(), StringComparison.OrdinalIgnoreCase);
         if (nextToken == -1)
         {
             var literalSegment = new StaticWebAssetPathSegment();
-            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPathMemory, IsLiteral = true });
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current, IsLiteral = true });
             pattern.Segments.Add(literalSegment);
             return pattern;
         }
@@ -73,16 +83,14 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         if (nextToken > 0)
         {
             var literalSegment = new StaticWebAssetPathSegment();
-#if NET9_0_OR_GREATER
-            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPathMemory[..nextToken], IsLiteral = true });
-#else
-            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPathMemory.Slice(0, nextToken), IsLiteral = true });
-#endif
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true });
             pattern.Segments.Add(literalSegment);
         }
+
         while (nextToken != -1)
         {
-            var tokenEnd = MemoryExtensions.IndexOf(rawPathMemory.Slice(nextToken).Span, "]".AsSpan(), StringComparison.Ordinal);
+            current = current.Slice(nextToken);
+            var tokenEnd = MemoryExtensions.IndexOf(current.Span, FingerprintEnd.AsSpan(), StringComparison.Ordinal);
             if (tokenEnd == -1)
             {
                 if (assetIdentity != null)
@@ -96,31 +104,36 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                 }
             }
 
-            var tokenExpression = rawPathMemory.Slice(nextToken + 2, tokenEnd - nextToken - 2);
+            var tokenExpression = current.Slice(2, tokenEnd - 2);
 
             var token = new StaticWebAssetPathSegment();
             AddTokenSegmentParts(tokenExpression, token);
             pattern.Segments.Add(token);
 
             // Check if the segment is optional (ends with ? or !)
-            if (tokenEnd < rawPathMemory.Length - 1 && (rawPathMemory.Span[tokenEnd + 1] == '?' || rawPathMemory.Span[tokenEnd + 1] == '!'))
+            if (tokenEnd < current.Length - 1 &&
+                (current.Span[tokenEnd + 1] == FingerprintOptional || current.Span[tokenEnd + 1] == FingerprintPreferred))
             {
                 token.IsOptional = true;
-                if (rawPathMemory.Span[tokenEnd + 1] == '!')
+                if (current.Span[tokenEnd + 1] == FingerprintPreferred)
                 {
                     token.IsPreferred = true;
                 }
                 tokenEnd++;
             }
+            current = current.Slice(tokenEnd + 1);
+            nextToken = MemoryExtensions.IndexOf(current.Span, FingerprintStart.AsSpan(), StringComparison.OrdinalIgnoreCase);
 
-            nextToken = MemoryExtensions.IndexOf(rawPathMemory.Slice(tokenEnd).Span, "#[".AsSpan(), StringComparison.OrdinalIgnoreCase);
-
-            // Add a literal segment if there is more content after the token and before the next one
-            if ((nextToken != -1 && nextToken > tokenEnd + 1) || (nextToken == -1 && tokenEnd < rawPathMemory.Length - 1))
+            if (nextToken == -1 && current.Length > 0)
             {
-                var literalEnd = nextToken == -1 ? rawPathMemory.Length : nextToken;
                 var literalSegment = new StaticWebAssetPathSegment();
-                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPathMemory.Slice(tokenEnd + 1, literalEnd - tokenEnd - 1), IsLiteral = true });
+                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current, IsLiteral = true });
+                pattern.Segments.Add(literalSegment);
+            }
+            else if (nextToken > 0)
+            {
+                var literalSegment = new StaticWebAssetPathSegment();
+                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true });
                 pattern.Segments.Add(literalSegment);
             }
         }
@@ -170,14 +183,15 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                 var missingValue = "";
                 foreach (var tokenName in tokenNames)
                 {
-                    if (!tokens.TryGetValue(staticWebAsset, tokenName.ToString(), out var tokenValue) || string.IsNullOrEmpty(tokenValue))
+                    var tokenNameString = tokenName.ToString();
+                    if (!tokens.TryGetValue(staticWebAsset, tokenNameString, out var tokenValue) || string.IsNullOrEmpty(tokenValue))
                     {
                         foundAllValues = false;
-                        missingValue = tokenName.ToString();
+                        missingValue = tokenNameString;
                         break;
                     }
 
-                    dictionary[tokenName.ToString()] = tokenValue;
+                    dictionary[tokenNameString] = tokenValue;
                 }
 
                 if (!foundAllValues && !segment.IsOptional)
@@ -368,46 +382,50 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     // The value within the {} represents token variables.
     private static void AddTokenSegmentParts(ReadOnlyMemory<char> tokenExpression, StaticWebAssetPathSegment token)
     {
-        var nextToken = MemoryExtensions.IndexOf(tokenExpression.Span, "{".AsSpan(), StringComparison.Ordinal);
+        var current = tokenExpression;
+        var nextToken = MemoryExtensions.IndexOf(current.Span, FingerprintParameterStart);
         if (nextToken is not (-1) and > 0)
         {
-#if NET9_0_OR_GREATER
-            var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression[..nextToken], IsLiteral = true };
-#else
-            var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Slice(0, nextToken), IsLiteral = true };
-#endif
+            var literalPart = new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true };
             token.Parts.Add(literalPart);
         }
+
         while (nextToken != -1)
         {
-            var tokenEnd = MemoryExtensions.IndexOf(tokenExpression.Slice(nextToken).Span, "}".AsSpan(), StringComparison.Ordinal);
+            current = current.Slice(nextToken);
+            var tokenEnd = MemoryExtensions.IndexOf(current.Span, FingerprintParameterEnd);
             if (tokenEnd == -1)
             {
                 throw new InvalidOperationException($"Invalid token expression '{tokenExpression}'. Missing '}}' token.");
             }
 
-            var embeddedValue = MemoryExtensions.IndexOf(tokenExpression.Slice(nextToken).Span, "=".AsSpan(), StringComparison.Ordinal);
+            var embeddedValue = MemoryExtensions.IndexOf(current.Span, FingerprintValueSeparator);
             if (embeddedValue != -1)
             {
                 var tokenPart = new StaticWebAssetSegmentPart
                 {
-                    Name = tokenExpression.Slice(nextToken + 1, embeddedValue - nextToken - 1),
+                    Name = current.Slice(1, embeddedValue - 1),
                     IsLiteral = false,
-                    Value = tokenExpression.Slice(embeddedValue + 1, tokenEnd - embeddedValue - 1)
+                    Value = current.Slice(embeddedValue + 1, tokenEnd - embeddedValue - 1)
                 };
                 token.Parts.Add(tokenPart);
             }
             else
             {
-                var tokenPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Slice(nextToken + 1, tokenEnd - nextToken - 1), IsLiteral = false };
+                var tokenPart = new StaticWebAssetSegmentPart { Name = current.Slice(1, tokenEnd - 1), IsLiteral = false };
                 token.Parts.Add(tokenPart);
             }
 
-            nextToken = MemoryExtensions.IndexOf(tokenExpression.Slice(tokenEnd).Span, "}".AsSpan(), StringComparison.Ordinal);
-            if ((nextToken != -1 && nextToken > tokenEnd + 1) || (nextToken == -1 && tokenEnd < tokenExpression.Length - 1))
+            current = current.Slice(tokenEnd + 1);
+            nextToken = MemoryExtensions.IndexOf(current.Span, FingerprintParameterStart);
+            if (nextToken == -1 && current.Length > 0)
             {
-                var literalEnd = nextToken == -1 ? tokenExpression.Length : nextToken;
-                var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Slice(tokenEnd + 1, literalEnd - tokenEnd - 1), IsLiteral = true };
+                var literalPart = new StaticWebAssetSegmentPart { Name = current, IsLiteral = true };
+                token.Parts.Add(literalPart);
+            }
+            else if (nextToken > 0)
+            {
+                var literalPart = new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true };
                 token.Parts.Add(literalPart);
             }
         }

@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetSegmentPart : IEquatable<StaticWebAssetSegmentPart>
 {
     public ReadOnlyMemory<char> Name { get; set; }
@@ -33,4 +36,6 @@ public class StaticWebAssetSegmentPart : IEquatable<StaticWebAssetSegmentPart>
 
     public static bool operator ==(StaticWebAssetSegmentPart left, StaticWebAssetSegmentPart right) => EqualityComparer<StaticWebAssetSegmentPart>.Default.Equals(left, right);
     public static bool operator !=(StaticWebAssetSegmentPart left, StaticWebAssetSegmentPart right) => !(left == right);
+
+    private string GetDebuggerDisplay() => IsLiteral ? Value.ToString() : $"{{{Name}}}";
 }

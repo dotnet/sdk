@@ -57,7 +57,7 @@ public class StaticWebAssetPathSegment : IEquatable<StaticWebAssetPathSegment>
         var result = new HashSet<ReadOnlyMemory<char>>();
         foreach (var part in Parts)
         {
-            if (!part.IsLiteral && part.Value.Length > 0)
+            if (!part.IsLiteral && part.Name.Length > 0)
             {
                 result.Add(part.Name);
             }

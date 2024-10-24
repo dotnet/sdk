@@ -45,7 +45,7 @@ internal class FingerprintPatternMatcher
 
         var (directoryName, fileName, fileNamePrefix, extension) =
 #if NET9_0_OR_GREATER
-                ComputeFingerprintFragments(relativePathCandidateMemory);
+            ComputeFingerprintFragments(relativePathCandidateMemory);
 #else
             ComputeFingerprintFragments(context.PathString);
 #endif
@@ -55,7 +55,7 @@ internal class FingerprintPatternMatcher
         if (!matchResult.IsMatch)
         {
 #if NET9_0_OR_GREATER
-                var result = Path.Combine(directoryName.ToString(), $"{fileNamePrefix}{DefaultFingerprintExpression}{extension}");
+            var result = Path.Combine(directoryName.ToString(), $"{fileNamePrefix}{DefaultFingerprintExpression}{extension}");
 #else
             var result = Path.Combine(directoryName, $"{fileNamePrefix}{DefaultFingerprintExpression}{extension}");
 #endif
@@ -71,8 +71,8 @@ internal class FingerprintPatternMatcher
             }
             else
             {
-                var stem = GetMatchStem(relativePathCandidateMemory, matchResult.Pattern);
-                var matchExtension = GetMatchExtension(relativePathCandidateMemory, stem);
+                var stem = GetMatchStem(fileName, matchResult.Pattern.AsMemory().Slice(2));
+                var matchExtension = GetMatchExtension(fileName, stem);
 
                 var simpleExtensionResult = Path.Combine(directoryName.ToString(), $"{stem}{expression}{matchExtension}");
                 _log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}'", relativePathCandidateMemory, simpleExtensionResult);
@@ -102,11 +102,17 @@ internal class FingerprintPatternMatcher
             return false;
         }
 
+#if NET9_0_OR_GREATER
+        static ReadOnlySpan<char> GetMatchExtension(ReadOnlySpan<char> relativePathCandidateMemory, ReadOnlySpan<char> stem) =>
+            relativePathCandidateMemory.Slice(stem.Length);
+        static ReadOnlySpan<char> GetMatchStem(ReadOnlySpan<char> relativePathCandidateMemory, ReadOnlyMemory<char> pattern) =>
+            relativePathCandidateMemory.Slice(0, relativePathCandidateMemory.Length - pattern.Length - 1);
+#else
         static ReadOnlyMemory<char> GetMatchExtension(ReadOnlyMemory<char> relativePathCandidateMemory, ReadOnlyMemory<char> stem) =>
             relativePathCandidateMemory.Slice(stem.Length);
-
-        static ReadOnlyMemory<char> GetMatchStem(ReadOnlyMemory<char> relativePathCandidateMemory, string pattern) =>
+        static ReadOnlyMemory<char> GetMatchStem(ReadOnlyMemory<char> relativePathCandidateMemory, ReadOnlyMemory<char> pattern) =>
             relativePathCandidateMemory.Slice(0, relativePathCandidateMemory.Length - pattern.Length - 1);
+#endif
     }
 
 #if NET9_0_OR_GREATER
@@ -121,13 +127,13 @@ internal class FingerprintPatternMatcher
         return new(directoryName, fileName, stem, extension);
     }
 #else
-    private static (string directoryName, string fileName, string fileNamePrefix, string extension) ComputeFingerprintFragments(
+    private static (string directoryName, ReadOnlyMemory<char> fileName, ReadOnlyMemory<char> fileNamePrefix, ReadOnlyMemory<char> extension) ComputeFingerprintFragments(
         string relativePathCandidate)
     {
-        var fileName = Path.GetFileName(relativePathCandidate);
+        var fileName = Path.GetFileName(relativePathCandidate).AsMemory();
         var directoryName = Path.GetDirectoryName(relativePathCandidate);
-        var stem = Path.GetFileNameWithoutExtension(relativePathCandidate);
-        var extension = Path.GetExtension(relativePathCandidate);
+        var stem = Path.GetFileNameWithoutExtension(relativePathCandidate).AsMemory();
+        var extension = Path.GetExtension(relativePathCandidate).AsMemory();
 
         return (directoryName, fileName, stem, extension);
     }
