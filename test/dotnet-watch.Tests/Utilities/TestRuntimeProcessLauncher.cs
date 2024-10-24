@@ -26,6 +26,6 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
     public ValueTask DisposeAsync()
         => ValueTask.CompletedTask;
 
-    public ValueTask<IEnumerable<(string name, string value)>> GetEnvironmentVariablesAsync(CancellationToken cancelToken)
-        => ValueTask.FromResult(GetEnvironmentVariablesImpl?.Invoke() ?? []);
+    public IEnumerable<(string name, string value)> GetEnvironmentVariables()
+        => GetEnvironmentVariablesImpl?.Invoke() ?? [];
 }
