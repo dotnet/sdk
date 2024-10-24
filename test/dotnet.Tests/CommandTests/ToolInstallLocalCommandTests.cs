@@ -89,6 +89,31 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")),
                     1);
         }
+        [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var toolInstallCommand = new ToolInstallLocalCommand(parseResult);
+            toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var toolInstallCommand = new ToolInstallLocalCommand(parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolInstallCommand.Execute().Should().Be(0);
+
+            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
+        }
 
         [Fact]
         public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
@@ -485,6 +510,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
    ""isRoot"":true,
    ""tools"":{
    }
+}";
+
+        private string _nugetConfigWithInvalidSources = @"{
+<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""invalid_source"" value=""https://api.nuget.org/v3/invalid.json"" />
+  </packageSources>
+</configuration>
 }";
     }
 }
