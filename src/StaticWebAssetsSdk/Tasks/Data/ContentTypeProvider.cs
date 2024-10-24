@@ -404,60 +404,44 @@ internal sealed class ContentTypeProvider
 
     public ContentTypeProvider(ContentTypeMapping[] customMappings)
     {
-        var builder = new StaticWebAssetGlobMatcherBuilder();
-        foreach (var mapping in _builtInMappings.Keys)
-        {
-            builder.AddIncludePatterns(mapping);
-        }
-
         _customMappings ??= [];
-
         foreach (var mapping in customMappings)
         {
             _customMappings[mapping.Pattern] = mapping;
-            builder.AddIncludePatterns(mapping.Pattern);
         }
 
-        _matcher = builder.Build();
+        _matcher = new StaticWebAssetGlobMatcherBuilder()
+            .AddIncludePatternsList(_builtInMappings.Keys)
+            .AddIncludePatternsList(_customMappings.Keys)
+            .Build();
     }
 
-    internal ContentTypeMapping ResolveContentTypeMapping(string relativePath, TaskLoggingHelper log)
+    // First we strip any compressed extension (e.g. .gz, .br) from the file name
+    // and then we try to match the file name with the existing mappings.
+    // If we don't find a match, we fallback to trying the entire file name.
+    internal ContentTypeMapping ResolveContentTypeMapping(StaticWebAssetGlobMatcher.MatchContext context, TaskLoggingHelper log)
     {
 #if NET9_0_OR_GREATER
-        var fileNameSpan = Path.GetFileName(relativePath.AsSpan());
-        var fileName = relativePath.AsMemory()[(relativePath.Length - fileNameSpan.Length)..];
+        var relativePath = context.Path;
+        var fileNameSpan = Path.GetFileName(context.Path);
+        var fileName = relativePath[(relativePath.Length - fileNameSpan.Length)..];
 #else
+        var relativePath = context.PathString;
         var fileName = Path.GetFileName(relativePath);
 #endif
-        var (resolvePathWithoutCompressedExtension, hasCompressedExtension) = ResolvePathWithoutCompressedExtension(fileName);
+        var fileNameNoCompressionExt = ResolvePathWithoutCompressedExtension(fileName, out var hasCompressedExtension);
 
-        var match = _matcher.Match(resolvePathWithoutCompressedExtension);
-        if (match.IsMatch)
+        context.SetPathAndReinitialize(fileNameNoCompressionExt);
+        if (TryGetMapping(context, log, relativePath, out var mapping))
         {
-            if (_builtInMappings.TryGetValue(match.Pattern, out var mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
-            {
-                log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
-                return mapping;
-            }
-            else
-            {
-                throw new InvalidOperationException("Matched pattern but no mapping found.");
-            }
+            return mapping;
         }
         else if (hasCompressedExtension)
         {
-            match = _matcher.Match(fileName);
-            if (match.IsMatch)
+            context.SetPathAndReinitialize(fileName);
+            if (hasCompressedExtension && TryGetMapping(context, log, relativePath, out mapping))
             {
-                if (_builtInMappings.TryGetValue(match.Pattern, out var mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
-                {
-                    log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
-                    return mapping;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Matched pattern but no mapping found.");
-                }
+                return mapping;
             }
         }
 
@@ -465,37 +449,50 @@ internal sealed class ContentTypeProvider
     }
 
 #if NET9_0_OR_GREATER
-    private static (ReadOnlyMemory<char> relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(ReadOnlyMemory<char> fileName)
+    private bool TryGetMapping(StaticWebAssetGlobMatcher.MatchContext context, TaskLoggingHelper log, ReadOnlySpan<char> relativePath, out ContentTypeMapping mapping)
+#else
+    private bool TryGetMapping(StaticWebAssetGlobMatcher.MatchContext context, TaskLoggingHelper log, string relativePath, out ContentTypeMapping mapping)
+#endif
     {
-        var extension = Path.GetExtension(fileName.Span);
-        var hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
-        if (hasCompressedExtension)
+        var match = _matcher.Match(context);
+        if (match.IsMatch)
         {
-            var candidate = fileName[^fileName.Length..];
-            var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName.Span);
-            if (!Path.GetExtension(fileNameNoExtension).Equals("", StringComparison.Ordinal))
+            if (_builtInMappings.TryGetValue(match.Pattern, out mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
             {
-                return (candidate[..fileNameNoExtension.Length], hasCompressedExtension);
+                log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
+                return true;
+            }
+            else
+            {
+                throw new InvalidOperationException("Matched pattern but no mapping found.");
             }
         }
 
-        return (fileName, hasCompressedExtension);
+        mapping = default;
+        return false;
     }
+
+#if NET9_0_OR_GREATER
+    private static ReadOnlySpan<char> ResolvePathWithoutCompressedExtension(ReadOnlySpan<char> fileName, out bool hasCompressedExtension)
 #else
-    private (string relativePath, bool hasCompressedExtension) ResolvePathWithoutCompressedExtension(string relativePath)
+    private string ResolvePathWithoutCompressedExtension(string fileName, out bool hasCompressedExtension)
+#endif
     {
-        var fileName = Path.GetFileName(relativePath);
         var extension = Path.GetExtension(fileName);
-        var hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
+        hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
         if (hasCompressedExtension)
         {
-            fileName = Path.GetFileNameWithoutExtension(relativePath);
-            if (!Path.GetExtension(fileName).Equals("", StringComparison.Ordinal))
+            var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);
+            if (!Path.GetExtension(fileNameNoExtension).Equals("", StringComparison.Ordinal))
             {
-                return (fileName, hasCompressedExtension);
+#if NET9_0_OR_GREATER
+                return fileName[..fileNameNoExtension.Length];
+#else
+                return fileName.Substring(0, fileNameNoExtension.Length);
+#endif
             }
         }
-        return (fileName, hasCompressedExtension);
+
+        return fileName;
     }
-#endif
 }

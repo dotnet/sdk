@@ -8,13 +8,33 @@ public class StaticWebAssetGlobMatcherBuilder
     private readonly List<string> _includePatterns = [];
     private readonly List<string> _excludePatterns = [];
 
+#if NET9_0_OR_GREATER
+    public StaticWebAssetGlobMatcherBuilder AddIncludePatterns(params Span<string> patterns)
+#else
     public StaticWebAssetGlobMatcherBuilder AddIncludePatterns(params string[] patterns)
+#endif
     {
         _includePatterns.AddRange(patterns);
         return this;
     }
 
+    public StaticWebAssetGlobMatcherBuilder AddIncludePatternsList(ICollection<string> patterns)
+    {
+        _includePatterns.AddRange(patterns);
+        return this;
+    }
+
+#if NET9_0_OR_GREATER
+    public StaticWebAssetGlobMatcherBuilder AddExcludePatterns(params Span<string> patterns)
+#else
     public StaticWebAssetGlobMatcherBuilder AddExcludePatterns(params string[] patterns)
+#endif
+    {
+        _excludePatterns.AddRange(patterns);
+        return this;
+    }
+
+    public StaticWebAssetGlobMatcherBuilder AddExcludePatternsList(ICollection<string> patterns)
     {
         _excludePatterns.AddRange(patterns);
         return this;
@@ -23,15 +43,16 @@ public class StaticWebAssetGlobMatcherBuilder
     public StaticWebAssetGlobMatcher Build()
     {
         var includeRoot = new GlobNode();
-        var excludeRoot = new GlobNode();
+        GlobNode excludeRoot = null;
         var segments = new List<ReadOnlyMemory<char>>();
         BuildTree(includeRoot, _includePatterns, segments);
         if (_excludePatterns.Count > 0)
         {
+            excludeRoot = new GlobNode();
             BuildTree(excludeRoot, _excludePatterns, segments);
         }
 
-        return new StaticWebAssetGlobMatcher(includeRoot, _excludePatterns.Count > 0 ? excludeRoot : null);
+        return new StaticWebAssetGlobMatcher(includeRoot, excludeRoot);
     }
 
     private static void BuildTree(GlobNode root, List<string> patterns, List<ReadOnlyMemory<char>> segments)
@@ -40,9 +61,15 @@ public class StaticWebAssetGlobMatcherBuilder
         {
             var pattern = patterns[i];
             var patternMemory = pattern.AsMemory();
-            var tokenizer = new PathTokenizer(patternMemory);
+            var tokenizer = new PathTokenizer(patternMemory.Span);
             segments.Clear();
-            tokenizer.Fill(segments);
+            var tokenRanges = new List<PathTokenizer.Segment>();
+            var collection = tokenizer.Fill(tokenRanges);
+            for (var j = 0; j < collection.Count; j++)
+            {
+                var segment = collection[patternMemory, j];
+                segments.Add(segment);
+            }
             if (patternMemory.Span.EndsWith("/".AsSpan()) || patternMemory.Span.EndsWith("\\".AsSpan()))
             {
                 segments.Add("**".AsMemory());

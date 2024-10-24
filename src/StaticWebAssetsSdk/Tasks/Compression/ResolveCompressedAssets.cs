@@ -66,6 +66,8 @@ public class ResolveCompressedAssets : Task
 
         var matchingCandidateAssets = new List<StaticWebAsset>();
 
+        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+
         // Add each candidate asset to each compression configuration with a matching pattern.
         foreach (var asset in candidates)
         {
@@ -80,7 +82,8 @@ public class ResolveCompressedAssets : Task
             }
 
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-            var match = matcher.Match(relativePath);
+            matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+            var match = matcher.Match(matchContext);
 
             if (!match.IsMatch)
             {

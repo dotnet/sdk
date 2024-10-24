@@ -15,7 +15,7 @@ public class PathTokenizerTest
     public void RootSeparator_ProducesEmptySegment()
     {
         var path = "/a/b/c";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("", tokenizerRef.Current.ToString());
@@ -32,7 +32,7 @@ public class PathTokenizerTest
     public void NonRootSeparator_ProducesInitialSegment()
     {
         var path = "a/b/c";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("a", tokenizerRef.Current.ToString());
@@ -47,7 +47,7 @@ public class PathTokenizerTest
     public void NonRootSeparator_MatchesMultipleCharacters()
     {
         var path = "aa/b/c";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("aa", tokenizerRef.Current.ToString());
@@ -62,7 +62,7 @@ public class PathTokenizerTest
     public void NonRootSeparator_HandlesConsecutivePathSeparators()
     {
         var path = "aa//b/c";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("aa", tokenizerRef.Current.ToString());
@@ -79,7 +79,7 @@ public class PathTokenizerTest
     public void NonRootSeparator_HandlesFinalPathSeparator()
     {
         var path = "aa/b/c/";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("aa", tokenizerRef.Current.ToString());
@@ -97,7 +97,7 @@ public class PathTokenizerTest
     public void NonRootSeparator_HandlesAlternativePathSeparators()
     {
         var path = "aa\\b\\c\\";
-        var tokenizer = new PathTokenizer(path.AsMemory());
+        var tokenizer = new PathTokenizer(path.AsMemory().Span);
         ref var tokenizerRef = ref tokenizer;
         Assert.True(tokenizerRef.MoveNext());
         Assert.Equal("aa", tokenizerRef.Current.ToString());

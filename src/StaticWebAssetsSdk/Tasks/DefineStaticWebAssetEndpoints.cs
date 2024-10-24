@@ -49,7 +49,7 @@ public class DefineStaticWebAssetEndpoints : Task
         {
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
             var routes = asset.ComputeRoutes().ToList();
-
+            var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
             if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
                 for (var j = routes.Count - 1; j >= 0; j--)
@@ -72,7 +72,7 @@ public class DefineStaticWebAssetEndpoints : Task
                 }
             }
 
-            foreach (var endpoint in CreateEndpoints(routes, asset, contentTypeProvider))
+            foreach (var endpoint in CreateEndpoints(routes, asset, contentTypeProvider, matchContext))
             {
                 Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                 endpoints.Add(endpoint);
@@ -121,13 +121,17 @@ public class DefineStaticWebAssetEndpoints : Task
         return null;
     }
 
-    private List<StaticWebAssetEndpoint> CreateEndpoints(List<StaticWebAsset.StaticWebAssetResolvedRoute> routes, StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
+    private List<StaticWebAssetEndpoint> CreateEndpoints(
+        List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
+        StaticWebAsset asset,
+        ContentTypeProvider contentTypeProvider,
+        StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
         var (length, lastModified) = ResolveDetails(asset);
         var result = new List<StaticWebAssetEndpoint>();
         foreach (var (label, route, values) in routes)
         {
-            var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);
+            var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeProvider, matchContext);
             List<StaticWebAssetEndpointResponseHeader> headers = [
                     new()
                     {
@@ -267,10 +271,11 @@ public class DefineStaticWebAssetEndpoints : Task
         return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
     }
 
-    private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider)
+    private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext)
     {
         var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-        var mapping = contentTypeProvider.ResolveContentTypeMapping(relativePath, Log);
+        matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+        var mapping = contentTypeProvider.ResolveContentTypeMapping(matchContext, Log);
 
         if (mapping.MimeType != null)
         {

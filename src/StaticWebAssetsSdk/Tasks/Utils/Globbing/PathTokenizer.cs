@@ -5,15 +5,14 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public ref struct PathTokenizer(ReadOnlyMemory<char> path)
+public ref struct PathTokenizer(ReadOnlySpan<char> path)
 {
-    private readonly ReadOnlyMemory<char> _path = path;
+    private readonly ReadOnlySpan<char> _path = path;
     int _index = -1;
     int _nextSeparatorIndex = -1;
 
-    public readonly ReadOnlyMemory<char> Current => _nextSeparatorIndex == -1 ?
-        _path.Slice(_index) :
-        _path.Slice(_index, _nextSeparatorIndex - _index);
+    public readonly Segment Current => 
+        new (_index, (_nextSeparatorIndex == -1 ? _path.Length : _nextSeparatorIndex) - _index);
 
     public bool MoveNext()
     {
@@ -27,26 +26,47 @@ public ref struct PathTokenizer(ReadOnlyMemory<char> path)
         return true;
     }
 
-    internal void Fill(List<ReadOnlyMemory<char>> segments)
+    internal SegmentCollection Fill(List<Segment> segments)
     {
         while (MoveNext())
         {
             if (Current.Length > 0 &&
-                !Current.Span.Equals(".".AsSpan(), StringComparison.Ordinal) &&
-                !Current.Span.Equals("..".AsSpan(), StringComparison.Ordinal))
+                !_path.Slice(Current.Start, Current.Length).Equals(".".AsSpan(), StringComparison.Ordinal) &&
+                !_path.Slice(Current.Start, Current.Length).Equals("..".AsSpan(), StringComparison.Ordinal))
             {
                 segments.Add(Current);
             }
         }
+
+        return new SegmentCollection(_path, segments);
     }
 
-    private readonly int GetSeparator()
+    private readonly int GetSeparator() => _path.Slice(_index).IndexOfAny(OSPath.DirectoryPathSeparators.Span) switch
     {
-        var separatorIndex = _path.Span.Slice(_index).IndexOfAny(OSPath.DirectoryPathSeparators.Span);
-        if (separatorIndex == -1)
-        {
-            return -1;
-        }
-        return separatorIndex + _index;
+        -1 => -1,
+        var index => index + _index
+    };
+
+    public struct Segment(int start, int length)
+    {
+        public int Start { get; set; } = start;
+        public int Length { get; set; } = length;
+    }
+
+    public readonly ref struct SegmentCollection(ReadOnlySpan<char> path, List<Segment> segments)
+    {
+        private readonly ReadOnlySpan<char> _path = path;
+        private readonly int _index = 0;
+
+        private SegmentCollection(ReadOnlySpan<char> path, List<Segment> segments, int index) : this(path, segments) =>
+            _index = index;
+
+        public int Count => segments.Count - _index;
+
+        public ReadOnlySpan<char> this[int index] => _path.Slice(segments[index + _index].Start, segments[index + _index].Length);
+
+        public ReadOnlyMemory<char> this[ReadOnlyMemory<char> path, int index] => path.Slice(segments[index + _index].Start, segments[index + _index].Length);
+
+        internal SegmentCollection Slice(int segmentIndex) => new (_path, segments, segmentIndex);
     }
 }

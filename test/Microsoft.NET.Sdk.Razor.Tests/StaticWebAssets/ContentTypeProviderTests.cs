@@ -19,7 +19,7 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping("Fake-License.txt", _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("Fake-License.txt"), _log);
 
         // Assert
         Assert.Equal("text/plain", contentType.MimeType);
@@ -32,11 +32,19 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping("Components/Pages/Counter.razor.js", _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("Components/Pages/Counter.razor.js"), _log);
 
         // Assert
         Assert.Equal("text/javascript", contentType.MimeType);
     }
+
+    private StaticWebAssetGlobMatcher.MatchContext CreateContext(string v)
+    {
+        var ctx = StaticWebAssetGlobMatcher.CreateMatchContext();
+        ctx.SetPathAndReinitialize(v);
+        return ctx;
+    }
+
     // wwwroot\exampleJsInterop.js.gz
 
     [Fact]
@@ -46,7 +54,7 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping("wwwroot/exampleJsInterop.js.gz", _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("wwwroot/exampleJsInterop.js.gz"), _log);
 
         // Assert
         Assert.Equal("text/javascript", contentType.MimeType);
@@ -58,7 +66,7 @@ public class ContentTypeProviderTests
         // Arrange
         var provider = new ContentTypeProvider([]);
         // Act
-        var contentType = provider.ResolveContentTypeMapping("_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency#[.{fingerprint}].bundle.scp.css.gz", _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency#[.{fingerprint}].bundle.scp.css.gz"), _log);
         // Assert
         Assert.Equal("text/css", contentType.MimeType);
     }
@@ -70,7 +78,7 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping("something.unknown", _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("something.unknown"), _log);
 
         // Assert
         Assert.Null(contentType.MimeType);
@@ -85,7 +93,7 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping(path, _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext(path), _log);
 
         // Assert
         Assert.Equal(expectedMapping, contentType.MimeType);
@@ -100,7 +108,7 @@ public class ContentTypeProviderTests
         var provider = new ContentTypeProvider([]);
 
         // Act
-        var contentType = provider.ResolveContentTypeMapping(path, _log);
+        var contentType = provider.ResolveContentTypeMapping(CreateContext(path), _log);
 
         // Assert
         Assert.Equal("text/plain", contentType.MimeType);
