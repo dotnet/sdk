@@ -48,7 +48,8 @@ parameters:
 - name: sign
   displayName: True when build output should be signed
   type: boolean
-  default: true
+  # Temporarily set to false to unblock build: https://github.com/dotnet/runtime/issues/109178
+  default: false
 
 # Overrides the rid that is produced by the build.
 - name: targetRid
