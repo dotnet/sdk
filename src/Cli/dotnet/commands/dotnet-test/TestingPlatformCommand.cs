@@ -5,6 +5,9 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -15,9 +18,12 @@ namespace Microsoft.DotNet.Cli
 
         private MSBuildConnectionHandler _msBuildConnectionHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
+        private TerminalTestReporter _output;
         private TestApplicationActionQueue _actionQueue;
         private Task _namedPipeConnectionLoop;
         private List<string> _args;
+        private Dictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+        private byte _cancelled;
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
@@ -26,6 +32,12 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
+            Console.CancelKeyPress += (s, e) =>
+            {
+                _output?.StartCancelling();
+                CompleteRun();
+            };
+
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
@@ -36,6 +48,7 @@ namespace Microsoft.DotNet.Cli
             if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
             {
                 VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
+                return ExitCodes.GenericFailure;
             }
 
             BuiltInOptions builtInOptions = new(
@@ -43,6 +56,18 @@ namespace Microsoft.DotNet.Cli
                 parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+
+            var console = new SystemConsole();
+            var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
+            {
+                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1",
+                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
+                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowAssembly = true,
+                ShowAssemblyStartAndComplete = true,
+            });
+            _output = output;
+            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism);
 
             if (ContainsHelpOption(parseResult.GetArguments()))
             {
@@ -54,7 +79,9 @@ namespace Microsoft.DotNet.Cli
                     testApp.Run += OnTestApplicationRun;
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                    return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
+                    var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
+                    CompleteRun();
+                    return result;
                 });
             }
             else
@@ -84,6 +111,7 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                 {
+                    CompleteRun();
                     return ExitCodes.GenericFailure;
                 }
             }
@@ -94,6 +122,7 @@ namespace Microsoft.DotNet.Cli
                 if (msbuildResult != 0)
                 {
                     VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
+                    CompleteRun();
                     return ExitCodes.GenericFailure;
                 }
             }
@@ -108,7 +137,16 @@ namespace Microsoft.DotNet.Cli
             // Clean up everything
             CleanUp();
 
+            CompleteRun();
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void CompleteRun()
+        {
+            if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
+            {
+                _output?.TestExecutionCompleted(DateTimeOffset.Now);
+            }
         }
 
         private void CleanUp()
@@ -122,6 +160,14 @@ namespace Microsoft.DotNet.Cli
 
         private void OnHandshakeReceived(object sender, HandshakeArgs args)
         {
+            var testApplication = (TestApplication)sender;
+            var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DLLOrExe, tfm, arch, executionId);
+            _executions[testApplication] = appInfo;
+            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
@@ -153,6 +199,42 @@ namespace Microsoft.DotNet.Cli
 
         private void OnTestResultsReceived(object sender, TestResultEventArgs args)
         {
+            foreach (var testResult in args.SuccessfulTestResults)
+            {
+                var testApp = (TestApplication)sender;
+                var appInfo = _executions[testApp];
+                // TODO: timespan for duration
+                _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    testResult.DisplayName,
+                    ToOutcome(testResult.State),
+                    TimeSpan.FromSeconds(1),
+                    errorMessage: null,
+                    errorStackTrace: null,
+                    expected: null,
+                    actual: null,
+                    standardOutput: null,
+                    errorOutput: null);
+            }
+
+            foreach (var testResult in args.FailedTestResults)
+            {
+                var testApp = (TestApplication)sender;
+                // TODO: timespan for duration
+                // TODO: expected
+                // TODO: actual
+                var appInfo = _executions[testApp];
+                _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    testResult.DisplayName,
+                    ToOutcome(testResult.State),
+                    TimeSpan.FromSeconds(1),
+                    errorMessage: testResult.ErrorMessage,
+                    errorStackTrace: testResult.ErrorStackTrace,
+                    expected: null,
+                    actual: null,
+                    standardOutput: null,
+                    errorOutput: null);
+            }
+
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
@@ -173,6 +255,20 @@ namespace Microsoft.DotNet.Cli
                 $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
                 $"{failedTestResult.ErrorStackTrace}, {failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
             }
+        }
+
+        public static TestOutcome ToOutcome(byte? testState)
+        {
+            return testState switch
+            {
+                TestStates.Passed => TestOutcome.Passed,
+                TestStates.Skipped => TestOutcome.Skipped,
+                TestStates.Failed => TestOutcome.Fail,
+                TestStates.Error => TestOutcome.Error,
+                TestStates.Timeout => TestOutcome.Timeout,
+                TestStates.Cancelled => TestOutcome.Canceled,
+                _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
+            };
         }
 
         private void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
@@ -215,6 +311,11 @@ namespace Microsoft.DotNet.Cli
 
         private void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
         {
+            var testApplication = (TestApplication)sender;
+
+            var appInfo = _executions[testApplication];
+            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
