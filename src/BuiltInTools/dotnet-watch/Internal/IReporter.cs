@@ -60,6 +60,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public static readonly MessageDescriptor WaitingForChanges = new("Waiting for changes", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor LaunchedProcess = new("Launched '{0}' with arguments '{1}': process id {2}", "🚀", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor KillingProcess = new("Killing process {0}", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor KillingProcessTree = new("Killing entire process tree of process {0}", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor HotReloadChangeHandled = new("Hot reload change handled in {0}ms.", "🔥", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor HotReloadSucceeded = new("Hot reload succeeded.", "🔥", MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor BuildCompleted = new("Build completed.", "⌚", MessageSeverity.Verbose, s_id++);

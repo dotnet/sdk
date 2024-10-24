@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests;
@@ -138,10 +139,25 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 TargetFramework = null,
             };
 
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
-            Assert.NotNull(runningProject);
+            RestartOperation? startOp = null;
+            startOp = new RestartOperation(async (build, cancellationToken) =>
+            {
+                var result = await service.ProjectLauncher.TryLaunchProcessAsync(
+                    projectOptions,
+                    processTerminationSource,
+                    onOutput: null,
+                    restartOperation: startOp!,
+                    build,
+                    cancellationToken);
 
-            await runningProject.WaitForProcessRunningAsync(CancellationToken.None);
+                Assert.NotNull(result);
+
+                return result;
+            });
+
+            var runningProject = await startOp(build: false, watchCancellationSource.Token);
+
+            await runningProject.WaitForProcessRunningAsync(watchCancellationSource.Token);
 
             completion.SetResult();
         }
@@ -359,7 +375,24 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 TargetFramework = null,
             };
 
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
+            RestartOperation? startOp = null;
+            startOp = new RestartOperation(async (build, cancellationToken) =>
+            {
+                var result = await service.ProjectLauncher.TryLaunchProcessAsync(
+                    projectOptions,
+                    processTerminationSource,
+                    onOutput: null,
+                    restartOperation: startOp!,
+                    build,
+                    cancellationToken);
+
+                Assert.NotNull(result);
+
+                return result;
+            });
+
+            var runningProject = await startOp(build: false, watchCancellationSource.Token);
+
             Assert.NotNull(runningProject);
 
             await runningProject.WaitForProcessRunningAsync(CancellationToken.None);

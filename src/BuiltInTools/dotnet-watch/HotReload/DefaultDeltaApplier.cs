@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private void DisposePipe()
         {
-            Reporter.Verbose("Disposing pipe");
+            Reporter.Verbose("Disposing agent communication pipe");
             _pipe?.Dispose();
             _pipe = null;
         }

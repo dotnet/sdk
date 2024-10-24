@@ -3,6 +3,7 @@
 
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -13,7 +14,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         /// Launches a process.
         /// </summary>
         /// <param name="isUserApplication">True if the process is a user application, false if it is a helper process (e.g. msbuild).</param>
-        public static async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, CancellationTokenSource? processExitedSource, CancellationToken processTerminationToken)
+        public static async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 };
             }
 
-            using var processState = new ProcessState(process, reporter);
+            using var processState = new ProcessState(process, reporter, processSpec.TerminateEntireProcessTree);
             processTerminationToken.Register(() => processState.TryKill());
 
             stopwatch.Start();
@@ -59,6 +60,12 @@ namespace Microsoft.DotNet.Watcher.Internal
                 if (process.Start())
                 {
                     processId = process.Id;
+                    processState.ProcessId = processId;
+
+                    if (launchResult != null)
+                    {
+                        launchResult.ProcessId = processId;
+                    }
                 }
             }
             finally
@@ -137,7 +144,11 @@ namespace Microsoft.DotNet.Watcher.Internal
                     }
                 }
 
-                processExitedSource?.Cancel();
+                Debug.Assert(processId != null);
+                if (processSpec.OnExit != null)
+                {
+                    await processSpec.OnExit(processId.Value, exitCode);
+                }
             }
 
             return exitCode ?? int.MinValue;
@@ -181,17 +192,21 @@ namespace Microsoft.DotNet.Watcher.Internal
         private sealed class ProcessState : IDisposable
         {
             private readonly IReporter _reporter;
+            private readonly bool _terminateEntireProcessTree;
             private readonly Process _process;
             private readonly TaskCompletionSource _processExitedCompletionSource = new();
             private volatile bool _disposed;
 
             public readonly Task Task;
+            public int? ProcessId;
 
-            public ProcessState(Process process, IReporter reporter)
+            public ProcessState(Process process, IReporter reporter, bool terminateEntireProcessTree)
             {
                 _reporter = reporter;
+                _terminateEntireProcessTree = terminateEntireProcessTree;
                 _process = process;
                 _process.Exited += OnExited;
+
                 Task = _processExitedCompletionSource.Task.ContinueWith(_ =>
                 {
                     try
@@ -222,17 +237,20 @@ namespace Microsoft.DotNet.Watcher.Internal
                     return;
                 }
 
+                var processIdDisplay = ProcessId?.ToString() ?? "<unknown>";
+
                 try
                 {
                     if (!_process.HasExited)
                     {
-                        _reporter.Report(MessageDescriptor.KillingProcess, _process.Id);
-                        _process.Kill(entireProcessTree: true);
+                        _reporter.Report(_terminateEntireProcessTree ? MessageDescriptor.KillingProcessTree : MessageDescriptor.KillingProcess, processIdDisplay);
+                        _process.Kill(_terminateEntireProcessTree);
+                        _reporter.Verbose($"Process {processIdDisplay} killed.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _reporter.Verbose($"Error while killing process '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}': {ex.Message}");
+                    _reporter.Verbose($"Error while killing process {processIdDisplay} '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}': {ex.Message}");
 #if DEBUG
                     _reporter.Verbose(ex.ToString());
 #endif

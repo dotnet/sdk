@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
 
-                var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, processExitedSource: null, cancellationToken);
+                var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
 
                 if (exitCode != 0 || !File.Exists(watchList))
                 {

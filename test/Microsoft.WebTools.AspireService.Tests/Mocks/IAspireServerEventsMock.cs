@@ -38,7 +38,7 @@ internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
                             throw ex;
                         }
 
-                        return new ValueTask();
+                        return new ValueTask<bool>();
                   })
                   .Verifiable();
         return this;

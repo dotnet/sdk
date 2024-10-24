@@ -73,6 +73,8 @@ namespace Microsoft.DotNet.Watcher
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
                 Task<ChangedFile[]?>? fileSetWatcherTask = null;
+                IRuntimeProcessLauncher? runtimeProcessLauncher = null;
+                CompilationHandler? compilationHandler = null;
 
                 try
                 {
@@ -97,24 +99,32 @@ namespace Microsoft.DotNet.Watcher
 
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    await using var compilationHandler = new CompilationHandler(Context.Reporter);
+                    compilationHandler = new CompilationHandler(Context.Reporter);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    await using var runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
                         rootProjectOptions = rootProjectOptions with
                         {
-                            LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment]
+                            LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment],
+                            TerminateEntireProcessTreeOnShutdown = runtimeProcessLauncher.TerminateEntireProcessTreeOnShutdown
                         };
                     }
 
-                    rootRunningProject = await projectLauncher.TryLaunchProcessAsync(rootProjectOptions, rootProcessTerminationSource, build: true, iterationCancellationToken);
+                    rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
+                        rootProjectOptions,
+                        rootProcessTerminationSource,
+                        onOutput: null,
+                        restartOperation: new RestartOperation((_, _) => throw new InvalidOperationException("Root project shouldn't be restarted")),
+                        build: true,
+                        iterationCancellationToken);
+
                     if (rootRunningProject == null)
                     {
                         // error has been reported:
@@ -292,7 +302,8 @@ namespace Microsoft.DotNet.Watcher
                             await Task.WhenAll(
                                 projectsToRestart.Select(async runningProject =>
                                 {
-                                    var newRunningProject = await projectLauncher.LaunchProcessAsync(runningProject.Options, runningProject.ProjectNode, new CancellationTokenSource(), build: true, shutdownCancellationToken);
+                                    var newRunningProject = await runningProject.RestartOperation(build: true, shutdownCancellationToken);
+                                    runningProject.Dispose();
                                     await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
@@ -316,10 +327,17 @@ namespace Microsoft.DotNet.Watcher
                         rootProcessTerminationSource.Cancel();
                     }
 
+                    if (runtimeProcessLauncher != null)
+                    {
+                        // Request cleanup of all processes created by the launcher before we terminate the root process.
+                        // Non-cacellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                        await runtimeProcessLauncher.TerminateLaunchedProcessesAsync(CancellationToken.None);
+                    }
+
                     try
                     {
-                        // Wait for the root process to exit. Child processes will be terminated upon CompilationHandler disposal.
-                        await Task.WhenAll(new[] { rootRunningProject?.RunningProcess, fileSetWatcherTask }.Where(t => t != null)!);
+                        // Wait for the root process to exit. Child processes will be hard-terminated upon CompilationHandler disposal.
+                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileSetWatcherTask }.Where(t => t != null)!);
                     }
                     catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -328,6 +346,18 @@ namespace Microsoft.DotNet.Watcher
                     finally
                     {
                         fileSetWatcherTask = null;
+
+                        if (compilationHandler != null)
+                        {
+                            // Non-cacellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                            await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
+                        }
+
+                        if (runtimeProcessLauncher != null)
+                        {
+                            await runtimeProcessLauncher.DisposeAsync();
+                        }
+
                         rootRunningProject?.Dispose();
 
                         if (evaluationResult != null &&

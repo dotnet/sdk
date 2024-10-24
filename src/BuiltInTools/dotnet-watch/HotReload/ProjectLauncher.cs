@@ -3,10 +3,13 @@
 
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher;
+
+internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
@@ -23,7 +26,13 @@ internal sealed class ProjectLauncher(
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
 
-    public async ValueTask<RunningProject?> TryLaunchProcessAsync(ProjectOptions projectOptions, CancellationTokenSource processTerminationSource, bool build, CancellationToken cancellationToken)
+    public async ValueTask<RunningProject?> TryLaunchProcessAsync(
+        ProjectOptions projectOptions,
+        CancellationTokenSource processTerminationSource,
+        Action<OutputLine>? onOutput,
+        RestartOperation restartOperation,
+        bool build,
+        CancellationToken cancellationToken)
     {
         var projectNode = projectMap.TryGetProjectNode(projectOptions.ProjectPath, projectOptions.TargetFramework);
         if (projectNode == null)
@@ -40,7 +49,7 @@ internal sealed class ProjectLauncher(
 
         try
         {
-            return await LaunchProcessAsync(projectOptions, projectNode, processTerminationSource, build, cancellationToken);
+            return await LaunchProcessAsync(projectOptions, projectNode, processTerminationSource, onOutput, restartOperation, build, cancellationToken);
         }
         catch (ObjectDisposedException e) when (e.ObjectName == typeof(HotReloadDotNetWatcher).FullName)
         {
@@ -49,12 +58,21 @@ internal sealed class ProjectLauncher(
         }
     }
 
-    public async Task<RunningProject> LaunchProcessAsync(ProjectOptions projectOptions, ProjectGraphNode projectNode, CancellationTokenSource processTerminationSource, bool build, CancellationToken cancellationToken)
+    public async ValueTask<RunningProject> LaunchProcessAsync(
+        ProjectOptions projectOptions,
+        ProjectGraphNode projectNode,
+        CancellationTokenSource processTerminationSource,
+        Action<OutputLine>? onOutput,
+        RestartOperation restartOperation,
+        bool build,
+        CancellationToken cancellationToken)
     {
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
+            OnOutput = onOutput,
+            TerminateEntireProcessTree = projectOptions.TerminateEntireProcessTreeOnShutdown,
             Arguments = build || projectOptions.Command is not ("run" or "test")
                 ? [projectOptions.Command, .. projectOptions.CommandArguments]
                 : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
@@ -112,11 +130,12 @@ internal sealed class ProjectLauncher(
             namedPipeName,
             browserRefreshServer,
             processSpec,
+            restartOperation,
             processReporter,
             processTerminationSource,
             cancellationToken);
     }
 
-    public ValueTask<IEnumerable<RunningProject>> TerminateProcessesAsync(IReadOnlyList<string> projectPaths, CancellationToken cancellationToken)
-        => compilationHandler.TerminateNonRootProcessesAsync(projectPaths, cancellationToken);
+    public ValueTask<int> TerminateProcessAsync(RunningProject project, CancellationToken cancellationToken)
+        => compilationHandler.TerminateNonRootProcessAsync(project, cancellationToken);
 }

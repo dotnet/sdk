@@ -97,27 +97,27 @@ namespace Microsoft.DotNet.Watcher
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var cancellationSource = new CancellationTokenSource();
-            var cancellationToken = cancellationSource.Token;
+            var shutdownCancellationSource = new CancellationTokenSource();
+            var shutdownCancellationToken = shutdownCancellationSource.Token;
             console.CancelKeyPress += OnCancelKeyPress;
 
             try
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (shutdownCancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(cancellationToken);
+                    return await ListFilesAsync(shutdownCancellationToken);
                 }
 
                 var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
-                await watcher.WatchAsync(cancellationToken);
+                await watcher.WatchAsync(shutdownCancellationToken);
                 return 0;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (shutdownCancellationToken.IsCancellationRequested)
             {
                 // Ctrl+C forced an exit
                 return 0;
@@ -131,20 +131,24 @@ namespace Microsoft.DotNet.Watcher
             finally
             {
                 console.CancelKeyPress -= OnCancelKeyPress;
-                cancellationSource.Dispose();
+                shutdownCancellationSource.Dispose();
             }
 
             void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
             {
-                // suppress CTRL+C on the first press
-                args.Cancel = !cancellationSource.IsCancellationRequested;
+                // if we already canceled, we force immediate shutdown:
+                var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
 
-                if (args.Cancel)
+                if (!forceShutdown)
                 {
                     reporter.Report(MessageDescriptor.ShutdownRequested);
+                    shutdownCancellationSource.Cancel();
+                    args.Cancel = true;
                 }
-
-                cancellationSource.Cancel();
+                else
+                {
+                    Environment.Exit(0);
+                }
             }
         }
 

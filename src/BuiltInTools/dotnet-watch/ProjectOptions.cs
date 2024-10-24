@@ -27,4 +27,9 @@ internal sealed record ProjectOptions
     /// Additional environment variables to set to the running process.
     /// </summary>
     public required IReadOnlyList<(string name, string value)> LaunchEnvironmentVariables { get; init; }
+
+    /// <summary>
+    /// True if shutting down the root process should terminate its entire process tree.
+    /// </summary>
+    public bool TerminateEntireProcessTreeOnShutdown { get; init; } = true;
 }

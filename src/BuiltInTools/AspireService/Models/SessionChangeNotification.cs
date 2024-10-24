@@ -53,7 +53,7 @@ internal sealed class SessionTerminatedNotification : SessionNotification
     /// </summary>
     [Required]
     [JsonPropertyName("exit_code")]
-    public required int ExitCode { get; init; }
+    public required int? ExitCode { get; init; }
 }
 
 /// <summary>
