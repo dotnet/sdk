@@ -19,7 +19,7 @@
 
   <!-- We need to use relative path due to if we want to run tests in helix. Since we would need to run the tests in a different helix machine
        and the absolute path will not work on a different machine. We also made sure the relative file structure is preserved on helix machines.-->
-  <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild">
+  <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <PropertyGroup>
       <_ResolverManifestDir>$(OutputPath)\SdkResolvers\$(AssemblyName)\</_ResolverManifestDir>
       <_TargetPathRelativePath>..\..\$(TargetFileName)</_TargetPathRelativePath>
@@ -91,7 +91,7 @@
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">
+  <Target Name="LinkVSEmbeddableAssemblies" AfterTargets="ResolveReferences" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <ItemGroup>
       <ReferencePath Condition="'%(ReferencePath.FileName)' == 'Microsoft.VisualStudio.Setup.Configuration.Interop'">
         <EmbedInteropTypes>true</EmbedInteropTypes>
@@ -99,7 +99,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="VerifyDependencies" AfterTargets="Build">
+  <Target Name="VerifyDependencies" AfterTargets="Build" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <ResolveAssemblyReference AssemblyFiles="$(TargetPath)" SearchPaths="" AutoUnify="true">
       <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies"/>
     </ResolveAssemblyReference>
