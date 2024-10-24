@@ -1,3 +1,6 @@
+// Use by older versions of Microsoft.AspNetCore.Components.WebAssembly.
+// For back compat only. 
+
 export function receiveHotReload() {
   return BINDING.js_to_mono_obj(new Promise((resolve) => receiveHotReloadAsync().then(resolve(0))));
 }

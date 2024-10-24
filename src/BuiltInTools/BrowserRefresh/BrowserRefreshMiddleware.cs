@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class BrowserRefreshMiddleware
     {
-        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new("text/html");
-        private static readonly MediaTypeHeaderValue _applicationJsonMediaType = new("application/json");
-        private readonly string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
-        private readonly string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
+        private static readonly MediaTypeHeaderValue s_textHtmlMediaType = new("text/html");
+        private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
+        private static readonly string? s_dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
+        private static readonly string? s_aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
 
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
@@ -76,9 +76,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             {
                 if (!context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"))
                 {
-                    if(_dotnetModifiableAssemblies != null)
+                    if(s_dotnetModifiableAssemblies != null)
                     {
-                        context.Response.Headers.Add("DOTNET-MODIFIABLE-ASSEMBLIES", _dotnetModifiableAssemblies);
+                        context.Response.Headers.Add("DOTNET-MODIFIABLE-ASSEMBLIES", s_dotnetModifiableAssemblies);
                     }
                     else
                     {
@@ -92,9 +92,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
                 if (!context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"))
                 {
-                    if (_aspnetcoreBrowserTools != null)
+                    if (s_aspnetcoreBrowserTools != null)
                     {
-                        context.Response.Headers.Add("ASPNETCORE-BROWSER-TOOLS", _aspnetcoreBrowserTools);
+                        context.Response.Headers.Add("ASPNETCORE-BROWSER-TOOLS", s_aspnetcoreBrowserTools);
                     }
                     else
                     {
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(_applicationJsonMediaType))
+                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(s_applicationJsonMediaType))
                 {
                     return true;
                 }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].IsSubsetOf(_textHtmlMediaType))
+                if (acceptHeaders[i].IsSubsetOf(s_textHtmlMediaType))
                 {
                     return true;
                 }

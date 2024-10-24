@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 {
                     reporter.Verbose($"Sending static file update request for asset '{path}'");
                     var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = path }, s_jsonSerializerOptions);
-                    await request.Key.SendMessage(message, cancellationToken);
+                    await request.Key.Send(message, cancellationToken);
                 }
             });
 
