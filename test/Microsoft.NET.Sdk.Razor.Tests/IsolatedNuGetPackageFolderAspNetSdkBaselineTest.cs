@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             _cachePath = Path.GetFullPath(Path.Combine(TestContext.Current.TestExecutionDirectory, Shorten(restoreNugetPackagePath)));
         }
 
-        private string Shorten(string restoreNugetPackagePath) =>
+        private static string Shorten(string restoreNugetPackagePath) =>
             restoreNugetPackagePath
                 .Replace("IntegrationTest", string.Empty, StringComparison.OrdinalIgnoreCase)
                 .Replace("Tests", string.Empty, StringComparison.OrdinalIgnoreCase);
