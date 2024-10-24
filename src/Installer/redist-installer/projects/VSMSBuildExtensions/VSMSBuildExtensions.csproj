@@ -41,7 +41,7 @@
   <!-- Shared infra to build and use the BuildCoreSdkTasks -->
   <Import Project="..\..\targets\BuildCoreSdkTasks.targets" />
 
-  <Target Name="GenerateMSBuildExtensionsLayout" DependsOnTargets="BuildCoreSdkTasks;ResolveProjectReferences">
+  <Target Name="GenerateMSBuildExtensionsLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="BuildCoreSdkTasks;ResolveProjectReferences">
     <PropertyGroup>
       <MSBuildExtensionsOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MSBuildExtensionsOutputPath>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
