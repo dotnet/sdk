@@ -247,4 +247,7 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
   <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
     <value>Allow package downgrade when installing a .NET tool package.</value>
   </data>
+  <data name="ForceInstallOptionName" xml:space="preserve">
+    <value>Forces a tool to be installed even if a compatible .NET runtime is not installed.</value>
+  </data>
 </root>
