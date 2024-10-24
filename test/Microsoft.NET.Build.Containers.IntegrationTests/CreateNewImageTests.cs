@@ -20,7 +20,7 @@ public class CreateNewImageTests
         _testOutput = testOutput;
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public void CreateNewImage_Baseline()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -70,7 +70,7 @@ public class CreateNewImageTests
         return new(task.GeneratedContainerConfiguration);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public void ParseContainerProperties_EndToEnd()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -133,7 +133,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -216,7 +216,7 @@ public class CreateNewImageTests
             .And.HaveStdOut("Foo");
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
         const string RootlessBase = "dotnet/rootlessbase";

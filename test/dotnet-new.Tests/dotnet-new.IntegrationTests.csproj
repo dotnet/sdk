@@ -66,8 +66,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <WriteLinesToFile Lines="$(GeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
-  <Target Name="CopyDBPToArtifactsTmpDir" AfterTargets="Build">
-    <Copy SourceFiles="TestDirectoryBuildProps/Directory.Build.props" DestinationFolder="$(ArtifactsTmpDir)" />
+  <Target Name="CopyDBFilesToArtifactsTmpDir" AfterTargets="Build">
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(ArtifactsTmpDir)" />
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.targets" DestinationFolder="$(ArtifactsTmpDir)" />
   </Target>
 
   <ItemGroup>
