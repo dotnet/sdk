@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData("restore")]
         [InlineData("run")]
         [InlineData("sdk")]
-        [InlineData("sln")]
+        [InlineData("solution")]
         [InlineData("store")]
         [InlineData("test")]
         [InlineData("tool")]
@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         public void RemainingOptions()
         {
             var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
-            
+
             Assert.True(options.GlobalOptions.Verbose);
             Assert.Equal("run", options.Command);
             Assert.Equal(["-watchArg", "-runArg"], options.CommandArguments);
