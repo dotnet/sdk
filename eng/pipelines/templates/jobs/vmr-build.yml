@@ -48,6 +48,7 @@ parameters:
 - name: sign
   displayName: True when build output should be signed
   type: boolean
+  # Temporarily set to false to unblock build: https://github.com/dotnet/runtime/issues/109178
   default: false
 
 # Overrides the rid that is produced by the build.
@@ -282,7 +283,7 @@ jobs:
 
     - script: |
         set extraBuildArguments=
-        if /I '${{ parameters.sign }}'=='True' set extraBuildArguments=%extraBuildArguments% -sign
+        if /I '${{ parameters.sign }}'=='True' IF /I NOT '${{ parameters.buildSourceOnly }}' == 'True' set extraBuildArguments=%extraBuildArguments% -sign
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
@@ -298,7 +299,7 @@ jobs:
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
   - ${{ else }}:
-    - ${{ if eq(variables['Agent.Os'], 'Darwin') }}:
+    - ${{ if eq(parameters.targetOS, 'osx') }}:
       - script: |
           $(sourcesPath)/src/runtime/eng/install-native-dependencies.sh osx
         displayName: Install dependencies
@@ -367,7 +368,7 @@ jobs:
           customBuildArgs="$customBuildArgs --dev"
         fi
 
-        if [[ '${{ parameters.sign }}' == 'True' ]]; then
+        if [[ '${{ parameters.sign }}' == 'True' && '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
         fi
 
