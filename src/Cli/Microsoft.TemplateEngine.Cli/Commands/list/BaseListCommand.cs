@@ -80,12 +80,4 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         protected override ListCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
 
     }
-
-#pragma warning disable SA1201 // Elements should appear in the correct order
-    public enum FormatOptions
-    {
-        Console,
-        Json
-    }
-#pragma warning restore SA1201 // Elements should appear in the correct order
 }

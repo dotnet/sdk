@@ -5,9 +5,8 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
 
-namespace Microsoft.TemplateEngine.Cli.TabularOutput
+namespace Microsoft.TemplateEngine.Cli.Output
 {
     internal static class TemplateGroupDisplay
     {
@@ -26,24 +25,17 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         internal static void DisplayTemplateList(
             IEngineEnvironmentSettings engineEnvironmentSettings,
             IEnumerable<TemplateGroup> templateGroups,
-            TabularOutputSettings helpFormatterSettings,
+            IDisplayFormatter displayFormatter,
             IReporter reporter,
-            string? selectedLanguage = null,
-            FormatOptions format = FormatOptions.Console)
+            string? selectedLanguage = null)
         {
-            IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay = GetTemplateGroupsForListDisplay(
+            IReadOnlyCollection<TemplateGroupEntry> groupsForDisplay = GetTemplateGroupsForListDisplay(
                 templateGroups,
                 selectedLanguage,
                 engineEnvironmentSettings.GetDefaultLanguage(),
                 engineEnvironmentSettings.Environment);
 
-            if (format == FormatOptions.Json)
-            {
-                DisplayJsonTemplateList(groupsForDisplay, reporter);
-                return;
-            }
-
-            DisplayTemplateList(groupsForDisplay, helpFormatterSettings, reporter);
+            DisplayTemplateList(groupsForDisplay, displayFormatter, engineEnvironmentSettings.Environment, reporter);
 
         }
 
@@ -62,43 +54,31 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         internal static void DisplayTemplateList(
             IEngineEnvironmentSettings engineEnvironmentSettings,
             IEnumerable<ITemplateInfo> templates,
-            TabularOutputSettings helpFormatterSettings,
+            IDisplayFormatter displayFormatter,
             IReporter reporter,
-            string? selectedLanguage = null,
-            FormatOptions format = FormatOptions.Console)
+            string? selectedLanguage = null)
         {
-            IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay = GetTemplateGroupsForListDisplay(
+            IReadOnlyCollection<TemplateGroupEntry> groupsForDisplay = GetTemplateGroupsForListDisplay(
                 templates,
                 selectedLanguage,
                 engineEnvironmentSettings.GetDefaultLanguage(),
                 engineEnvironmentSettings.Environment);
-            if (format == FormatOptions.Json)
-            {
-                DisplayJsonTemplateList(groupsForDisplay, reporter);
-                return;
-            }
 
-            DisplayTemplateList(groupsForDisplay, helpFormatterSettings, reporter);
-        }
-
-        internal static void DisplayJsonTemplateList(IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay, IReporter reporter)
-        {
-            //var result = JsonSerializer.Serialize(groupsForDisplay);
-            var result = JsonConvert.SerializeObject(groupsForDisplay);
-            reporter.WriteLine(result);
+            DisplayTemplateList(groupsForDisplay, displayFormatter, engineEnvironmentSettings.Environment, reporter);
         }
 
         /// <summary>
         /// Displays the template languages.
         /// </summary>
-        internal static string GetLanguagesToDisplay(IEnumerable<ITemplateInfo> templateGroup, string? language, string? defaultLanguage, IEnvironment environment)
+        internal static IReadOnlyCollection<TemplateLanguageEntry> GetLanguagesToDisplay(IEnumerable<ITemplateInfo> templateGroup, string? language, string? defaultLanguage, IEnvironment environment)
         {
             var groupedTemplates = GetAuthorBasedGroups(templateGroup);
 
-            List<string> languageGroups = new();
+            List<TemplateLanguageEntry> languageGroups = new();
+
             foreach (var templates in groupedTemplates)
             {
-                List<string> languagesForDisplay = new();
+                //List<TemplateLanguageEntry> languagesForDisplay = new();
                 HashSet<string> uniqueLanguages = new(StringComparer.OrdinalIgnoreCase);
                 string defaultLanguageDisplay = string.Empty;
                 foreach (ITemplateInfo template in templates)
@@ -113,32 +93,42 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                     {
                         continue;
                     }
-                    if (string.IsNullOrEmpty(language) && string.Equals(defaultLanguage, lang, StringComparison.OrdinalIgnoreCase))
-                    {
-                        defaultLanguageDisplay = $"[{lang}]";
-                    }
-                    else
-                    {
-                        languagesForDisplay.Add(lang);
-                    }
+
+                    var isDefault = string.IsNullOrEmpty(language) && string.Equals(defaultLanguage, lang, StringComparison.OrdinalIgnoreCase);
+
+                    languageGroups.Add(new TemplateLanguageEntry { Id = lang, Default = isDefault });
+
+                    //if (string.IsNullOrEmpty(language) && string.Equals(defaultLanguage, lang, StringComparison.OrdinalIgnoreCase))
+                    //{
+                    //    defaultLanguageDisplay = ;
+                    //}
+                    //else
+                    //{
+                    //    languagesForDisplay.Add(lang);
+                    //}
                 }
 
-                languagesForDisplay.Sort(StringComparer.OrdinalIgnoreCase);
-                if (!string.IsNullOrEmpty(defaultLanguageDisplay))
-                {
-                    languagesForDisplay.Insert(0, defaultLanguageDisplay);
-                }
-                languageGroups.Add(string.Join(",", languagesForDisplay));
+                //languagesForDisplay.Sort(StringComparer.OrdinalIgnoreCase);
+                //if (!string.IsNullOrEmpty(defaultLanguageDisplay))
+                //{
+                //    languagesForDisplay.Insert(0, defaultLanguageDisplay);
+                //}
+                //languageGroups.Add(string.Join(",", languagesForDisplay));
             }
-            return string.Join(environment.NewLine, languageGroups);
+            //return string.Join(environment.NewLine, languageGroups);
+
+            return languageGroups;
         }
 
         /// <summary>
         /// Displays the template authors.
         /// </summary>
-        internal static string GetAuthorsToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
+        internal static IReadOnlyCollection<string> GetAuthorsToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
         {
-            return string.Join(environment.NewLine, GetAuthorBasedGroups(templateGroup).Select(group => group.Key));
+            //return string.Join(environment.NewLine, GetAuthorBasedGroups(templateGroup).Select(group => group.Key));
+            return GetAuthorBasedGroups(templateGroup)
+                .Select(group => group.Key)
+                .ToArray();
         }
 
         /// <summary>
@@ -156,27 +146,27 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         /// <param name="defaultLanguage">default language.</param>
         /// <param name="environment"><see cref="IEnvironment"/> settings to use.</param>
         /// <returns></returns>
-        internal static IReadOnlyList<TemplateGroupTableRow> GetTemplateGroupsForListDisplay(
+        internal static IReadOnlyList<TemplateGroupEntry> GetTemplateGroupsForListDisplay(
             IEnumerable<ITemplateInfo> templateList,
             string? language,
             string? defaultLanguage,
             IEnvironment environment)
         {
-            List<TemplateGroupTableRow> templateGroupsForDisplay = new();
+            List<TemplateGroupEntry> templateGroupsForDisplay = new();
             IEnumerable<IGrouping<string?, ITemplateInfo>> groupedTemplateList = templateList.GroupBy(x => x.GroupIdentity, x => !string.IsNullOrEmpty(x.GroupIdentity), StringComparer.OrdinalIgnoreCase);
             foreach (IGrouping<string?, ITemplateInfo> templateGroup in groupedTemplateList)
             {
                 ITemplateInfo highestPrecedenceTemplate = templateGroup.OrderByDescending(x => x.Precedence).First();
-                string shortNames = string.Join(",", templateGroup.SelectMany(t => t.ShortNameList).Distinct(StringComparer.OrdinalIgnoreCase));
+                //string shortNames = string.Join(",", templateGroup.SelectMany(t => t.ShortNameList).Distinct(StringComparer.OrdinalIgnoreCase));
 
-                TemplateGroupTableRow groupDisplayInfo = new()
+                TemplateGroupEntry groupDisplayInfo = new()
                 {
                     Name = highestPrecedenceTemplate.Name,
-                    ShortNames = shortNames,
+                    ShortNames = GetShortNamesToDisplay(templateGroup),
                     Languages = GetLanguagesToDisplay(templateGroup, language, defaultLanguage, environment),
                     Classifications = GetClassificationsToDisplay(templateGroup, environment),
-                    Author = GetAuthorsToDisplay(templateGroup, environment),
-                    Type = GetTypesToDisplay(templateGroup, environment),
+                    Authors = GetAuthorsToDisplay(templateGroup, environment),
+                    Types = GetTypesToDisplay(templateGroup, environment),
                 };
                 templateGroupsForDisplay.Add(groupDisplayInfo);
             }
@@ -187,22 +177,29 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         /// <summary>
         /// Displays the template tags.
         /// </summary>
-        internal static string GetClassificationsToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
+        internal static IReadOnlyCollection<string> GetClassificationsToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
         {
             var groupedTemplates = GetAuthorBasedGroups(templateGroup);
 
             List<string> classificationGroups = new();
             foreach (var templates in groupedTemplates)
             {
-                classificationGroups.Add(
-                    string.Join(
-                        "/",
-                        templates
-                            .SelectMany(template => template.Classifications)
-                            .Where(classification => !string.IsNullOrWhiteSpace(classification))
-                            .Distinct(StringComparer.OrdinalIgnoreCase)));
+                var classifications = templates
+                    .SelectMany(t => t.Classifications)
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                classificationGroups.AddRange(classifications);
+                //classificationGroups.Add(
+                //    string.Join(
+                //        "/",
+                //        templates
+                //            .SelectMany(template => template.Classifications)
+                //            .Where(classification => !string.IsNullOrWhiteSpace(classification))
+                //            .Distinct(StringComparer.OrdinalIgnoreCase)));
             }
-            return string.Join(environment.NewLine, classificationGroups);
+            //return string.Join(environment.NewLine, classificationGroups);
+
+            return classificationGroups;
         }
 
         /// <summary>
@@ -220,48 +217,43 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         /// <param name="defaultLanguage">default language.</param>
         /// <param name="environment"><see cref="IEnvironment"/> settings to use.</param>
         /// <returns></returns>
-        private static IReadOnlyList<TemplateGroupTableRow> GetTemplateGroupsForListDisplay(
+        private static IReadOnlyList<TemplateGroupEntry> GetTemplateGroupsForListDisplay(
             IEnumerable<TemplateGroup> templateGroupList,
             string? language,
             string? defaultLanguage,
             IEnvironment environment)
         {
-            List<TemplateGroupTableRow> templateGroupsForDisplay = new();
+            List<TemplateGroupEntry> templateGroupsForDisplay = new();
             foreach (TemplateGroup templateGroup in templateGroupList)
             {
                 ITemplateInfo highestPrecedenceTemplate = templateGroup.Templates.OrderByDescending(x => x.Precedence).First();
-                TemplateGroupTableRow groupDisplayInfo = new()
+                TemplateGroupEntry groupDisplayInfo = new()
                 {
                     Name = highestPrecedenceTemplate.Name,
-                    ShortNames = string.Join(",", templateGroup.ShortNames),
+                    ShortNames = templateGroup.ShortNames,
                     Languages = GetLanguagesToDisplay(templateGroup.Templates, language, defaultLanguage, environment),
                     Classifications = GetClassificationsToDisplay(templateGroup.Templates, environment),
-                    Author = GetAuthorsToDisplay(templateGroup.Templates, environment),
-                    Type = GetTypesToDisplay(templateGroup.Templates, environment),
+                    Authors = GetAuthorsToDisplay(templateGroup.Templates, environment),
+                    Types = GetTypesToDisplay(templateGroup.Templates, environment),
                 };
+
                 templateGroupsForDisplay.Add(groupDisplayInfo);
             }
+
             return templateGroupsForDisplay;
         }
 
+        private static IReadOnlyCollection<string> GetShortNamesToDisplay(IGrouping<string?, ITemplateInfo> templateGroups)
+            => templateGroups.SelectMany(t => t.ShortNameList).ToArray();
+
         private static void DisplayTemplateList(
-            IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay,
-            TabularOutputSettings tabularOutputSettings,
+            IReadOnlyCollection<TemplateGroupEntry> groupsForDisplay,
+            IDisplayFormatter displayFormatter,
+            IEnvironment environment,
             IReporter reporter)
         {
-            TabularOutput<TemplateGroupTableRow> formatter =
-                TabularOutput
-                    .For(
-                        tabularOutputSettings,
-                        groupsForDisplay)
-                    .DefineColumn(t => t.Name, out object? nameColumn, LocalizableStrings.ColumnNameTemplateName, shrinkIfNeeded: true, minWidth: 15, showAlways: true)
-                    .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, showAlways: true)
-                    .DefineColumn(t => t.Languages, out object? languageColumn, LocalizableStrings.ColumnNameLanguage, TabularOutputSettings.ColumnNames.Language, defaultColumn: true)
-                    .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, TabularOutputSettings.ColumnNames.Type, defaultColumn: false)
-                    .DefineColumn(t => t.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettings.ColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
-                    .DefineColumn(t => t.Classifications, out object? tagsColumn, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: true)
-                    .OrderBy(nameColumn, StringComparer.OrdinalIgnoreCase);
-            reporter.WriteLine(formatter.Layout());
+            var output = displayFormatter.FormatTemplateList(groupsForDisplay, environment);
+            reporter.WriteLine(output);
         }
 
         private static IOrderedEnumerable<IGrouping<string, ITemplateInfo>> GetAuthorBasedGroups(IEnumerable<ITemplateInfo> templateGroup)
@@ -269,26 +261,35 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             return templateGroup
                 .GroupBy(template => string.IsNullOrWhiteSpace(template.Author) ? string.Empty : template.Author, StringComparer.OrdinalIgnoreCase)
                 .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase);
-
         }
 
-        private static string GetTypesToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
+        private static IReadOnlyCollection<string> GetTypesToDisplay(IEnumerable<ITemplateInfo> templateGroup, IEnvironment environment)
         {
             var groupedTemplates = GetAuthorBasedGroups(templateGroup);
 
             List<string> typesGroups = new();
             foreach (var templates in groupedTemplates)
             {
-                typesGroups.Add(
-                    string.Join(
-                        ",",
-                        templates
-                            .Select(template => template.GetTemplateType())
-                            .Where(type => !string.IsNullOrWhiteSpace(type))
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .OrderBy(type => type, StringComparer.OrdinalIgnoreCase)));
+                //typesGroups.Add(
+                //    string.Join(
+                //        ",",
+                //        templates
+                //            .Select(template => template.GetTemplateType())
+                //            .Where(type => !string.IsNullOrWhiteSpace(type))
+                //            .Distinct(StringComparer.OrdinalIgnoreCase)
+                //            .OrderBy(type => type, StringComparer.OrdinalIgnoreCase)));
+
+                var types = templates
+                    .Select(template => template.GetTemplateType())
+                    .Where(type => !string.IsNullOrWhiteSpace(type))
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                typesGroups.AddRange(types!);
             }
-            return string.Join(environment.NewLine, typesGroups);
+
+            //return string.Join(environment.NewLine, typesGroups);
+
+            return typesGroups;
         }
     }
 }
