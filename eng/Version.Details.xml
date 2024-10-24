@@ -648,12 +648,12 @@
     -->
     <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-8.0.100" Version="8.2.2">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>2c38f6c884b5026a7f278cdfe6e1f816810093f9</Sha>
+      <Sha>5fa9337a84a52e9bd185d04d156eccbdcf592f74</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="8.2.2-preview.1.24519.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="8.2.2-preview.1.24521.5">
       <Uri>https://github.com/dotnet/aspire</Uri>
-      <Sha>2c38f6c884b5026a7f278cdfe6e1f816810093f9</Sha>
+      <Sha>5fa9337a84a52e9bd185d04d156eccbdcf592f74</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.IO.Redist" Version="6.0.1">
