@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.Output;
+using Microsoft.TemplateEngine.Cli.Output.TabularOutput;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge;
@@ -430,8 +431,13 @@ namespace Microsoft.TemplateEngine.Cli
                 {
                     DisplayLocalPackageMetadata(localPackage, Reporter.Output);
 
-                    var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                    var templatesToDisplay = TemplateGroupDisplay
+                        .GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment)
+                        .Select(entry => TabularDisplayFormatter.FormatEntry(entry, _engineEnvironmentSettings.Environment))
+                        .ToArray();
+
                     DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
+
                     return NewCommandStatus.Success;
                 }
             }
@@ -456,7 +462,11 @@ namespace Microsoft.TemplateEngine.Cli
                 DisplayNuGetPackageMetadata(nuGetPackageMetadata, Reporter.Output);
                 if (packageTemplates != null && packageTemplates.Any())
                 {
-                    var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                    var templatesToDisplay = TemplateGroupDisplay
+                        .GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment)
+                        .Select(entry => TabularDisplayFormatter.FormatEntry(entry, _engineEnvironmentSettings.Environment))
+                        .ToArray();
+
                     DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
                 }
                 return NewCommandStatus.Success;
@@ -956,7 +966,7 @@ namespace Microsoft.TemplateEngine.Cli
                     TemplateGroupDisplay.DisplayTemplateList(
                         _engineEnvironmentSettings,
                         templates,
-                        new TabularOutputSettings(_engineEnvironmentSettings.Environment),
+                        new TabularDisplayFormatter(new TabularOutputSettings(_engineEnvironmentSettings.Environment)),
                         reporter: Reporter.Output);
                     await EvaluateAndDisplayConstraintsAsync(templates, cancellationToken).ConfigureAwait(false);
                 }

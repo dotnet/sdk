@@ -17,6 +17,19 @@ internal class TabularDisplayFormatter(TabularOutputSettings outputSettings) : I
         return GenerateTableDisplay(tableRows, outputSettings);
     }
 
+    internal static TemplateGroupTableRow FormatEntry(TemplateGroupEntry entry, IEnvironment environment)
+    {
+        return new TemplateGroupTableRow
+        {
+            Name = entry.Name,
+            ShortNames = JoinDistinct(entry.ShortNames),
+            Languages = FormatLanguages(entry.Languages),
+            Classifications = FormatClassifications(entry.Classifications),
+            Author = JoinDistinct(entry.Authors, environment.NewLine),
+            Type = FormatTypes(entry.Types),
+        };
+    }
+
     private static string GenerateTableDisplay(
         IReadOnlyCollection<TemplateGroupTableRow> groupsForDisplay,
         TabularOutputSettings tabularOutputSettings)
@@ -35,20 +48,7 @@ internal class TabularDisplayFormatter(TabularOutputSettings outputSettings) : I
         return formatter.Layout();
     }
 
-    private TemplateGroupTableRow FormatEntry(TemplateGroupEntry entry, IEnvironment environment)
-    {
-        return new TemplateGroupTableRow
-        {
-            Name = entry.Name,
-            ShortNames = JoinDistinct(entry.ShortNames),
-            Languages = FormatLanguages(entry.Languages),
-            Classifications = FormatClassifications(entry.Classifications),
-            Author = JoinDistinct(entry.Authors, environment.NewLine),
-            Type = FormatTypes(entry.Types),
-        };
-    }
-
-    private string FormatClassifications(IEnumerable<string> classifications)
+    private static string FormatClassifications(IEnumerable<string> classifications)
     {
         var notEmpty = classifications
             .Where(classification => !string.IsNullOrWhiteSpace(classification));
@@ -57,7 +57,7 @@ internal class TabularDisplayFormatter(TabularOutputSettings outputSettings) : I
 
     }
 
-    private string FormatTypes(IEnumerable<string> types)
+    private static string FormatTypes(IEnumerable<string> types)
     {
         var orderedDistinct = types
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -66,7 +66,7 @@ internal class TabularDisplayFormatter(TabularOutputSettings outputSettings) : I
         return string.Join(",", orderedDistinct);
     }
 
-    private string FormatLanguages(IEnumerable<TemplateLanguageEntry> languages)
+    private static string FormatLanguages(IEnumerable<TemplateLanguageEntry> languages)
     {
         var values = languages
             .Where(lang => lang.Default is not true)
@@ -83,7 +83,7 @@ internal class TabularDisplayFormatter(TabularOutputSettings outputSettings) : I
         return JoinDistinct(values);
     }
 
-    private string JoinDistinct(IEnumerable<string> values, string separator = ",")
+    private static string JoinDistinct(IEnumerable<string> values, string separator = ",")
     {
         var distinctValues = values.Distinct(StringComparer.OrdinalIgnoreCase);
         return string.Join(", ", distinctValues);

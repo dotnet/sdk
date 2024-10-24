@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Output;
+using Microsoft.TemplateEngine.Cli.Output.TabularOutput;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
@@ -238,7 +239,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TemplateGroupDisplay.DisplayTemplateList(
                 environmentSettings,
                 templates,
-                new TabularOutputSettings(environmentSettings.Environment),
+                new TabularDisplayFormatter(new TabularOutputSettings(environmentSettings.Environment)),
                 reporter);
             reporter.WriteLine(HelpStrings.Hint_AmbiguousLanguage);
             return NewCommandStatus.NotFound;
@@ -253,9 +254,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TemplateGroupDisplay.DisplayTemplateList(
                 environmentSettings,
                 templates,
-                new TabularOutputSettings(
+                new TabularDisplayFormatter(new TabularOutputSettings(
                     environmentSettings.Environment,
-                    columnsToDisplay: new[] { TabularOutputSettings.ColumnNames.Type }),
+                    columnsToDisplay: new[] { TabularOutputSettings.ColumnNames.Type })),
                 reporter);
             reporter.WriteLine(HelpStrings.Hint_AmbiguousType);
             return NewCommandStatus.NotFound;
