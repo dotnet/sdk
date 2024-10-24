@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             AllowMultipleArgumentsPerToken = true,
             Description = SymbolStrings.ListCommand_Option_Format,
-            Arity = new ArgumentArity(1, 1),
+            Arity = ArgumentArity.ExactlyOne,
         };
 
         internal static CliArgument<string> NameArgument { get; } = new("template-name")
