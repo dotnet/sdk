@@ -302,11 +302,12 @@ public class DefineStaticWebAssetEndpoints : Task
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
             var routes = asset.ComputeRoutes().ToList();
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+
             if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
                 for (var j = routes.Count - 1; j >= 0; j--)
                 {
-                    var (label, route, values) = routes[j];
+                    var (_, route, _) = routes[j];
                     // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                     // package or a referenced project and ignored if it comes from the current project.
                     // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
