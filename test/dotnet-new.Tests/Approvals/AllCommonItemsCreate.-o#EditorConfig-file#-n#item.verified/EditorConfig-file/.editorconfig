@@ -5,7 +5,7 @@
 indent_style = space
 
 # Xml files
-[*.xml]
+[*.{xml,props,targets}]
 indent_size = 2
 
 # C# files
