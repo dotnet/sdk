@@ -1,0 +1,6 @@
+﻿{
+  "author": "Алексей Харлов aka halex2005 (codeofclimber.ru)",
+  "name": "Тестовый элемент NUnit 3",
+  "description": "Создает тестовый класс NUnit",
+  "postActions/openInEditor/description": "Открывает созданный класс тестового приспособления в редакторе."
+}
