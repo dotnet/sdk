@@ -25,9 +25,21 @@ public class StaticWebAssetSegmentPart : IEquatable<StaticWebAssetSegmentPart>
     public override int GetHashCode()
     {
         var hashCode = -62096114;
-        hashCode = (hashCode * -1521134295) + EqualityComparer<ReadOnlyMemory<char>>.Default.GetHashCode(Name);
-        hashCode = (hashCode * -1521134295) + EqualityComparer<ReadOnlyMemory<char>>.Default.GetHashCode(Value);
+        hashCode = (hashCode * -1521134295) + GetSpanHashCode(Name);
+        hashCode = (hashCode * -1521134295) + GetSpanHashCode(Value);
         hashCode = (hashCode * -1521134295) + IsLiteral.GetHashCode();
+        return hashCode;
+    }
+
+    private int GetSpanHashCode(ReadOnlyMemory<char> memory)
+    {
+        var hashCode = -62096114;
+        var span = memory.Span;
+        for ( var i = 0; i < span.Length; i++)
+        {
+            hashCode = (hashCode * -1521134295) + span[i].GetHashCode();
+        }
+
         return hashCode;
     }
 #else

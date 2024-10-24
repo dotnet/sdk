@@ -475,7 +475,7 @@ internal sealed class ContentTypeProvider
 #if NET9_0_OR_GREATER
     private static ReadOnlySpan<char> ResolvePathWithoutCompressedExtension(ReadOnlySpan<char> fileName, out bool hasCompressedExtension)
 #else
-    private string ResolvePathWithoutCompressedExtension(string fileName, out bool hasCompressedExtension)
+    private static string ResolvePathWithoutCompressedExtension(string fileName, out bool hasCompressedExtension)
 #endif
     {
         var extension = Path.GetExtension(fileName);
