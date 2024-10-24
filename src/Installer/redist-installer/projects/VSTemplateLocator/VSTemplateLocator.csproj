@@ -22,7 +22,7 @@
     <ProjectReference Include="$(RepoRoot)src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="GenerateLayout" DependsOnTargets="ResolveProjectReferences">
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
       <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x86\hostfxr.dll" Arch="x86/" />
       <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x64\hostfxr.dll" Arch="x64/" />
