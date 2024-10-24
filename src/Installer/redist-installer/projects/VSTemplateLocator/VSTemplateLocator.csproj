@@ -1,73 +1,43 @@
 ﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <!-- For product build, this project only builds in the second build pass as it depends on assets other
+    <!-- For product build, this project only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and
+                           '$(Architecture)' == 'x64' and
+                           '$(PgoInstrument)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageId>VS.Redist.Common.Net.Core.SDK.VSTemplateLocator</PackageId>
+    <PackageDescription>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" ExcludeAssets="all" GeneratePathProperty="true" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="GenerateLayout">
-    <!-- Set these here early enough for inputs & outputs in the GenerateVSTemplateLocatorNupkg target. -->
-    <PropertyGroup>
-      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
-      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
-      <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)../../packaging/windows/generatenupkg.ps1</GenerateNupkgPowershellScript>
-    </PropertyGroup>
-
-    <RemoveDir Directories="$(OutputPath)" />
-    <MakeDir Directories="$(OutputPath)" />
-
+  <Target Name="GenerateLayout" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x86)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
-      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x64)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
-      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-arm64)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
-      <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.NativeWrapper.dll" Arch="" />
-      <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.SdkResolver.dll" Arch="" />
-      <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\**\Microsoft.DotNet.TemplateLocator*.dll" Arch="" />
-      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_Deployment_DotNet_Releases)\lib\net452\**\*.dll" Arch="" />
-      <_VSTemplateLocatorDst Include="@(_VSTemplateLocatorSrc->'$(OutputPath)VSTemplateLocator\%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x86\hostfxr.dll" Arch="x86/" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x64\hostfxr.dll" Arch="x64/" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\arm64\hostfxr.dll" Arch="arm64/" />
+
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.NativeWrapper.dll" Arch="" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.SdkResolver.dll" Arch="" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\**\Microsoft.DotNet.TemplateLocator*.dll" Arch="" />
+
+      <VSTemplateLocatorContent Include="$(PkgMicrosoft_Deployment_DotNet_Releases)\lib\net452\**\*.dll" Arch="" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_VSTemplateLocatorSrc)" DestinationFiles="@(_VSTemplateLocatorDst)" />
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
-  </Target>
-
-  <!-- For product build, this only builds in the second build pass as it depends on assets
-       from other verticals that are built in the first build pass. -->
-  <Target Name="GenerateVSTemplateLocatorNupkg"
-          DependsOnTargets="GenerateLayout"
-          Condition="'$(OS)' == 'Windows_NT' and
-                     '$(Architecture)' == 'x64' and
-                     '$(PgoInstrument)' != 'true' and
-                     ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPass)' == '2') and
-                     '$(_SuppressAllTargets)' != 'true'"
-          Inputs="$(OutputPath)/**/*;
-                  $(VSTemplateLocatorNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(VSTemplateLocatorNupkgFile)"
-          AfterTargets="Build">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(OutputPath.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)'" />
+    <ItemGroup>
+      <Content Include="@(VSTemplateLocatorContent)" PackagePath="/VSTemplateLocator/%(Arch)%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
   </Target>
 
 </Project>
