@@ -32,10 +32,19 @@ namespace Microsoft.DotNet.Cli
 
         public override int Execute()
         {
-            string slnFileFullPath = "";
+            string slnFileFullPath = GetSlnFileFullPath();
+            string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
+            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
+            _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFileFullPath);
+            return 0;
+        }
+
+        private string GetSlnFileFullPath()
+        {
+            string generatedPath = "";
             if (File.Exists(_slnFileOrDirectory))
             {
-                slnFileFullPath = _slnFileOrDirectory;
+                generatedPath = _slnFileOrDirectory;
             }
             else if (Directory.Exists(_slnFileOrDirectory))
             {
@@ -48,16 +57,12 @@ namespace Microsoft.DotNet.Cli
                 {
                     throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, _slnFileOrDirectory);
                 }
-                slnFileFullPath = files.Single().ToString();
+                generatedPath = files.Single().ToString();
             }
             else
             {
                 throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, _slnFileOrDirectory);
             }
-            string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
-            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
-            _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFileFullPath);
-            return 0;
         }
 
         private static async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
