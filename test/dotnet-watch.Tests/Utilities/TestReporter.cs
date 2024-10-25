@@ -4,6 +4,9 @@
 #nullable enable
 
 using System.Diagnostics;
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -11,15 +14,22 @@ namespace Microsoft.Extensions.Tools.Internal
     {
         private readonly Dictionary<int, Action> _actions = [];
 
-        public bool ReportProcessOutput
+        public bool EnableProcessOutputReporting
             => true;
 
-        public event Action<string, string>? OnProcessOutput;
+        public event Action<string, OutputLine>? OnProjectProcessOutput;
+        public event Action<OutputLine>? OnProcessOutput;
 
-        public void ProcessOutput(string projectPath, string data)
+        public void ReportProcessOutput(OutputLine line)
         {
-            output.WriteLine($"[{Path.GetFileName(projectPath)}]: {data}");
-            OnProcessOutput?.Invoke(projectPath, data);
+            output.WriteLine(line.Content);
+            OnProcessOutput?.Invoke(line);
+        }
+
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
+        {
+            output.WriteLine($"[{project.GetDisplayName()}]: {line.Content}");
+            OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 
         public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
