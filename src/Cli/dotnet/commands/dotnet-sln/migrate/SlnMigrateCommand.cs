@@ -41,10 +41,9 @@ namespace Microsoft.DotNet.Cli
 
         private string GetSlnFileFullPath()
         {
-            string generatedPath = "";
             if (File.Exists(_slnFileOrDirectory))
             {
-                generatedPath = _slnFileOrDirectory;
+                return _slnFileOrDirectory;
             }
             else if (Directory.Exists(_slnFileOrDirectory))
             {
@@ -57,7 +56,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, _slnFileOrDirectory);
                 }
-                generatedPath = files.Single().ToString();
+                return files.Single().ToString();
             }
             else
             {
