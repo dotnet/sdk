@@ -59,21 +59,18 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         /// <summary>
         /// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#stop-session-request.
         /// </summary>
-        public async ValueTask<bool> StopSessionAsync(string dcpId, string sessionId, CancellationToken cancellationToken)
+        public async ValueTask StopSessionAsync(string dcpId, string sessionId, CancellationToken cancellationToken)
         {
             Reporter.Verbose($"Stop Session {sessionId}", MessageEmoji);
 
             RunningProject? runningProject;
             lock (_guard)
             {
-                if (!_sessions.TryGetValue(sessionId, out runningProject))
-                {
-                    return false;
-                }
+                runningProject = _sessions[sessionId];
+                _sessions.Remove(sessionId);
             }
 
             _ = await projectLauncher.TerminateProcessesAsync([runningProject.ProjectNode.ProjectInstance.FullPath], cancellationToken);
-            return true;
         }
 
         private ProjectOptions GetProjectOptions(ProjectLaunchRequest projectLaunchInfo)

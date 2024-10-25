@@ -151,9 +151,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             var hasUpdateSourceA = new TaskCompletionSource();
             var hasUpdateSourceB = new TaskCompletionSource();
-            reporter.OnProcessOutput += (projectPath, output) =>
+            reporter.OnProjectProcessOutput += (projectPath, line) =>
             {
-                if (output.Contains("<Updated Lib>"))
+                if (line.Content.Contains("<Updated Lib>"))
                 {
                     if (projectPath == serviceProjectA)
                     {
@@ -202,9 +202,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         async Task MakeRudeEditChange()
         {
             var hasUpdateSource = new TaskCompletionSource();
-            reporter.OnProcessOutput += (projectPath, output) =>
+            reporter.OnProjectProcessOutput += (projectPath, line) =>
             {
-                if (projectPath == serviceProjectA && output.Contains("Started A: 2"))
+                if (projectPath == serviceProjectA && line.Content.Contains("Started A: 2"))
                 {
                     hasUpdateSource.SetResult();
                 }
@@ -278,9 +278,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var hasUpdateA = new SemaphoreSlim(initialCount: 0);
         var hasUpdateB = new SemaphoreSlim(initialCount: 0);
-        reporter.OnProcessOutput += (projectPath, output) =>
+        reporter.OnProjectProcessOutput += (projectPath, line) =>
         {
-            if (output.Contains("<Updated Lib>"))
+            if (line.Content.Contains("<Updated Lib>"))
             {
                 if (projectPath == serviceProjectA)
                 {
@@ -417,9 +417,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var restartRequested = reporter.RegisterSemaphore(MessageDescriptor.RestartRequested);
 
         var hasUpdate = new SemaphoreSlim(initialCount: 0);
-        reporter.OnProcessOutput += (projectPath, output) =>
+        reporter.OnProjectProcessOutput += (projectPath, line) =>
         {
-            if (output.Contains("<Updated>"))
+            if (line.Content.Contains("<Updated>"))
             {
                 if (projectPath == hostProject)
                 {

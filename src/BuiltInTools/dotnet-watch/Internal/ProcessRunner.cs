@@ -19,39 +19,37 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             var stopwatch = new Stopwatch();
 
-            using var process = CreateProcess(processSpec);
+            var onOutput = processSpec.OnOutput;
+
+            // allow tests to watch for application output:
+            if (reporter.EnableProcessOutputReporting)
+            {
+                onOutput += line => reporter.ReportProcessOutput(line);
+            }
+
+            using var process = CreateProcess(processSpec, redirectOutput: onOutput != null);
+
+            if (onOutput != null)
+            {
+                process.OutputDataReceived += (_, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        onOutput(new OutputLine(args.Data, IsError: false));
+                    }
+                };
+
+                process.ErrorDataReceived += (_, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        onOutput(new OutputLine(args.Data, IsError: true));
+                    }
+                };
+            }
+
             using var processState = new ProcessState(process, reporter);
-
             processTerminationToken.Register(() => processState.TryKill());
-
-            var readOutput = false;
-            var readError = false;
-            if (processSpec.IsOutputCaptured)
-            {
-                readOutput = true;
-                readError = true;
-
-                process.OutputDataReceived += (_, a) =>
-                {
-                    if (!string.IsNullOrEmpty(a.Data))
-                    {
-                        processSpec.OutputCapture.AddLine(a.Data);
-                    }
-                };
-
-                process.ErrorDataReceived += (_, a) =>
-                {
-                    if (!string.IsNullOrEmpty(a.Data))
-                    {
-                        processSpec.OutputCapture.AddLine(a.Data);
-                    }
-                };
-            }
-            else if (processSpec.OnOutput != null)
-            {
-                readOutput = true;
-                process.OutputDataReceived += processSpec.OnOutput;
-            }
 
             stopwatch.Start();
 
@@ -77,13 +75,15 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             }
 
-            if (readOutput)
+            if (processId == null)
             {
-                process.BeginOutputReadLine();
+                // failed to launch
+                return int.MinValue;
             }
 
-            if (readError)
+            if (onOutput != null)
             {
+                process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
             }
 
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             return exitCode ?? int.MinValue;
         }
 
-        private static Process CreateProcess(ProcessSpec processSpec)
+        private static Process CreateProcess(ProcessSpec processSpec, bool redirectOutput)
         {
             var process = new Process
             {
@@ -153,8 +153,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                     FileName = processSpec.Executable,
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
-                    RedirectStandardOutput = processSpec.IsOutputCaptured || (processSpec.OnOutput != null),
-                    RedirectStandardError = processSpec.IsOutputCaptured,
+                    RedirectStandardOutput =  redirectOutput,
+                    RedirectStandardError = redirectOutput,
                 }
             };
 
