@@ -39,11 +39,20 @@ namespace Microsoft.DotNet.Cli
             }
             else if (Directory.Exists(_slnFileOrDirectory))
             {
-                slnFileFullPath = Directory.GetFiles(_slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                var files = Directory.GetFiles(_slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly);
+                if (files.Length == 0)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileOrDirectory);
+                }
+                if (files.Length > 1)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, _slnFileOrDirectory);
+                }
+                slnFileFullPath = files.Single().ToString();
             }
             else
             {
-                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileOrDirectory);
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, _slnFileOrDirectory);
             }
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
             Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
