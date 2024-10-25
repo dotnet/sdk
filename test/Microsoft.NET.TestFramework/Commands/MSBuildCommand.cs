@@ -133,6 +133,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 args = new[] { "/restore" }.Concat(args);
             }
 
+            args = args.Concat(new[] { "-v:diag" });
+
             return base.Execute(args);
         }
 
