@@ -236,5 +236,31 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLine(line => line.Contains("warning : The value of property is '123'", StringComparison.Ordinal));
         }
+
+        [Fact]
+        public async Task ProjectGraphLoadFailure()
+        {
+            var testAsset = TestAssets
+                .CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource()
+                .WithProjectChanges((path, proj) =>
+                {
+                    if (Path.GetFileName(path) == "App.WithDeps.csproj")
+                    {
+                        proj.Root.Descendants()
+                            .Single(e => e.Name.LocalName == "ItemGroup")
+                            .Add(XElement.Parse("""
+                            <ProjectReference Include="NonExistentDirectory\X.csproj" />
+                            """));
+                    }
+                });
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
+
+            App.AssertOutputContains(@"dotnet watch ⌚ Failed to load project graph.");
+            App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
+        }
     }
 }

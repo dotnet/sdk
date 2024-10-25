@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
@@ -102,7 +103,7 @@ public class ApplyCompressionNegotiation : Task
                     {
                         Name = "Content-Encoding",
                         Value = compressedAsset.AssetTraitValue,
-                        Quality = Math.Round(1.0 / (length + 1), 12).ToString("F12")
+                        Quality = Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture)
                     };
                     Log.LogMessage(MessageImportance.Low, "  Created Content-Encoding selector for compressed asset '{0}' with size '{1}' is '{2}'", encodingSelector.Value, encodingSelector.Quality, relatedEndpointCandidate.Route);
                     var endpointCopy = new StaticWebAssetEndpoint

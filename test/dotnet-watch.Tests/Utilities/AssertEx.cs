@@ -231,7 +231,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"'{expected}' not found in:");
+            message.AppendLine($"Expected output not found:");
+            message.AppendLine(expected);
+            message.AppendLine();
+            message.AppendLine("Actual output:");
 
             foreach (var item in items)
             {
