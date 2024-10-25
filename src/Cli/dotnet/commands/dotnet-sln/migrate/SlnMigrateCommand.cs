@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
@@ -18,25 +19,34 @@ namespace Microsoft.DotNet.Cli
 {
     internal class SlnMigrateCommand : CommandBase
     {
-        private readonly string _slnFileFullPath;
+        private readonly string _slnFileOrDirectory;
         private readonly IReporter _reporter;
         public SlnMigrateCommand(
             ParseResult parseResult,
             IReporter reporter = null)
             : base(parseResult)
         {
-            _slnFileFullPath = Path.GetFullPath(parseResult.GetValue(SlnCommandParser.SlnArgument));
+            _slnFileOrDirectory = Path.GetFullPath(parseResult.GetValue(SlnCommandParser.SlnArgument));
             _reporter = reporter ?? Reporter.Output;
         }
 
         public override int Execute()
         {
-            if (!File.Exists(_slnFileFullPath) || !Path.GetExtension(_slnFileFullPath).EndsWith("sln"))
+            string slnFileFullPath = "";
+            if (File.Exists(_slnFileOrDirectory))
             {
-                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileFullPath);
+                slnFileFullPath = _slnFileOrDirectory;
             }
-            string slnxFileFullPath = Path.ChangeExtension(_slnFileFullPath, "slnx");
-            Task task = ConvertToSlnxAsync(_slnFileFullPath, slnxFileFullPath, CancellationToken.None);
+            else if (Directory.Exists(_slnFileOrDirectory))
+            {
+                slnFileFullPath = Directory.GetFiles(_slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            }
+            else
+            {
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileOrDirectory);
+            }
+            string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
+            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
             _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFileFullPath);
             return 0;
         }
