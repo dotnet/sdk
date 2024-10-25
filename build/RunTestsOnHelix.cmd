@@ -23,6 +23,7 @@ mkdir %TestExecutionDirectory%
 REM https://stackoverflow.com/a/7487697/294804
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
 
+set Verbosity=diagnostic
 set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%
 set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\r
 set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
