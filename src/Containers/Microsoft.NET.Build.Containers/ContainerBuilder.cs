@@ -14,6 +14,7 @@ internal static class ContainerBuilder
         string baseRegistry,
         string baseImageName,
         string baseImageTag,
+        string? baseImageDigest,
         string[] entrypoint,
         string[] entrypointArgs,
         string[] defaultArgs,
@@ -47,7 +48,7 @@ internal static class ContainerBuilder
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
         RegistryMode sourceRegistryMode = baseRegistry.Equals(outputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger, sourceRegistryMode);
-        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
+        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag, baseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             imageName,
@@ -62,17 +63,18 @@ internal static class ContainerBuilder
         {
             try
             {
+                string imageReference = !string.IsNullOrEmpty(baseImageDigest) ? baseImageDigest : baseImageTag;
                 var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
-                    baseImageTag,
+                    imageReference,
                     containerRuntimeIdentifier,
                     ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)
             {
-                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, registry.RegistryName));
+                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, baseImageDigest, registry.RegistryName));
                 return 1;
             }
             catch (UnableToAccessRepositoryException)
