@@ -35,6 +35,12 @@ internal class ContainerizeCommand : CliRootCommand
         DefaultValueFactory = (_) => "latest"
     };
 
+    internal CliOption<string> BaseImageDigestOption { get; } = new("--baseimagedigest")
+    {
+        Description = "The base image digest. Ex: sha256:6cec3641...",
+        Required = false
+    };
+
     internal CliOption<string> OutputRegistryOption { get; } = new("--outputregistry")
     {
         Description = "The registry to push to.",
@@ -204,6 +210,7 @@ internal class ContainerizeCommand : CliRootCommand
         Options.Add(BaseRegistryOption);
         Options.Add(BaseImageNameOption);
         Options.Add(BaseImageTagOption);
+        Options.Add(BaseImageDigestOption);
         Options.Add(OutputRegistryOption);
         Options.Add(ArchiveOutputPathOption);
         Options.Add(RepositoryOption);
@@ -232,6 +239,7 @@ internal class ContainerizeCommand : CliRootCommand
             string _baseReg = parseResult.GetValue(BaseRegistryOption)!;
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
+            string? _baseDigest = parseResult.GetValue(BaseImageDigestOption);
             string? _outputReg = parseResult.GetValue(OutputRegistryOption);
             string? _archiveOutputPath = parseResult.GetValue(ArchiveOutputPathOption);
             string _name = parseResult.GetValue(RepositoryOption)!;
@@ -264,6 +272,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _baseReg,
                 _baseName,
                 _baseTag,
+                _baseDigest,
                 _entrypoint,
                 _entrypointArgs,
                 _defaultArgs,
