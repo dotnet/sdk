@@ -1048,7 +1048,6 @@ namespace Microsoft.NET.Publish.Tests
             };
             ilcToolsPathCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true").Should().Pass();
             var ilcToolsPath = ilcToolsPathCommand.GetValues()[0];
-            Console.WriteLine($"IlcToolsPath: {ilcToolsPath}");
             var ilcVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(ilcToolsPath)));
             ilcVersion.Should().Be(expectedVersion);
 
