@@ -20,7 +20,6 @@
       "src\\Resolvers\\Microsoft.DotNet.SdkResolver\\Microsoft.DotNet.SdkResolver.csproj",
       "src\\Resolvers\\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj",
       "src\\Resolvers\\Microsoft.NET.Sdk.WorkloadManifestReader\\Microsoft.NET.Sdk.WorkloadManifestReader.csproj",
-      "src\\Resolvers\\WorkloadManifestValidator\\WorkloadManifestValidator.csproj",
       "src\\Tasks\\Microsoft.NET.Build.Extensions.Tasks.UnitTests\\Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj",
       "src\\Tasks\\Microsoft.NET.Build.Extensions.Tasks\\Microsoft.NET.Build.Extensions.Tasks.csproj",
       "src\\Tasks\\Microsoft.NET.Build.Tasks.UnitTests\\Microsoft.NET.Build.Tasks.UnitTests.csproj",
