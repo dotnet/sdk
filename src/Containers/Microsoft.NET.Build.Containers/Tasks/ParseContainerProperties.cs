@@ -166,7 +166,8 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
 
         ParsedContainerRegistry = outputReg ?? "";
         ParsedContainerImage = outputImage ?? "";
-        ParsedContainerTag = outputTag ?? "";
+        // If no Tag was provided, default to "latest"
+        ParsedContainerTag = outputTag ?? "latest";
         ParsedContainerDigest = outputDigest ?? "";
         NewContainerRegistry = ContainerRegistry;
         NewContainerTags = validTags;

@@ -34,6 +34,7 @@ partial class CreateNewImage
     /// The base image tag.
     /// Ex: 6.0
     /// </summary>
+    [Required]
     public string BaseImageTag { get; set; }
 
     /// <summary>
@@ -191,7 +192,7 @@ partial class CreateNewImage
         ToolPath = "";
         BaseRegistry = "";
         BaseImageName = "";
-        BaseImageTag = "latest";
+        BaseImageTag = "";
         BaseImageDigest = "";
         OutputRegistry = "";
         ArchiveOutputPath = "";
