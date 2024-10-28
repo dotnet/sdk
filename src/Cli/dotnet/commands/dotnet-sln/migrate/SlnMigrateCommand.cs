@@ -34,9 +34,12 @@ namespace Microsoft.DotNet.Cli
         {
             string slnFileFullPath = GetSlnFileFullPath();
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
-            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
-            _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFileFullPath);
-            return 0;
+            Task task =  ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
+            if (task.IsCompletedSuccessfully)
+            {
+                return 0;
+            }
+            throw new GracefulException(task.Exception.Message, task.Exception);
         }
 
         private string GetSlnFileFullPath()
@@ -64,16 +67,17 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private static async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
+        private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
         {
             // See if the file is a known solution file.
             ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(filePath);
             if (serializer is null)
             {
-                return;
+                throw new GracefulException("Could not find serializer for file {0}", filePath);
             }
             SolutionModel solution = await serializer.OpenAsync(filePath, cancellationToken);
             await SolutionSerializers.SlnXml.SaveAsync(slnxFilePath, solution, cancellationToken);
+            _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFilePath);
         }
     }
 }
