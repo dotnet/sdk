@@ -33,7 +33,7 @@ internal sealed class ImageBuilder
     /// <summary>
     /// MediaType of the output manifest.
     /// </summary>
-    public string ManifestMediaType => _manifest.MediaType; // output the same media type as the base image manifest.
+    public string ManifestMediaType => _manifest.MediaType!; // output the same media type as the base image manifest.
 
     internal ImageBuilder(ManifestV2 manifest, ImageConfig baseImageConfig, ILogger logger)
     {

@@ -67,7 +67,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
             if (manifestMediaType == null)
             {
-                manifestMediaType = generatedManifest.MediaType;
+                manifestMediaType = generatedManifest.MediaType!;
             }
             else if (generatedManifest.MediaType != manifestMediaType)
             {

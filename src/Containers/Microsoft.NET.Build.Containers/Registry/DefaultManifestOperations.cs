@@ -42,7 +42,7 @@ internal class DefaultManifestOperations : IManifestOperations
     {
         string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
 
-        await PutAsync(repositoryName, reference, jsonString, manifest.MediaType, cancellationToken).ConfigureAwait(false);
+        await PutAsync(repositoryName, reference, jsonString, manifest.MediaType!, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)

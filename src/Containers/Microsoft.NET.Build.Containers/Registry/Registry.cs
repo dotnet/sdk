@@ -216,6 +216,7 @@ internal sealed class Registry
             {
                 manifest.KnownDigest = knownDigestValue;
             }
+            manifest.MediaType ??= initialManifestResponse.Content.Headers.ContentType!.MediaType;
             return manifest;
         }
     }
