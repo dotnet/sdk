@@ -63,11 +63,10 @@ internal static class ContainerBuilder
         {
             try
             {
-                string imageReference = !string.IsNullOrEmpty(baseImageDigest) ? baseImageDigest : baseImageTag;
                 var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
-                    imageReference,
+                    sourceImageReference.Reference,
                     containerRuntimeIdentifier,
                     ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
