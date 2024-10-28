@@ -42,6 +42,24 @@ namespace Microsoft.NET.Publish.Tests
             }
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
+            string[] ignoredPatterns = null;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                ignoredPatterns = new string[]
+                {
+                    // Both these exclusions can be removed once the min tested version is .NET 10 and the min supported
+                    // XCode version is XCode 16.
+
+                    // -ld_classic option is required to workaround bugs in XCode 15 and .NET 9 and older runtimes.
+                    // See https://github.com/dotnet/runtime/issues/97745 for details.
+                    "ld: warning: -ld_classic is deprecated and will be removed in a future release",
+                    // These warnings show up when dotnet/runtime compiled using Apple clang 15+ is used
+                    // with classic linker (either Apple clang 14 or clang 15+ with -ld_classic).
+                    "ld: warning: __LD,__compact_unwind entries for",
+                };
+            }
+
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
                 .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
@@ -49,11 +67,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
                 .And.NotHaveStdErrContaining("warning")
-                .And.NotHaveStdOutContaining("warning", new[]
-                {
-                    "ld: warning: __LD,__compact_unwind entries for",
-                    "ld: warning: -ld_classic is deprecated and will be removed in a future release"
-                });
+                .And.NotHaveStdOutContaining("warning", ignoredPatterns);
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
