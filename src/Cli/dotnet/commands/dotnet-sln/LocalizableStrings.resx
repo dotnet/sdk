@@ -178,9 +178,9 @@
     <value>Solution Folder(s)</value>
   </data>
   <data name="MigrateAppFullName" xml:space="preserve">
-    <value>Generate a .slnx solution file from a .sln solution file.</value>
+    <value>Generate a .slnx file from a .sln file.</value>
   </data>
   <data name="SlnxGenerated" xml:space="preserve">
-    <value>Solution file {0} generated.</value>
+    <value>.slnx file {0} generated.</value>
   </data>
 </root>
