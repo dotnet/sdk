@@ -35,6 +35,8 @@
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
     <SdkTargetFramework>net10.0</SdkTargetFramework>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 

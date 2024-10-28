@@ -113,9 +113,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)//$(SdkTargetFramework)/**/*.dll" />
-      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(SdkTargetFramework)/**/*.json" />
-      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(SdkTargetFramework)/**/*.config" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)//$(NetCurrent)/**/*.dll" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DotnetFormatDllFiles)" DestinationFiles="@(DotnetFormatDllFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
