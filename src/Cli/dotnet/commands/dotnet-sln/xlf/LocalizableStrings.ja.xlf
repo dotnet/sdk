@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MigrateAppFullName">
-        <source>Generate a .slnx solution file from a .sln solution file.</source>
-        <target state="new">Generate a .slnx solution file from a .sln solution file.</target>
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="new">Generate a .slnx file from a .sln file.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -63,8 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
-        <source>Solution file {0} generated.</source>
-        <target state="new">Solution file {0} generated.</target>
+        <source>.slnx file {0} generated.</source>
+        <target state="new">.slnx file {0} generated.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">
