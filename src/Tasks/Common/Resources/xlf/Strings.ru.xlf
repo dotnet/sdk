@@ -641,10 +641,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1115: текущий пакет SDK для .NET не поддерживает .NET Framework без использования значений SDK для .NET по умолчанию. Причиной, скорее всего, является несоответствие TargetFramework и свойства CLRSupport в проекте C++/CLI.</target>
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="translated">NETSDK1213: Нацеливание на .NET 8.0 или более поздней версии в Visual Studio 2022 17.7 не поддерживается.</target>
-        <note>{StrBegin="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="new">NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</target>
+        <note>{StrBegin="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -762,9 +762,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="translated">NETSDK1214: PreferNativeArm64 применяется только к целевым объектам .NET Framework. Для целевых объектов .NET Core он не поддерживается и не оказывает влияния.</target>
-        <note>{StrBegin="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="translated">NETSDK1222: PreferNativeArm64 применяется только к целевым объектам .NET Framework. Он не поддерживается и не работает для целевых объектов .NET Core.</target>
+        <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
