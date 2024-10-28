@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Watcher
 
         public void ConfigureProcess(ProcessSpec processSpec)
         {
-            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments];
+            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments ?? []];
             AddToEnvironment(processSpec.EnvironmentVariables);
         }
 
