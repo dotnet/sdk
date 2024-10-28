@@ -79,11 +79,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             try
             {
-                string imageReference = !string.IsNullOrEmpty(BaseImageDigest) ? BaseImageDigest : BaseImageTag;
                 var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     BaseImageName,
-                    imageReference,
+                    sourceImageReference.Reference,
                     ContainerRuntimeIdentifier,
                     picker,
                     cancellationToken).ConfigureAwait(false);
