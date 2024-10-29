@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli
         {
             string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
-            Task task =  ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
+            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
             if (task.IsCompletedSuccessfully)
             {
                 return 0;
