@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -27,22 +27,6 @@
 
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
-  </ItemGroup>
-
-  <!-- On Windows_NT_FullFramework leg, net472 tests should be run -->
-  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
-    <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj;
-                                    Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
-                                    Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
-                                    Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
-                                    Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj"
-                           TargetFramework="net472"
-                           RuntimeTargetFramework="net472" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
-    <SDKCustomXUnitProject Remove="@(SDKCustomXUnitProject)" />
-    <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
