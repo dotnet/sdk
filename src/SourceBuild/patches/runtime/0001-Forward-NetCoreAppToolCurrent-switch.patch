@@ -21,4 +21,3 @@ index 0a75f2938bf..b79e249f334 100644
 +      <InnerBuildArgs Condition="'$(NetCoreAppToolCurrentVersion)' != ''">$(InnerBuildArgs) /p:NetCoreAppToolCurrentVersion=$(NetCoreAppToolCurrentVersion)</InnerBuildArgs>
      </PropertyGroup>
    </Target>
-
