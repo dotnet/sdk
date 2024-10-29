@@ -18,7 +18,7 @@ index 0a75f2938bf..b79e249f334 100644
        <InnerBuildArgs Condition="$(UseSystemLibs.Contains('+zlib+'))">$(InnerBuildArgs) --cmakeargs -DCLR_CMAKE_USE_SYSTEM_ZLIB=true</InnerBuildArgs>
  
 +      <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
-+      <InnerBuildArgs Condition="'$(NetCoreAppToolCurrent)' != ''">$(InnerBuildArgs) /p:NetCoreAppToolCurrent=$(NetCoreAppToolCurrent)</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(NetCoreAppToolCurrentVersion)' != ''">$(InnerBuildArgs) /p:NetCoreAppToolCurrentVersion=$(NetCoreAppToolCurrentVersion)</InnerBuildArgs>
      </PropertyGroup>
    </Target>
 
