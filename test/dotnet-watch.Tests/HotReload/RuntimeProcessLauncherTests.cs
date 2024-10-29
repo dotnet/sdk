@@ -17,7 +17,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         WaitingForChanges,
     }
 
-    private async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, TaskCompletionSource? completion, CancellationToken cancellationToken)
+    private static async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, CancellationToken cancellationToken)
     {
         var projectOptions = new ProjectOptions()
         {
@@ -46,16 +46,12 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             Assert.NotNull(result);
 
+            await result.WaitForProcessRunningAsync(cancellationToken);
+
             return result;
         });
 
-        var runningProject = await startOp(build: false, cancellationToken);
-
-        await runningProject.WaitForProcessRunningAsync(cancellationToken);
-
-        completion?.SetResult();
-
-        return runningProject;
+        return await startOp(build: false, cancellationToken);
     }
 
     [Theory]
@@ -122,8 +118,11 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             // service should have been created before Hot Reload session started:
             Assert.NotNull(service);
 
-            Launch(serviceProjectA, service, workingDirectory, launchCompletionA, watchCancellationSource.Token).Wait();
-            Launch(serviceProjectB, service, workingDirectory, launchCompletionB, watchCancellationSource.Token).Wait();
+            Launch(serviceProjectA, service, workingDirectory, watchCancellationSource.Token).Wait();
+            launchCompletionA.TrySetResult();
+
+            Launch(serviceProjectB, service, workingDirectory, watchCancellationSource.Token).Wait();
+            launchCompletionB.TrySetResult();
         });
 
         var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
@@ -322,7 +321,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         // service should have been created before Hot Reload session started:
         Assert.NotNull(service);
 
-        await Launch(serviceProjectA, service, workingDirectory, completion: null, watchCancellationSource.Token);
+        await Launch(serviceProjectA, service, workingDirectory, watchCancellationSource.Token);
 
         UpdateSourceFile(libSource,
             """
@@ -343,7 +342,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await updatesApplied.WaitAsync();
         await updatesApplied.WaitAsync();
 
-        await Launch(serviceProjectB, service, workingDirectory, completion: null, watchCancellationSource.Token);
+        await Launch(serviceProjectB, service, workingDirectory, watchCancellationSource.Token);
 
         // ServiceB received updates:
         await updatesApplied.WaitAsync();
@@ -532,7 +531,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         // service should have been created before Hot Reload session started:
         Assert.NotNull(service);
 
-        var runningProject = await Launch(serviceProjectA, service, workingDirectory, completion: null, watchCancellationSource.Token);
+        var runningProject = await Launch(serviceProjectA, service, workingDirectory, watchCancellationSource.Token);
         await sessionStarted.WaitAsync();
 
         // Terminate the process:

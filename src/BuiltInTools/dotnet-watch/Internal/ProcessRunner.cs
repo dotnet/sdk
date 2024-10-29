@@ -9,6 +9,16 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal sealed class ProcessRunner
     {
+        private const int SIGKILL = 9;
+        private const int SIGTERM = 15;
+
+        private sealed class ProcessState
+        {
+            public int ProcessId;
+            public bool HasExited;
+            public bool ForceExit;
+        }
+
         /// <summary>
         /// Launches a process.
         /// </summary>
@@ -17,6 +27,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
+            var state = new ProcessState();
             var stopwatch = new Stopwatch();
 
             var onOutput = processSpec.OnOutput;
@@ -27,94 +38,87 @@ namespace Microsoft.DotNet.Watcher.Internal
                 onOutput += line => reporter.ReportProcessOutput(line);
             }
 
-            int? processId = null;
-            using var process = CreateProcess(processSpec, redirectOutput: onOutput != null);
+            using var process = CreateProcess(processSpec, onOutput, state, reporter);
 
-            if (onOutput != null)
-            {
-                process.OutputDataReceived += (_, args) =>
-                {
-                    try
-                    {
-                        if (args.Data != null)
-                        {
-                            onOutput(new OutputLine(args.Data, IsError: false));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        reporter.Verbose($"Error reading stdout of process {processId}: {e}");
-                    }
-                };
-
-                process.ErrorDataReceived += (_, args) =>
-                {
-                    try
-                    {
-                        if (args.Data != null)
-                        {
-                            onOutput(new OutputLine(args.Data, IsError: true));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        reporter.Verbose($"Error reading stderr of process {processId}: {e}");
-                    }
-                };
-            }
-
-            processTerminationToken.Register(() => TerminateProcess(process, processId, reporter, processSpec.TerminateEntireProcessTree));
+            processTerminationToken.Register(() => TerminateProcess(process, state, reporter));
 
             stopwatch.Start();
+
+            Exception? launchException = null;
             try
             {
-                if (process.Start())
+                if (!process.Start())
                 {
-                    processId = process.Id;
-                    if (launchResult != null)
-                    {
-                        launchResult.ProcessId = processId;
-                    }
+                    throw new InvalidOperationException("Process can't be started.");
+                }
+
+                state.ProcessId = process.Id;
+
+                if (onOutput != null)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
                 }
             }
-            finally
+            catch (Exception e)
             {
-                var argsDisplay = processSpec.GetArgumentsDisplay();
-
-                if (processId.HasValue)
-                {
-                    reporter.Report(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, processId.Value);
-                }
-                else
-                {
-                    reporter.Error($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}'");
-                }
+                launchException = e;
             }
 
-            if (processId == null)
+            var argsDisplay = processSpec.GetArgumentsDisplay();
+            if (launchException == null)
             {
-                // failed to launch
+                reporter.Report(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
+            }
+            else
+            {
+                reporter.Error($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}': {launchException.Message}");
                 return int.MinValue;
             }
 
-            if (onOutput != null)
+            if (launchResult != null)
             {
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                launchResult.ProcessId = process.Id;
             }
 
             int? exitCode = null;
-            var failed = false;
 
             try
             {
-                // non-cancellable to not leave orphaned processes around:
-                await process.WaitForExitAsync(CancellationToken.None);
-            }
-            catch (Exception e) when (e is not OperationCanceledException)
-            {
-                failed = true;
+                try
+                {
+                    await process.WaitForExitAsync(processTerminationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Process termination requested via cancellation token.
+                    // Wait for the actual process exit.
+                    while (true)
+                    {
+                        // non-cancellable to not leave orphaned processes around blocking resources:
+                        var waitForExit = process.WaitForExitAsync(CancellationToken.None);
 
+                        await Task.WhenAny(waitForExit, Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None));
+                        if (waitForExit.IsCompleted)
+                        {
+                            break;
+                        }
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || state.ForceExit)
+                        {
+                            reporter.Output($"Waiting for process {state.ProcessId} to exit ...");
+                        }
+                        else
+                        {
+                            reporter.Output($"Forcing process {state.ProcessId} to exit ...");
+                        }
+
+                        state.ForceExit = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
                 if (isUserApplication)
                 {
                     reporter.Error($"Application failed: {e.Message}");
@@ -124,47 +128,45 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 stopwatch.Stop();
 
-                if (!failed && !processTerminationToken.IsCancellationRequested)
+                state.HasExited = true;
+
+                try
                 {
-                    try
-                    {
-                        exitCode = process.ExitCode;
-                    }
-                    catch
-                    {
-                        exitCode = null;
-                    }
+                    exitCode = process.ExitCode;
+                }
+                catch
+                {
+                    exitCode = null;
+                }
 
-                    reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms.");
+                reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms and exited with exit code {exitCode}.");
 
-                    if (isUserApplication)
+                if (isUserApplication)
+                {
+                    if (exitCode == 0)
                     {
-                        if (exitCode == 0)
-                        {
-                            reporter.Output("Exited");
-                        }
-                        else if (exitCode == null)
-                        {
-                            reporter.Error("Exited with unknown error code");
-                        }
-                        else
-                        {
-                            reporter.Error($"Exited with error code {exitCode}");
-                        }
+                        reporter.Output("Exited");
+                    }
+                    else if (exitCode == null)
+                    {
+                        reporter.Error("Exited with unknown error code");
+                    }
+                    else
+                    {
+                        reporter.Error($"Exited with error code {exitCode}");
                     }
                 }
 
-                Debug.Assert(processId != null);
                 if (processSpec.OnExit != null)
                 {
-                    await processSpec.OnExit(processId.Value, exitCode);
+                    await processSpec.OnExit(state.ProcessId, exitCode);
                 }
             }
 
             return exitCode ?? int.MinValue;
         }
 
-        private static Process CreateProcess(ProcessSpec processSpec, bool redirectOutput)
+        private static Process CreateProcess(ProcessSpec processSpec, Action<OutputLine>? onOutput, ProcessState state, IReporter reporter)
         {
             var process = new Process
             {
@@ -174,8 +176,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                     FileName = processSpec.Executable,
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
-                    RedirectStandardOutput =  redirectOutput,
-                    RedirectStandardError = redirectOutput,
+                    RedirectStandardOutput =  onOutput != null,
+                    RedirectStandardError = onOutput != null,
                 }
             };
 
@@ -196,25 +198,73 @@ namespace Microsoft.DotNet.Watcher.Internal
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
+            if (onOutput != null)
+            {
+                process.OutputDataReceived += (_, args) =>
+                {
+                    try
+                    {
+                        if (args.Data != null)
+                        {
+                            onOutput(new OutputLine(args.Data, IsError: false));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        reporter.Verbose($"Error reading stdout of process {state.ProcessId}: {e}");
+                    }
+                };
+
+                process.ErrorDataReceived += (_, args) =>
+                {
+                    try
+                    {
+                        if (args.Data != null)
+                        {
+                            onOutput(new OutputLine(args.Data, IsError: true));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        reporter.Verbose($"Error reading stderr of process {state.ProcessId}: {e}");
+                    }
+                };
+            }
+
             return process;
         }
 
-        private static void TerminateProcess(Process process, int? processId, IReporter reporter, bool terminateEntireProcessTree)
+        private static void TerminateProcess(Process process, ProcessState state, IReporter reporter)
         {
-            var processIdDisplay = processId?.ToString() ?? "<unknown>";
-
             try
             {
-                if (!process.HasExited)
+                if (!state.HasExited && !process.HasExited)
                 {
-                    reporter.Report(terminateEntireProcessTree ? MessageDescriptor.KillingProcessTree : MessageDescriptor.KillingProcess, processIdDisplay);
-                    process.Kill(terminateEntireProcessTree);
-                    reporter.Verbose($"Process {processIdDisplay} killed.");
+                    reporter.Report(MessageDescriptor.KillingProcess, state.ProcessId.ToString());
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        process.Kill();
+                    }
+                    else
+                    {
+                        [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+                        static extern int sys_kill(int pid, int sig);
+
+                        var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
+                        if (result != 0)
+                        {
+                            var error = Marshal.GetLastPInvokeError();
+                            reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
+                        }
+                    }
+
+                    reporter.Verbose($"Process {state.ProcessId} killed.");
                 }
             }
             catch (Exception ex)
             {
-                reporter.Verbose($"Error while killing process {processIdDisplay}: {ex.Message}");
+                reporter.Verbose($"Error while killing process {state.ProcessId}: {ex.Message}");
 #if DEBUG
                 reporter.Verbose(ex.ToString());
 #endif

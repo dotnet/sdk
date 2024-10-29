@@ -47,24 +47,11 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        return await LaunchProcessAsync(projectOptions, projectNode, processTerminationSource, onOutput, restartOperation, build, cancellationToken);
-    }
-
-    public async ValueTask<RunningProject> LaunchProcessAsync(
-        ProjectOptions projectOptions,
-        ProjectGraphNode projectNode,
-        CancellationTokenSource processTerminationSource,
-        Action<OutputLine>? onOutput,
-        RestartOperation restartOperation,
-        bool build,
-        CancellationToken cancellationToken)
-    {
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
-            TerminateEntireProcessTree = projectOptions.TerminateEntireProcessTreeOnShutdown,
             Arguments = build || projectOptions.Command is not ("run" or "test")
                 ? [projectOptions.Command, .. projectOptions.CommandArguments]
                 : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]

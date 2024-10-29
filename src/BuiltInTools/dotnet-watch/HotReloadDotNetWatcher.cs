@@ -112,8 +112,7 @@ namespace Microsoft.DotNet.Watcher
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
                         rootProjectOptions = rootProjectOptions with
                         {
-                            LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment],
-                            TerminateEntireProcessTreeOnShutdown = runtimeProcessLauncher.TerminateEntireProcessTreeOnShutdown
+                            LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment]
                         };
                     }
 

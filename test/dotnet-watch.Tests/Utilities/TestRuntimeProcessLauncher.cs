@@ -24,9 +24,6 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
 
     public ProjectLauncher ProjectLauncher { get; } = projectLauncher;
 
-    public bool TerminateEntireProcessTreeOnShutdown
-        => false;
-
     public ValueTask DisposeAsync()
         => ValueTask.CompletedTask;
 

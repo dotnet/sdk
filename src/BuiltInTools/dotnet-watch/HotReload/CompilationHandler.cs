@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _ => new DefaultDeltaApplier(processReporter),
             };
 
-        public async Task<RunningProject> TrackRunningProjectAsync(
+        public async Task<RunningProject?> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
             string namedPipeName,
@@ -132,7 +132,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             // It is important to first create the named pipe connection (delta applier is the server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.
             deltaApplier.CreateConnection(namedPipeName, processCommunicationCancellationSource.Token);
-            var launchResult = new ProcessLaunchResult();
 
             processSpec.OnExit += (_, _) =>
             {
@@ -140,10 +139,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ValueTask.CompletedTask;
             };
 
+            var launchResult = new ProcessLaunchResult();
             var runningProcess = ProcessRunner.RunAsync(processSpec, processReporter, isUserApplication: true, launchResult, processTerminationSource.Token);
-
-            // RunAsync throws if process can't be launched, otherwise we must have a PID.
-            Debug.Assert(launchResult.ProcessId != null);
+            if (launchResult.ProcessId == null)
+            {
+                // error already reported
+                return null;
+            }
 
             var capabilityProvider = deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
             var runningProject = new RunningProject(

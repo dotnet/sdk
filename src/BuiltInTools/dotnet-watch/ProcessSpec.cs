@@ -15,7 +15,6 @@ namespace Microsoft.DotNet.Watcher
         public Action<OutputLine>? OnOutput { get; set; }
         public ProcessExitAction? OnExit { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
-        public bool TerminateEntireProcessTree { get; set; } = true;
 
         public string? ShortDisplayName()
             => Path.GetFileNameWithoutExtension(Executable);

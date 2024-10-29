@@ -89,14 +89,6 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             }
         }
 
-        /// <summary>
-        /// When shutting down we terminate all processes created by Aspire service first.
-        /// Then we terminate the AppHost (root project) without terminating the entire process tree,
-        /// so that we don't kill DCP before it has a chance to clean up resources.
-        /// </summary>
-        public bool TerminateEntireProcessTreeOnShutdown
-            => false;
-
         public IEnumerable<(string name, string value)> GetEnvironmentVariables()
             => _service.GetServerConnectionEnvironment().Select(kvp => (kvp.Key, kvp.Value));
 
@@ -254,7 +246,6 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 LaunchProfileName = projectLaunchInfo.LaunchProfile,
                 NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
                 TargetFramework = null, // TODO: Should DCP protocol specify?
-                TerminateEntireProcessTreeOnShutdown = TerminateEntireProcessTreeOnShutdown,
             };
         }
     }
