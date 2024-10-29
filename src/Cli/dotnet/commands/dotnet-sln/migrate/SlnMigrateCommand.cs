@@ -34,12 +34,13 @@ namespace Microsoft.DotNet.Cli
         {
             string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
-            Task task = ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
-            if (task.IsCompletedSuccessfully)
+            try
             {
+                ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None).Wait();
                 return 0;
+            } catch (Exception ex) {
+                throw new GracefulException(ex.Message, ex);
             }
-            throw new GracefulException(task.Exception.Message, task.Exception);
         }
 
         private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
