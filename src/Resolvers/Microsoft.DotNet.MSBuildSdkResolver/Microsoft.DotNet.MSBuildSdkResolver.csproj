@@ -10,7 +10,7 @@
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- For product build, this project only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
-    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
 
   <ItemGroup>
