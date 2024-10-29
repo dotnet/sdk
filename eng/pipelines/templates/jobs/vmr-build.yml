@@ -442,7 +442,7 @@ jobs:
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
-        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
+        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.Tests/assets/online.NuGet.Config"
           displayName: Copy Test NuGet Config for Smoke Tests
 
       - script: |
@@ -468,7 +468,7 @@ jobs:
             if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
               customBuildArgs="$customBuildArgs --poison"
             fi
-            customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+            customBuildArgs="$customBuildArgs --source-only /p:SourceBuildTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
           fi
 
           if [[ -n "${{ parameters.targetRid }}" ]]; then
