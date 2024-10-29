@@ -11,7 +11,7 @@
     <XUnitWorkItemTimeout>00:45:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TestFullMSBuild)' != 'true'">
+  <ItemGroup>
     <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
@@ -26,7 +26,8 @@
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
   </ItemGroup>
 
-  <!-- On Windows_NT_FullFramework leg, only the net472 tests should be run -->
+  <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
+       as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
       core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj;
