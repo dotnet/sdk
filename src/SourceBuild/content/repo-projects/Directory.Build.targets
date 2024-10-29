@@ -489,14 +489,14 @@
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
 
-    <!-- Propagate errors to the output when using the minimal console log feature. -->
-    <OnError ExecuteTargets="LogRepoBuildError" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
+    <OnError ExecuteTargets="MoveDotNetBuildLogs;LogRepoBuildError" />
   </Target>
 
-  <Target Name="LogRepoBuildError">
-    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
+  <!-- Propagate errors to the output when using the minimal console log feature. -->
+  <Target Name="LogRepoBuildError" Condition="'$(MinimalConsoleLogOutput)' == 'true'">
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)')" />
     <Message Importance="High" Text="'$(RepositoryName)' failed during build." />
-    <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
+    <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)')" />
   </Target>
 
   <!-- Log the new repo artifacts -->
