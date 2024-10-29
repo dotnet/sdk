@@ -12,6 +12,7 @@ using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
@@ -132,17 +133,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return nupkgPath;
         }
 
-        private bool verbosityGreaterThanMinimal()
-        {
-            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
-                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
-        }
-
         private void VerifySigning(string nupkgPath)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (verbosityGreaterThanMinimal())
+                if (!(_verbosityOptions.IsQuiet() || _verbosityOptions.IsMinimal()))
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }

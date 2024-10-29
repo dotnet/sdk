@@ -1,14 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.CommandLine;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -27,10 +20,9 @@ using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.Configuration;
 using Microsoft.TemplateEngine.Utils;
-using System.Text.Json;
-using System.Xml;
-using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using static Microsoft.DotNet.NativeWrapper.NETCoreSdkResolverNativeWrapper;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -77,7 +69,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool forceInstall = false
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
@@ -111,7 +104,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
 
                     if (isGlobalTool)
                     {
@@ -134,7 +127,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else if(isGlobalTool)
+                    else if (isGlobalTool)
                     {
                         throw new ToolPackageException(
                             string.Format(
@@ -142,9 +135,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                 packageId,
                                 packageVersion.ToNormalizedString()));
                     }
-                                       
+
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
-                    
+
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
 
@@ -168,12 +161,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                     packageDirectory: toolReturnPackageDirectory,
                                     assetsJsonParentDirectory: toolReturnJsonParentDirectory);
 
+                    if (!forceInstall && !isGlobalToolRollForward)
+                    {
+                        CheckIfRequiredRuntimeIsInstalled(toolPackageInstance, packageId, isGlobalTool);
+                    }
+
                     if (isGlobalToolRollForward)
                     {
                         UpdateRuntimeConfig(toolPackageInstance);
                     }
 
-                    return toolPackageInstance;
+                    return toolPackageInstance;   
                 },
                 rollback: () =>
                 {
@@ -188,6 +186,44 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         Directory.Delete(packageRootDirectory.Value, false);
                     }
                 });
+        }
+
+        private static void CheckIfRequiredRuntimeIsInstalled(
+            ToolPackageInstance toolPackageInstance,
+            PackageId packageId,
+            bool isGlobalTool
+            )
+        {
+            var executableFilePath = toolPackageInstance.Commands[0].Executable;
+            var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
+
+            // Check if the runtimeconfig.json file is compatible with the current runtime
+            if (File.Exists(runtimeConfigFilePath))
+            {
+                string tfmValue = "";
+                JsonElement rootElement = JsonDocument.Parse(File.ReadAllText(runtimeConfigFilePath)).RootElement;
+                
+                if (rootElement.TryGetProperty("runtimeOptions", out JsonElement runtimeOptionsElement) &&
+                    runtimeOptionsElement.TryGetProperty("tfm", out JsonElement tfmElement))
+                {
+                    tfmValue = new string(tfmElement.GetString().Where(c => char.IsDigit(c) || c == '.').ToArray());
+                }
+                var result = InitializeForRuntimeConfig(runtimeConfigFilePath);
+
+                // Error if tool is incompatible
+                var global = isGlobalTool ? " -g" : "";
+                switch (result)
+                {
+                    case InitializationRuntimeConfigResult.Success:
+                        break;
+
+                    default:
+                        throw new GracefulException(
+                                string.Format(
+                                CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
+                                packageId, tfmValue, global));
+                }
+            }
         }
 
         // The following methods are copied from the LockFileUtils class in Nuget.Client

@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
-        public IToolPackage Install(FilePath manifestFile, PackageId packageId)
+        public IToolPackage Install(FilePath manifestFile, PackageId packageId, bool forceInstall)
         {
             if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
@@ -70,7 +70,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         packageId,
                         verbosity: _verbosity,
                         versionRange,
-                        TargetFrameworkToInstall
+                        TargetFrameworkToInstall,
+                        forceInstall: forceInstall
                         );
 
                 return toolDownloadedPackage;

@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly PackageId? _packageId;
         private readonly bool _allowPackageDowngrade;
+         private readonly bool _forceInstall;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
@@ -56,6 +57,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests);
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
+            _forceInstall = parseResult.GetValue(ToolInstallCommandParser.ForceInstallOption);
         }
 
         public override int Execute()
@@ -93,11 +95,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (!existingPackageWithPackageId.Any())
             {
-                return InstallNewTool(manifestFile, packageId);
+                return InstallNewTool(manifestFile, packageId, _forceInstall);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
-            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId);
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId, _forceInstall);
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
@@ -154,10 +156,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        public int InstallNewTool(FilePath manifestFile, PackageId packageId)
+        public int InstallNewTool(FilePath manifestFile, PackageId packageId, bool forceInstall)
         {
             IToolPackage toolDownloadedPackage =
-                _toolLocalPackageInstaller.Install(manifestFile, packageId);
+                _toolLocalPackageInstaller.Install(manifestFile, packageId, forceInstall);
 
             _toolManifestEditor.Add(
                 manifestFile,
