@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -11,7 +11,7 @@
     <XUnitWorkItemTimeout>00:45:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TestFullMSBuild)' != 'true'">
+  <ItemGroup>
     <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
@@ -36,6 +36,31 @@
                                     Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
                                     Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
                                     Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj"
+                           TargetFramework="net472"
+                           RuntimeTargetFramework="net472" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
+    <SDKCustomXUnitProject Remove="@(SDKCustomXUnitProject)" />
+    <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
+       as that validates running tests with desktop msbuild. -->
+  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
+    <SDKCustomXUnitProject Include="
+      core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj;
+      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
+      Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;
+      Microsoft.DotNet.ApiSymbolExtensions.Tests\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;
+      Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
+      Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
+      Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
+      Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj;
+      Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
+      Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;
+      Microsoft.Win32.Msi.Tests\Microsoft.Win32.Msi.Tests.csproj"
                            TargetFramework="net472"
                            RuntimeTargetFramework="net472" />
   </ItemGroup>
