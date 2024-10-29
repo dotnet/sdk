@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
 
         public override int Execute()
         {
-            string slnFileFullPath = GetSlnFileFullPath();
+            string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
             Task task =  ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None);
             if (task.IsCompletedSuccessfully)
@@ -40,31 +40,6 @@ namespace Microsoft.DotNet.Cli
                 return 0;
             }
             throw new GracefulException(task.Exception.Message, task.Exception);
-        }
-
-        private string GetSlnFileFullPath()
-        {
-            if (File.Exists(_slnFileOrDirectory))
-            {
-                return _slnFileOrDirectory;
-            }
-            else if (Directory.Exists(_slnFileOrDirectory))
-            {
-                var files = Directory.GetFiles(_slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly);
-                if (files.Length == 0)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, _slnFileOrDirectory);
-                }
-                if (files.Length > 1)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, _slnFileOrDirectory);
-                }
-                return files.Single().ToString();
-            }
-            else
-            {
-                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, _slnFileOrDirectory);
-            }
         }
 
         private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
