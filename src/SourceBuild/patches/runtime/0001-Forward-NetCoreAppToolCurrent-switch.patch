@@ -1,0 +1,24 @@
+From ec32d6da13a9efe90de357e07edba0c2fdba24f7 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 29 Oct 2024 10:29:40 +0100
+Subject: [PATCH] Forward NetCoreAppToolCurrent switch
+
+Backport: https://github.com/dotnet/runtime/pull/109331
+
+---
+ eng/DotNetBuild.props | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 0a75f2938bf..b79e249f334 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -97,6 +97,8 @@
+       <InnerBuildArgs Condition="$(UseSystemLibs.Contains('+rapidjson+'))">$(InnerBuildArgs) --cmakeargs -DCLR_CMAKE_USE_SYSTEM_RAPIDJSON=true</InnerBuildArgs>
+       <InnerBuildArgs Condition="$(UseSystemLibs.Contains('+zlib+'))">$(InnerBuildArgs) --cmakeargs -DCLR_CMAKE_USE_SYSTEM_ZLIB=true</InnerBuildArgs>
+ 
++      <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
++      <InnerBuildArgs Condition="'$(NetCoreAppToolCurrent)' != ''">$(InnerBuildArgs) /p:NetCoreAppToolCurrent=$(NetCoreAppToolCurrent)</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+
