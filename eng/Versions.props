@@ -195,8 +195,8 @@
          then use that in Directory.Packages.props.
 
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes. -->
-    <MicrosoftBuildVersion>17.13.0-preview-24524-23</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.13.0-preview-24524-23</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.13.0-preview-24529-01</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.13.0-preview-24529-01</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -291,12 +291,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
-    <MicrosoftBuildTasksGitVersion>9.0.0-beta.24527.1</MicrosoftBuildTasksGitVersion>
-    <MicrosoftSourceLinkCommonVersion>9.0.0-beta.24527.1</MicrosoftSourceLinkCommonVersion>
-    <MicrosoftSourceLinkAzureReposGitVersion>9.0.0-beta.24527.1</MicrosoftSourceLinkAzureReposGitVersion>
-    <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24527.1</MicrosoftSourceLinkGitHubVersion>
-    <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24527.1</MicrosoftSourceLinkGitLabVersion>
-    <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24527.1</MicrosoftSourceLinkBitbucketGitVersion>
+    <MicrosoftBuildTasksGitVersion>9.0.0-beta.24528.2</MicrosoftBuildTasksGitVersion>
+    <MicrosoftSourceLinkCommonVersion>9.0.0-beta.24528.2</MicrosoftSourceLinkCommonVersion>
+    <MicrosoftSourceLinkAzureReposGitVersion>9.0.0-beta.24528.2</MicrosoftSourceLinkAzureReposGitVersion>
+    <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24528.2</MicrosoftSourceLinkGitHubVersion>
+    <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24528.2</MicrosoftSourceLinkGitLabVersion>
+    <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24528.2</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
