@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Sln.List.Tests
         public void WhenSlnFileIsValidShouldGenerateValidSlnxFile(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences")
+                .CopyTestAsset("TestAppWithEmptySln")
                 .WithSource()
                 .Path;
             var slnFileName = Path.Combine(projectDirectory, "App.sln");
@@ -26,6 +26,12 @@ namespace Microsoft.DotNet.Cli.Sln.List.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "migrate");
             slnMigrateCommand.Should().Pass();
+
+            var slnxFileName = Path.ChangeExtension(slnFileName, ".slnx");
+            var slnxBuildCommand = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("build", slnxFileName);
+            slnxBuildCommand.Should().ExitWith(0);
         }
     }
 }
