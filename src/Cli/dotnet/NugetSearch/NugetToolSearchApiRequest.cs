@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.NugetSearch
                 nugetSearchApiParameter.Take,
                 nugetSearchApiParameter.Prerelease);
 
-            var httpClient = new HttpClient();
+            using var httpClient = new HttpClient();
             using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellation.Token);
             if (!response.IsSuccessStatusCode)
