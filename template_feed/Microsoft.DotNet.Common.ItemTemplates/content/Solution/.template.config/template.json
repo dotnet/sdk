@@ -19,19 +19,19 @@
     "Format": {
       "type": "parameter",
       "displayName": "Solution file format",
-      "description": "Choose the format for the solution file: traditional (.sln) or XML-based (.slnx).",
+      "description": "Choose the format for the solution file: sln or slnx.",
       "defaultValue": "sln",
       "datatype": "choice",
       "choices": [
         {
           "choice": "sln",
           "displayName": ".sln format",
-          "description": "Traditional solution file"
+          "description": "Solution file"
         },
         {
           "choice": "slnx",
           "displayName": ".slnx format",
-          "description": "XML-based solution file"
+          "description": "XML Solution file"
         }
       ]
     }
