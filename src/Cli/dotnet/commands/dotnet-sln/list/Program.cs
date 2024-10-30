@@ -5,11 +5,8 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Tools.Sln.List
 {
@@ -41,13 +38,22 @@ namespace Microsoft.DotNet.Tools.Sln.List
 
         private async Task ListAllProjectsAsync(string solutionFileFullPath, CancellationToken cancellationToken)
         {
+            Guid solutionFolderGuid = new Guid(ProjectTypeGuids.SolutionFolderGuid);
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
-            string[] paths = solution.SolutionProjects
-                .Where(solution => _displaySolutionFolders ? (solution.Type == ProjectTypeGuids.SolutionFolderGuid) : (solution.Type != ProjectTypeGuids.SolutionFolderGuid))
-                .Select(folder => _displaySolutionFolders ? Path.GetFullPath(folder.FilePath) : folder.FilePath)
-                .ToArray();
-
+            string[] paths;
+            if (_displaySolutionFolders)
+            {
+                paths = solution.SolutionFolders
+                    .Select(folder => folder.Path.Substring(1))
+                    .ToArray();
+            }
+            else
+            {
+                paths = solution.SolutionProjects
+                    .Select(project => project.FilePath)
+                    .ToArray();
+            }
             if (paths.Length == 0)
             {
                 Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
