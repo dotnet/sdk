@@ -150,7 +150,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
             }
 
-            Reporter.Verbose($"Session started: #{sessionId}");
+            Reporter.Verbose($"Session started: #{sessionId}", MessageEmoji);
             return runningProject;
 
             async Task StartChannelReader(CancellationToken cancellationToken)
