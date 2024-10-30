@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="Command">
         <source>Command</source>
-        <target state="new">Command</target>
+        <target state="translated">Comando</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
-        <target state="new">Shows a history of workload installation actions.</target>
+        <target state="translated">Muestra un historial de acciones de instalación de cargas de trabajo.</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
-        <target state="new">Date</target>
+        <target state="translated">Fecha</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
-        <target state="new">Global.json Version</target>
+        <target state="translated">Versión de Global.json</target>
         <note />
       </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
-        <target state="new">Id</target>
+        <target state="translated">Id.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
-        <target state="new">No workload history found</target>
+        <target state="translated">No se encontró ningún historial de cargas de trabajo</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
-        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <target state="translated">Las filas con cambios sin registrar representan cambios de acciones distintas de los comandos de carga de trabajo de la CLI de .NET. Por lo general, esto representa una actualización del SDK de .NET o de Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">Versión de carga de trabajo</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
-        <target state="new">Workloads</target>
+        <target state="translated">Cargas de trabajo</target>
         <note />
       </trans-unit>
     </body>

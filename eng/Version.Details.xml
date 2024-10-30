@@ -137,13 +137,13 @@
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-rc.1.24452.1" Pinned="true">
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-rc.2.24474.3" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>280c613963a1768b810d09f32c998fe4490855e9</Sha>
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rc.1.24452.1" Pinned="true">
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rc.2.24474.3" Pinned="true">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>280c613963a1768b810d09f32c998fe4490855e9</Sha>
     </Dependency>
@@ -256,7 +256,7 @@
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->
-    <Dependency Name="System.Resources.Extensions" Version="9.0.0-rc.1.24431.7" Pinned="True">
+    <Dependency Name="System.Resources.Extensions" Version="9.0.0-rc.2.24473.5" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
@@ -585,13 +585,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cca022b6212f33adc982630ab91469882250256c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="9.0.0-rc.1.24431.7" Pinned="True">
+    <Dependency Name="System.Security.Permissions" Version="9.0.0-rc.2.24473.5" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->
-    <Dependency Name="System.Windows.Extensions" Version="9.0.0-rc.1.24431.7" Pinned="True">
+    <Dependency Name="System.Windows.Extensions" Version="9.0.0-rc.2.24473.5" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
@@ -629,7 +629,7 @@
     </Dependency>
     <!-- Temporarily pinned to a net9 supporting version until the SDK can target net10.
          See https://github.com/dotnet/sdk/issues/42920. -->
-    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-rc.1.24431.7" Pinned="True">
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-rc.2.24473.5" Pinned="True">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c4d7f7c6f2e2f34f07e64c6caa3bf9b2ce915cc1</Sha>
     </Dependency>
