@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (File.Exists(slnFileOrDirectory))
             {
-                return slnFileOrDirectory;
+                return Path.GetFullPath(slnFileOrDirectory);
             }
             if (Directory.Exists(slnFileOrDirectory))
             {
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, slnFileOrDirectory);
                 }
-                return files.Single().ToString();
+                return Path.GetFullPath(files.Single().ToString());
             }
             throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
         }
