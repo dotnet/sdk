@@ -2,10 +2,10 @@
   "author": "Microsoft",
   "name": "Fichier solution",
   "description": "Créer une solution vide ne contenant aucun projet",
-  "symbols/Format/description": "Choose the format for the solution file: traditional (.sln) or XML-based (.slnx).",
+  "symbols/Format/description": "Choose the format for the solution file: sln or slnx.",
   "symbols/Format/displayName": "Solution file format",
-  "symbols/Format/choices/sln/description": "Traditional solution file",
+  "symbols/Format/choices/sln/description": "Solution file",
   "symbols/Format/choices/sln/displayName": ".sln format",
-  "symbols/Format/choices/slnx/description": "XML-based solution file",
+  "symbols/Format/choices/slnx/description": "XML Solution file",
   "symbols/Format/choices/slnx/displayName": ".slnx format"
 }
