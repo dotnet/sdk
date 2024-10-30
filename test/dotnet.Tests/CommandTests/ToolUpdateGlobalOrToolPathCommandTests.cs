@@ -223,6 +223,20 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().NotContain(string.Format(
+                Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
+                _packageId, HigherPackageVersion));
+        }
+
+        [Fact]
         public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
