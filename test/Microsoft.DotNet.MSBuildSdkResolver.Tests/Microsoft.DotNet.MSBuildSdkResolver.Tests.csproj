@@ -7,9 +7,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ToolsetTargetFramework)</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- By default test projects don't append TargetFramework to output path, but for multi-targeted tests
@@ -41,10 +39,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <Reference Include="System.Core" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
