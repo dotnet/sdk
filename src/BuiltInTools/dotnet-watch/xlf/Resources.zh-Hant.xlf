@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">在 '{0}' 中找到多個 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案檔。</target>
+        <target state="translated">在 '{0}' 中找到多個 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案檔。</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="needs-review-translation">在 '{0}' 中找不到 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案。</target>
+        <target state="translated">在 '{0}' 中找不到 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案。</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
-        <target state="needs-review-translation">無法同時指定 '--quiet' 和 '--verbose' 選項。</target>
+        <target state="translated">無法同時指定 '--quiet' 和 '--verbose' 選項。</target>
         <note>{Locked="--quiet"}{Locked="--verbose"}</note>
       </trans-unit>
       <trans-unit id="Help">
@@ -58,37 +58,37 @@ Examples:
   dotnet watch test
 
     </source>
-        <target state="new">
+        <target state="translated">
 
-Environment variables:
+環境變數:
 
   DOTNET_USE_POLLING_FILE_WATCHER
-  When set to '1' or 'true', dotnet-watch will poll the file system for
-  changes. This is required for some file systems, such as network shares,
-  Docker mounted volumes, and other virtual file systems.
+  設定為 '1' 或 'true' 時，dotnet-watch 會輪詢檔案系統以取得
+  變更。某些檔案系統所需，例如網路共用、
+  Docker 掛載的磁碟區和其他虛擬檔案系統。
 
   DOTNET_WATCH
-  dotnet-watch sets this variable to '1' on all child processes launched.
+  dotnet-watch 會在啟動的所有子程序上，將此變數設定為 '1'。
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch sets this variable to '1' and increments by one each time
-  a file is changed and the command is restarted.
+  dotnet-watch 會將此變數設定為 '1'，且每次
+  檔案變更並重新啟動命令時遞增一。
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
-  When set to '1' or 'true', dotnet-watch will not show emojis in the 
-  console output.
+  設定為 '1' 或 'true' 時，dotnet-watch 不會在將表情圖示顯示在
+  主控台輸出。
 
-Remarks:
-  The special option '--' is used to delimit the end of the options and
-  the beginning of arguments that will be passed to the child dotnet process.
+備註:
+  特殊選項 '--' 會用來分隔選項的結尾
+  與將傳遞至子 .NET 程序的引數的開頭。
 
-  For example: dotnet watch -- --verbose run
+  例如: dotnet watch -- --verbose run
 
-  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
-  indicates that '--verbose' should be treated instead as an argument for
-  dotnet-run.
+  即使 '--verbose' 是 dotnet-watch 支援的選項，使用 '--'
+  表示應該使用 '--verbose'，而不是作為
+  dotnet-run 的引數。
 
-Examples:
+範例:
   dotnet watch run
   dotnet watch test
 
@@ -99,8 +99,8 @@ Examples:
         <source>
       Lists all discovered files without starting the watcher.
     </source>
-        <target state="new">
-      Lists all discovered files without starting the watcher.
+        <target state="translated">
+      列出所有探索到的檔案，而不啟動監看員。
     </target>
         <note />
       </trans-unit>
@@ -108,8 +108,8 @@ Examples:
         <source>
       Suppress hot reload for supported apps.
     </source>
-        <target state="new">
-      Suppress hot reload for supported apps.
+        <target state="translated">
+      抑制支援的應用程式的熱重新載入。
     </target>
         <note />
       </trans-unit>
@@ -118,9 +118,9 @@ Examples:
       Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
       Use this option to prevent console input from being captured.
     </source>
-        <target state="new">
-      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
-      Use this option to prevent console input from being captured.
+        <target state="translated">
+      在非互動式模式中執行 dotnet-watch。只有在啟用熱重新載入功能執行時，才支援此選項。
+      使用此選項來防止主機輸入被擷取。
     </target>
         <note />
       </trans-unit>
@@ -128,8 +128,8 @@ Examples:
         <source>
       Suppresses all output except warnings and errors
     </source>
-        <target state="new">
-      Suppresses all output except warnings and errors
+        <target state="translated">
+      抑制所有輸出，但警告和錯誤除外
     </target>
         <note />
       </trans-unit>
@@ -137,14 +137,14 @@ Examples:
         <source>
       Show verbose output
     </source>
-        <target state="new">
-      Show verbose output
+        <target state="translated">
+      顯示詳細資訊輸出
     </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
+        <target state="translated">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
         <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>
