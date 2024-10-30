@@ -12,7 +12,7 @@ This value should be the name of the repo within the VMR (i.e. a name of a direc
 To test source modifications intended to resolve a license issue, apply the change in an internal branch of the VMR.
 Run this pipeline, targeting your branch, and set the `specificRepoName` parameter to the name of the repo containing the change.
 
-The output of the pipeline is a set of test results and logs which can be found at`LicenseScan {RepoName}_BuildLogs_Attempt{n}/artifacts`
+The output of the pipeline is a set of test results and logs which can be found at `LicenseScan {RepoName}_BuildLogs_Attempt{n}/artifacts`
 The test results consists of the following:
 
 * `UpdatedLicenses.<repo-name>.json`: This is the output of the license scan tool that gets compared to the stored baseline.
