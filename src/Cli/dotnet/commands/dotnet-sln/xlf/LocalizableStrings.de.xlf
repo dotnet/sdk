@@ -27,6 +27,11 @@
         <target state="translated">Fügt einer Projektmappendatei ein oder mehrere Projekte hinzu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdFormatDescription">
+        <source>The desired output format of the command</source>
+        <target state="new">The desired output format of the command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Platzieren Sie das Projekt im Stamm der Projektmappe, statt einen Projektmappenordner zu erstellen.</target>

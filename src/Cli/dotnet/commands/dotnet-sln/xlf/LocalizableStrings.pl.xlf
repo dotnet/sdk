@@ -27,6 +27,11 @@
         <target state="translated">Dodaj co najmniej jeden projekt do pliku rozwiązania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdFormatDescription">
+        <source>The desired output format of the command</source>
+        <target state="new">The desired output format of the command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Umieść projekt w katalogu głównym rozwiązania zamiast tworzyć folder rozwiązania.</target>

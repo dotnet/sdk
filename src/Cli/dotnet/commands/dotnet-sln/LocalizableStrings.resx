@@ -177,4 +177,7 @@
   <data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
   </data>
+  <data name="CmdFormatDescription" xml:space="preserve">
+    <value>The desired output format of the command</value>
+  </data>
 </root>

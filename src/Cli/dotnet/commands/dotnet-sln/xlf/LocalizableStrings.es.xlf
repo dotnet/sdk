@@ -27,6 +27,11 @@
         <target state="translated">Agrega uno o varios proyectos a un archivo de solución.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdFormatDescription">
+        <source>The desired output format of the command</source>
+        <target state="new">The desired output format of the command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Coloque el proyecto en la raíz de la solución, en lugar de crear una carpeta de soluciones.</target>
