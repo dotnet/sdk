@@ -42,7 +42,7 @@ internal class DefaultManifestOperations : IManifestOperations
     {
         string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
         HttpContent manifestUploadContent = new StringContent(jsonString);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(manifest.MediaType);
+        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(manifest.MediaType!);
 
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 
