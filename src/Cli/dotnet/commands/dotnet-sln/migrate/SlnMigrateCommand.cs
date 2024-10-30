@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
+using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -26,13 +27,17 @@ namespace Microsoft.DotNet.Cli
             IReporter reporter = null)
             : base(parseResult)
         {
-            _slnFileOrDirectory = Path.GetFullPath(parseResult.GetValue(SlnCommandParser.SlnArgument));
+            _slnFileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
             _reporter = reporter ?? Reporter.Output;
         }
 
         public override int Execute()
         {
             string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
+            if (slnFileFullPath.HasExtension(".slnx"))
+            {
+                throw new GracefulException("Cannot migrate a .slnx file");
+            }
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
             try
             {

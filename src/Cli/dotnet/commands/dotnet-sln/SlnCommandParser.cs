@@ -54,7 +54,9 @@ namespace Microsoft.DotNet.Cli
             }
             if (Directory.Exists(slnFileOrDirectory))
             {
-                var files = Directory.GetFiles(slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly);
+                string[] files = [
+                    ..Directory.GetFiles(slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(slnFileOrDirectory, "*.slnx", SearchOption.TopDirectoryOnly)];
                 if (files.Length == 0)
                 {
                     throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, slnFileOrDirectory);
