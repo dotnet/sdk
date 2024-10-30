@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli
             ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
             if (serializer is null)
             {
-                throw new GracefulException(CommonLocalizableStrings.SerializerNotFound, solutionFilePath);
+                throw new GracefulException(LocalizableStrings.SerializerNotFound, solutionFilePath);
             }
             return serializer;
         }
