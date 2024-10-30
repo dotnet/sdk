@@ -4,6 +4,8 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
@@ -68,6 +70,16 @@ namespace Microsoft.DotNet.Cli
                 return Path.GetFullPath(files.Single().ToString());
             }
             throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
+        }
+
+        internal static ISolutionSerializer GetSolutionSerializer(string solutionFilePath)
+        {
+            ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+            if (serializer is null)
+            {
+                throw new GracefulException(CommonLocalizableStrings.SerializerNotFound, solutionFilePath);
+            }
+            return serializer;
         }
     }
 }

@@ -31,22 +31,17 @@ namespace Microsoft.DotNet.Tools.Sln.List
             try
             {
                 ListAllProjectsAsync(solutionFileFullPath, CancellationToken.None).Wait();
+                return 0;
             }
             catch (Exception ex)
             {
                 throw new GracefulException(ex.Message, ex);
             }
-            return 0;
         }
 
         private async Task ListAllProjectsAsync(string solutionFileFullPath, CancellationToken cancellationToken)
         {
-            ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(solutionFileFullPath);
-            if (serializer == null)
-            {
-                throw new GracefulException("Could not find serializer for file {0}", solutionFileFullPath);
-            }
-
+            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
             string[] paths = solution.SolutionProjects
                 .Where(solution => _displaySolutionFolders ? (solution.Type == ProjectTypeGuids.SolutionFolderGuid) : (solution.Type != ProjectTypeGuids.SolutionFolderGuid))

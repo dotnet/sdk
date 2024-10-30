@@ -183,4 +183,10 @@
   <data name="SlnxGenerated" xml:space="preserve">
     <value>.slnx file {0} generated.</value>
   </data>
+  <data name="CannotMigrateSlnx" xml:space="preserve">
+    <value>Cannot migrate .slnx file.</value>
+  </data>
+  <data name="SerializerNotFound" xml:space="preserve">
+    <value>Could not find serializer for file {0}.</value>
+  </data>
 </root>

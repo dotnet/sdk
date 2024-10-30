@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli
             string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
             if (slnFileFullPath.HasExtension(".slnx"))
             {
-                throw new GracefulException("Cannot migrate a .slnx file");
+                throw new GracefulException(LocalizableStrings.CannotMigrateSlnx);
             }
             string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
             try
@@ -50,12 +50,7 @@ namespace Microsoft.DotNet.Cli
 
         private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
         {
-            // See if the file is a known solution file.
-            ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(filePath);
-            if (serializer is null)
-            {
-                throw new GracefulException("Could not find serializer for file {0}", filePath);
-            }
+            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(filePath);
             SolutionModel solution = await serializer.OpenAsync(filePath, cancellationToken);
             await SolutionSerializers.SlnXml.SaveAsync(slnxFilePath, solution, cancellationToken);
             _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFilePath);

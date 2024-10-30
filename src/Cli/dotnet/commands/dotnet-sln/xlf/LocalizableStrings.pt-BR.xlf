@@ -27,6 +27,11 @@
         <target state="translated">Adicionar um ou mais projetos em um arquivo de solução.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Cannot migrate .slnx file.</source>
+        <target state="new">Cannot migrate .slnx file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Coloque o projeto na raiz da solução, em vez de criar uma pasta da solução.</target>
@@ -60,6 +65,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Listar todos os projetos na solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not find serializer for file {0}.</source>
+        <target state="new">Could not find serializer for file {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
