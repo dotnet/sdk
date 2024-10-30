@@ -277,7 +277,7 @@ internal sealed class DockerCli
         }
         else if (image.Manifest.MediaType == SchemaTypes.OciManifestV1)
         {
-            await WriteOciImageToStreamAsync(image, sourceReference, imageStream, cancellationToken);
+            await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
         else
         {
@@ -286,7 +286,7 @@ internal sealed class DockerCli
         }
     }
 
-    private static async Task WriteOciImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, Stream imageStream, CancellationToken cancellationToken)
+    private static async Task WriteOciImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
@@ -368,10 +368,11 @@ internal sealed class DockerCli
         }
 
         // Step 5: Write `index.json`
-        string imageNameWithTag = $"{sourceReference.Repository}:{sourceReference.Tag}";
+        string imageNameWithTag = $"{destinationReference.Repository}:{destinationReference.Tags[0]}";
         JsonObject indexContent = new JsonObject
         {
             { "schemaVersion", 2 },
+            { "mediaType", "application/vnd.oci.image.index.v1+json" },
             { "manifests", new JsonArray(new JsonObject
                 {
                     { "mediaType", "application/vnd.oci.image.manifest.v1+json" },
