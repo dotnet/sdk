@@ -138,21 +138,13 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else
+                    else if(isGlobalTool)
                     {
-                        if (!ToolPackageInstance.IsToolPackage(package.Nuspec.Xml))
-                        {
-                            throw new GracefulException(string.Format(NuGetPackageDownloader.LocalizableStrings.NotATool, packageId));
-                        }
-
-                        if (isGlobalTool)
-                        {
-                            throw new ToolPackageException(
-                                string.Format(
-                                    CommonLocalizableStrings.ToolPackageConflictPackageId,
-                                    packageId,
-                                    packageVersion.ToNormalizedString()));
-                        }
+                        throw new ToolPackageException(
+                            string.Format(
+                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                packageId,
+                                packageVersion.ToNormalizedString()));
                     }
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
@@ -293,7 +285,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             bool includeUnlisted = false
             )
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted, isTool: true).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;

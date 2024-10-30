@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <target state="translated">Aktualisieren Workloads auf eine frühere Version, die von dem Argument angegeben wurde. Verwenden die „dotnet workload history“, um verfügbare Workloadverlaufsdatensätze anzuzeigen.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
         <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <target state="translated">Aktualisieren die im Verlauf angegebenen Workloadversionen, ohne zu ändern, welche Workloads installiert werden. Aktuell installierte Workloads werden entsprechend der angegebenen Verlaufsversion aktualisiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadHistoryRecords">
         <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
-        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <target state="translated">Workloadverlaufsdatensätze werden beim Ausführen eines Vorgangs erstellt, der Workloads ändert. wie Updates oder Installationen. Ein Update aus dem Verlauf kann erst ausgeführt werden, wenn Workloadverlaufsdatensätze vorhanden sind.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
-        <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
+        <target state="translated">Die ID eines Workloadverlaufsdatensatzes muss zwischen 1 und der Anzahl der Workloadverlaufsdatensätze einschließlich dieser liegen.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
         <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <target state="translated">Ungültiges Argument "{0}" zum Argument --mode für das Dotnet Workload-Update. Es werden nur die Modi "workloadset", "loosemanifest" und "auto" unterstützt.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

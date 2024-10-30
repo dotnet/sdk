@@ -827,7 +827,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
-        <target state="new">Post action argument '{0}' is not a valid boolean value.</target>
+        <target state="translated">'{0}' eylem sonrası bağımsız değişkeni, geçerli bir boole değeri değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
@@ -857,7 +857,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
         <source>Attempting to find json file '{0}' in '{1}'</source>
-        <target state="new">Attempting to find json file '{0}' in '{1}'</target>
+        <target state="translated">'{1}' içinde '{0}' JSON dosyası bulunmaya çalışılıyor</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">

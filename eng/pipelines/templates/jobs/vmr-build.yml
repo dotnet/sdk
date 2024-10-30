@@ -282,7 +282,7 @@ jobs:
 
     - script: |
         set extraBuildArguments=
-        if /I '${{ parameters.sign }}'=='True' IF /I NOT '${{ parameters.buildSourceOnly }}' == 'True' set extraBuildArguments=%extraBuildArguments% -sign
+        if /I '${{ parameters.sign }}'=='True' (if /I NOT '${{ parameters.buildSourceOnly }}'=='True' (set extraBuildArguments=%extraBuildArguments% -sign))
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
@@ -367,7 +367,7 @@ jobs:
           customBuildArgs="$customBuildArgs --dev"
         fi
 
-        if [[ '${{ parameters.sign }}' == 'True' && '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
+        if [[ '${{ parameters.sign }}' == 'True' ]] && [[ '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
         fi
 
@@ -442,7 +442,7 @@ jobs:
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
-        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
+        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.Tests/assets/online.NuGet.Config"
           displayName: Copy Test NuGet Config for Smoke Tests
 
       - script: |
@@ -468,7 +468,7 @@ jobs:
             if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
               customBuildArgs="$customBuildArgs --poison"
             fi
-            customBuildArgs="$customBuildArgs --source-only /p:SmokeTestsWarnOnSdkContentDiffs=true /p:SmokeTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
+            customBuildArgs="$customBuildArgs --source-only /p:SourceBuildTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}"
           fi
 
           if [[ -n "${{ parameters.targetRid }}" ]]; then
