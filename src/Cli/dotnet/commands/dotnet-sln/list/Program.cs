@@ -39,6 +39,7 @@ namespace Microsoft.DotNet.Tools.Sln.List
 
         private async Task ListAllProjectsAsync(string solutionFileFullPath, CancellationToken cancellationToken)
         {
+            Guid solutionFolderGuid = new Guid(ProjectTypeGuids.SolutionFolderGuid);
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
             string[] paths;
