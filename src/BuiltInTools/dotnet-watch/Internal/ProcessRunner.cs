@@ -95,13 +95,15 @@ namespace Microsoft.DotNet.Watcher.Internal
                     // Wait for the actual process exit.
                     while (true)
                     {
-                        // non-cancellable to not leave orphaned processes around blocking resources:
-                        var waitForExit = process.WaitForExitAsync(CancellationToken.None);
-
-                        await Task.WhenAny(waitForExit, Task.Delay(TimeSpan.FromSeconds(5), CancellationToken.None));
-                        if (waitForExit.IsCompleted)
+                        try
                         {
+                            // non-cancellable to not leave orphaned processes around blocking resources:
+                            await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
                             break;
+                        }
+                        catch (TimeoutException)
+                        {
+                            // nop
                         }
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || state.ForceExit)
