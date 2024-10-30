@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 
@@ -74,7 +75,8 @@ namespace Microsoft.DotNet.ToolPackage
             _lockFile =
                 new Lazy<LockFile>(
                     () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
-            var toolsPackagePath = Path.Combine(PackageDirectory.Value, Id.ToString(), Version.ToNormalizedString(), "tools");
+            var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(Id.ToString(), Version);
+            var toolsPackagePath = Path.Combine(installPath, "tools");
             Frameworks = Directory.GetDirectories(toolsPackagePath)
                 .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
         }
@@ -116,7 +118,7 @@ namespace Microsoft.DotNet.ToolPackage
             return PackageDirectory
                         .WithSubDirectories(
                             Id.ToString(),
-                            library.Version.ToNormalizedString())
+                            library.Version.ToNormalizedString().ToLowerInvariant())
                         .WithFile(lockFileRelativePath);
         }
 
@@ -198,7 +200,7 @@ namespace Microsoft.DotNet.ToolPackage
                 PackageDirectory
                     .WithSubDirectories(
                         Id.ToString(),
-                        library.Version.ToNormalizedString())
+                        library.Version.ToNormalizedString().ToLowerInvariant())
                     .WithFile(dotnetToolSettings.Path);
 
             var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
