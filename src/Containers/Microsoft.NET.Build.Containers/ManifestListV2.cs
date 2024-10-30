@@ -11,4 +11,6 @@ public record struct PlatformInformation(string architecture, string os, string?
 
 public record struct PlatformSpecificManifest(string mediaType, long size, string digest, PlatformInformation platform);
 
-public record struct ImageIndexV1(int schemaVersion, string mediaType, PlatformSpecificManifest[] manifests);
+public record struct ImageIndexV1(int schemaVersion, string mediaType, PlatformSpecificOciManifest[] manifests);
+
+public record struct PlatformSpecificOciManifest(string mediaType, long size, string digest, PlatformInformation platform, Dictionary<string, string> annotations);

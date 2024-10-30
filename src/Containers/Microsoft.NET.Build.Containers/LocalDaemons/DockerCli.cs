@@ -286,123 +286,6 @@ internal sealed class DockerCli
         }
     }
 
-    private static async Task WriteOciImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
-
-        // Step 1: Write `oci-layout`
-        string ociLayoutPath = "oci-layout";
-        var ociLayoutContent = "{\"imageLayoutVersion\": \"1.0.0\"}";
-        using (MemoryStream ociLayoutStream = new MemoryStream(Encoding.UTF8.GetBytes(ociLayoutContent)))
-        {
-            PaxTarEntry layoutEntry = new(TarEntryType.RegularFile, ociLayoutPath)
-            {
-                DataStream = ociLayoutStream
-            };
-            await writer.WriteEntryAsync(layoutEntry, cancellationToken).ConfigureAwait(false);
-        }
-
-        // Step 2: Write Layer Blobs
-        JsonArray layerDescriptors = new JsonArray();
-
-        foreach (var layerDescriptor in image.LayerDescriptors)
-        {
-            if (sourceReference.Registry is { } registry)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, layerDescriptor, cancellationToken).ConfigureAwait(false);
-
-                // Use SHA256 hash without "sha256:" prefix for file path
-                string layerBlobPath = $"blobs/sha256/{layerDescriptor.Digest.Substring("sha256:".Length)}";
-                await writer.WriteEntryAsync(localPath, layerBlobPath, cancellationToken).ConfigureAwait(false);
-
-                // Add layer descriptor for manifest.json
-                layerDescriptors.Add(new JsonObject
-            {
-                { "mediaType", "application/vnd.oci.image.layer.v1.tar" },
-                { "digest", layerDescriptor.Digest },
-                { "size", new FileInfo(localPath).Length }
-            });
-            }
-            else
-            {
-                throw new NotImplementedException($"Missing registry link for digest {layerDescriptor.Digest}");
-            }
-        }
-
-        // Step 3: Write Config Blob
-        string configBlobPath = $"blobs/sha256/{image.ImageSha}";
-        cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
-        {
-            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configBlobPath)
-            {
-                DataStream = configStream
-            };
-            await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
-        }
-
-        // Step 4: Write `manifest.json`
-        JsonObject manifestContent = new JsonObject
-        {
-            { "schemaVersion", 2 },
-            { "config", new JsonObject
-                {
-                    { "mediaType", "application/vnd.oci.image.config.v1+json" },
-                    { "digest", $"sha256:{image.ImageSha}" },
-                    { "size", Encoding.UTF8.GetBytes(image.Config).Length }
-                }
-            },
-            { "layers", layerDescriptors }
-        };
-
-        string manifestDigest = "sha256:" + ComputeSha256Hash(manifestContent.ToJsonString());
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestContent.ToJsonString())))
-        {
-            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, $"blobs/sha256/{manifestDigest.Substring("sha256:".Length)}")
-            {
-                DataStream = manifestStream
-            };
-            await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
-        }
-
-        // Step 5: Write `index.json`
-        string imageNameWithTag = $"{destinationReference.Repository}:{destinationReference.Tags[0]}";
-        JsonObject indexContent = new JsonObject
-        {
-            { "schemaVersion", 2 },
-            { "mediaType", "application/vnd.oci.image.index.v1+json" },
-            { "manifests", new JsonArray(new JsonObject
-                {
-                    { "mediaType", "application/vnd.oci.image.manifest.v1+json" },
-                    { "digest", manifestDigest },
-                    { "size", Encoding.UTF8.GetBytes(manifestContent.ToJsonString()).Length },
-                    { "annotations", new JsonObject { { "org.opencontainers.image.ref.name", imageNameWithTag } } }
-                })
-            }
-        };
-
-        using (MemoryStream indexStream = new MemoryStream(Encoding.UTF8.GetBytes(indexContent.ToJsonString())))
-        {
-            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
-            {
-                DataStream = indexStream
-            };
-            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    // Helper function to compute SHA256 hash of a JSON string
-    private static string ComputeSha256Hash(string rawData)
-    {
-        using (SHA256 sha256Hash = SHA256.Create())
-        {
-            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-            return BitConverter.ToString(bytes).Replace("-", "").ToLower();
-        }
-    }
-
     private static async Task WriteDockerImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -469,6 +352,100 @@ internal sealed class DockerCli
             };
 
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteOciImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
+
+        // add "oci-layout" file
+        string ociLayoutPath = "oci-layout";
+        var ociLayoutContent = "{\"imageLayoutVersion\": \"1.0.0\"}";
+        using (MemoryStream ociLayoutStream = new MemoryStream(Encoding.UTF8.GetBytes(ociLayoutContent)))
+        {
+            PaxTarEntry layoutEntry = new(TarEntryType.RegularFile, ociLayoutPath)
+            {
+                DataStream = ociLayoutStream
+            };
+            await writer.WriteEntryAsync(layoutEntry, cancellationToken).ConfigureAwait(false);
+        }
+
+        // populate blobs directory
+        string blobsPath = "blobs/sha256";
+
+        // add layers to blobs directory
+        foreach (var layerDescriptor in image.LayerDescriptors)
+        {
+            if (sourceReference.Registry is { } registry)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, layerDescriptor, cancellationToken).ConfigureAwait(false);
+
+                // use sha256 hash for file name
+                string layerBlobPath = $"{blobsPath}/{layerDescriptor.Digest.Substring("sha256:".Length)}";
+                await writer.WriteEntryAsync(localPath, layerBlobPath, cancellationToken).ConfigureAwait(false);
+
+            }
+            else
+            {
+                throw new NotImplementedException(Resource.FormatString(
+                    nameof(Strings.MissingLinkToRegistry),
+                    layerDescriptor.Digest,
+                    sourceReference.Registry?.ToString() ?? "<null>"));
+            }
+        }
+
+        // add config to blobs 
+        cancellationToken.ThrowIfCancellationRequested();
+        string configBlobPath = $"{blobsPath}/{image.ImageSha}";
+        using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
+        {
+            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configBlobPath)
+            {
+                DataStream = configStream
+            };
+            await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
+        }
+
+        // add manifest to blobs
+        string manifestContent = JsonSerializer.SerializeToNode(image.Manifest)!.ToJsonString()!;
+        byte[] manifestContentBytes = Encoding.UTF8.GetBytes(manifestContent);
+        string manifestDigest = image.Manifest.KnownDigest!;
+        using (MemoryStream manifestStream = new MemoryStream(manifestContentBytes))
+        {
+            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, $"{blobsPath}/{manifestDigest.Substring("sha256:".Length)}")
+            {
+                DataStream = manifestStream
+            };
+            await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
+        }
+
+        // add "index.json"
+        cancellationToken.ThrowIfCancellationRequested();
+        var index = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests =
+            [
+                new PlatformSpecificOciManifest
+                {
+                    mediaType = SchemaTypes.OciManifestV1,
+                    size = manifestContentBytes.Length,
+                    digest = manifestDigest,
+                    annotations = new Dictionary<string, string> { { "org.opencontainers.image.ref.name", $"{destinationReference.Repository}:{destinationReference.Tags[0]}" } }
+                }
+            ]
+        };
+        using (MemoryStream indexStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index)!.ToJsonString()!)))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
         }
     }
 
