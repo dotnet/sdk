@@ -9,11 +9,14 @@ using System.Security.Cryptography;
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.Packaging;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -34,6 +37,8 @@ internal sealed class DockerCli
 #if NET
     private string? _fullCommandPath;
 #endif
+
+    private const string _blobsPath = "blobs/sha256";
 
     public DockerCli(string? command, ILoggerFactory loggerFactory)
     {
@@ -286,13 +291,38 @@ internal sealed class DockerCli
         }
     }
 
-    private static async Task WriteDockerImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
+    private static async Task WriteDockerImageToStreamAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        // Feed each layer tarball into the stream
         JsonArray layerTarballPaths = new JsonArray();
+        await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
+            .ConfigureAwait(false);
+
+        string configTarballPath = $"{image.ImageSha}.json";
+        await WriteImageConfig(writer, image, configTarballPath, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Add manifest
+        await WriteManifestForDockerImage(writer, destinationReference, configTarballPath, layerTarballPaths, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteImageLayers(
+        TarWriter writer,
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        Func<string, string> layerPathFunc,
+        CancellationToken cancellationToken,
+        JsonArray? layerTarballPaths = null)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
 
         foreach (var d in image.LayerDescriptors)
         {
@@ -303,9 +333,9 @@ internal sealed class DockerCli
 
                 // Stuff that (uncompressed) tarball into the image tar stream
                 // TODO uncompress!!
-                string layerTarballPath = $"{d.Digest.Substring("sha256:".Length)}/layer.tar";
+                string layerTarballPath = layerPathFunc(d.Digest);
                 await writer.WriteEntryAsync(localPath, layerTarballPath, cancellationToken).ConfigureAwait(false);
-                layerTarballPaths.Add(layerTarballPath);
+                layerTarballPaths?.Add(layerTarballPath);
             }
             else
             {
@@ -315,21 +345,33 @@ internal sealed class DockerCli
                     sourceReference.Registry?.ToString() ?? "<null>"));
             }
         }
+    }
 
-        // add config
-        string configTarballPath = $"{image.ImageSha}.json";
+    private static async Task WriteImageConfig(
+        TarWriter writer,
+        BuiltImage image,
+        string configPath,
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
+
         using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
         {
-            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configTarballPath)
+            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
                 DataStream = configStream
             };
-
             await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
         }
+    }
 
-        // Add manifest
+    private static async Task WriteManifestForDockerImage(
+        TarWriter writer,
+        DestinationImageReference destinationReference,
+        string configTarballPath,
+        JsonArray layerTarballPaths,
+        CancellationToken cancellationToken)
+    {
         JsonArray tagsNode = new();
         foreach (string tag in destinationReference.Tags)
         {
@@ -355,12 +397,33 @@ internal sealed class DockerCli
         }
     }
 
-    private static async Task WriteOciImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
+    private static async Task WriteOciImageToStreamAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        // add "oci-layout" file
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteManifestForOciImage(writer, image, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteOciLayout(TarWriter writer, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
         string ociLayoutPath = "oci-layout";
         var ociLayoutContent = "{\"imageLayoutVersion\": \"1.0.0\"}";
         using (MemoryStream ociLayoutStream = new MemoryStream(Encoding.UTF8.GetBytes(ociLayoutContent)))
@@ -371,59 +434,33 @@ internal sealed class DockerCli
             };
             await writer.WriteEntryAsync(layoutEntry, cancellationToken).ConfigureAwait(false);
         }
+    }
 
-        // populate blobs directory
-        string blobsPath = "blobs/sha256";
-
-        // add layers to blobs directory
-        foreach (var layerDescriptor in image.LayerDescriptors)
-        {
-            if (sourceReference.Registry is { } registry)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, layerDescriptor, cancellationToken).ConfigureAwait(false);
-
-                // use sha256 hash for file name
-                string layerBlobPath = $"{blobsPath}/{layerDescriptor.Digest.Substring("sha256:".Length)}";
-                await writer.WriteEntryAsync(localPath, layerBlobPath, cancellationToken).ConfigureAwait(false);
-
-            }
-            else
-            {
-                throw new NotImplementedException(Resource.FormatString(
-                    nameof(Strings.MissingLinkToRegistry),
-                    layerDescriptor.Digest,
-                    sourceReference.Registry?.ToString() ?? "<null>"));
-            }
-        }
-
-        // add config to blobs 
+    private static async Task WriteManifestForOciImage(
+        TarWriter writer,
+        BuiltImage image,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
-        string configBlobPath = $"{blobsPath}/{image.ImageSha}";
-        using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
-        {
-            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configBlobPath)
-            {
-                DataStream = configStream
-            };
-            await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
-        }
 
-        // add manifest to blobs
-        string manifestContent = JsonSerializer.SerializeToNode(image.Manifest)!.ToJsonString()!;
-        byte[] manifestContentBytes = Encoding.UTF8.GetBytes(manifestContent);
+        string manifestContent = JsonSerializer.SerializeToNode(image.Manifest)!.ToJsonString();
         string manifestDigest = image.Manifest.KnownDigest!;
-        using (MemoryStream manifestStream = new MemoryStream(manifestContentBytes))
+
+        // 1. add manifest to blobs
+        string manifestPath = $"{_blobsPath}/{manifestDigest.Substring("sha256:".Length)}";
+        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestContent)))
         {
-            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, $"{blobsPath}/{manifestDigest.Substring("sha256:".Length)}")
+            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
                 DataStream = manifestStream
             };
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
         }
 
-        // add "index.json"
         cancellationToken.ThrowIfCancellationRequested();
+
+        // 2. add index.json
         var index = new ImageIndexV1
         {
             schemaVersion = 2,
@@ -433,13 +470,13 @@ internal sealed class DockerCli
                 new PlatformSpecificOciManifest
                 {
                     mediaType = SchemaTypes.OciManifestV1,
-                    size = manifestContentBytes.Length,
+                    size = manifestContent.Length,
                     digest = manifestDigest,
                     annotations = new Dictionary<string, string> { { "org.opencontainers.image.ref.name", $"{destinationReference.Repository}:{destinationReference.Tags[0]}" } }
                 }
             ]
         };
-        using (MemoryStream indexStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index)!.ToJsonString()!)))
+        using (MemoryStream indexStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index)!.ToJsonString())))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
