@@ -3,22 +3,22 @@
 
 namespace Microsoft.WebTools.AspireServer.Contracts;
 
-/// <summary>
-/// Interface implemented on the VS side and pass
-/// </summary>
 internal interface IAspireServerEvents
 {
     /// <summary>
     /// Called when a request to stop a session is received. 
     /// </summary>
+    /// <param name="sessionId">The id of the session to terminate. The session might have been stopped already.</param>
     /// <param name="dcpId">DCP/AppHost making the request. May be empty for older DCP versions.</param>
-    ValueTask StopSessionAsync(string dcpId, string sessionId, CancellationToken cancelToken);
+    /// <returns>Returns false if the session is not active.</returns>
+    ValueTask<bool> StopSessionAsync(string dcpId, string sessionId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Called when a request to start a project is received. Returns the sessionId of the started project.
+    /// Called when a request to start a project is received. Returns the session id of the started project.
     /// </summary>
     /// <param name="dcpId">DCP/AppHost making the request. May be empty for older DCP versions.</param>
-    ValueTask<string> StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancelToken);
+    /// <returns>New unique session id.</returns>
+    ValueTask<string> StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancellationToken);
 }
 
 internal class ProjectLaunchRequest

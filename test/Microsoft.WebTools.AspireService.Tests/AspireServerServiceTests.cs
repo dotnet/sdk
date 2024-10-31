@@ -120,7 +120,8 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         mocks.GetOrCreate<IAspireServerEventsMock>()
              .ImplementStartProjectAsync(DcpId, "2")
-             .ImplementStopSessionAsync(DcpId, "2");
+             .ImplementStopSessionAsync(DcpId, "2", exists: true)
+             .ImplementStopSessionAsync(DcpId, "3", exists: false);
 
         var server = await GetAspireServer(mocks);
         var tokens = server.GetServerVariables();

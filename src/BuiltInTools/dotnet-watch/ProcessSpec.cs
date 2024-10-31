@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watcher
         public IReadOnlyList<string>? Arguments { get; set; }
         public string? EscapedArguments { get; set; }
         public Action<OutputLine>? OnOutput { get; set; }
-        public Func<int, int?, ValueTask>? OnExit { get; set; }
+        public ProcessExitAction? OnExit { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
 
         public string? ShortDisplayName()

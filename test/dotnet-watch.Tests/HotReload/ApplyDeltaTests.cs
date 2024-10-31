@@ -394,6 +394,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             // check that Aspire server output is logged via dotnet-watch reporter:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
+            // wait until after DCP session started:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+
             var newSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
             newSource = newSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)");
             UpdateSourceFile(serviceSourcePath, newSource);
