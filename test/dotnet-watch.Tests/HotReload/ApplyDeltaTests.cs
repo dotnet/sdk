@@ -387,7 +387,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.Equal(0, result.ExitCode);
 
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
-            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost");
+            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
             await App.AssertWaitingForChanges();
 
@@ -409,6 +409,18 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
             Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+
+            App.SendControlC();
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
+
+            await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited");
+            await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited");
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
+
+            App.AssertOutputContains("dotnet watch ⭐ Stop session #1");
+            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
         }
     }
 }

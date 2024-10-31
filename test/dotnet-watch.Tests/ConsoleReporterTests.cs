@@ -67,12 +67,9 @@ namespace Microsoft.Extensions.Tools.Internal
         {
             private readonly StringBuilder _out;
             private readonly StringBuilder _error;
-
-            event Action<ConsoleKeyInfo> IConsole.KeyPressed
-            {
-                add { }
-                remove { }
-            }
+            public TextWriter Out { get; }
+            public TextWriter Error { get; }
+            public ConsoleColor ForegroundColor { get; set; }
 
             public TestConsole()
             {
@@ -82,14 +79,17 @@ namespace Microsoft.Extensions.Tools.Internal
                 Error = new StringWriter(_error);
             }
 
-            event ConsoleCancelEventHandler IConsole.CancelKeyPress
+            event Action<ConsoleKeyInfo> IConsole.KeyPressed
             {
                 add { }
                 remove { }
             }
 
-            public string GetOutput() => _out.ToString();
-            public string GetError() => _error.ToString();
+            public string GetOutput()
+                => _out.ToString();
+
+            public string GetError()
+                => _error.ToString();
 
             public void Clear()
             {
@@ -99,16 +99,8 @@ namespace Microsoft.Extensions.Tools.Internal
 
             public void ResetColor()
             {
-                ForegroundColor = default(ConsoleColor);
+                ForegroundColor = default;
             }
-
-            public TextWriter Out { get; }
-            public TextWriter Error { get; }
-            public TextReader In { get; }
-            public bool IsInputRedirected { get; }
-            public bool IsOutputRedirected { get; }
-            public bool IsErrorRedirected { get; }
-            public ConsoleColor ForegroundColor { get; set; }
         }
     }
 }

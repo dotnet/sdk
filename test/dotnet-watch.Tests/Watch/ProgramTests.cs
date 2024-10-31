@@ -1,19 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
-    public class ProgramTests : DotNetWatchTestBase
+    public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        public ProgramTests(ITestOutputHelper logger)
-            : base(logger)
-        {
-        }
-
         [Fact]
         public async Task ConsoleCancelKey()
         {
@@ -40,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await watching.WaitAsync();
 
-            console.PressCancelKey();
+            console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
 
             var exitCode = await run;
             Assert.Equal(0, exitCode);
