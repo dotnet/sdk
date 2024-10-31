@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -24,6 +24,9 @@
 
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
+
+    <!-- Filter out .NET Framework only test projects and add them manually. -->
+    <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
   </ItemGroup>
 
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed

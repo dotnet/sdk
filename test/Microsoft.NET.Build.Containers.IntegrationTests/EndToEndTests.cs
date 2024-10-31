@@ -375,7 +375,7 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
-            commandResult.Should().HaveStdOutContaining("warning : The Microsoft.NET.Build.Containers NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to Microsoft.NET.Build.Containers because it is no longer needed.");
+            commandResult.Should().HaveStdOutContaining("warning CONTAINER005: The Microsoft.NET.Build.Containers NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to Microsoft.NET.Build.Containers because it is no longer needed.");
         }
         else
         {
