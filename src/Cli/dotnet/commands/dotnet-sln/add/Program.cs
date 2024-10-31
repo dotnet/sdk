@@ -6,6 +6,8 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Tools.Sln.Add
 {
@@ -14,18 +16,18 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private readonly string _fileOrDirectory;
         private readonly bool _inRoot;
         private readonly IList<string> _relativeRootSolutionFolders;
-        private readonly IReadOnlyCollection<string> _arguments;
+        private readonly IReadOnlyCollection<string> _projects;
 
         public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-            _arguments = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+            _projects = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
 
             _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
             string relativeRoot = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
 
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _arguments, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot);
+            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot);
 
             bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
 
@@ -42,40 +44,41 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         public override int Execute()
         {
-            SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
+            var solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
 
-            var arguments = (_parseResult.GetValue<IEnumerable<string>>(SlnAddParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
-            if (arguments.Count == 0)
+            if (_projects.Count == 0)
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
-
-            PathUtility.EnsureAllPathsExist(arguments, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-
-            var fullProjectPaths = _arguments.Select(p =>
+            PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
+            var fullProjectPaths = _projects.Select(project =>
             {
-                var fullPath = Path.GetFullPath(p);
-                return Directory.Exists(fullPath) ?
-                    MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName :
-                    fullPath;
-            }).ToList();
+                var fullPath = Path.GetFullPath(project);
+                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+            }).ToArray();
 
-            var preAddProjectCount = slnFile.Projects.Count;
-
-            foreach (var fullProjectPath in fullProjectPaths)
+            try
             {
-                // Identify the intended solution folders
-                var solutionFolders = DetermineSolutionFolder(slnFile, fullProjectPath);
-
-                slnFile.AddProject(fullProjectPath, solutionFolders);
+                AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
+                return 0;
             }
-
-            if (slnFile.Projects.Count > preAddProjectCount)
+            catch (Exception ex)
             {
-                slnFile.Write();
+                throw new GracefulException("TODO: Handle exception", ex);
             }
+        }
 
-            return 0;
+        private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, string[] projectPaths, CancellationToken cancellationToken)
+        {
+            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
+            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            foreach (var projectPath in projectPaths)
+            {
+                // TODO: Handle solution folder
+                // var solutionFolder = string.Join(Path.DirectorySeparatorChar, GetSolutionFoldersFromProjectPath(Path.GetRelativePath(solutionFileFullPath, projectPath)));
+                solution.AddProject(Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath), null, null);
+            }
+            await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
         private static IList<string> GetSolutionFoldersFromProjectPath(string projectFilePath)
@@ -91,11 +94,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 projectFilePath = projectFilePath.Substring(currentDirString.Length);
             }
 
-            var projectDirectoryPath = TrimProject(projectFilePath);
+            var projectDirectoryPath = Path.GetDirectoryName(projectFilePath);
             if (string.IsNullOrEmpty(projectDirectoryPath))
                 return solutionFolders;
 
-            var solutionFoldersPath = TrimProjectDirectory(projectDirectoryPath);
+            var solutionFoldersPath = Path.GetDirectoryName(projectDirectoryPath);
             if (string.IsNullOrEmpty(solutionFoldersPath))
                 return solutionFolders;
 
@@ -129,16 +132,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private static bool IsPathInTreeRootedAtSolutionDirectory(string path)
         {
             return !path.StartsWith("..");
-        }
-
-        private static string TrimProject(string path)
-        {
-            return Path.GetDirectoryName(path);
-        }
-
-        private static string TrimProjectDirectory(string path)
-        {
-            return Path.GetDirectoryName(path);
         }
     }
 }
