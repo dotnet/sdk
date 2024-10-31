@@ -3,11 +3,8 @@
 
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 

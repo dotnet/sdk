@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal static class TestOptions
 {

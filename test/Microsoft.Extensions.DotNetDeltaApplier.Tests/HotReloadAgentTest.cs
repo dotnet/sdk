@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.Extensions.HotReload;
 using Moq;
 
-namespace Microsoft.Extensions.DotNetDeltaApplier
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class HotReloadAgentTest
     {

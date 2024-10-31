@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.WebTools.AspireServer.Models;
+namespace Aspire.Tools.Service;
 
 internal static class NotificationType
 {
