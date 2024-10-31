@@ -286,8 +286,7 @@ internal sealed class DockerCli
         }
         else
         {
-            // TODO: add error message
-            throw new ArgumentException("media type is not supported");
+            throw new ArgumentException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.Manifest.MediaType));
         }
     }
 
@@ -404,6 +403,11 @@ internal sealed class DockerCli
         Stream imageStream,
         CancellationToken cancellationToken)
     {
+        if (destinationReference.Tags.Length > 1)
+        {
+            throw new ArgumentException(Resource.FormatString(nameof(Strings.OciImageMultipleTagsNotSupported)));
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
