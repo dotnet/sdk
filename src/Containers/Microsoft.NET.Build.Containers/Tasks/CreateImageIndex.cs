@@ -56,7 +56,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         var singleManifestMediaType = GetSingleManifestMediaType();
         if (singleManifestMediaType == null)
         {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.UnsupportedMediaType), singleManifestMediaType);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnsupportedMediaType), "");
             return !Log.HasLoggedErrors;
         }
 
