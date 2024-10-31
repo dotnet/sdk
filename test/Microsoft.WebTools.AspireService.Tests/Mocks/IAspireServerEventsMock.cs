@@ -28,7 +28,7 @@ internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
         return this;
     }
 
-    public IAspireServerEventsMock ImplementStopSessionAsync(string dcpId, string sessionId, Exception? ex = null)
+    public IAspireServerEventsMock ImplementStopSessionAsync(string dcpId, string sessionId, bool exists, Exception? ex = null)
     {
         MockObject.Setup(x => x.StopSessionAsync(dcpId, sessionId, It.IsAny<CancellationToken>()))
                   .Returns(() =>
@@ -38,7 +38,7 @@ internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
                             throw ex;
                         }
 
-                        return new ValueTask();
+                        return new ValueTask<bool>(exists);
                   })
                   .Verifiable();
         return this;

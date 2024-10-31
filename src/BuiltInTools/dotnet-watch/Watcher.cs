@@ -10,6 +10,6 @@ namespace Microsoft.DotNet.Watcher
         public DotNetWatchContext Context => context;
         public MSBuildFileSetFactory RootFileSetFactory => rootFileSetFactory;
 
-        public abstract Task WatchAsync(CancellationToken cancellationToken);
+        public abstract Task WatchAsync(CancellationToken shutdownCancellationToken);
     }
 }
