@@ -414,8 +414,17 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
 
-            await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited");
-            await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited");
+            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited with error code -1");
+            }
+            else
+            {
+                await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Exited");
+                await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.AppHost (net9.0)] Exited");
+            }
 
             await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
 
