@@ -1,4 +1,4 @@
-From b8303b6543b71099cb0f8e1428183296508f249e Mon Sep 17 00:00:00 2001
+From 69036c430b8bf59f96b5a4c9832f28129655b0c4 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 31 Oct 2024 10:34:02 +0100
 Subject: [PATCH] Update hardcoded illink TFM
@@ -10,7 +10,7 @@ Backport: https://github.com/dotnet/runtime/pull/109376
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/src/tools/illink/src/ILLink.Tasks/LinkTask.cs b/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
-index ce24b35de9e..98b01a82636 100644
+index ce24b35de9e..996c8131a91 100644
 --- a/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
 +++ b/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
 @@ -269,7 +269,10 @@ public string ILLinkPath {
@@ -19,8 +19,8 @@ index ce24b35de9e..98b01a82636 100644
  				// IL Linker always runs on .NET Core, even when using desktop MSBuild to host ILLink.Tasks.
 -				_illinkPath = Path.Combine (Path.GetDirectoryName (taskDirectory), "net9.0", "illink.dll");
 +
-++				// TODO: Avoid the hardcoded TFM value: https://github.com/dotnet/runtime/issues/109335
-++				_illinkPath = Path.Combine (Path.GetDirectoryName (taskDirectory), "net10.0", "illink.dll");
++				// TODO: Avoid the hardcoded TFM value: https://github.com/dotnet/runtime/issues/109335
++				_illinkPath = Path.Combine (Path.GetDirectoryName (taskDirectory), "net10.0", "illink.dll");
 +
  				return _illinkPath;
  			}
