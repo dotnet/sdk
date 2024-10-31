@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
         {
-            return oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version);
+            return oldPackageNullable != null && (oldPackageNullable.Version == nuGetVersion);
         }
 
         private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)
