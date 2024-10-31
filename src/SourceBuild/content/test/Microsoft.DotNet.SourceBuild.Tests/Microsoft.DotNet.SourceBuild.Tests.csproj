@@ -87,12 +87,6 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnLicenseScanDiffs">
-        <Value>$(SourceBuildTestsWarnOnLicenseScanDiffs)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnSdkContentDiffs">
-        <Value>$(SourceBuildTestsWarnOnSdkContentDiffs)</Value>
-      </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>
 
