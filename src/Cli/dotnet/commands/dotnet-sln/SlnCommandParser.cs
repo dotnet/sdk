@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, slnFileOrDirectory);
                 }
-                return Path.GetFullPath(files.Single().ToString());
+                return Path.GetFullPath(files.Single());
             }
             throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
         }
