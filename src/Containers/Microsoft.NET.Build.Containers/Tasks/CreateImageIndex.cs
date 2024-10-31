@@ -4,11 +4,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
-using NuGet.Packaging;
 using NuGet.Protocol;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Task = System.Threading.Tasks.Task;

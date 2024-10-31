@@ -4,19 +4,13 @@
 using System.Diagnostics;
 #if NET
 using System.Formats.Tar;
-using System.Security.Cryptography;
 
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
-using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.NET.Build.Containers;
 
