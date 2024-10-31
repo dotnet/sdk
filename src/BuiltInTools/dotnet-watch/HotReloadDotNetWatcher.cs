@@ -2,11 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class HotReloadDotNetWatcher : Watcher
     {

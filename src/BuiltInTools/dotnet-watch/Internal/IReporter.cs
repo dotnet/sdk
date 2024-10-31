@@ -4,11 +4,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Graph;
-using Microsoft.Build.Tasks;
-using Microsoft.DotNet.Watcher;
-using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     internal enum MessageSeverity
     {

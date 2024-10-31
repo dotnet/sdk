@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {

@@ -4,11 +4,8 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DotNetWatcher(DotNetWatchContext context, MSBuildFileSetFactory fileSetFactory) : Watcher(context, fileSetFactory)
     {

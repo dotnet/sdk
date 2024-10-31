@@ -7,10 +7,8 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
     {

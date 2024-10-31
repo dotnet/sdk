@@ -5,7 +5,7 @@
 
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRuntimeProcessLauncher
 {

@@ -3,9 +3,8 @@
 
 
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal class BuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory rootProjectFileSetFactory)
     {
