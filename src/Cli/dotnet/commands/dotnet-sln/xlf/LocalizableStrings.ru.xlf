@@ -37,6 +37,11 @@
         <target state="translated">Отображение путей к папке решения.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RemoveAppFullName">
         <source>Remove one or more projects from a solution file.</source>
         <target state="translated">Удаление проектов из файла решения.</target>
@@ -55,6 +60,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Перечисляет все проекты в решении.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SlnxGenerated">
+        <source>.slnx file {0} generated.</source>
+        <target state="new">.slnx file {0} generated.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

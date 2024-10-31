@@ -142,7 +142,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: []);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var result = ExecuteCore(
                 configuration: configuration,

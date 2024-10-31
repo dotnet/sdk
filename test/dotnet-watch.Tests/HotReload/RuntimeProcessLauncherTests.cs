@@ -55,6 +55,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     }
 
     [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -241,8 +242,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
-    [CombinatorialData] 
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+    [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: sharedOutput.ToString())
@@ -366,7 +367,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {

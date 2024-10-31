@@ -37,6 +37,11 @@
         <target state="translated">顯示解決方案資料夾路徑。</target>
         <note />
       </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RemoveAppFullName">
         <source>Remove one or more projects from a solution file.</source>
         <target state="translated">從解決方案檔移除一或多個專案。</target>
@@ -55,6 +60,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">列出解決方案中的所有專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SlnxGenerated">
+        <source>.slnx file {0} generated.</source>
+        <target state="new">.slnx file {0} generated.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

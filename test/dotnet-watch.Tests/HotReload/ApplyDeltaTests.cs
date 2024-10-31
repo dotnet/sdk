@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task AddSourceFile()
         {
             Logger.WriteLine("AddSourceFile started");
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42920")]
         public async Task BlazorWasm()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets

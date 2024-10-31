@@ -1,12 +1,13 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup>
     <StaticWebAssetsSdkRoot>$(RepoRoot)\src\StaticWebAssetsSdk\</StaticWebAssetsSdkRoot>
     <PackageId>Microsoft.NET.Sdk.StaticWebAssets</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <RootNamespace>Microsoft.AspNetCore.StaticWebAssets.Tasks</RootNamespace>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -41,8 +42,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
   </ItemGroup>
 
   <!-- Only include these files in the outer build to avoid double writes. -->
