@@ -79,11 +79,6 @@
         <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VerifyingNuGetPackageSignature">
-        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
-        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>
