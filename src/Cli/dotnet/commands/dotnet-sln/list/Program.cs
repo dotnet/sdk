@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using CommandLocalizableStrings = Microsoft.DotNet.Tools.CommonLocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Sln.List
 {
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Sln.List
             }
             catch (Exception ex)
             {
-                throw new GracefulException(ex.Message, ex);
+                throw new GracefulException(CommandLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
             }
         }
 
