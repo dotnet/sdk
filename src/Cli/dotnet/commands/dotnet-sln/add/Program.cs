@@ -66,6 +66,9 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var projectPath in projectPaths)
             {
                 solution.AddProject(Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath), null, solutionFolder);
+                Reporter.Output.WriteLine(
+                    CommonLocalizableStrings.ProjectAddedToTheSolution,
+                    Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath));
             }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
