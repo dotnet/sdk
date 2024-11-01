@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Tools.Sln.Add
 {
@@ -60,6 +61,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            // set UTF8 BOM encoding for .sln
+            if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+            {
+                solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
+                {
+                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+                }); 
+            }
             SolutionFolderModel solutionFolder = (!_inRoot && _solutionFolderPath != null)
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes())
                 : null;
