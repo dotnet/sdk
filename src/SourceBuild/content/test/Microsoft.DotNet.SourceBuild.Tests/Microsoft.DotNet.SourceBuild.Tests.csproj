@@ -52,7 +52,7 @@
         <Value>$(ArtifactsTestResultsDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).DotNetDirectory">
-        <Value>$(TargetDir)extracted-sdk</Value>
+        <Value>$(DotNetSdkExtractDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TargetRid">
         <Value>$(TargetRid)</Value>
