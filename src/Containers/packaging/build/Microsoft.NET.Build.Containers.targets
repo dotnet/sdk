@@ -328,6 +328,7 @@
         Include="$(MSBuildProjectFullPath)"
         AdditionalProperties="
           ContainerRuntimeIdentifier=%(_rids.Identity);
+          RuntimeIdentifier=%(_rids.Identity);
           ContainerBaseRegistry=$(ContainerBaseRegistry);
           ContainerBaseName=$(ContainerBaseName);
           ContainerBaseTag=$(ContainerBaseTag);
@@ -353,7 +354,7 @@
 
     <MSBuild
         Projects="@(_InnerBuild)"
-        Targets="_ParseParametersForPublishingSingleContainer;_PublishSingleContainer"
+        Targets="_ParseParametersForPublishingSingleContainer;Publish;_PublishSingleContainer"
         BuildInParallel="true">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
     </MSBuild>
