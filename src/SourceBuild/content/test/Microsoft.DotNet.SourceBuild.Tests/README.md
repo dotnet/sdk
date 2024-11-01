@@ -16,8 +16,6 @@ Optional msbuild properties:
 - SourceBuildTestsExcludeOmniSharpTests
 - SourceBuildTestsLicenseScanPath
 - SourceBuildTestsPrereqsPath
-- SourceBuildTestsWarnOnLicenseScanDiffs
-- SourceBuildTestsWarnOnSdkContentDiffs
 
 Make sure to rebuild the test project when changing one of those values.
 

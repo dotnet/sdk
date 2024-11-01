@@ -31,16 +31,6 @@ internal class DotNetHelper
 
         lock (s_lockObj)
         {
-            if (!Directory.Exists(Config.DotNetDirectory))
-            {
-                if (!File.Exists(Config.SdkTarballPath))
-                {
-                    throw new InvalidOperationException($"Tarball path '{Config.SdkTarballPath}' specified in {Config.SdkTarballPath} does not exist.");
-                }
-
-                Directory.CreateDirectory(Config.DotNetDirectory);
-                Utilities.ExtractTarball(Config.SdkTarballPath, Config.DotNetDirectory, outputHelper);
-            }
             IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
             if (!Directory.Exists(ProjectsDirectory))

@@ -130,7 +130,6 @@ jobs:
       /p:MsftSdkTarballPath=$(MsftSdkTarballPath)
       /p:SdkTarballPath=$(SdkTarballPath)
       /p:SourceBuiltArtifactsPath=$(SourceBuiltArtifactsPath)
-      /p:SourceBuildTestsWarnOnSdkContentDiffs=false
       /p:TargetRid=${{ parameters.targetRid }}
       /p:PortableRid=$(Platform)-${{ parameters.architecture }}
     displayName: Run Tests

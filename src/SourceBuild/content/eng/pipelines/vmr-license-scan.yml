@@ -133,7 +133,6 @@ extends:
             -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
             -clp:v=m
             /p:SourceBuildTestsLicenseScanPath=$(repoPath)
-            /p:SourceBuildTestsWarnOnLicenseScanDiffs=false
             /p:TargetRid=linux-x64
             /p:PortableRid=linux-x64
             /p:SkipPrepareSdkArchive=true
