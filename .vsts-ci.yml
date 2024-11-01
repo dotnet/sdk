@@ -300,7 +300,6 @@ extends:
               vmImage: macOS-latest
               os: macOS
             helixTargetQueue: osx.13.arm64
-            timeoutInMinutes: 90
             macOSJobParameterSets:
             - categoryName: TestBuild
               buildArchitecture: arm64
