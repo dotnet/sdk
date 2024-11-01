@@ -44,8 +44,7 @@ namespace Microsoft.DotNet.Watcher
 
                 _console.KeyPressed += (key) =>
                 {
-                    var modifiers = ConsoleModifiers.Control;
-                    if ((key.Modifiers & modifiers) == modifiers && key.Key == ConsoleKey.R && forceRestartCancellationSource is { } source)
+                    if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.R && forceRestartCancellationSource is { } source)
                     {
                         // provide immediate feedback to the user:
                         Context.Reporter.Report(source.IsCancellationRequested ? MessageDescriptor.RestartInProgress : MessageDescriptor.RestartRequested);
@@ -327,11 +326,6 @@ namespace Microsoft.DotNet.Watcher
                 }
                 finally
                 {
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
-                    {
-                        rootProcessTerminationSource.Cancel();
-                    }
-
                     if (runtimeProcessLauncher != null)
                     {
                         // Request cleanup of all processes created by the launcher before we terminate the root process.
@@ -343,6 +337,11 @@ namespace Microsoft.DotNet.Watcher
                     {
                         // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
+                    }
+
+                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    {
+                        rootProcessTerminationSource.Cancel();
                     }
 
                     try

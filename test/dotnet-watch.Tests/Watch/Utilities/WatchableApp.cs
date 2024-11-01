@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
@@ -17,6 +18,8 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
+
+        public TestFlags TestFlags { get; private set; }
 
         public ITestOutputHelper Logger => logger;
 
@@ -131,11 +134,27 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             Process = new AwaitableProcess(commandSpec, Logger);
             Process.Start();
+
+            TestFlags = testFlags;
         }
 
         public void Dispose()
         {
             Process?.Dispose();
+        }
+
+        public void SendControlC()
+            => SendKey(PhysicalConsole.CtrlC);
+
+        public void SendControlR()
+            => SendKey(PhysicalConsole.CtrlR);
+
+        public void SendKey(char c)
+        {
+            Assert.True(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
+
+            Process.Process.StandardInput.Write(c);
+            Process.Process.StandardInput.Flush();
         }
     }
 }

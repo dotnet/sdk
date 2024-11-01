@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using Microsoft.Build.Graph;
@@ -36,10 +37,12 @@ namespace Microsoft.DotNet.Watcher
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
+                var environmentOptions = EnvironmentOptions.FromEnvironment();
+
                 var program = TryCreate(
                     args,
-                    PhysicalConsole.Singleton,
-                    EnvironmentOptions.FromEnvironment(),
+                    new PhysicalConsole(environmentOptions.TestFlags),
+                    environmentOptions,
                     EnvironmentVariables.VerboseCliOutput,
                     out var exitCode);
 
@@ -77,6 +80,11 @@ namespace Microsoft.DotNet.Watcher
             var workingDirectory = environmentOptions.WorkingDirectory;
             reporter.Verbose($"Working directory: '{workingDirectory}'");
 
+            if (environmentOptions.TestFlags != TestFlags.None)
+            {
+                reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
+            }
+
             string projectPath;
             try
             {
@@ -97,9 +105,28 @@ namespace Microsoft.DotNet.Watcher
         // internal for testing
         internal async Task<int> RunAsync()
         {
+            var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            console.CancelKeyPress += OnCancelKeyPress;
+
+            console.KeyPressed += key =>
+            {
+                if (!shutdownCancellationSourceDisposed && key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.C)
+                {
+                    // if we already canceled, we force immediate shutdown:
+                    var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
+
+                    if (!forceShutdown)
+                    {
+                        reporter.Report(MessageDescriptor.ShutdownRequested);
+                        shutdownCancellationSource.Cancel();
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
+                }
+            };
 
             try
             {
@@ -130,25 +157,8 @@ namespace Microsoft.DotNet.Watcher
             }
             finally
             {
-                console.CancelKeyPress -= OnCancelKeyPress;
+                shutdownCancellationSourceDisposed = true;
                 shutdownCancellationSource.Dispose();
-            }
-
-            void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
-            {
-                // if we already canceled, we force immediate shutdown:
-                var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
-
-                if (!forceShutdown)
-                {
-                    reporter.Report(MessageDescriptor.ShutdownRequested);
-                    shutdownCancellationSource.Cancel();
-                    args.Cancel = true;
-                }
-                else
-                {
-                    Environment.Exit(0);
-                }
             }
         }
 
