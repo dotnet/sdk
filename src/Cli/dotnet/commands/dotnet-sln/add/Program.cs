@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
@@ -53,6 +54,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             }
             catch (Exception ex)
             {
+                // TODO: Have better error matching
+                // Using string comparison as keys are not exposed
+                if (Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'.").Success)
+                {
+                    Reporter.Output.WriteLine(
+                        string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject));
+                    // We treat this as a successful command
+                    return 0;
+                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -85,7 +95,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private string GetSolutionFolderPathWithForwardSlashes()
         {
             // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
-            return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join("/", _solutionFolderPath)) );
+            return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join(" / ", _solutionFolderPath)) );
         }
     }
 }
