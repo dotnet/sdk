@@ -185,7 +185,7 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
@@ -203,7 +203,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\blazor.publish.boot.json"
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\publish.blazor.boot.json"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
@@ -2989,7 +2989,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
@@ -3010,7 +3010,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
@@ -5073,7 +5073,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -5110,7 +5110,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -5147,7 +5147,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -5167,7 +5167,7 @@
     },
     {
       "Route": "_framework/blazor.boot.json",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -19557,7 +19557,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19608,7 +19608,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19657,7 +19657,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19708,7 +19708,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19757,7 +19757,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19808,7 +19808,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19857,7 +19857,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19908,7 +19908,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -19957,7 +19957,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -20008,7 +20008,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -20057,7 +20057,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",
@@ -20108,7 +20108,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "application/octect-stream"
+          "Value": "application/octet-stream"
         },
         {
           "Name": "ETag",

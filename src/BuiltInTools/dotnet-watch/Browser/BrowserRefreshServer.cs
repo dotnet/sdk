@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly List<(WebSocket clientSocket, string? sharedSecret)> _clientSockets = new();
         private readonly RSA _rsa;
-        private readonly EnvironmentOptions _options;
+
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _clientConnected;
@@ -39,21 +40,16 @@ namespace Microsoft.DotNet.Watcher.Tools
         private IHost? _refreshServer;
         private string? _serverUrls;
 
-        private BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
+        public readonly EnvironmentOptions Options;
+
+        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
-            _options = options;
+            Options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
-        }
-
-        public static async ValueTask<BrowserRefreshServer> CreateAsync(EnvironmentOptions options, IReporter reporter, CancellationToken cancellationToken)
-        {
-            var server = new BrowserRefreshServer(options, reporter);
-            await server.StartAsync(cancellationToken);
-            return server;
         }
 
         public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
@@ -61,18 +57,20 @@ namespace Microsoft.DotNet.Watcher.Tools
             Debug.Assert(_refreshServer != null);
             Debug.Assert(_serverUrls != null);
 
-            environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint] = _serverUrls;
-            environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey] = GetServerKey();
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _serverUrls);
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey, GetServerKey());
 
-            environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
-            environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+            environmentBuilder.DotNetStartupHookDirective.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
+            environmentBuilder.AspNetCoreHostingStartupAssembliesVariable.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
         }
 
         public string GetServerKey()
             => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
 
-        private async ValueTask StartAsync(CancellationToken cancellationToken)
+        public async ValueTask StartAsync(CancellationToken cancellationToken)
         {
+            Debug.Assert(_refreshServer == null);
+
             var hostName = _environmentHostName ?? "127.0.0.1";
 
             var supportsTLS = await SupportsTLS();
@@ -154,16 +152,35 @@ namespace Microsoft.DotNet.Watcher.Tools
             await _terminateWebSocket.Task;
         }
 
+        /// <summary>
+        /// For testing.
+        /// </summary>
+        internal void EmulateClientConnected()
+        {
+            _clientConnected.TrySetResult();
+        }
+
         public async Task WaitForClientConnectionAsync(CancellationToken cancellationToken)
         {
             using var progressCancellationSource = new CancellationTokenSource();
+
+            // It make take a while to connect since the app might need to build first.
+            // Indicate progress in the output. Start with 60s and then report progress every 10s.
+            var firstReportSeconds = TimeSpan.FromSeconds(60);
+            var nextReportSeconds = TimeSpan.FromSeconds(10);
+
+            var reportDelayInSeconds = firstReportSeconds;
+            var connectionAttemptReported = false;
 
             var progressReportingTask = Task.Run(async () =>
             {
                 while (!progressCancellationSource.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(_options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : TimeSpan.FromSeconds(5), progressCancellationSource.Token);
-                    _reporter.Warn("Connecting to the browser is taking longer than expected ...");
+                    await Task.Delay(Options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+
+                    connectionAttemptReported = true;
+                    reportDelayInSeconds = nextReportSeconds;
+                    _reporter.Output("Connecting to the browser ...");
                 }
             }, progressCancellationSource.Token);
 
@@ -174,6 +191,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             finally
             {
                 progressCancellationSource.Cancel();
+            }
+
+            if (connectionAttemptReported)
+            {
+                _reporter.Output("Browser connection established.");
             }
         }
 
@@ -290,7 +312,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             try
             {
-                using var process = Process.Start(_options.MuxerPath, "dev-certs https --check --quiet");
+                using var process = Process.Start(Options.MuxerPath, "dev-certs https --check --quiet");
                 await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
                 return process.ExitCode == 0;
             }
@@ -298,6 +320,34 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 return false;
             }
+        }
+
+        public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
+            => SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+
+        public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
+        {
+            _reporter.Verbose($"Updating diagnostics in the browser.");
+            if (compilationErrors.IsEmpty)
+            {
+                return SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+            }
+            else
+            {
+                return SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
+            }
+        }
+
+        private readonly struct AspNetCoreHotReloadApplied
+        {
+            public string Type => "AspNetCoreHotReloadApplied";
+        }
+
+        private readonly struct HotReloadDiagnostics
+        {
+            public string Type => "HotReloadDiagnosticsv1";
+
+            public IEnumerable<string> Diagnostics { get; init; }
         }
     }
 }

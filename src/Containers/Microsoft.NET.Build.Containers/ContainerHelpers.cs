@@ -22,6 +22,12 @@ public static class ContainerHelpers
     internal const string HostObjectPass = "DOTNET_CONTAINER_REGISTRY_PWORD";
     internal const string HostObjectPassLegacy = "SDK_CONTAINER_REGISTRY_PWORD";
 
+    internal const string PushHostObjectUser = "DOTNET_CONTAINER_PUSH_REGISTRY_UNAME";
+    internal const string PushHostObjectPass = "DOTNET_CONTAINER_PUSH_REGISTRY_PWORD";
+
+    internal const string PullHostObjectUser = "DOTNET_CONTAINER_PULL_REGISTRY_UNAME";
+    internal const string PullHostObjectPass = "DOTNET_CONTAINER_PULL_REGISTRY_PWORD";
+
     internal const string DockerRegistryAlias = "docker.io";
 
     /// <summary>
@@ -35,10 +41,10 @@ public static class ContainerHelpers
     [Flags]
     public enum ParsePortError
     {
-        MissingPortNumber,
-        InvalidPortNumber,
-        InvalidPortType,
-        UnknownPortFormat
+        MissingPortNumber = 1,
+        InvalidPortNumber = 2,
+        InvalidPortType = 4,
+        UnknownPortFormat = 8
     }
 
     /// <summary>
@@ -62,9 +68,9 @@ public static class ContainerHelpers
             error = ParsePortError.InvalidPortNumber;
         }
 
-        if (!Enum.TryParse<PortType>(portType, out PortType t))
+        if (!Enum.TryParse(portType, out PortType t))
         {
-            if (portType is not null)
+            if (!string.IsNullOrEmpty(portType))
             {
                 error = (error ?? ParsePortError.InvalidPortType) | ParsePortError.InvalidPortType;
             }

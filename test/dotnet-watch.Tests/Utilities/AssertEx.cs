@@ -203,9 +203,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         public static void Fail(string message)
             => throw new XunitException(message);
 
-        public static void EqualFileList(string root, IEnumerable<string> expectedFiles, FileSet actualFiles)
-            => EqualFileList(root, expectedFiles, actualFiles.Select(f => f.FilePath));
-
         public static void EqualFileList(string root, IEnumerable<string> expectedFiles, IEnumerable<string> actualFiles)
         {
             var expected = expectedFiles.Select(p => Path.Combine(root, p));
@@ -226,35 +223,25 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public static void EqualFileList(FileSet expectedFiles, FileSet actualFiles)
+        public static void Contains(string expected, IEnumerable<string> items)
         {
-            if (expectedFiles.Count != actualFiles.Count)
+            if (items.Any(item => item == expected))
             {
-                throw NotEqualException.ForEqualCollections($"{expectedFiles.Count}", $"{actualFiles.Count}");
+                return;
             }
 
-            foreach (var expected in expectedFiles)
+            var message = new StringBuilder();
+            message.AppendLine($"'{expected}' not found in:");
+
+            foreach (var item in items)
             {
-                var actual = actualFiles.FirstOrDefault(f => Normalize(expected.FilePath) == Normalize(f.FilePath));
-
-                if (actual.FilePath is null)
-                {
-                    throw NotEqualException.ForEqualValues(
-                        expected: $"Expected to find  {expected.FilePath}.",
-                        actual: "\n" + string.Join("\n", actualFiles.Select(f => f.FilePath)),
-                        banner: "File sets should be equal.");
-                }
-
-                if (expected.IsStaticFile != actual.IsStaticFile || expected.StaticWebAssetPath != actual.StaticWebAssetPath)
-                {
-                    throw NotEqualException.ForEqualValues(
-                        expected: $"FileKind: {expected.IsStaticFile} StaticWebAssetPath {expected.StaticWebAssetPath}",
-                        actual: $"FileKind: {actual.IsStaticFile} StaticWebAssetPath {actual.StaticWebAssetPath}",
-                        banner: "Flle sets should be equal.");
-                }
+                message.AppendLine($"'{item}'");
             }
 
-            static string Normalize(string file) => file.Replace('\\', '/');
+            Fail(message.ToString());
         }
+
+        public static void DoesNotContain(string expected, IEnumerable<string> items)
+            => Assert.DoesNotContain(expected, items);
     }
 }

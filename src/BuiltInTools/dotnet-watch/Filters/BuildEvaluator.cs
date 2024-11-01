@@ -3,10 +3,11 @@
 
 
 using System.Diagnostics;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal class BuildEvaluator(DotNetWatchContext context, FileSetFactory factory)
+    internal class BuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory rootProjectFileSetFactory)
     {
         // File types that require an MSBuild re-evaluation
         private static readonly string[] s_msBuildFileExtensions = new[]
@@ -21,32 +22,15 @@ namespace Microsoft.DotNet.Watcher.Tools
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
         // result of the last evaluation, or null if no evaluation has been performed yet.
-        private (ProjectInfo project, FileSet fileSet)? _evaluationResult;
+        private EvaluationResult? _evaluationResult;
 
         public bool RequiresRevaluation { get; set; }
 
-        private bool _canUseNoRestore;
-        private string[]? _noRestoreArguments;
-
-        public void UpdateProcessArguments(ProcessSpec processSpec, int iteration)
+        public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
-            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
-            {
-                return;
-            }
-
-            if (iteration == 0)
-            {
-                var arguments = processSpec.Arguments ?? [];
-                _canUseNoRestore = CanUseNoRestore(arguments);
-                if (_canUseNoRestore)
-                {
-                    // Create run --no-restore <other args>
-                    _noRestoreArguments = arguments.Take(1).Append("--no-restore").Concat(arguments.Skip(1)).ToArray();
-                    context.Reporter.Verbose($"No restore arguments: {string.Join(" ", _noRestoreArguments)}");
-                }
-            }
-            else if (_canUseNoRestore)
+            if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
+                iteration > 0 &&
+                context.RootProjectOptions.Command is "run" or "test")
             {
                 if (RequiresRevaluation)
                 {
@@ -55,43 +39,22 @@ namespace Microsoft.DotNet.Watcher.Tools
                 else
                 {
                     context.Reporter.Verbose("Modifying command to use --no-restore");
-                    processSpec.Arguments = _noRestoreArguments;
+                    return [context.RootProjectOptions.Command, "--no-restore", .. context.RootProjectOptions.CommandArguments];
                 }
             }
+
+            return [context.RootProjectOptions.Command, .. context.RootProjectOptions.CommandArguments];
         }
 
-        private bool CanUseNoRestore(IEnumerable<string> arguments)
-        {
-            // For some well-known dotnet commands, we can pass in the --no-restore switch to avoid unnecessary restores between iterations.
-            // For now we'll support the "run" and "test" commands.
-            if (arguments.Any(a => string.Equals(a, "--no-restore", StringComparison.Ordinal)))
-            {
-                // Did the user already configure a --no-restore?
-                return false;
-            }
-
-            var dotnetCommand = arguments.FirstOrDefault();
-            if (string.Equals(dotnetCommand, "run", StringComparison.Ordinal) || string.Equals(dotnetCommand, "test", StringComparison.Ordinal))
-            {
-                context.Reporter.Verbose("Watch command can be configured to use --no-restore.");
-                return true;
-            }
-            else
-            {
-                context.Reporter.Verbose($"Watch command will not use --no-restore. Unsupport dotnet-command '{dotnetCommand}'.");
-                return false;
-            }
-        }
-
-        public async ValueTask<(ProjectInfo, FileSet)?> EvaluateAsync(FileItem? changedFile, CancellationToken cancellationToken)
+        public async ValueTask<EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 RequiresRevaluation = true;
-                return _evaluationResult = await factory.CreateAsync(cancellationToken);
+                return _evaluationResult = await CreateEvaluationResult(cancellationToken);
             }
 
-            if (!_evaluationResult.HasValue || RequiresMSBuildRevaluation(changedFile))
+            if (_evaluationResult == null || RequiresMSBuildRevaluation(changedFile?.Item))
             {
                 RequiresRevaluation = true;
             }
@@ -100,13 +63,30 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 
-                var result = await factory.CreateAsync(cancellationToken);
-                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(result.files);
+                var result = await CreateEvaluationResult(cancellationToken);
+                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(result);
                 return _evaluationResult = result;
             }
 
             Debug.Assert(_evaluationResult != null);
             return _evaluationResult;
+        }
+
+        private async ValueTask<EvaluationResult> CreateEvaluationResult(CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
+                if (result != null)
+                {
+                    return result;
+                }
+
+                context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
+                await FileWatcher.WaitForFileChangeAsync(rootProjectFileSetFactory.RootProjectFile, context.Reporter, cancellationToken);
+            }
         }
 
         private bool RequiresMSBuildRevaluation(FileItem? changedFile)
@@ -137,14 +117,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             return false;
         }
 
-        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(FileSet files)
+        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(EvaluationResult result)
         {
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
-            foreach (var file in files)
+            foreach (var (filePath, _) in result.Files)
             {
-                if (!string.IsNullOrEmpty(file.FilePath) && IsMsBuildFileExtension(file.FilePath))
+                if (!string.IsNullOrEmpty(filePath) && IsMsBuildFileExtension(filePath))
                 {
-                    msbuildFiles.Add((file.FilePath, GetLastWriteTimeUtcSafely(file.FilePath)));
+                    msbuildFiles.Add((filePath, GetLastWriteTimeUtcSafely(filePath)));
                 }
             }
 

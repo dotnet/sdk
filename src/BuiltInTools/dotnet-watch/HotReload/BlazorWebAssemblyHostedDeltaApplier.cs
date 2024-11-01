@@ -8,15 +8,37 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer) : DeltaApplier
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : DeltaApplier(reporter)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer);
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, targetFrameworkVersion);
         private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
-        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
+        public override void Dispose()
         {
-            _wasmApplier.Initialize(project, namedPipeName, cancellationToken);
-            _hostApplier.Initialize(project, namedPipeName, cancellationToken);
+            _hostApplier.Dispose();
+            _wasmApplier.Dispose();
+        }
+
+        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        {
+            _wasmApplier.CreateConnection(namedPipeName, cancellationToken);
+            _hostApplier.CreateConnection(namedPipeName, cancellationToken);
+        }
+
+        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            // We only need to wait for any of the app processes to start, so wait for the host.
+            // We do not need to wait for the browser connection to be established.
+            => _hostApplier.WaitForProcessRunningAsync(cancellationToken);
+
+        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        {
+            var result = await Task.WhenAll(
+                _wasmApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken),
+                _hostApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken));
+
+            // Allow updates that are supported by at least one process.
+            // When applying changes we will filter updates applied to a specific process based on their required capabilities.
+            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
         }
 
         public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
@@ -34,8 +56,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             var wasmResult = result[0];
             var hostResult = result[1];
 
-            ReportStatus(reporter, wasmResult, "client");
-            ReportStatus(reporter, hostResult, "host");
+            ReportStatus(wasmResult, "client");
+            ReportStatus(hostResult, "host");
 
             return (wasmResult, hostResult) switch
             {
@@ -45,34 +67,17 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _ => ApplyStatus.SomeChangesApplied,
             };
 
-            static void ReportStatus(IReporter reporter, ApplyStatus status, string target)
+            void ReportStatus(ApplyStatus status, string target)
             {
                 if (status == ApplyStatus.NoChangesApplied)
                 {
-                    reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
+                    Reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
                 }
                 else if (status == ApplyStatus.SomeChangesApplied)
                 {
-                    reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
+                    Reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
                 }
             }
-        }
-
-        public override void Dispose()
-        {
-            _hostApplier.Dispose();
-            _wasmApplier.Dispose();
-        }
-
-        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        {
-            var result = await Task.WhenAll(
-                _wasmApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken),
-                _hostApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken));
-
-            // Allow updates that are supported by at least one process.
-            // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
         }
     }
 }

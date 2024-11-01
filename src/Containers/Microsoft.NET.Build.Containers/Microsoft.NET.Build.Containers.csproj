@@ -8,8 +8,8 @@
       $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
     </TargetsForTfmSpecificBuildOutput>
 
-    <!-- Tell the SDK to generate a deps.json file -->
-    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <!-- Tell the SDK to generate a deps.json file to be used by .NET SDK MSBuild -->
+    <GenerateDependencyFile Condition=" '$(TargetFramework)' != 'net472'">true</GenerateDependencyFile>
 
     <!-- Allow the packaging project to use the name `Microsoft.NET.Build.Containers` for the nuget package -->
     <Packageid>.</Packageid>

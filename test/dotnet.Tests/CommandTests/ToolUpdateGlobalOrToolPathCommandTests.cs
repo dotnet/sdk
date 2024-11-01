@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUpdateGlobalOrToolPathCommand = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -198,6 +198,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.First().Should().Contain(string.Format(
                 LocalizableStrings.UpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
+        public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
+        {
+            var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
+            installCommand.Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
         [Fact]
@@ -320,7 +335,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -347,7 +362,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -385,7 +400,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (_, _) => (_store, _store, new ToolPackageDownloaderMock(
+                (_, _, _) => (_store, _store, new ToolPackageDownloaderMock(
                         store:_store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -418,7 +433,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 packageId is null ? _packageId : new PackageId(packageId) ,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,
@@ -435,7 +450,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,

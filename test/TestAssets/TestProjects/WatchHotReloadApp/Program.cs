@@ -7,13 +7,16 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
+using System.Threading.Tasks;
+
+// <metadata update handler placeholder>
 
 var assembly = typeof(C).Assembly;
 
 Console.WriteLine("Started");
 
 // Process ID is insufficient because PID's may be reused.
-Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Process.GetCurrentProcess().StartTime:hh:mm:ss.FF}");
+Console.WriteLine($"Process identifier = {Process.GetCurrentProcess().Id}, {Guid.NewGuid()}");
 Console.WriteLine($"DOTNET_WATCH = {Environment.GetEnvironmentVariable("DOTNET_WATCH")}");
 Console.WriteLine($"DOTNET_WATCH_ITERATION = {Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION")}");
 Console.WriteLine($"Arguments = {string.Join(",", args)}");
@@ -21,15 +24,10 @@ Console.WriteLine($"Version = {assembly.GetCustomAttributes<AssemblyVersionAttri
 Console.WriteLine($"TFM = {assembly.GetCustomAttributes<TargetFrameworkAttribute>().FirstOrDefault()?.FrameworkName ?? "<unspecified>"}");
 Console.WriteLine($"Configuration = {assembly.GetCustomAttributes<AssemblyConfigurationAttribute>().FirstOrDefault()?.Configuration ?? "<unspecified>"}");
 
-Loop();
-
-static void Loop()
+while (true)
 {
-    while (true)
-    {
-        Console.WriteLine(".");
-        Thread.Sleep(1000);
-    }
+    Console.WriteLine(".");
+    await Task.Delay(1000);
 }
 
 class C { }

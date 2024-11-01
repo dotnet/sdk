@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +23,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
     public class RemoveInternetSourcesFromNuGetConfig : Task
     {
         [Required]
-        public string NuGetConfigFile { get; set; }
+        public required string NuGetConfigFile { get; set; }
 
         /// <summary>
         /// Whether to work in offline mode (remove all internet sources) or online mode (remove only authenticated sources)
@@ -33,44 +35,21 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// example, a source named 'darc-pub-dotnet-aspnetcore-e81033e' will be kept if the prefix
         /// 'darc-pub-dotnet-aspnetcore-' is in this list.
         /// </summary>
-        public string[] KeepFeedPrefixes { get; set; }
+        public string[] KeepFeedPrefixes { get; set; } = [];
+
+        private readonly string[] Sections = [ "packageSources" ];
 
         public override bool Execute()
         {
             string xml = File.ReadAllText(NuGetConfigFile);
             string newLineChars = FileUtilities.DetectNewLineChars(xml);
             XDocument d = XDocument.Parse(xml);
-            XElement packageSourcesElement = d.Root.Descendants().First(e => e.Name == "packageSources");
-            XElement disabledPackageSourcesElement = d.Root.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
+            XElement? disabledPackageSourcesElement = d.Root?.Descendants().FirstOrDefault(e => e.Name == "disabledPackageSources");
 
-            IEnumerable<XElement> local = packageSourcesElement.Descendants().Where(e =>
+            foreach (string sectionName in Sections)
             {
-                if (e.Name == "add")
-                {
-                    string feedName = e.Attribute("key").Value;
-                    if (KeepFeedPrefixes
-                        ?.Any(prefix => feedName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                        == true)
-                    {
-                        return true;
-                    }
-
-                    string feedUrl = e.Attribute("value").Value;
-                    if (BuildWithOnlineFeeds)
-                    {
-                        return !( feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/_packaging", StringComparison.OrdinalIgnoreCase) ||
-                            feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/internal/_packaging", StringComparison.OrdinalIgnoreCase) );
-                    }
-                    else
-                    {
-                        return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
-                    }
-                }
-
-                return true;
-            });
-
-            packageSourcesElement.ReplaceNodes(local.ToArray());
+                ProcessSection(d, sectionName);
+            }
 
             // Remove disabledPackageSources element so if any internal packages remain, they are used in source-build
             disabledPackageSourcesElement?.ReplaceNodes(new XElement("clear"));
@@ -81,6 +60,48 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             }
 
             return true;
+        }
+
+        private void ProcessSection(XDocument d, string sectionName)
+        {
+            XElement? sectionElement = d.Root?.Descendants().FirstOrDefault(e => e.Name == sectionName);
+            if (sectionElement == null)
+            {
+                return;
+            }
+
+            IEnumerable<XElement> local = sectionElement.Descendants().Where(e =>
+            {
+                if (e.Name == "add")
+                {
+                    string? feedName = e.Attribute("key")?.Value;
+                    if (feedName != null &&
+                        KeepFeedPrefixes
+                        ?.Any(prefix => feedName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        == true)
+                    {
+                        return true;
+                    }
+
+                    string? feedUrl = e.Attribute("value")?.Value;
+                    if (feedUrl != null)
+                    {
+                        if (BuildWithOnlineFeeds)
+                        {
+                            return !(feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/_packaging", StringComparison.OrdinalIgnoreCase) ||
+                                feedUrl.StartsWith("https://pkgs.dev.azure.com/dnceng/internal/_packaging", StringComparison.OrdinalIgnoreCase));
+                        }
+                        else
+                        {
+                            return !(feedUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || feedUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+                        }
+                    }
+                }
+
+                return true;
+            });
+
+            sectionElement.ReplaceNodes(local.ToArray());
         }
     }
 }

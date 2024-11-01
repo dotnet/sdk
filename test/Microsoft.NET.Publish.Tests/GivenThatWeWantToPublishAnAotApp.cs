@@ -44,7 +44,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")
@@ -736,6 +736,59 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void Warnings_are_generated_in_build_with_analyzers_enabled(string targetFramework)
+        {
+
+            var projectName = "WarningAppWithPublishAotAnalyzersDisabled";
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            // The below analyzers are enabled by default but explicitly setting them to true
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
+            testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3056")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void Warnings_are_not_generated_in_build_with_analyzers_disabled(string targetFramework)
+        {
+
+            var projectName = "WarningAppWithPublishAotAnalyzersDisabled";
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
+            testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("warning IL3050")
+                .And.NotHaveStdOutContaining("warning IL3056")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_generated_even_with_analyzers_disabled(string targetFramework)
         {
 
@@ -824,13 +877,10 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            // Revisit once the issue is fixed
-            // https://github.com/dotnet/runtime/issues/89346
             publishCommand
                 .Execute()
-                .Should().Pass();
-            // Comment in the following code when https://github.com/dotnet/sdk/issues/34839 gets fixed
-            // .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
+                .Should().Pass()
+                .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

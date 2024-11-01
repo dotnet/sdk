@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Watcher;
 
 internal sealed class CommandLineOptions
 {
+    public const string DefaultCommand = "run";
+
     private static readonly ImmutableArray<string> s_knownCommands =
     [
         "add",
@@ -32,7 +34,7 @@ internal sealed class CommandLineOptions
         "restore",
         "run",
         "sdk",
-        "sln",
+        "solution",
         "store",
         "test",
         "tool",
@@ -40,25 +42,22 @@ internal sealed class CommandLineOptions
         "workload"
     ];
 
-    public const string DefaultCommand = "run";
+    public bool List { get; init; }
+    required public GlobalOptions GlobalOptions { get; init; }
 
-    public string? Project { get; init; }
+    public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
     public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
-    public bool BinaryLogger { get; init; }
     public bool NoLaunchProfile { get; init; }
     public string? LaunchProfileName { get; init; }
-    public bool Quiet { get; init; }
-    public bool Verbose { get; init; }
-    public bool List { get; init; }
-    public bool NoHotReload { get; init; }
-    public bool NonInteractive { get; init; }
-    public required IReadOnlyList<string> LaunchProcessArguments { get; init; }
+
     public string? ExplicitCommand { get; init; }
+
+    public required IReadOnlyList<string> CommandArguments { get; init; }
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
-    public static CommandLineOptions? Parse(string[] args, IReporter reporter, TextWriter output, out int errorCode)
+    public static CommandLineOptions? Parse(IReadOnlyList<string> args, IReporter reporter, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
 
@@ -161,22 +160,26 @@ internal sealed class CommandLineOptions
 
         return new()
         {
-            Quiet = parseResult.GetValue(quietOption),
             List = parseResult.GetValue(listOption),
-            NoHotReload = parseResult.GetValue(noHotReloadOption),
-            NonInteractive = parseResult.GetValue(nonInteractiveOption),
-            Verbose = parseResult.GetValue(verboseOption),
-            LaunchProcessArguments = GetLaunchProcessArguments(parseResult, watchOptions, out var explicitCommand),
+            GlobalOptions = new()
+            {
+                Quiet = parseResult.GetValue(quietOption),
+                NoHotReload = parseResult.GetValue(noHotReloadOption),
+                NonInteractive = parseResult.GetValue(nonInteractiveOption),
+                Verbose = parseResult.GetValue(verboseOption),
+            },
 
+            CommandArguments = GetCommandArguments(parseResult, watchOptions, out var explicitCommand),
             ExplicitCommand = explicitCommand,
-            Project = projectValue,
+
+            ProjectPath = projectValue,
             LaunchProfileName = parseResult.GetValue(launchProfileOption),
             NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
             TargetFramework = parseResult.GetValue(targetFrameworkOption),
             BuildProperties = ParseBuildProperties(parseResult.GetValue(propertyOption) ?? []).ToArray(),
         };
 
-        // Parses name=value pairs passed to --property. Skips invalid input. 
+        // Parses name=value pairs passed to --property. Skips invalid input.
         // We don't report error here as it will be reported by dotnet run.
         static IEnumerable<(string key, string value)> ParseBuildProperties(string[] properties)
             => from property in properties
@@ -188,9 +191,12 @@ internal sealed class CommandLineOptions
                select (name, value);
     }
 
-    private static IReadOnlyList<string> GetLaunchProcessArguments(ParseResult parseResult, IReadOnlyList<CliOption> watchOptions, out string? explicitCommand)
+    private static IReadOnlyList<string> GetCommandArguments(
+        ParseResult parseResult,
+        IReadOnlyList<CliOption> watchOptions,
+        out string? explicitCommand)
     {
-        var launchArgumentsBuilder = new List<string>();
+        var arguments = new List<string>();
 
         foreach (var child in parseResult.CommandResult.Children)
         {
@@ -203,14 +209,14 @@ internal sealed class CommandLineOptions
 
                 if (optionResult.Tokens.Count == 0)
                 {
-                    launchArgumentsBuilder.Add(optionResult.IdentifierToken.Value);
+                    arguments.Add(optionResult.IdentifierToken.Value);
                 }
                 else
                 {
                     foreach (var token in optionResult.Tokens)
                     {
-                        launchArgumentsBuilder.Add(optionResult.IdentifierToken.Value);
-                        launchArgumentsBuilder.Add(token.Value);
+                        arguments.Add(optionResult.IdentifierToken.Value);
+                        arguments.Add(token.Value);
                     }
                 }
             }
@@ -238,15 +244,15 @@ internal sealed class CommandLineOptions
             {
                 if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
                 {
-                    launchArgumentsBuilder.Add("--");
+                    arguments.Add("--");
                     dashDashInserted = true;
                 }
 
-                launchArgumentsBuilder.Add(token);
+                arguments.Add(token);
             }
         }
 
-        return [explicitCommand ?? DefaultCommand, ..launchArgumentsBuilder];
+        return arguments;
     }
 
     private static int IndexOf<T>(IReadOnlyList<T> list, Func<T, bool> predicate)
@@ -261,4 +267,19 @@ internal sealed class CommandLineOptions
 
         return -1;
     }
+
+    public ProjectOptions GetProjectOptions(string projectPath, string workingDirectory)
+        => new()
+        {
+            IsRootProject = true,
+            ProjectPath = projectPath,
+            WorkingDirectory = workingDirectory,
+            BuildProperties = BuildProperties ?? [],
+            Command = Command,
+            CommandArguments = CommandArguments,
+            LaunchEnvironmentVariables = [],
+            LaunchProfileName = LaunchProfileName,
+            NoLaunchProfile = NoLaunchProfile,
+            TargetFramework = TargetFramework,
+        };
 }

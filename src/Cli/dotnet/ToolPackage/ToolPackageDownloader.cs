@@ -1,21 +1,17 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.CommandLine;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json.Linq;
 using NuGet.Client;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -25,12 +21,6 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using NuGet.Configuration;
-using Microsoft.TemplateEngine.Utils;
-using System.Text.Json;
-using System.Xml;
-using System.Text.Json.Nodes;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -58,15 +48,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
         protected readonly string _runtimeJsonPath;
 
+        private readonly string _currentWorkingDirectory;
+
         public ToolPackageDownloader(
             IToolPackageStore store,
-            string runtimeJsonPathForTests = null
+            string runtimeJsonPathForTests = null,
+            string currentWorkingDirectory = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
+            ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
             _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
+            _currentWorkingDirectory = currentWorkingDirectory;
             
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
@@ -77,7 +71,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = true,
+            RestoreActionConfig restoreActionConfig = null
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
@@ -100,9 +96,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity);
 
-                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                        toolDownloadDir,
+                        verboseLogger: nugetLogger,
+                        verifySignatures: verifySignatures,
+                        shouldUsePackageSourceMapping: true,
+                        restoreActionConfig: restoreActionConfig,
+                        verbosityOptions: verbosity,
+                        currentWorkingDirectory: _currentWorkingDirectory);
+
+                    var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
                     bool givenSpecificVersion = false;
                     if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
@@ -111,11 +115,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
 
                     if (isGlobalTool)
                     {
-                        NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
+                        NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
                         var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 
                         if (globalPackage != null)
@@ -132,7 +136,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (package == null)
                     {
-                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
+                        DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
                     else if(isGlobalTool)
                     {
@@ -209,23 +213,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             ToolPackageInstance toolPackageInstance
             )
         {
-            foreach (var command in toolPackageInstance.Commands)
+            var runtimeConfigFilePath = Path.ChangeExtension(toolPackageInstance.Command.Executable.Value, ".runtimeconfig.json");
+
+            // Update the runtimeconfig.json file
+            if (File.Exists(runtimeConfigFilePath))
             {
-                var runtimeConfigFilePath = Path.ChangeExtension(command.Executable.Value, ".runtimeconfig.json");
+                string existingJson = File.ReadAllText(runtimeConfigFilePath);
 
-                // Update the runtimeconfig.json file
-                if (File.Exists(runtimeConfigFilePath))
+                var jsonObject = JObject.Parse(existingJson);
+                if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
                 {
-                    string existingJson = File.ReadAllText(runtimeConfigFilePath);
-
-                    var jsonObject = JObject.Parse(existingJson);
-                    var runtimeOptions = jsonObject["runtimeOptions"] as JObject;
-                    if (runtimeOptions != null)
-                    {
-                        runtimeOptions["rollForward"] = "Major";
-                        string updateJson = jsonObject.ToString();
-                        File.WriteAllText(runtimeConfigFilePath, updateJson);
-                    }
+                    runtimeOptions["rollForward"] = "Major";
+                    string updateJson = jsonObject.ToString();
+                    File.WriteAllText(runtimeConfigFilePath, updateJson);
                 }
             }
         }
@@ -256,13 +256,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     foreach (var item in group.Items)
                     {
                         var newItem = new LockFileItem(item.Path);
-                        object locale;
-                        if (item.Properties.TryGetValue("locale", out locale))
+                        if (item.Properties.TryGetValue("locale", out var locale))
                         {
                             newItem.Properties["locale"] = (string)locale;
                         }
-                        object related;
-                        if (item.Properties.TryGetValue("related", out related))
+
+                        if (item.Properties.TryGetValue("related", out var related))
                         {
                             newItem.Properties["related"] = (string)related;
                         }
@@ -278,11 +277,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         private static async Task<NuGetVersion> DownloadAndExtractPackage(
-            PackageLocation packageLocation,
             PackageId packageId,
             INuGetPackageDownloader nugetPackageDownloader,
             string packagesRootPath,
-            IToolPackageStore toolPackageStore,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation,
             bool includeUnlisted = false
@@ -295,7 +292,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             using (FileStream packageStream = File.OpenRead(packagePath))
             {
-                PackageArchiveReader reader = new PackageArchiveReader(packageStream);
+                PackageArchiveReader reader = new(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
@@ -306,8 +303,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             }
 
             // Extract the package
-            var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToString());
-            var filesInPackage = await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+            var nupkgDir = new VersionFolderPathResolver(packagesRootPath).GetInstallPath(packageId.ToString(), version);
+            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             return version;
         }
@@ -383,7 +380,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false)
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null)
         {
             ILogger nugetLogger = new NullLogger();
 
@@ -402,11 +400,13 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
                 verboseLogger: nugetLogger,
                 shouldUsePackageSourceMapping: true,
-                verbosityOptions: verbosity);
+                verbosityOptions: verbosity,
+                restoreActionConfig: restoreActionConfig);
 
             var packageSourceLocation = new PackageSourceLocation(
                 nugetConfig: packageLocation.NugetConfig,
                 rootConfigDirectory: packageLocation.RootConfigDirectory,
+                sourceFeedOverrides: packageLocation.SourceFeedOverrides,
                 additionalSourceFeeds: packageLocation.AdditionalFeeds);
 
             return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();

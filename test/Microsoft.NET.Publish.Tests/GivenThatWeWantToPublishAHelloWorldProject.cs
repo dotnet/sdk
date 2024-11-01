@@ -19,8 +19,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp1.1")]
-        [InlineData("netcoreapp2.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
@@ -265,6 +263,7 @@ public static class Program
 
             string outputMessage = $"Hello from {testProject.Name}!";
 
+            testProject.AdditionalProperties.Add("RollForward", "LatestMajor");
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
             testProject.SourceFiles["Program.cs"] = @"
 using System;
@@ -590,35 +589,6 @@ public static class Program
             Assert.True(File.Exists(expectedAssetPath));
             var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", tfm, "HelloWorld.dll");
             Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
-        }
-
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("=")]
-        public void PublishRelease_does_recognize_undefined_property(string propertySuffix)
-        {
-            string tfm = ToolsetInfo.CurrentTargetFramework;
-            var testProject = new TestProject()
-            {
-                IsExe = true,
-                TargetFrameworks = tfm
-            };
-
-            testProject.RecordProperties("SelfContained");
-            testProject.RecordProperties("PublishAot");
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            new DotnetPublishCommand(Log)
-                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, MethodBase.GetCurrentMethod().Name))
-                .Execute(("-p:SelfContained" + propertySuffix))
-                .Should()
-                .Pass();
-
-            var properties = testProject.GetPropertyValues(testAsset.TestRoot, configuration: "Release", targetFramework: tfm);
-
-            Assert.Equal("", properties["SelfContained"]);
-            Assert.Equal("", properties["PublishAot"]);
         }
 
         [Theory]

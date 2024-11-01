@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
         public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
         {
             return _createToolPackageStore(toolPath).EnumeratePackages()
-                .Where((p) => PackageHasCommands(p) && PackageIdMatches(p, packageId))
+                .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
                 .OrderBy(p => p.Id)
                 .ToArray();
         }
@@ -87,13 +87,13 @@ namespace Microsoft.DotNet.Tools.Tool.List
             return !packageId.HasValue || package.Id.Equals(packageId);
         }
 
-        private bool PackageHasCommands(IToolPackage package)
+        private bool PackageHasCommand(IToolPackage package)
         {
             try
             {
-                // Attempt to read the commands collection
+                // Attempt to read the command
                 // If it fails, print a warning and treat as no commands
-                return package.Commands.Count >= 0;
+                return package.Command is not null;
             }
             catch (Exception ex) when (ex is ToolConfigurationException)
             {
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 p => p.Version.ToNormalizedString());
             table.AddColumn(
                 LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
+                p => p.Command.Name.ToString());
 
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
         }
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 {
                     PackageId = p.Id.ToString(),
                     Version = p.Version.ToNormalizedString(),
-                    Commands = p.Commands.Select(c => c.Name.Value).ToArray()
+                    Commands = [p.Command.Name.Value]
                 }).ToArray()
             };
             var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);

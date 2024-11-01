@@ -75,7 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: []);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             foreach (var result in results)
             {
-                var errorCount = result.CSharpDocument.Diagnostics.Count;
+                var errorCount = result.CSharpDocument.Diagnostics.Length;
                 for (var i = 0; i < errorCount; i++)
                 {
                     var error = result.CSharpDocument.Diagnostics[i];

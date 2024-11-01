@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public void WritesToStandardStreams(bool suppressEmojis)
         {
             var testConsole = new TestConsole();
-            var reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
+            IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
 
             // stdout
@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public void WritesToStandardStreamsWithCustomEmojis(bool suppressEmojis)
         {
             var testConsole = new TestConsole();
-            var reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
+            IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "😄")}";
 
             // stdout

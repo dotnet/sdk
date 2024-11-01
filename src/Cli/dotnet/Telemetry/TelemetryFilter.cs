@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private static List<IParseResultLogRule> ParseResultLogRules => new()
         {
             new AllowListToSendFirstArgument(new HashSet<string> {"new", "help"}),
-            new AllowListToSendFirstAppliedOptions(new HashSet<string> {"add", "remove", "list", "sln", "nuget"}),
+            new AllowListToSendFirstAppliedOptions(new HashSet<string> {"add", "remove", "list", "solution", "nuget"}),
             new TopLevelCommandNameAndOptionToLog
             (
                 topLevelCommandName: new HashSet<string> {"build", "publish"},
