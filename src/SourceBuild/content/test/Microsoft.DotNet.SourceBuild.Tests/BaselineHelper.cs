@@ -45,15 +45,15 @@ namespace Microsoft.DotNet.SourceBuild.Tests
             Assert.Null(message);
         }
 
-        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
+        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, string baselineSubDir = "")
         {
             string actualFilePath = Path.Combine(Config.LogsDirectory, $"Updated{baselineFileName}");
             File.WriteAllText(actualFilePath, actualContents);
 
-            CompareFiles(GetBaselineFilePath(baselineFileName, baselineSubDir), actualFilePath, outputHelper, warnOnDiffs);
+            CompareFiles(GetBaselineFilePath(baselineFileName, baselineSubDir), actualFilePath, outputHelper);
         }
 
-        public static void CompareFiles(string expectedFilePath, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
+        public static void CompareFiles(string expectedFilePath, string actualFilePath, ITestOutputHelper outputHelper)
         {
             string baselineFileText = File.ReadAllText(expectedFilePath).Trim();
             string actualFileText = File.ReadAllText(actualFilePath).Trim();
@@ -64,21 +64,11 @@ namespace Microsoft.DotNet.SourceBuild.Tests
             {
                 // Retrieve a diff in order to provide a UX which calls out the diffs.
                 string diff = DiffFiles(expectedFilePath, actualFilePath, outputHelper);
-                string prefix = warnOnDiffs ? "##vso[task.logissue type=warning;]" : string.Empty;
-                message = $"{Environment.NewLine}{prefix}Expected file '{expectedFilePath}' does not match actual file '{actualFilePath}`.  {Environment.NewLine}"
+                message = $"{Environment.NewLine}Expected file '{expectedFilePath}' does not match actual file '{actualFilePath}`.  {Environment.NewLine}"
                     + $"{diff}{Environment.NewLine}";
-
-                if (warnOnDiffs)
-                {
-                    outputHelper.WriteLine(message);
-                    outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
-                }
             }
 
-            if (!warnOnDiffs)
-            {
-                Assert.Null(message);
-            }
+            Assert.Null(message);
         }
 
         public static string DiffFiles(string file1Path, string file2Path, ITestOutputHelper outputHelper)
