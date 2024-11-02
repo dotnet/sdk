@@ -127,9 +127,9 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            Assert.Matches(
+            AssertEx.ContainsRegex(
                 @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1\.0\.0\.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
-                string.Join(Environment.NewLine, App.Process.Output));
+                App.Process.Output);
         }
 
         [Theory]
@@ -168,9 +168,9 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            Assert.Matches(
+            AssertEx.ContainsRegex(
                 @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Exception from 'System.Action`1\[System.Type\[\]\]': System.InvalidOperationException: Bug!",
-                string.Join(Environment.NewLine, App.Process.Output));
+                App.Process.Output);
 
             if (verbose)
             {
