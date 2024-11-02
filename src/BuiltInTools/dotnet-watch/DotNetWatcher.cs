@@ -80,7 +80,9 @@ namespace Microsoft.DotNet.Watcher
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
-                using var fileSetWatcher = new FileWatcher(evaluationResult.Files, Context.Reporter);
+                using var fileSetWatcher = new FileWatcher(Context.Reporter);
+
+                fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
 
                 var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
 
@@ -89,7 +91,7 @@ namespace Microsoft.DotNet.Watcher
 
                 while (true)
                 {
-                    fileSetTask = fileSetWatcher.GetChangedFileAsync(startedWatching: null, combinedCancellationSource.Token);
+                    fileSetTask = fileSetWatcher.WaitForFileChangeAsync(evaluationResult.Files, startedWatching: null, combinedCancellationSource.Token);
                     finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
                     if (staticFileHandler != null && finishedTask == fileSetTask && fileSetTask.Result.HasValue)
@@ -119,9 +121,11 @@ namespace Microsoft.DotNet.Watcher
                 {
                     // Process exited. Redo evalulation
                     buildEvaluator.RequiresRevaluation = true;
+
                     // Now wait for a file to change before restarting process
-                    changedFile = await fileSetWatcher.GetChangedFileAsync(
-                        () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                    changedFile = await fileSetWatcher.WaitForFileChangeAsync(
+                        evaluationResult.Files,
+                        startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                         shutdownCancellationToken);
                 }
                 else

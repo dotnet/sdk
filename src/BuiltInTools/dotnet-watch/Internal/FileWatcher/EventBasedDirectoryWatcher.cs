@@ -12,9 +12,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public event EventHandler<Exception>? OnError;
 
-        public string Directory { get; }
+        public string WatchedDirectory { get; }
 
-        internal Action<string>? Logger { get; set;  }
+        internal Action<string>? Logger { get; set; }
 
         private volatile bool _disposed;
 
@@ -24,8 +24,14 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         internal EventBasedDirectoryWatcher(string watchedDirectory)
         {
-            Directory = watchedDirectory;
+            WatchedDirectory = watchedDirectory;
             CreateFileSystemWatcher();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            DisposeInnerWatcher();
         }
 
         private void WatcherErrorHandler(object sender, ErrorEventArgs e)
@@ -65,9 +71,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             NotifyChange(e.OldFullPath, ChangeKind.Delete);
             NotifyChange(e.FullPath, ChangeKind.Add);
 
-            if (System.IO.Directory.Exists(e.FullPath))
+            if (Directory.Exists(e.FullPath))
             {
-                foreach (var newLocation in System.IO.Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
                 {
                     // Calculated previous path of this moved item.
                     var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
@@ -129,7 +135,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     DisposeInnerWatcher();
                 }
 
-                _fileSystemWatcher = new FileSystemWatcher(Directory)
+                _fileSystemWatcher = new FileSystemWatcher(WatchedDirectory)
                 {
                     IncludeSubdirectories = true
                 };
@@ -146,7 +152,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void DisposeInnerWatcher()
         {
-            if ( _fileSystemWatcher != null )
+            if (_fileSystemWatcher != null)
             {
                 _fileSystemWatcher.EnableRaisingEvents = false;
 
@@ -164,12 +170,6 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             get => _fileSystemWatcher!.EnableRaisingEvents;
             set => _fileSystemWatcher!.EnableRaisingEvents = value;
-        }
-
-        public void Dispose()
-        {
-            _disposed = true;
-            DisposeInnerWatcher();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         event EventHandler<Exception> OnError;
 
-        string Directory { get; }
+        string WatchedDirectory { get; }
 
         bool EnableRaisingEvents { get; set; }
     }

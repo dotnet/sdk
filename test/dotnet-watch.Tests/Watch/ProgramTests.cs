@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var program = Program.TryCreate(
                 TestOptions.GetCommandLineOptions(["--verbose"]),
                 console,
-                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
                 reporter,
                 out var errorCode);
 
@@ -196,16 +196,21 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
-            await App.AssertOutputLineEquals("The following Tests are available:");
-            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            App.AssertOutputContains("The following Tests are available:");
+            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+            App.Process.ClearOutput();
 
             // update file:
             var testFile = Path.Combine(testAsset.Path, "UnitTest1.cs");
             var content = File.ReadAllText(testFile, Encoding.UTF8);
             File.WriteAllText(testFile, content.Replace("VSTestXunitPassTest", "VSTestXunitPassTest2"), Encoding.UTF8);
 
-            await App.AssertOutputLineEquals("The following Tests are available:");
-            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            App.AssertOutputContains("The following Tests are available:");
+            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
         }
 
         [Fact]

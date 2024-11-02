@@ -13,21 +13,29 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private readonly DirectoryInfo _watchedDirectory;
 
-        private Dictionary<string, FileMeta> _knownEntities = new();
-        private Dictionary<string, FileMeta> _tempDictionary = new();
-        private Dictionary<string, ChangeKind> _changes = new();
+        private Dictionary<string, FileMeta> _knownEntities = [];
+        private Dictionary<string, FileMeta> _tempDictionary = [];
+        private readonly Dictionary<string, ChangeKind> _changes = [];
 
         private Thread _pollingThread;
         private bool _raiseEvents;
 
-        private bool _disposed;
+        private volatile bool _disposed;
+
+        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
+
+#pragma warning disable CS0067 // not used
+        public event EventHandler<Exception>? OnError;
+#pragma warning restore
+
+        public string WatchedDirectory { get; }
 
         public PollingDirectoryWatcher(string watchedDirectory)
         {
             Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
-            Directory = _watchedDirectory.FullName;
+            WatchedDirectory = _watchedDirectory.FullName;
 
             _pollingThread = new Thread(new ThreadStart(PollingLoop))
             {
@@ -40,20 +48,18 @@ namespace Microsoft.DotNet.Watcher.Internal
             _pollingThread.Start();
         }
 
-        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
-
-#pragma warning disable CS0067 // not used
-        public event EventHandler<Exception>? OnError;
-#pragma warning restore
-
-        public string Directory { get; }
+        public void Dispose()
+        {
+            EnableRaisingEvents = false;
+            _disposed = true;
+        }
 
         public bool EnableRaisingEvents
         {
             get => _raiseEvents;
             set
             {
-                EnsureNotDisposed();
+                ObjectDisposedException.ThrowIf(_disposed, this);
                 _raiseEvents = value;
             }
         }
@@ -90,9 +96,9 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             _knownEntities.Clear();
 
-            ForeachEntityInDirectory(_watchedDirectory, f =>
+            ForeachEntityInDirectory(_watchedDirectory, fileInfo =>
             {
-                _knownEntities.Add(f.FullName, new FileMeta(f));
+                _knownEntities.Add(fileInfo.FullName, new FileMeta(fileInfo, foundAgain: false));
             });
         }
 
@@ -100,14 +106,14 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             _changes.Clear();
 
-            ForeachEntityInDirectory(_watchedDirectory, f =>
+            ForeachEntityInDirectory(_watchedDirectory, fileInfo =>
             {
-                var fullFilePath = f.FullName;
+                var fullFilePath = fileInfo.FullName;
 
                 if (!_knownEntities.ContainsKey(fullFilePath))
                 {
                     // New file or directory
-                    RecordChange(f, ChangeKind.Add);
+                    RecordChange(fileInfo, ChangeKind.Add);
                 }
                 else
                 {
@@ -116,10 +122,10 @@ namespace Microsoft.DotNet.Watcher.Internal
                     try
                     {
                         if (!fileMeta.FileInfo.Attributes.HasFlag(FileAttributes.Directory) &&
-                            fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                            fileMeta.FileInfo.LastWriteTime != fileInfo.LastWriteTime)
                         {
                             // File changed
-                            RecordChange(f, ChangeKind.Update);
+                            RecordChange(fileInfo, ChangeKind.Update);
                         }
 
                         _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: true);
@@ -130,7 +136,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     }
                 }
 
-                _tempDictionary.Add(f.FullName, new FileMeta(f));
+                _tempDictionary.Add(fileInfo.FullName, new FileMeta(fileInfo, foundAgain: false));
             });
 
             foreach (var file in _knownEntities)
@@ -211,31 +217,10 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        private void EnsureNotDisposed()
+        private readonly struct FileMeta(FileSystemInfo fileInfo, bool foundAgain)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(PollingDirectoryWatcher));
-            }
-        }
-
-        public void Dispose()
-        {
-            EnableRaisingEvents = false;
-            _disposed = true;
-        }
-
-        private struct FileMeta
-        {
-            public FileMeta(FileSystemInfo fileInfo, bool foundAgain = false)
-            {
-                FileInfo = fileInfo;
-                FoundAgain = foundAgain;
-            }
-
-            public FileSystemInfo FileInfo;
-
-            public bool FoundAgain;
+            public readonly FileSystemInfo FileInfo = fileInfo;
+            public readonly bool FoundAgain = foundAgain;
         }
     }
 }
