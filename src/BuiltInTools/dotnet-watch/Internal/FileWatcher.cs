@@ -7,7 +7,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal sealed class FileWatcher(IReadOnlyDictionary<string, FileItem> fileSet, IReporter reporter) : IDisposable
     {
-        private readonly Dictionary<string, IFileSystemWatcher> _watchers = [];
+        // Directory watcher for each watched directory
+        private readonly Dictionary<string, IDirectoryWatcher> _watchers = [];
 
         private bool _disposed;
         public event Action<string, ChangeKind>? OnFileChange;
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public void StartWatching()
         {
-            EnsureNotDisposed();
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             foreach (var (filePath, _) in fileSet)
             {
@@ -67,9 +68,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void WatcherErrorHandler(object? sender, Exception error)
         {
-            if (sender is IFileSystemWatcher watcher)
+            if (sender is IDirectoryWatcher watcher)
             {
-                reporter.Warn($"The file watcher observing '{watcher.BasePath}' encountered an error: {error.Message}");
+                reporter.Warn($"The file watcher observing '{watcher.Directory}' encountered an error: {error.Message}");
             }
         }
 
@@ -88,14 +89,6 @@ namespace Microsoft.DotNet.Watcher.Internal
             watcher.OnError -= WatcherErrorHandler;
 
             watcher.Dispose();
-        }
-
-        private void EnsureNotDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(FileWatcher));
-            }
         }
 
         private static string EnsureTrailingSlash(string path)

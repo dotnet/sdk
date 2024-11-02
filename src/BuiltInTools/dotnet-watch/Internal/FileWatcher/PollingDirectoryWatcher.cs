@@ -6,7 +6,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal class PollingFileWatcher : IFileSystemWatcher
+    internal sealed class PollingDirectoryWatcher : IDirectoryWatcher
     {
         // The minimum interval to rerun the scan
         private static readonly TimeSpan _minRunInternal = TimeSpan.FromSeconds(.5);
@@ -22,17 +22,17 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private bool _disposed;
 
-        public PollingFileWatcher(string watchedDirectory)
+        public PollingDirectoryWatcher(string watchedDirectory)
         {
             Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
-            BasePath = _watchedDirectory.FullName;
+            Directory = _watchedDirectory.FullName;
 
             _pollingThread = new Thread(new ThreadStart(PollingLoop))
             {
                 IsBackground = true,
-                Name = nameof(PollingFileWatcher)
+                Name = nameof(PollingDirectoryWatcher)
             };
 
             CreateKnownFilesSnapshot();
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         public event EventHandler<Exception>? OnError;
 #pragma warning restore
 
-        public string BasePath { get; }
+        public string Directory { get; }
 
         public bool EnableRaisingEvents
         {
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(PollingFileWatcher));
+                throw new ObjectDisposedException(nameof(PollingDirectoryWatcher));
             }
         }
 
