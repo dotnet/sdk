@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Text.RegularExpressions;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -232,6 +233,26 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var message = new StringBuilder();
             message.AppendLine($"'{expected}' not found in:");
+
+            foreach (var item in items)
+            {
+                message.AppendLine($"'{item}'");
+            }
+
+            Fail(message.ToString());
+        }
+
+        public static void ContainsRegex(string pattern, IEnumerable<string> items)
+        {
+            var regex = new Regex(pattern, RegexOptions.Compiled);
+
+            if (items.Any(item => regex.IsMatch(item)))
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine($"Pattern '{pattern}' not found in:");
 
             foreach (var item in items)
             {
