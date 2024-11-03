@@ -127,8 +127,8 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
+            AssertEx.ContainsRegex(
+                @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1\.0\.0\.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
                 App.Process.Output);
         }
 
@@ -168,13 +168,13 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!",
+            AssertEx.ContainsRegex(
+                @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Exception from 'System.Action`1\[System.Type\[\]\]': System.InvalidOperationException: Bug!",
                 App.Process.Output);
 
             if (verbose)
             {
-                AssertEx.Contains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.", App.Process.Output);
+                AssertEx.ContainsRegex(@"dotnet watch 🕵️ \[WatchHotReloadApp \(net\d+\.\d+\)\] Deltas applied.", App.Process.Output);
             }
             else
             {
