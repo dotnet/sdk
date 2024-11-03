@@ -52,7 +52,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       BuildInParallel="$(BuildInParallel)"
       Condition="'%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(_MSBuildProjectReferenceExistent)' != ''"
       RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)$(_GlobalPropertiesToRemoveFromProjectReferences);TargetFramework;TargetFrameworks"
-      SkipNonexistentProjects="true" >
+      SkipNonexistentTargets="true" >
       <Output TaskParameter="TargetOutputs" ItemName="SuggestedWorkloadFromReference"/>
     </MSBuild>
 
