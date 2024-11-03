@@ -57,6 +57,11 @@
         <target state="translated">Не удалось найти проекты в "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="CouldNotFindFile">
+        <source>Could not find file `{0}`.</source>
+        <target state="new">Could not find file `{0}`.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DidYouMean">
         <source>Did you mean the following command?</source>
         <target state="translated">Вы имели в виду следующую команду?</target>
@@ -227,6 +232,16 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Решение</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsFile">
+        <source>Solution {0} already contains file {1}.</source>
+        <target state="new">Solution {0} already contains file {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsFolder">
+        <source>Solution {0} already contains folder {1}.</source>
+        <target state="new">Solution {0} already contains folder {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionArgumentMisplaced">
         <source>Solution argument '{0}' is misplaced.</source>
         <target state="translated">Аргумент решения "{0}" размещен неправильно.</target>
@@ -277,9 +292,49 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Удалить</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAddedToTheSolution">
+        <source>Solution folder `{0}` added to the solution.</source>
+        <target state="new">Solution folder `{0}` added to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsFile">
+        <source>Solution {0} already contains file {1} in solution folder {2}.</source>
+        <target state="new">Solution {0} already contains file {1} in solution folder {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsFolder">
+        <source>Solution {0} already contains folder {1} in solution folder {2}.</source>
+        <target state="new">Solution {0} already contains folder {1} in solution folder {2}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProject">
         <source>Solution {0} already contains project {1} in solution folder {2}.</source>
         <target state="translated">Решение {0} уже содержит проект {1} в папке решения {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderRemovedFromTheSolution">
+        <source>Solution folder `{0}` removed from the solution.</source>
+        <target state="new">Solution folder `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionItemAddedToTheSolution">
+        <source>Solution item `{0}` added to the solution.</source>
+        <target state="new">Solution item `{0}` added to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionItemRemovedFromTheSolution">
+        <source>Solution item `{0}` removed from the solution.</source>
+        <target state="new">Solution item `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneFileToAdd">
+        <source>You must specify at least one file to add.</source>
+        <target state="new">You must specify at least one file to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneFolderToAdd">
+        <source>You must specify at least one folder to add.</source>
+        <target state="new">You must specify at least one folder to add.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">

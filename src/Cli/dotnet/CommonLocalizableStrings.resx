@@ -318,6 +318,9 @@
   <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
     <value>Could not find project or directory `{0}`.</value>
   </data>
+  <data name="CouldNotFindFile" xml:space="preserve">
+    <value>Could not find file `{0}`.</value>
+  </data>
   <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
     <value>Found more than one project in `{0}`. Specify which one to use.</value>
   </data>
@@ -378,17 +381,48 @@
   <data name="SpecifyAtLeastOneProjectToAdd" xml:space="preserve">
     <value>You must specify at least one project to add.</value>
   </data>
+  <data name="SpecifyAtLeastOneFileToAdd" xml:space="preserve">
+    <value>You must specify at least one file to add.</value>
+  </data>
+  <data name="SpecifyAtLeastOneFolderToAdd" xml:space="preserve">
+    <value>You must specify at least one folder to add.</value>
+  </data>
   <data name="ProjectAddedToTheSolution" xml:space="preserve">
     <value>Project `{0}` added to the solution.</value>
   </data>
   <data name="ProjectRemovedFromTheSolution" xml:space="preserve">
     <value>Project `{0}` removed from the solution.</value>
   </data>
+  <!-- TODO: add support for solution folder name -->
+  <data name="SolutionItemAddedToTheSolution" xml:space="preserve">
+    <value>Solution item `{0}` added to the solution.</value>
+  </data>
+  <data name="SolutionItemRemovedFromTheSolution" xml:space="preserve">
+    <value>Solution item `{0}` removed from the solution.</value>
+  </data>
+  <data name="SolutionFolderAddedToTheSolution" xml:space="preserve">
+    <value>Solution folder `{0}` added to the solution.</value>
+  </data>
+  <data name="SolutionFolderRemovedFromTheSolution" xml:space="preserve">
+    <value>Solution folder `{0}` removed from the solution.</value>
+  </data>
   <data name="SolutionAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1}.</value>
   </data>
   <data name="SolutionFolderAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1} in solution folder {2}.</value>
+  </data>
+  <data name="SolutionAlreadyContainsFolder" xml:space="preserve">
+    <value>Solution {0} already contains folder {1}.</value>
+  </data>
+  <data name="SolutionFolderAlreadyContainsFolder" xml:space="preserve">
+    <value>Solution {0} already contains folder {1} in solution folder {2}.</value>
+  </data>
+  <data name="SolutionAlreadyContainsFile" xml:space="preserve">
+    <value>Solution {0} already contains file {1}.</value>
+  </data>
+  <data name="SolutionFolderAlreadyContainsFile" xml:space="preserve">
+    <value>Solution {0} already contains file {1} in solution folder {2}.</value>
   </data>
   <data name="ReferenceNotFoundInTheProject" xml:space="preserve">
     <value>Specified reference {0} does not exist in project {1}.</value>
