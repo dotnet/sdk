@@ -46,7 +46,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 var fullPath = Path.GetFullPath(project);
                 return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
             }).ToArray();
-
             try
             {
                 AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
@@ -54,15 +53,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             }
             catch (Exception ex)
             {
-                // TODO: Have better error matching
-                // Using string comparison as keys are not exposed
-                if (Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'.").Success)
-                {
-                    Reporter.Output.WriteLine(
-                        string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject));
-                    // We treat this as a successful command
-                    return 0;
-                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -84,10 +74,25 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 : null;
             foreach (var projectPath in projectPaths)
             {
-                solution.AddProject(Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath), null, solutionFolder);
-                Reporter.Output.WriteLine(
-                    CommonLocalizableStrings.ProjectAddedToTheSolution,
-                    Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath));
+                // Get full project path
+                var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath); 
+                try
+                {
+                    solution.AddProject(relativePath, null, solutionFolder);
+                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
+                }
+                catch (Exception ex)
+                {
+                    if (Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success || Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'\.").Success)
+                    {
+                        Reporter.Output.WriteLine(
+                            string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath));
+                    }
+                    else
+                    {
+                        throw new GracefulException(ex.Message, ex);
+                    }
+                }
             }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
