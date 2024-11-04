@@ -245,14 +245,15 @@ namespace Microsoft.DotNet.Cli
             foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
             {
                 VSTestTrace.SafeWriteTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
-                $"{successfulTestResult.State}, {successfulTestResult.Reason}, {successfulTestResult.SessionUid}");
+                $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.StandardOutput}," +
+                $"{successfulTestResult.ErrorOutput}, {successfulTestResult.SessionUid}");
             }
 
             foreach (FailedTestResult failedTestResult in args.FailedTestResults)
             {
                 VSTestTrace.SafeWriteTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
-                $" {failedTestResult.ErrorStackTrace}, {failedTestResult.SessionUid}");
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
+                $"{failedTestResult.ErrorStackTrace}, {failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
             }
         }
 

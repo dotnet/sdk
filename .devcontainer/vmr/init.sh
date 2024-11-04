@@ -27,4 +27,4 @@ vmr_branch=$(git -C "$sdk_dir" log --pretty=format:'%D' HEAD^ \
 
 "$workspace_dir/synchronize-vmr.sh" --branch "$vmr_branch" --debug
 
-(cd "$vmr_dir" && ./prep-source-build.sh)
+cd "$vmr_dir"

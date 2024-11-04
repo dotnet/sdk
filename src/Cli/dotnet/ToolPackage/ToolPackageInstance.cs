@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 
@@ -23,17 +24,6 @@ namespace Microsoft.DotNet.ToolPackage
 
             return new ToolPackageInstance(id, version, packageDirectory, assetsJsonParentDirectory);
         }
-
-        /// <summary>
-        /// Validates that the nuspec XML represents a .NET tool package.
-        /// </summary>
-        /// <param name="nuspec">The nuspec XML to check.</param>
-        /// <returns><see langword="true"/> if the nuspec represents a .NET tool package; otherwise, <see langword="false"/>.</returns>
-        public static bool IsToolPackage(XDocument nuspec) =>
-            nuspec.Root.Descendants().Where(
-                e => e.Name.LocalName == "packageType" &&
-                e.Attributes().Where(a => a.Name.LocalName == "name" && a.Value == "DotnetTool").Any()).Any();
-
         private const string PackagedShimsDirectoryConvention = "shims";
 
         public IEnumerable<string> Warnings => _toolConfiguration.Value.Warnings;
@@ -85,7 +75,8 @@ namespace Microsoft.DotNet.ToolPackage
             _lockFile =
                 new Lazy<LockFile>(
                     () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
-            var toolsPackagePath = Path.Combine(PackageDirectory.Value, Id.ToString(), Version.ToNormalizedString(), "tools");
+            var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(Id.ToString(), Version);
+            var toolsPackagePath = Path.Combine(installPath, "tools");
             Frameworks = Directory.GetDirectories(toolsPackagePath)
                 .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
         }
@@ -127,7 +118,7 @@ namespace Microsoft.DotNet.ToolPackage
             return PackageDirectory
                         .WithSubDirectories(
                             Id.ToString(),
-                            library.Version.ToNormalizedString())
+                            library.Version.ToNormalizedString().ToLowerInvariant())
                         .WithFile(lockFileRelativePath);
         }
 
@@ -209,7 +200,7 @@ namespace Microsoft.DotNet.ToolPackage
                 PackageDirectory
                     .WithSubDirectories(
                         Id.ToString(),
-                        library.Version.ToNormalizedString())
+                        library.Version.ToNormalizedString().ToLowerInvariant())
                     .WithFile(dotnetToolSettings.Path);
 
             var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);

@@ -682,13 +682,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
         <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(StaticWebAsset)"
+      CandidateAssets="@(_CurrentProjectStaticWebAsset)"
       AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
@@ -708,7 +708,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="UpdateExistingPackageStaticWebAssets" Condition="$(DesignTimeBuild) != 'true'">
+  <Target Name="UpdateExistingPackageStaticWebAssets">
     <UpdatePackageStaticWebAssets Assets="@(StaticWebAsset)">
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />

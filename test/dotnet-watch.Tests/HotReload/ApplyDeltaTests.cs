@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
@@ -98,6 +99,90 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
+        [Fact]
+        public async Task MetadataUpdateHandler_NoActions()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+            await App.AssertOutputLineStartsWith("Updated");
+
+            AssertEx.ContainsRegex(
+                @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1\.0\.0\.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
+                App.Process.Output);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task MetadataUpdateHandler_Exception(bool verbose)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())
+                .WithSource();
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            var source = File.ReadAllText(sourcePath, Encoding.UTF8)
+                .Replace("// <metadata update handler placeholder>", """
+                [assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(AppUpdateHandler))]
+                """)
+                + """
+                class AppUpdateHandler
+                {
+                    public static void ClearCache(Type[] types) => throw new System.InvalidOperationException("Bug!");
+                }
+                """;
+
+            File.WriteAllText(sourcePath, source, Encoding.UTF8);
+
+            if (!verbose)
+            {
+                // remove default --verbose arg
+                App.DotnetWatchArgs.Clear();
+            }
+
+            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+
+            await App.AssertOutputLineStartsWith("Updated");
+
+            AssertEx.ContainsRegex(
+                @"dotnet watch ⚠ \[WatchHotReloadApp \(net\d+\.\d+\)\] Exception from 'System.Action`1\[System.Type\[\]\]': System.InvalidOperationException: Bug!",
+                App.Process.Output);
+
+            if (verbose)
+            {
+                AssertEx.ContainsRegex(@"dotnet watch 🕵️ \[WatchHotReloadApp \(net\d+\.\d+\)\] Deltas applied.", App.Process.Output);
+            }
+            else
+            {
+                // shouldn't see any agent messages:
+                AssertEx.DoesNotContain("🕵️", App.Process.Output);
+            }
+        }
+
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42920")]
         public async Task BlazorWasm()
         {
@@ -119,6 +204,27 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             //UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
             //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        public async Task BlazorWasm_MSBuildWarning()
+        {
+            var testAsset = TestAssets
+                .CopyTestAsset("WatchBlazorWasm")
+                .WithSource()
+                .WithProjectChanges(proj =>
+                {
+                    proj.Root.Descendants()
+                        .Single(e => e.Name.LocalName == "ItemGroup")
+                        .Add(XElement.Parse("""
+                            <AdditionalFiles Include="Pages\Index.razor" />
+                            """));
+                });
+
+            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
+            await App.AssertWaitingForChanges();
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
