@@ -7,10 +7,8 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
     {
@@ -88,6 +86,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     update.ModuleId,
                     metadataDelta: update.MetadataDelta.ToArray(),
                     ilDelta: update.ILDelta.ToArray(),
+                    pdbDelta: update.PdbDelta.ToArray(),
                     update.UpdatedTypes.ToArray())).ToArray(),
                 responseLoggingLevel: Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors);
 
@@ -143,28 +142,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     return false;
                 }
 
-                foreach (var (message, severity) in UpdatePayload.ReadLog(_pipe))
-                {
-                    switch (severity)
-                    {
-                        case AgentMessageSeverity.Verbose:
-                            Reporter.Verbose(message, emoji: "🕵️");
-                            break;
-
-                        case AgentMessageSeverity.Error:
-                            Reporter.Error(message);
-                            break;
-
-                        case AgentMessageSeverity.Warning:
-                            Reporter.Warn(message, emoji: "⚠");
-                            break;
-
-                        default:
-                            Reporter.Error($"Unexpected message severity: {severity}");
-                            return false;
-                    }
-                }
-
+                ReportLog(Reporter, UpdatePayload.ReadLog(_pipe));
                 return true;
             }
             finally

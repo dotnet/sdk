@@ -5,22 +5,22 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class ProjectSpecificReporter(ProjectGraphNode node, IReporter underlyingReporter) : IReporter
+internal sealed class BrowserSpecificReporter(int browserId, IReporter underlyingReporter) : IReporter
 {
-    private readonly string _projectDisplayName = node.GetDisplayName();
+    private readonly string _prefix = $"[Browser #{browserId}] ";
 
     public bool IsVerbose
         => underlyingReporter.IsVerbose;
 
     public bool EnableProcessOutputReporting
-        => underlyingReporter.EnableProcessOutputReporting;
+        => false;
 
     public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
-        => underlyingReporter.ReportProcessOutput(project, line);
+        => throw new InvalidOperationException();
 
     public void ReportProcessOutput(OutputLine line)
-        => ReportProcessOutput(node, line);
+        => throw new InvalidOperationException();
 
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
-        => underlyingReporter.Report(descriptor, $"[{_projectDisplayName}] {prefix}", args);
+        => underlyingReporter.Report(descriptor, _prefix + prefix, args);
 }

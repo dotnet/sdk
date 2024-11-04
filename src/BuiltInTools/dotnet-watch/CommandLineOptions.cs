@@ -7,10 +7,8 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal sealed class CommandLineOptions
 {

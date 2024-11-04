@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
@@ -13,13 +12,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.WebTools.AspireServer.Contracts;
-using Microsoft.WebTools.AspireServer.Helpers;
-using Microsoft.WebTools.AspireServer.Models;
-using Microsoft.WebTools.AspireService.Helpers;
 using IAsyncDisposable = System.IAsyncDisposable;
 
-namespace Microsoft.WebTools.AspireServer;
+namespace Aspire.Tools.Service;
 
 /// <summary>
 /// Implementation of the AspireServerService. A new instance of this service will be created for each

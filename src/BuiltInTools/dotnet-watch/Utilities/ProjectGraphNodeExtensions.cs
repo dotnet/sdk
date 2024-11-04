@@ -4,7 +4,7 @@
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal static class ProjectGraphNodeExtensions
 {

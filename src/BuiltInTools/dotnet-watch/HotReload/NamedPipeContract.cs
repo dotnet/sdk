@@ -1,21 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.HotReload
+namespace Microsoft.DotNet.Watch
 {
-    internal enum ResponseLoggingLevel : byte
-    {
-        WarningsAndErrors = 0,
-        Verbose = 1, 
-    }
-
-    internal enum AgentMessageSeverity : byte
-    {
-        Verbose = 0,
-        Warning = 1,
-        Error = 2,
-    }
-
     internal readonly struct UpdatePayload(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel)
     {
         public const byte ApplySuccessValue = 0;
@@ -40,6 +27,7 @@ namespace Microsoft.Extensions.HotReload
                 binaryWriter.Write(delta.ModuleId.ToString());
                 await WriteBytesAsync(binaryWriter, delta.MetadataDelta, cancellationToken);
                 await WriteBytesAsync(binaryWriter, delta.ILDelta, cancellationToken);
+                await WriteBytesAsync(binaryWriter, delta.PdbDelta, cancellationToken);
                 WriteIntArray(binaryWriter, delta.UpdatedTypes);
             }
 
@@ -104,9 +92,10 @@ namespace Microsoft.Extensions.HotReload
                 var moduleId = Guid.Parse(binaryReader.ReadString());
                 var metadataDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var ilDelta = await ReadBytesAsync(binaryReader, cancellationToken);
+                var pdbDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var updatedTypes = ReadIntArray(binaryReader);
 
-                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, updatedTypes);
+                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, pdbDelta: pdbDelta, updatedTypes);
             }
 
             var responseLoggingLevel = (ResponseLoggingLevel)binaryReader.ReadByte();
@@ -160,22 +149,6 @@ namespace Microsoft.Extensions.HotReload
             {
                 yield return (reader.ReadString(), (AgentMessageSeverity)reader.ReadByte());
             }
-        }
-    }
-
-    internal readonly struct UpdateDelta
-    {
-        public Guid ModuleId { get; }
-        public byte[] MetadataDelta { get; }
-        public byte[] ILDelta { get; }
-        public int[] UpdatedTypes { get; }
-
-        public UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, int[] updatedTypes)
-        {
-            ModuleId = moduleId;
-            MetadataDelta = metadataDelta;
-            ILDelta = ilDelta;
-            UpdatedTypes = updatedTypes;
         }
     }
 

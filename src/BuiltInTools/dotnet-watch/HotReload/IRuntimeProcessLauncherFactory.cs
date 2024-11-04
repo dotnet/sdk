@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 /// <summary>
 /// Creates <see cref="IRuntimeProcessLauncher"/> for a given root project.

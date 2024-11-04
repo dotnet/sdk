@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
@@ -197,6 +193,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
             App.AssertOutputContains("dotnet watch ⌚ Launching browser: http://localhost:5000/");
+
+            // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
+            AssertEx.DoesNotContain("🕵️", App.Process.Output);
 
             var newSource = """
                 @page "/"

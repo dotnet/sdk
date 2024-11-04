@@ -3,4 +3,9 @@
 
 namespace Microsoft.DotNet.Watch;
 
-internal readonly record struct OutputLine(string Content, bool IsError);
+internal enum AgentMessageSeverity : byte
+{
+    Verbose = 0,
+    Warning = 1,
+    Error = 2,
+}

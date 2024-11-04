@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class DotNetWatcherTests : DotNetWatchTestBase
     {
