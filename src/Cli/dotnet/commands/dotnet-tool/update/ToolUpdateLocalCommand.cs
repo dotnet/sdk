@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -25,6 +26,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         private readonly PackageId _packageId;
         private readonly string _explicitManifestFile;
+
+        internal readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolUpdateLocalCommand(
             ParseResult parseResult,
@@ -59,7 +62,12 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
+
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, _restoreActionConfig);
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,

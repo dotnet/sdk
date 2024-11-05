@@ -44,6 +44,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _architectureOption;
         private IEnumerable<string> _forwardRestoreArguments;
 
+        internal readonly RestoreActionConfig _restoreActionConfig;
+
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
             CreateToolPackageStoresAndDownloader createToolPackageStoreAndDownloader = null,
@@ -74,11 +76,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
-            var restoreAction = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
                 NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: _restoreActionConfig);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
 
             _reporter = (reporter ?? Reporter.Output);
@@ -132,7 +134,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         versionRange: versionRange,
                         targetFramework: _framework,
                         verbosity: _verbosity,
-                        isGlobalTool: true
+                        isGlobalTool: true,
+                        restoreActionConfig: _restoreActionConfig
                     );
 
                     NuGetFramework framework;
