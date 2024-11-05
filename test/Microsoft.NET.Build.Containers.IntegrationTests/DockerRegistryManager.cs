@@ -16,16 +16,18 @@ public class DockerRegistryManager
     public const string Net7ImageTag = "7.0";
     public const string Net8ImageTag = "8.0";
     public const string Net9PreviewImageTag = "9.0-preview";
+    public const string Net9PreviewImageDigest = "sha256:8f530963f22ca799550c29580e4dfc3a674f57ba56267fc82670de773d9a2506";
     public const string RuntimeFrameworkVersion = "9.0.0-preview.3.24172.9";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8ImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
     public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net9PreviewImageTag}";
     public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net9PreviewImageTag}";
+    public const string FullyQualifiedBaseImageAspNetDigest = $"{BaseImageSource}/{AspNetBaseImage}@{Net9PreviewImageDigest}";
     private static string? s_registryContainerId;
 
     internal class SameArchManifestPicker : IManifestPicker
     {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier) 
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
         {
             return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
         }
@@ -74,7 +76,7 @@ public class DockerRegistryManager
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
                     var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(),  CancellationToken.None);
-                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
+                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag, null);
                     var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
                     logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                     await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
