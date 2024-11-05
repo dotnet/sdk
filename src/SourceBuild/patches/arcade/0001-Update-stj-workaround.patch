@@ -1,0 +1,24 @@
+From 38b0330b3590032071706c330055a4631e70e558 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 5 Nov 2024 13:13:50 +0100
+Subject: [PATCH] Update Workarounds.targets because of 10.0 SDK change
+
+Backport: https://github.com/dotnet/arcade/pull/15218
+
+---
+ src/Microsoft.DotNet.Arcade.Sdk/tools/Workarounds.targets | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Workarounds.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/Workarounds.targets
+index 492130d40fc..bae31b8689d 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Workarounds.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Workarounds.targets
+@@ -197,7 +197,7 @@
+ <![CDATA[
+ try
+ {
+-    System.Reflection.Assembly.LoadFrom(@"$(MicrosoftNETBuildTasksDirectoryRoot)\..\..\..\DotnetTools\dotnet-format\BuildHost-net472\System.Text.Json.dll");
++    System.Reflection.Assembly.LoadFrom(@"$(MicrosoftNETBuildTasksDirectoryRoot)\..\..\..\Sdks\Microsoft.NET.Sdk.StaticWebAssets\tasks\net472\System.Text.Json.dll");
+ }
+ catch
+ {
