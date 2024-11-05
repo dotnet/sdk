@@ -59,10 +59,16 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
             await PushToRemoteRegistry(GeneratedImageIndex, mediaType, logger, cancellationToken);
         }
-        catch (Exception ex)
+        catch (ContainerHttpException e)
+        {
+            if (BuildEngine != null)
+            {
+                Log.LogErrorFromException(e, true);
+            }
+        }
+        catch (ArgumentException ex)
         {
             Log.LogErrorFromException(ex);
-            return !Log.HasLoggedErrors;
         }
 
         return !Log.HasLoggedErrors;
