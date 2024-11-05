@@ -24,7 +24,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             IsRootProject = false,
             ProjectPath = projectPath,
             WorkingDirectory = workingDirectory,
-            BuildProperties = [],
+            BuildArguments = [],
             Command = "run",
             CommandArguments = ["--project", projectPath],
             LaunchEnvironmentVariables = [],

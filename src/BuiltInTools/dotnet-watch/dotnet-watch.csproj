@@ -17,10 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Common\EnvironmentVariableNames.cs" Link="Common\EnvironmentVariableNames.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
     <Content Include="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
@@ -45,6 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj"/>
+
     <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj"
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"

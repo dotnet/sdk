@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -47,13 +48,13 @@ internal sealed class CommandLineOptions
 
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
-    public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
     public bool NoLaunchProfile { get; init; }
     public string? LaunchProfileName { get; init; }
 
     public string? ExplicitCommand { get; init; }
 
     public required IReadOnlyList<string> CommandArguments { get; init; }
+    public required IReadOnlyList<string> BuildArguments { get; init; }
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
@@ -90,12 +91,10 @@ internal sealed class CommandLineOptions
         var longProjectOption = new CliOption<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var launchProfileOption = new CliOption<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var noLaunchProfileOption = new CliOption<bool>("--no-launch-profile") { Hidden = true };
-        var targetFrameworkOption = new CliOption<string>("--framework", "-f") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var propertyOption = new CliOption<string[]>("--property") { Hidden = true, Arity = ArgumentArity.OneOrMore, AllowMultipleArgumentsPerToken = false };
 
         var rootCommand = new CliRootCommand(Resources.Help)
         {
-            Directives = { new EnvironmentVariablesDirective() }
+            Directives = { new EnvironmentVariablesDirective() },
         };
 
         foreach (var watchOption in watchOptions)
@@ -107,8 +106,13 @@ internal sealed class CommandLineOptions
         rootCommand.Options.Add(shortProjectOption);
         rootCommand.Options.Add(launchProfileOption);
         rootCommand.Options.Add(noLaunchProfileOption);
-        rootCommand.Options.Add(targetFrameworkOption);
-        rootCommand.Options.Add(propertyOption);
+
+        var buildOptions = RunCommandParser.GetCommand().Options.Where(o => o is IForwardedOption);
+
+        foreach (var buildOption in buildOptions)
+        {
+            rootCommand.Options.Add(buildOption);
+        }
 
         // We process all tokens that do not match any of the above options
         // to find the subcommand (the first unmatched token preceding "--")
@@ -125,6 +129,9 @@ internal sealed class CommandLineOptions
         {
             Output = output,
             Error = output,
+
+            // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
+            EnablePosixBundling = false,
         };
 
         var parseResult = rootCommand.Parse(args, cliConfig);
@@ -158,6 +165,9 @@ internal sealed class CommandLineOptions
             }
         }
 
+        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToArray();
+        var targetFrameworkOption = (CliOption<string>)buildOptions.Single(option => option.Name == "--framework");
+
         return new()
         {
             List = parseResult.GetValue(listOption),
@@ -175,20 +185,9 @@ internal sealed class CommandLineOptions
             ProjectPath = projectValue,
             LaunchProfileName = parseResult.GetValue(launchProfileOption),
             NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
+            BuildArguments = buildArguments,
             TargetFramework = parseResult.GetValue(targetFrameworkOption),
-            BuildProperties = ParseBuildProperties(parseResult.GetValue(propertyOption) ?? []).ToArray(),
         };
-
-        // Parses name=value pairs passed to --property. Skips invalid input.
-        // We don't report error here as it will be reported by dotnet run.
-        static IEnumerable<(string key, string value)> ParseBuildProperties(string[] properties)
-            => from property in properties
-               let index = property.IndexOf('=')
-               where index >= 0
-               let name = property[..index].Trim()
-               let value = property[(index + 1)..]
-               where name is not []
-               select (name, value);
     }
 
     private static IReadOnlyList<string> GetCommandArguments(
@@ -210,6 +209,16 @@ internal sealed class CommandLineOptions
                 if (optionResult.Tokens.Count == 0)
                 {
                     arguments.Add(optionResult.IdentifierToken.Value);
+                }
+                else if (optionResult.Option.Name == "--property")
+                {
+                    foreach (var token in optionResult.Tokens)
+                    {
+                        // While dotnet-build allows "/p Name=Value", dotnet-msbuild does not.
+                        // Any command that forwards args to dotnet-msbuild will fail if we don't use colon.
+                        // See https://github.com/dotnet/sdk/issues/44655.
+                        arguments.Add($"{optionResult.IdentifierToken.Value}:{token.Value}");
+                    }
                 }
                 else
                 {
@@ -274,12 +283,24 @@ internal sealed class CommandLineOptions
             IsRootProject = true,
             ProjectPath = projectPath,
             WorkingDirectory = workingDirectory,
-            BuildProperties = BuildProperties ?? [],
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
             LaunchProfileName = LaunchProfileName,
             NoLaunchProfile = NoLaunchProfile,
+            BuildArguments = BuildArguments,
             TargetFramework = TargetFramework,
         };
+
+    // Parses name=value pairs passed to --property. Skips invalid input.
+    public static IEnumerable<(string key, string value)> ParseBuildProperties(IEnumerable<string> arguments)
+        => from argument in arguments
+           let colon = argument.IndexOf(':')
+           where colon >= 0 && argument[0..colon] is "--property" or "-property" or "/property" or "/p" or "-p" or "--p"
+           let eq = argument.IndexOf('=', colon)
+           where eq >= 0
+           let name = argument[(colon + 1)..eq].Trim()
+           let value = argument[(eq + 1)..]
+           where name is not []
+           select (name, value);
 }

@@ -20,8 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     /// </summary>
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
-        string? targetFramework,
-        IReadOnlyList<(string name, string value)> buildProperties,
+        IEnumerable<string> buildArguments,
         EnvironmentOptions environmentOptions,
         IReporter reporter)
     {
@@ -170,7 +169,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
             }
 
-            arguments.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
+            arguments.AddRange(buildArguments);
 
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
@@ -178,11 +177,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (environmentOptions.SuppressHandlingStaticContentFiles)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
-            }
-
-            if (targetFramework != null)
-            {
-                arguments.Add("/p:TargetFramework=" + targetFramework);
             }
 
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
@@ -215,12 +209,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
         {
             var globalOptions = new Dictionary<string, string>();
-            if (targetFramework != null)
-            {
-                globalOptions.Add("TargetFramework", targetFramework);
-            }
 
-            foreach (var (name, value) in buildProperties)
+            foreach (var (name, value) in CommandLineOptions.ParseBuildProperties(buildArguments))
             {
                 globalOptions[name] = value;
             }

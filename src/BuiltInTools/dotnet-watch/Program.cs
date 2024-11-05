@@ -172,8 +172,7 @@ namespace Microsoft.DotNet.Watcher
 
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
-                rootProjectOptions.TargetFramework,
-                rootProjectOptions.BuildProperties,
+                rootProjectOptions.BuildArguments,
                 environmentOptions,
                 reporter);
 
@@ -211,8 +210,7 @@ namespace Microsoft.DotNet.Watcher
         {
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
-                rootProjectOptions.TargetFramework,
-                rootProjectOptions.BuildProperties,
+                rootProjectOptions.BuildArguments,
                 environmentOptions,
                 reporter);
 

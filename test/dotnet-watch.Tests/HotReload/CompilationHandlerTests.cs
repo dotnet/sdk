@@ -25,8 +25,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
 
         var factory = new MSBuildFileSetFactory(
             rootProjectFile: options.ProjectPath,
-            targetFramework: null,
-            buildProperties: [],
+            buildArguments: [],
             environmentOptions: new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
             reporter);
 
