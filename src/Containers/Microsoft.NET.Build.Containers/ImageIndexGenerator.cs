@@ -43,7 +43,7 @@ internal static class ImageIndexGenerator
         }
         else
         {
-            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, firstManifestMediaType));
+            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, firstManifestMediaType ?? "null"));
         }
     }
 
@@ -125,10 +125,10 @@ internal static class ImageIndexGenerator
             throw new ArgumentException($"{nameof(image.Config)} should be a JSON object.", nameof(image.Config));
 
         var architecture = configJson["architecture"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should have an 'architecture' property.", nameof(image.Config));
+            throw new ArgumentException($"{nameof(image.Config)} should contain 'architecture'.", nameof(image.Config));
 
         var os = configJson["os"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should have an 'os' property.", nameof(image.Config));
+            throw new ArgumentException($"{nameof(image.Config)} should contain 'os'.", nameof(image.Config));
 
         return new PlatformInformation { architecture = architecture, os = os };
     }
