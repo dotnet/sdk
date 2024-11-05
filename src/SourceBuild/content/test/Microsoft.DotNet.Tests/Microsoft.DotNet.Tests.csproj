@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <Target Name="SetRuntimeConfigOptions"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
           BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup>
       <_ProducedPackages Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
