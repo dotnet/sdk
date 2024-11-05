@@ -26,9 +26,6 @@
   <Target Name="SetRuntimeConfigOptions"
           BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup>
-      <_ProducedPackages Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
-    </ItemGroup>
-    <ItemGroup>
       <!-- General configs -->
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LogsDirectory">
         <Value>$(ArtifactsTestResultsDir)</Value>
