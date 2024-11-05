@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Tests
             private static readonly object myLock = new();
             private Dictionary<string, string>? localTokenSourceMappings;
 
-            public static readonly string PackageSourceMappingsRoot = Path.Combine(Directory.GetCurrentDirectory(), nameof(PackageSourceMappingsTests));
+            public static readonly string PackageSourceMappingsRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             private readonly string ArcadeSource = Path.Combine(PackageSourceMappingsRoot, "arcade");
             private readonly string RuntimeSource = Path.Combine(PackageSourceMappingsRoot, "runtime");
