@@ -97,7 +97,7 @@ At _best_ you should detect and forward along any of these arguments to any MSBu
 
 ### Output modes/formatting
 
-Long form: `--output`
+Long form: `--format`
 
 Allowed values: `text`, `json`, others are relevant for your use case
 
@@ -117,6 +117,7 @@ as possible across all `dotnet` commands, by following the same patterns and beh
 ### NuGet.Config File selection
 
 Long form: `--config-file`
+
 Default value: directory-based probing implemented in the [`NuGet.Configuration`][nuget-configuration] library
 
 ### Package source management
@@ -140,6 +141,7 @@ for scenarios where you want to ensure that you're only using a specific source 
 ### Feed Authentication support
 
 Long form: `--interactive <bool>`
+
 Default value: `true` when in an [interactive session](#determining-interactive-sessions), `false` otherwise
 
 NuGet authentication often requires some interactive action like going to a browser page. You should 'prime' the NuGet credential services by calling
@@ -187,9 +189,7 @@ StdErr is a perfectly reasonable output channel. It should be the default channe
 * outputs that aren't directly related to the command's primary purpose - for example 'workload manifest update' notices
 
 There is some contention here because older versions of PowerShell treat any stderr output as an error, but this is not the
-case in modern PowerShell. If you're writing a command that is intended to be used in PowerShell, you should be aware of this
- and ensure that your command behaves correctly in both old and new versions of PowerShell - consider using Powershells various
- [output streams][pwsh-output-streams] to encode the semantics of your output.
+case in modern PowerShell (> 7.3) via the [$PSNativeCommandUseErrorActionPreference](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_preference_variables#psnativecommanduseerroractionpreference) preference setting.
 
 ### Advanced terminal output capabilities
 
@@ -213,4 +213,4 @@ If TERM is `dumb`, do not emit color/weight/progress on any channel.
 [clig]: https://clig.dev/
 [4180]: https://www.loc.gov/preservation/digital/formats/fdd/fdd000323.shtml
 [nuget-configuration]: https://nuget.org/packages/NuGet.Configuration
-[pwsh-output-streams]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_output_streams?view=powershell-7.4
+[pwsh-output-streams]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_output_streams
