@@ -79,14 +79,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var projectPath in projectPaths)
             {
                 // Get full project path
-                var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath); 
+                var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    solution.AddProject(relativePath, null, solutionFolder);
+                    AddProjectToSolutionWithDefaultType(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (Exception ex)
                 {
+                    // TODO: Update with error codes from vs-solutionpersistence
                     if (Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success || Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'\.").Success)
                     {
                         Reporter.Output.WriteLine(
@@ -105,6 +106,22 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
             return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join(" / ", _solutionFolderPath)) );
+        }
+
+        private void AddProjectToSolutionWithDefaultType(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
+        {
+            try
+            {
+                solution.AddProject(relativePath, null, solutionFolder);
+            }
+            catch (ArgumentException ex)
+            {
+                // TODO: Update with error codes from vs-solutionpersistence
+                if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
+                {
+                    solution.AddProject(relativePath, ProjectTypeGuids.UnknownProjectGuid, solutionFolder);
+                }
+            }
         }
     }
 }
