@@ -56,13 +56,13 @@ Template options:
   -uld, --use-local-db                                Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.
                                                       Type: bool
                                                       Default: false
-  -f, --framework <net6.0|net7.0|net8.0|net9.0>       The target framework for the project.
+  -f, --framework <net10.0|net6.0|net7.0|net8.0>      The target framework for the project.
                                                       Type: choice
-                                                        net9.0  Target net9.0
-                                                        net8.0  Target net8.0
-                                                        net7.0  Target net7.0
-                                                        net6.0  Target net6.0
-                                                      Default: net9.0
+                                                        net10.0  Target net10.0
+                                                        net8.0   Target net8.0
+                                                        net7.0   Target net7.0
+                                                        net6.0   Target net6.0
+                                                      Default: net10.0
   --no-restore                                        If specified, skips the automatic restore of the project on create.
                                                       Type: bool
                                                       Default: false

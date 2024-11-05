@@ -235,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
             var mainProject = new TestProject()
             {
                 Name = "MainProject",
-                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android",
+                TargetFrameworks = $"net9.0-android",
                 IsSdkProject = true,
                 IsExe = true
             };
@@ -260,10 +260,10 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android", "android;ios")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework, null)]
+        [InlineData("net9.0-android;net9.0-ios", "net9.0-android;net9.0-ios", "android;ios")]
+        [InlineData("net9.0", "net9.0;net9.0-android;net9.0-ios", "android;ios")]
+        [InlineData("net9.0;net9.0-ios", "net9.0;net9.0-android", "android;ios")]
+        [InlineData("net9.0", "net9.0", null)]
         public void Given_multi_target_It_should_get_suggested_workload_by_GetRequiredWorkloads_target(string mainTfm, string referencingTfm, string expected)
         {
             // Skip Test if SDK is < 6.0.400
