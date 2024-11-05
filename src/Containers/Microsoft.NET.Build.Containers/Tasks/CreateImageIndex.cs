@@ -157,7 +157,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             if (i > 0 && generatedManifestStr.FromJson<ManifestV2>().MediaType != firstManifestMediaType)
             {
                 Log.LogErrorWithCodeFromResources(nameof(Strings.MixedMediaTypes));
-                throw new ArgumentException();
+                return;
             }
 
             var manifest = new PlatformSpecificOciManifest
