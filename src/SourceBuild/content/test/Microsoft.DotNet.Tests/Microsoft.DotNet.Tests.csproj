@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\**" CopyToOutputDirectory="Always" />
+    <Content Include="assets\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="SetRuntimeConfigOptions"
