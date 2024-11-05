@@ -1,5 +1,5 @@
 // Used by older versions of Microsoft.AspNetCore.Components.WebAssembly.
-// For back compat only until updated ASP.NET is inserted into the SDK.
+// For back compat only to support WASM packages older than the SDK.
 
 export function receiveHotReload() {
   return BINDING.js_to_mono_obj(new Promise((resolve) => receiveHotReloadAsync().then(resolve(0))));
