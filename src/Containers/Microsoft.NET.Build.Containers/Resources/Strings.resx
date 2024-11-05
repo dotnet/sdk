@@ -356,8 +356,10 @@
     <comment/>
   </data>
   <data name="BuildingImageIndex" xml:space="preserve">
-    <value>Building image index '{0}' on top of manifests : '{1}'.</value>
-    <comment/>
+    <value>Building image index '{0}' on top of images {1}.</value>
+    <comment>
+      {0} is the name of the image index and its tag, {1} is the list of image digests
+    </comment>
   </data>
   <data name="MixedMediaTypes" xml:space="preserve">
     <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
@@ -367,8 +369,8 @@
     <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
     <comment/>
   </data>
-  <data name="GeneratedContainersEmpty" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because GeneratedContainers is empty.</value>
+  <data name="ImagesEmpty" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because no images were provided.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

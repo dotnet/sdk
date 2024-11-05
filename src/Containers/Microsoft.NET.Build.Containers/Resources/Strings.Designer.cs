@@ -169,7 +169,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Building image index &apos;{0}&apos; on top of manifests : &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Building image index &apos;{0}&apos; on top of images {1}..
         /// </summary>
         internal static string BuildingImageIndex {
             get {
@@ -331,15 +331,6 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create manifest list (image index) because GeneratedContainers is empty..
-        /// </summary>
-        internal static string GeneratedContainersEmpty {
-            get {
-                return ResourceManager.GetString("GeneratedContainersEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created..
         /// </summary>
         internal static string GenerateDigestLabelWithoutGenerateLabels {
@@ -381,6 +372,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string ImagePullNotSupported {
             get {
                 return ResourceManager.GetString("ImagePullNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) because no images were provided..
+        /// </summary>
+        internal static string ImagesEmpty {
+            get {
+                return ResourceManager.GetString("ImagesEmpty", resourceCulture);
             }
         }
         

@@ -58,9 +58,11 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
-        <source>Building image index '{0}' on top of manifests : '{1}'.</source>
-        <target state="new">Building image index '{0}' on top of manifests : '{1}'.</target>
-        <note />
+        <source>Building image index '{0}' on top of images {1}.</source>
+        <target state="new">Building image index '{0}' on top of images {1}.</target>
+        <note>
+      {0} is the name of the image index and its tag, {1} is the list of image digests
+    </note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
@@ -152,11 +154,6 @@
         <target state="translated">CONTAINER2030: GenerateLabels è stato disabilitato ma GenerateDigestLabel è stato abilitato. Non verrà creata alcuna etichetta digest.</target>
         <note>{StrBegin="CONTAINER2030: "}</note>
       </trans-unit>
-      <trans-unit id="GeneratedContainersEmpty">
-        <source>Cannot create manifest list (image index) because GeneratedContainers is empty.</source>
-        <target state="new">Cannot create manifest list (image index) because GeneratedContainers is empty.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Nessun oggetto host rilevato.</target>
@@ -176,6 +173,11 @@
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: il pull di immagini dal registro locale non è supportato.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
+      </trans-unit>
+      <trans-unit id="ImagesEmpty">
+        <source>Cannot create manifest list (image index) because no images were provided.</source>
+        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
