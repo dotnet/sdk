@@ -12,6 +12,7 @@ using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
@@ -38,6 +39,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IEnumerable<string> _forwardRestoreArguments;
         private readonly string _packageVersion;
 
+        internal readonly RestoreActionConfig _restoreActionConfig;
+
         public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
@@ -59,6 +62,11 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             _createShellShimRepository =
                 createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
+
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -111,7 +119,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                         versionRange: versionRange,
                         targetFramework: _framework,
                         verbosity: _verbosity,
-                        isGlobalTool: true
+                        isGlobalTool: true,
+                        restoreActionConfig: _restoreActionConfig
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage);
