@@ -90,7 +90,7 @@ Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.ManifestLayer>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
-Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string!
+Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string?
 Microsoft.NET.Build.Containers.ManifestV2.MediaType.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.init -> void
