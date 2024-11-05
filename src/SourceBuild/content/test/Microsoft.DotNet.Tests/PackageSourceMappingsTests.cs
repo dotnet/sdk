@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Xml.Linq;
@@ -12,6 +17,14 @@ namespace Microsoft.DotNet.Tests
     public class PackageSourceMappingsTests
     {
         private static readonly PackageSourceMappingsSetup TestSetup = PackageSourceMappingsSetup.Instance;
+
+        private const string NetSdkSupportingFeedName = "net-sdk-supporting-feed";
+        private const string ArcadeSourceName = "source-built-arcade";
+        private const string RuntimeSourceName = "source-built-runtime";
+        private const string PrebuiltSourceName = "prebuilt";
+        private const string PreviouslySourceBuiltSourceName = "previously-source-built";
+        private const string ReferencePackagesSourceName = "reference-packages";
+
         private ITestOutputHelper OutputHelper { get; }
 
         public PackageSourceMappingsTests(ITestOutputHelper outputHelper)
@@ -19,54 +32,48 @@ namespace Microsoft.DotNet.Tests
             OutputHelper = outputHelper;
         }
 
-        // Unified build - with existing mappings - online
+        // Build with mappings - online - no local sources
         [Fact]
-        public void UnifiedBuildWithMappings()
+        public void BuildWithMappingsNoLocalSources()
         {
-            string[] sources = ["source-built-arcade", "source-built-runtime", "net-sdk-supporting-feed"];
-            RunTest("ub-mappings.config", true, sources, customSources: ["net-sdk-supporting-feed"], sourceBuild: false);
+            string[] sources = [NetSdkSupportingFeedName];
+            RunTest("ub-mappings-nolocal.config", true, sources, customSources: [NetSdkSupportingFeedName]);
         }
 
-        // Unified build - with mappings - online - no local sources
-        [Fact]
-        public void UnifiedBuildWithMappingsNoLocalSources()
+        // Build with local sources - mappings and no mappings - online
+        [Theory]
+        [InlineData("ub-mappings.config")]
+        [InlineData("ub-nomappings.config")]
+        public void BuildWithLocalSources(string nugetConfigFilename)
         {
-            string[] sources = ["net-sdk-supporting-feed"];
-            RunTest("ub-mappings-nolocal.config", true, sources, customSources: ["net-sdk-supporting-feed"], sourceBuild: false);
-        }
-
-        // Unified build - no mappings - online
-        [Fact]
-        public void UnifiedBuildNoMappings()
-        {
-            string[] sources = ["source-built-arcade", "source-built-runtime", "net-sdk-supporting-feed"];
-            RunTest("ub.config", true, sources, customSources: ["net-sdk-supporting-feed"], sourceBuild: false);
+            string[] sources = [ArcadeSourceName, RuntimeSourceName, NetSdkSupportingFeedName];
+            RunTest(nugetConfigFilename, true, sources, customSources: [NetSdkSupportingFeedName]);
         }
 
         // Source build tests - with and without mappings - online and offline
         [Theory]
-        [InlineData("sb-online.config", true)]
-        [InlineData("sb-offline.config", false)]
         [InlineData("sb-mappings-online.config", true)]
         [InlineData("sb-mappings-offline.config", false)]
+        [InlineData("sb-nomappings-online.config", true)]
+        [InlineData("sb-nomappings-offline.config", false)]
         public void SourceBuildTests(string nugetConfigFilename, bool useOnlineFeeds)
         {
-            string[] sources = ["prebuilt", "previously-source-built", "reference-packages",
-                                "source-built-arcade", "source-built-runtime"];
-            RunTest(nugetConfigFilename, useOnlineFeeds, sources);
+            string[] sources = [PrebuiltSourceName, PreviouslySourceBuiltSourceName, ReferencePackagesSourceName,
+                                ArcadeSourceName, RuntimeSourceName];
+            RunTest(nugetConfigFilename, useOnlineFeeds, sources, sourceBuild: true);
         }
 
         // Source build - SBRP repo - online and offline
         [Theory]
-        [InlineData("sb-sbrp-offline.config", false)]
         [InlineData("sb-sbrp-online.config", true)]
+        [InlineData("sb-sbrp-offline.config", false)]
         public void SourceBuildSbrpRepoTests(string nugetConfigFilename, bool useOnlineFeeds)
         {
-            string[] sources = ["prebuilt", "previously-source-built", "reference-packages"];
-            RunTest(nugetConfigFilename, useOnlineFeeds, sources);
+            string[] sources = [PrebuiltSourceName, PreviouslySourceBuiltSourceName, ReferencePackagesSourceName];
+            RunTest(nugetConfigFilename, useOnlineFeeds, sources, sourceBuild: true);
         }
 
-        private static void RunTest(string nugetConfigFilename, bool useOnlineFeeds, string[] sources, string[]? customSources = null, bool sourceBuild = true)
+        private static void RunTest(string nugetConfigFilename, bool useOnlineFeeds, string[] sources, string[]? customSources = null, bool sourceBuild = false)
         {
             string psmAssetsDir = Path.Combine(Directory.GetCurrentDirectory(), "assets", "PackageSourceMappingsTests");
             string originalNugetConfig = Path.Combine(psmAssetsDir, "original", nugetConfigFilename);
@@ -80,7 +87,7 @@ namespace Microsoft.DotNet.Tests
             var task = new UpdateNuGetConfigPackageSourcesMappings()
             {
                 SbrpCacheSourceName = "source-build-reference-package-cache",
-                SbrpRepoSrcPath = TestSetup.SourceBuildReferencePackagesRepoDir,
+                SbrpRepoSrcPath = TestSetup.SourceBuildReferencePackagesRepo,
                 SourceBuiltSourceNamePrefix = "source-built-",
                 NuGetConfigFile = modifiedNugetConfig,
                 BuildWithOnlineFeeds = useOnlineFeeds,
@@ -90,9 +97,9 @@ namespace Microsoft.DotNet.Tests
 
             if (sourceBuild)
             {
-                task.ReferencePackagesSourceName = "reference-packages";
-                task.PreviouslySourceBuiltSourceName = "previously-source-built";
-                task.PrebuiltSourceName = "prebuilt";
+                task.ReferencePackagesSourceName = ReferencePackagesSourceName;
+                task.PreviouslySourceBuiltSourceName = PreviouslySourceBuiltSourceName;
+                task.PrebuiltSourceName = PrebuiltSourceName;
             }
 
             task.Execute();
@@ -106,20 +113,27 @@ namespace Microsoft.DotNet.Tests
 
         private static void UpdateNugetConfigTokens(string nugetConfigFile)
         {
-            string fileContents = File.ReadAllText(nugetConfigFile);
-            foreach (KeyValuePair<string, string> kvp in TestSetup.LocalTokenSourceMappings)
-            {
-                fileContents = fileContents.Replace(kvp.Key, kvp.Value);
-            }
-            File.WriteAllText(nugetConfigFile, fileContents);
+            ApplyLocalTokenSourceMappings(nugetConfigFile, updateTokens: true);
         }
 
         private static void TokenizeLocalNugetConfigFeeds(string nugetConfigFile)
         {
+            ApplyLocalTokenSourceMappings(nugetConfigFile, tokenize: true);
+        }
+
+        private static void ApplyLocalTokenSourceMappings(string nugetConfigFile, bool updateTokens = false, bool tokenize = false)
+        {
+            if (updateTokens == tokenize)
+            {
+                throw new InvalidOperationException($"One and only one option should be true, '{nameof(updateTokens)}' or '{nameof(tokenize)}'");
+            }
+
             string fileContents = File.ReadAllText(nugetConfigFile);
             foreach (KeyValuePair<string, string> kvp in TestSetup.LocalTokenSourceMappings)
             {
-                fileContents = fileContents.Replace(kvp.Value, kvp.Key);
+                fileContents = updateTokens
+                    ? fileContents.Replace(kvp.Key, kvp.Value)
+                    : fileContents.Replace(kvp.Value, kvp.Key);
             }
             File.WriteAllText(nugetConfigFile, fileContents);
         }
@@ -139,7 +153,7 @@ namespace Microsoft.DotNet.Tests
             private readonly string PrebuiltSource = Path.Combine(PackageSourceMappingsRoot, "prebuilt");
             private readonly string SourceBuildReferencePackagesSource = Path.Combine(PackageSourceMappingsRoot, "source-build-reference-package-cache");
 
-            public readonly string SourceBuildReferencePackagesRepoDir = Path.Combine(PackageSourceMappingsRoot, "sbrpDir");
+            public readonly string SourceBuildReferencePackagesRepo = Path.Combine(PackageSourceMappingsRoot, "sbrp");
 
             public Dictionary<string, string> LocalTokenSourceMappings
             {
@@ -201,10 +215,10 @@ namespace Microsoft.DotNet.Tests
                 GenerateNuGetPackage(PrebuiltSource, "Prebuilt.Package", "1.0.0");
 
                 // Generate SBRP repo files - nuspecs
-                GenerateNuspecFile(SourceBuildReferencePackagesRepoDir, "SBRP.Repo.Package1", "1.0.0");
-                GenerateNuspecFile(SourceBuildReferencePackagesRepoDir, "SBRP.Repo.Package2", "1.0.0");
-                GenerateNuspecFile(SourceBuildReferencePackagesRepoDir, "SBRP.Repo.Package3", "1.0.0");
-                GenerateNuspecFile(SourceBuildReferencePackagesRepoDir, "SBRP.Repo.Package4", "1.0.0");
+                GenerateNuspecFile(SourceBuildReferencePackagesRepo, "SBRP.Repo.Package1", "1.0.0");
+                GenerateNuspecFile(SourceBuildReferencePackagesRepo, "SBRP.Repo.Package2", "1.0.0");
+                GenerateNuspecFile(SourceBuildReferencePackagesRepo, "SBRP.Repo.Package3", "1.0.0");
+                GenerateNuspecFile(SourceBuildReferencePackagesRepo, "SBRP.Repo.Package4", "1.0.0");
             }
 
             private static void GenerateNuGetPackage(string folder, string name, string version)
