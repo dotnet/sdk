@@ -27,6 +27,11 @@
         <target state="translated">Bir çözüm dosyasına bir veya daha fazla proje ekler.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Only .sln files can be migrated to .slnx format.</source>
+        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Bir çözüm klasörü oluşturmak yerine projeyi çözümün köküne yerleştirin.</target>
@@ -60,6 +65,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Çözümdeki tüm projeleri listeleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
