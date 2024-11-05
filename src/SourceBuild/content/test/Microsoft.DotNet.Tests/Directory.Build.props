@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- Set manually as the project name doesn't follow the Arcade conventions. -->
-    <IsUnitTestProject>true</IsUnitTestProject>
     <!--
       Required while we're using direct SDK assembly references in
       $(RepositoryEngineeringDir)tools/Directory.Build.props for all tools projects
