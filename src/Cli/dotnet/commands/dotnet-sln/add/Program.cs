@@ -82,21 +82,21 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    AddProjectToSolutionWithDefaultType(solution, relativePath, solutionFolder);
+                    solution.AddProject(relativePath, null, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (Exception ex)
                 {
                     // TODO: Update with error codes from vs-solutionpersistence
+                    // Duplicate project
                     if (Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success || Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'\.").Success)
                     {
                         Reporter.Output.WriteLine(
                             string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath));
+                        continue;
                     }
-                    else
-                    {
-                        throw new GracefulException(ex.Message, ex);
-                    }
+                    // Invalid project
+                    throw new GracefulException(ex.Message, ex);
                 }
             }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
@@ -105,23 +105,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private string GetSolutionFolderPathWithForwardSlashes()
         {
             // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
-            return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join(" / ", _solutionFolderPath)) );
-        }
-
-        private void AddProjectToSolutionWithDefaultType(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
-        {
-            try
-            {
-                solution.AddProject(relativePath, null, solutionFolder);
-            }
-            catch (ArgumentException ex)
-            {
-                // TODO: Update with error codes from vs-solutionpersistence
-                if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
-                {
-                    solution.AddProject(relativePath, ProjectTypeGuids.UnknownProjectGuid, solutionFolder);
-                }
-            }
+            return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join("/", _solutionFolderPath)) );
         }
     }
 }

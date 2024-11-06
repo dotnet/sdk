@@ -484,7 +484,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "InvalidSolution.sln", "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", "").TrimEnd("."));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -504,7 +504,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "").TrimEnd("."));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
