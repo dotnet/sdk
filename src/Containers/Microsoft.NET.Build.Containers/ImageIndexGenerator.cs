@@ -13,6 +13,7 @@ internal struct ImageInfo
     internal string Config { get; init; }
     internal string ManifestDigest { get; init; }
     internal string Manifest { get; init; }
+    internal string ManifestMediaType { get; init; }
 }
 
 internal static class ImageIndexGenerator
@@ -31,7 +32,7 @@ internal static class ImageIndexGenerator
             throw new ArgumentException(string.Format(Strings.ImagesEmpty));
         }
 
-        var firstManifestMediaType = GetManifestMediaType(imageInfos[0]);
+        string firstManifestMediaType = imageInfos[0].ManifestMediaType;
 
         if (firstManifestMediaType == SchemaTypes.DockerManifestV2)
         {
@@ -43,16 +44,8 @@ internal static class ImageIndexGenerator
         }
         else
         {
-            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, firstManifestMediaType ?? "null"));
+            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, firstManifestMediaType));
         }
-    }
-
-    private static string? GetManifestMediaType(ImageInfo image)
-    {
-        var manifestJson = JsonNode.Parse(image.Manifest) as JsonObject ??
-            throw new ArgumentException($"{nameof(image.Manifest)} should be a JSON object.", nameof(image.Manifest));
-
-        return manifestJson["mediaType"]?.ToString();
     }
 
     private static (string, string) GenerateDockerManifestList(ImageInfo[] images, string firstManifestMediaType)
@@ -62,7 +55,7 @@ internal static class ImageIndexGenerator
         {
             var image = images[i];
 
-            if (i > 0 && GetManifestMediaType(image) != firstManifestMediaType)
+            if (i > 0 && image.ManifestMediaType != firstManifestMediaType)
             {
                 throw new ArgumentException(Strings.MixedMediaTypes);
             }
@@ -94,7 +87,7 @@ internal static class ImageIndexGenerator
         {
             var image = images[i];
 
-            if (i > 0 && GetManifestMediaType(image) != firstManifestMediaType)
+            if (i > 0 && image.ManifestMediaType != firstManifestMediaType)
             {
                 throw new ArgumentException(Strings.MixedMediaTypes);
             }

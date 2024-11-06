@@ -89,6 +89,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             string config = unparsedImage.GetMetadata("Configuration");
             string manifestDigest = unparsedImage.GetMetadata("ManifestDigest");
             string manifest = unparsedImage.GetMetadata("Manifest");
+            string manifestMediaType = unparsedImage.GetMetadata("ManifestMediaType");
 
             if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest))
             {
@@ -101,6 +102,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 Config = config,
                 ManifestDigest = manifestDigest,
                 Manifest = manifest,
+                ManifestMediaType = manifestMediaType
             };
         }
 

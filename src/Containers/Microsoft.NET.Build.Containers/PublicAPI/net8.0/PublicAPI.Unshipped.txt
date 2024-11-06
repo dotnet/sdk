@@ -211,6 +211,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.get
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!

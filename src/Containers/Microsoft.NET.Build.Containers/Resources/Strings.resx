@@ -374,7 +374,7 @@
     <comment/>
   </data>
   <data name="InvalidImageMetadata" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</value>
+    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

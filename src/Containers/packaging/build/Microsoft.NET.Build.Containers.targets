@@ -300,6 +300,7 @@
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
 
@@ -308,6 +309,7 @@
         <Manifest>$(GeneratedContainerManifest)</Manifest>
         <Configuration>$(GeneratedContainerConfiguration)</Configuration>
         <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
+        <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
         <ArchiveOutputPath>$(GeneratedArchiveOutputPath)</ArchiveOutputPath>
         <ContainerNames>@(GeneratedContainerName)</ContainerNames>
       </GeneratedContainers>
