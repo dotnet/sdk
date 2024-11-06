@@ -38,11 +38,11 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, string mediaType, CancellationToken cancellationToken)
     {
         string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
 
-        await PutAsync(repositoryName, reference, jsonString, manifest.MediaType, cancellationToken).ConfigureAwait(false);
+        await PutAsync(repositoryName, reference, jsonString, mediaType, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)

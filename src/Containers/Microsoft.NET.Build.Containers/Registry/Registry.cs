@@ -192,6 +192,7 @@ internal sealed class Registry
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
                 await ReadManifest().ConfigureAwait(false),
+                initialManifestResponse.Content.Headers.ContentType.MediaType,
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
@@ -240,7 +241,7 @@ internal sealed class Registry
         };
     }
 
-    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
+    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ManifestConfig config = manifest.Config;
@@ -249,7 +250,8 @@ internal sealed class Registry
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
+        // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
+        return new ImageBuilder(manifest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
     }
 
 
@@ -329,6 +331,7 @@ internal sealed class Registry
                 repositoryName,
                 reference,
                 matchingManifest.digest,
+                matchingManifest.mediaType,
                 runtimeIdentifier,
                 ridManifestDict.Keys,
                 cancellationToken);
@@ -355,6 +358,7 @@ internal sealed class Registry
                 repositoryName,
                 reference,
                 matchingManifest.digest,
+                matchingManifest.mediaType,
                 runtimeIdentifier,
                 ridManifestDict.Keys,
                 cancellationToken);
@@ -369,6 +373,7 @@ internal sealed class Registry
         string repositoryName,
         string reference,
         string manifestDigest,
+        string mediaType,
         string runtimeIdentifier,
         IEnumerable<string> rids,
         CancellationToken cancellationToken)
@@ -382,6 +387,7 @@ internal sealed class Registry
         return await ReadSingleImageAsync(
             repositoryName,
             manifest,
+            mediaType,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -600,7 +606,7 @@ internal sealed class Registry
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
@@ -608,7 +614,7 @@ internal sealed class Registry
         {
             string manifestDigest = builtImage.Manifest.GetDigest();
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
