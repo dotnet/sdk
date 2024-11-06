@@ -142,10 +142,10 @@ namespace Microsoft.DotNet.Tests
         {
             private static PackageSourceMappingsSetup? instance;
             private static readonly object myLock = new();
-            private Dictionary<string, string>? localTokenSourceMappings;
 
             public static readonly string PackageSourceMappingsRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
+            private Dictionary<string, string>? localTokenSourceMappings;
             private readonly string ArcadeSource = Path.Combine(PackageSourceMappingsRoot, "arcade");
             private readonly string RuntimeSource = Path.Combine(PackageSourceMappingsRoot, "runtime");
             private readonly string PreviouslySourceBuiltSource = Path.Combine(PackageSourceMappingsRoot, "previously-source-built");
