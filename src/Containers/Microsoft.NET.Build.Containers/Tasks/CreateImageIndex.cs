@@ -44,12 +44,16 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         cancellationToken.ThrowIfCancellationRequested();
 
         var images = ParseImages();
+        if (Log.HasLoggedErrors)
+        {
+            return !Log.HasLoggedErrors;
+        }
 
         using MSBuildLoggerProvider loggerProvider = new(Log);
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
-        logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), string.Join(", ", images.Select(i => i.Digest)));
+        logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), string.Join(", ", images.Select(i => i.ManifestDigest)));
 
         try
         {
@@ -82,11 +86,21 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         {
             var unparsedImage = GeneratedContainers[i];
 
+            string config = unparsedImage.GetMetadata("Configuration");
+            string manifestDigest = unparsedImage.GetMetadata("ManifestDigest");
+            string manifest = unparsedImage.GetMetadata("Manifest");
+
+            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest))
+            {
+                Log.LogError(Strings.InvalidImageMetadata, unparsedImage.ItemSpec);
+                break;
+            }
+
             images[i] = new ImageInfo
             {
-                Config = unparsedImage.GetMetadata("Configuration"),
-                Digest = unparsedImage.GetMetadata("Digest"),
-                Manifest = unparsedImage.GetMetadata("Manifest"),
+                Config = config,
+                ManifestDigest = manifestDigest,
+                Manifest = manifest,
             };
         }
 

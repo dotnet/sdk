@@ -394,6 +394,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) because provided images are invalid. Items must have &apos;Config&apos;, &apos;Manifest&apos; and &apos;ManifestDigest&apos; metadata..
+        /// </summary>
+        internal static string InvalidImageMetadata {
+            get {
+                return ResourceManager.GetString("InvalidImageMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2005: The inferred image name &apos;{0}&apos; contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character..
         /// </summary>
         internal static string InvalidImageName_EntireNameIsInvalidCharacters {

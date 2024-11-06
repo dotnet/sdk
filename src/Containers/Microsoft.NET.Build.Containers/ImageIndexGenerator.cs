@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Containers;
 internal struct ImageInfo
 {
     internal string Config { get; init; }
-    internal string Digest { get; init; }
+    internal string ManifestDigest { get; init; }
     internal string Manifest { get; init; }
 }
 
@@ -71,7 +71,7 @@ internal static class ImageIndexGenerator
             {
                 mediaType = firstManifestMediaType,
                 size = image.Manifest.Length,
-                digest = image.Digest,
+                digest = image.ManifestDigest,
                 platform = GetArchitectureAndOsFromConfig(image)
             };
             manifests[i] = manifest;
@@ -103,7 +103,7 @@ internal static class ImageIndexGenerator
             {
                 mediaType = firstManifestMediaType,
                 size = image.Manifest.Length,
-                digest = image.Digest,
+                digest = image.ManifestDigest,
                 platform = GetArchitectureAndOsFromConfig(image)
             };
             manifests[i] = manifest;

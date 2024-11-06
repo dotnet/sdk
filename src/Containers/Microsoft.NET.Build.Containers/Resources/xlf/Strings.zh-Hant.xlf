@@ -184,6 +184,11 @@
         <target state="translated">CONTAINER2015: {0}: '{1}' 不是有效的環境變數。正在忽略。</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageMetadata">
+        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</source>
+        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
         <target state="translated">CONTAINER2005: 推斷的映像名稱 '{0}' 包含完全無效字元。映像名稱的有效字元是英數字元、-、/ 或 _，並且映像名稱必須以英數字元開頭。</target>

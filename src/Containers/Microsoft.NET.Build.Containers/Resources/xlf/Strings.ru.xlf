@@ -184,6 +184,11 @@
         <target state="translated">CONTAINER2015: {0}: "{1}" не является допустимой переменной среды. Пропуск.</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageMetadata">
+        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</source>
+        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
         <target state="translated">CONTAINER2005: Предполагаемое имя изображения "{0}" содержит совершенно недопустимые символы. Допустимыми символами для имени изображения являются буквенно-цифровые символы, -, / или _, а имя изображения должно начинаться с буквенно-цифрового символа.</target>

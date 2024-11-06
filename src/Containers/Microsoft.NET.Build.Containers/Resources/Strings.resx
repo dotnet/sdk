@@ -373,6 +373,10 @@
     <value>Cannot create manifest list (image index) because no images were provided.</value>
     <comment/>
   </data>
+  <data name="InvalidImageMetadata" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest' and 'ManifestDigest' metadata.</value>
+    <comment/>
+  </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
     <value>Error while reading daemon config: {0}</value>
     <comment>{0} is the exception message that ends with period</comment>

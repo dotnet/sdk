@@ -23,7 +23,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "[]"
             }
         };
@@ -40,7 +40,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{}"
             }
         };
@@ -57,7 +57,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{\"mediaType\":\"unsupported\"}"
             }
         };
@@ -74,7 +74,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "[]",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\"}"
             }
         };
@@ -91,7 +91,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "{}",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\"}"
             }
         };
@@ -108,7 +108,7 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "{\"architecture\":\"amd64\"}",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\"}"
             }
         };
@@ -127,13 +127,13 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "{\"architecture\":\"arch1\",\"os\":\"os1\"}",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest =  $"{{\"mediaType\":\"{supportedMediaType}\"}}"
             },
             new ImageInfo
             {
                 Config = "",
-                Digest = "",
+                ManifestDigest = "",
                 Manifest = "{\"mediaType\":\"anotherMediaType\"}"
             }
         };
@@ -150,13 +150,13 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "{\"architecture\":\"arch1\",\"os\":\"os1\"}",
-                Digest = "sha256:digest1",
+                ManifestDigest = "sha256:digest1",
                 Manifest = $"{{\"mediaType\":\"{SchemaTypes.DockerManifestV2}\"}}"
             },
             new ImageInfo
             {
                 Config = "{\"architecture\":\"arch2\",\"os\":\"os2\"}",
-                Digest = "sha256:digest2",
+                ManifestDigest = "sha256:digest2",
                 Manifest = $"{{\"mediaType\":\"{SchemaTypes.DockerManifestV2}\"}}"
             }
         };
@@ -174,13 +174,13 @@ public class ImageIndexGeneratorTests
             new ImageInfo
             {
                 Config = "{\"architecture\":\"arch1\",\"os\":\"os1\"}",
-                Digest = "sha256:digest1",
+                ManifestDigest = "sha256:digest1",
                 Manifest = $"{{\"mediaType\":\"{SchemaTypes.OciManifestV1}\"}}"
             },
             new ImageInfo
             {
                 Config = "{\"architecture\":\"arch2\",\"os\":\"os2\"}",
-                Digest = "sha256:digest2",
+                ManifestDigest = "sha256:digest2",
                 Manifest = $"{{\"mediaType\":\"{SchemaTypes.OciManifestV1}\"}}"
             }
         };
