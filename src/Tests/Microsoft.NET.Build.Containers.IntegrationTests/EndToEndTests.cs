@@ -181,7 +181,7 @@ public class EndToEndTests : IDisposable
 
     private void CheckForDockerTarballStructure(string tarball)
     {
-        var layers = new HashSet<string>();
+        var layersCount = 0;
         int configJson = 0;
         int manifestJsonCount = 0;
 
@@ -202,7 +202,7 @@ public class EndToEndTests : IDisposable
                 }
                 else if (entry.Name.EndsWith("/layer.tar"))
                 {
-                    layers.Add(entry.Name);
+                    layersCount++;
                 }
                 else
                 {
@@ -215,7 +215,7 @@ public class EndToEndTests : IDisposable
 
         Assert.Equal(1, manifestJsonCount);
         Assert.Equal(1, configJson);
-        Assert.NotEmpty(layers);
+        Assert.True(layersCount > 0);
     }
 
     [DockerAvailableFact]
@@ -269,7 +269,7 @@ public class EndToEndTests : IDisposable
 
     private void CheckForOciTarballStructure(string tarball)
     {
-        var blobs = new HashSet<string>();
+        int blobsCount = 0;
         int ociLayoutCount = 0;
         int indexJsonCount = 0;
 
@@ -290,7 +290,7 @@ public class EndToEndTests : IDisposable
                 }
                 else if (entry.Name.StartsWith("blobs/sha256/"))
                 {
-                    blobs.Add(entry.Name);
+                    blobsCount++;
                 }
                 else
                 {
@@ -303,7 +303,7 @@ public class EndToEndTests : IDisposable
 
         Assert.Equal(1, ociLayoutCount);
         Assert.Equal(1, indexJsonCount);
-        Assert.NotEmpty(blobs);
+        Assert.True(blobsCount > 0);
     }
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
