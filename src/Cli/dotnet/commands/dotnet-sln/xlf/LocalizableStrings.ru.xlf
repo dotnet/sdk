@@ -27,6 +27,11 @@
         <target state="translated">Добавление проектов в файл решения.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Only .sln files can be migrated to .slnx format.</source>
+        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Поместите проект в корень решения вместо создания папки решения.</target>
@@ -60,6 +65,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Перечисляет все проекты в решении.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
