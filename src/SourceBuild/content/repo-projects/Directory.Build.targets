@@ -265,8 +265,7 @@
   </Target>
 
   <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
-  <Target Name="UpdateEngCommonFiles"
-          Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'">
+  <Target Name="UpdateEngCommonFiles">
     <ItemGroup>
       <OrchestratorEngCommonFile Include="$(RepositoryEngineeringDir)common\**\*" />
     </ItemGroup>
