@@ -152,7 +152,7 @@ public class CreateNewImageTests
 
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64", $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8")
+        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -161,7 +161,7 @@ public class CreateNewImageTests
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         pcp.BuildEngine = buildEngine;
 
-        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net8PreviewImageTag}";
+        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net8ImageTag}";
         pcp.ContainerRegistry = "";
         pcp.ContainerRepository = "dotnet/envvarvalidation";
         pcp.ContainerImageTag = "latest";
@@ -174,7 +174,7 @@ public class CreateNewImageTests
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
         Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
-        Assert.Equal(DockerRegistryManager.Net8PreviewImageTag, pcp.ParsedContainerTag);
+        Assert.Equal(DockerRegistryManager.Net8ImageTag, pcp.ParsedContainerTag);
         Assert.Single(pcp.NewContainerEnvironmentVariables);
         Assert.Equal("Foo", pcp.NewContainerEnvironmentVariables[0].GetMetadata("Value"));
 
@@ -229,9 +229,9 @@ public class CreateNewImageTests
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
-            DockerRegistryManager.Net8PreviewImageTag,
+            DockerRegistryManager.Net8ImageTag,
             "linux-x64",
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
         Assert.NotNull(imageBuilder);
@@ -239,7 +239,7 @@ public class CreateNewImageTests
 
         BuiltImage builtImage = imageBuilder.Build();
 
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag);
         var destinationReference = new DestinationImageReference(registry, RootlessBase, new[] { "latest" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
@@ -289,7 +289,7 @@ public class CreateNewImageTests
             AppImage,
             "latest",
             "linux-x64",
-            ToolsetUtils.GetRuntimeGraphFilePath(),
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
         Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.GetUser());

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="UnableToCheckCertificateChainPolicy">
         <source>The requested certificate chain policy could not be checked: {0}</source>
-        <target state="new">The requested certificate chain policy could not be checked: {0}</target>
+        <target state="translated">요청한 인증서 체인 정책을 확인할 수 없습니다: {0}</target>
         <note />
       </trans-unit>
     </body>

@@ -22,6 +22,11 @@
         <target state="translated">{0} ve {1} seçenekleri birlikte kullanılamıyor. Bir geri alma dosyasından yükleniyorsa {0} seçeneğini kaldırın. Aksi takdirde, {1} seçeneğini kaldırın</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Güncelleştirilmiş iş yükü bildirimleri denetleniyor.</target>
@@ -182,6 +187,11 @@
         <target state="translated">{0} kaldırılıyor </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">{0} iş yükü sürümü yükleniyor.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Üst işlemle ({0}) bir güven ilişkisi kurulamadı.</target>
@@ -277,6 +287,11 @@
         <target state="translated">İndirmeden, yalnızca indirilecek bağlantıların listesini yazdırın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">{0} paketi sürüm {1}, {2} çevrimdışı önbelleğinden yükleniyor.</target>
@@ -360,6 +375,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">YOL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">İş yükü {0} sürümünden {1} sürümüne güncelleştiriliyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Belirtilen iş yükü sürümünde güncelleştirme var.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

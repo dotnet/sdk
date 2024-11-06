@@ -30,6 +30,16 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
+        /// The contents of the install state file. Each element corresponds to a single line of
+        /// the JSON file to be written.
+        /// </summary>
+        public Dictionary<string, string> InstallStateManifestVersions
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// The path of the MSI log file to generate when installing, uninstalling or repairing a specific MSI.
         /// </summary>
         public string LogFile
@@ -108,6 +118,22 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// The new mode to use: workloadset or loosemanifests
+        /// </summary>
+        public bool UseWorkloadSets
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// The workload set version
+        /// </summary>
+        public string WorkloadSetVersion
+        {
+            get; set;
         }
 
         /// <summary>

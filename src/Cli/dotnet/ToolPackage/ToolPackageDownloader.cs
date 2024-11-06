@@ -27,6 +27,10 @@ using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.Configuration;
 using Microsoft.TemplateEngine.Utils;
+using System.Text.Json;
+using System.Xml;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -73,6 +77,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
+            bool isGlobalToolRollForward = false,
             RestoreActionConfig restoreActionConfig = null
             )
         {
@@ -96,11 +101,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-                        toolDownloadDir,
-                        verboseLogger: nugetLogger,
-                        isNuGetTool: true,
-                        restoreActionConfig: restoreActionConfig);
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true, restoreActionConfig: restoreActionConfig, verbosityOptions: verbosity);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 
@@ -144,7 +145,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
-
+                    
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
 
@@ -163,10 +164,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         toolReturnJsonParentDirectory = _localToolAssetDir;
                     }
 
-                    return new ToolPackageInstance(id: packageId,
+                    var toolPackageInstance = new ToolPackageInstance(id: packageId,
                                     version: packageVersion,
                                     packageDirectory: toolReturnPackageDirectory,
                                     assetsJsonParentDirectory: toolReturnJsonParentDirectory);
+
+                    if (isGlobalToolRollForward)
+                    {
+                        UpdateRuntimeConfig(toolPackageInstance);
+                    }
+
+                    return toolPackageInstance;
                 },
                 rollback: () =>
                 {
@@ -196,6 +204,31 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 managedCodeConventions.Patterns.ToolsAssemblies);
 
             lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
+        }
+
+        private static void UpdateRuntimeConfig(
+            ToolPackageInstance toolPackageInstance
+            )
+        {
+            foreach (var command in toolPackageInstance.Commands)
+            {
+                var runtimeConfigFilePath = Path.ChangeExtension(command.Executable.Value, ".runtimeconfig.json");
+
+                // Update the runtimeconfig.json file
+                if (File.Exists(runtimeConfigFilePath))
+                {
+                    string existingJson = File.ReadAllText(runtimeConfigFilePath);
+
+                    var jsonObject = JObject.Parse(existingJson);
+                    var runtimeOptions = jsonObject["runtimeOptions"] as JObject;
+                    if (runtimeOptions != null)
+                    {
+                        runtimeOptions["rollForward"] = "Major";
+                        string updateJson = jsonObject.ToString();
+                        File.WriteAllText(runtimeConfigFilePath, updateJson);
+                    }
+                }
+            }
         }
 
         private static IEnumerable<LockFileItem> GetLockFileItems(
