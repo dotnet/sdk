@@ -117,6 +117,8 @@
   <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
 
   <PropertyGroup>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <!-- This repo's projects are entirely infrastructure and do not ship. -->
