@@ -198,6 +198,9 @@ namespace Microsoft.DotNet.Watcher.Tests
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
             App.AssertOutputContains("dotnet watch ⌚ Launching browser: http://localhost:5000/");
 
+            // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
+            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+
             var newSource = """
                 @page "/"
                 <h1>Updated</h1>
