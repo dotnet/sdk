@@ -443,7 +443,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestContent = JsonSerializer.SerializeToNode(image.Manifest)!.ToJsonString();
-        string manifestDigest = image.Manifest.KnownDigest!;
+        string manifestDigest = image.Manifest.GetDigest();
 
         // 1. add manifest to blobs
         string manifestPath = $"{_blobsPath}/{manifestDigest.Substring("sha256:".Length)}";
