@@ -5,7 +5,7 @@
   "symbols/TargetFrameworkOverride/description": "Remplace l’infrastructure cible",
   "symbols/TargetFrameworkOverride/displayName": "Remplacement du cadre cible",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net10.0/description": "net10.0 cible",
+  "symbols/Framework/choices/net10.0/description": "Net10.0 cible",
   "symbols/Framework/choices/net10.0/displayName": ".NET 10.0",
   "symbols/Framework/displayName": "Infrastructure",
   "symbols/langVersion/description": "Définit la propriété LangVersion dans le fichier projet créé",
