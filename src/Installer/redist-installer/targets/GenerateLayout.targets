@@ -612,6 +612,7 @@
                             LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutManifests;
+                            LayoutBaselineWorkloadSet;
                             LayoutWorkloadUserLocalMarker;
                             LayoutBundledTools;
                             RetargetTools;

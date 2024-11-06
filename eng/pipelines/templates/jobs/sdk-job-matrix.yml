@@ -28,7 +28,7 @@ parameters:
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
   - categoryName: ContainerBased
-    container: ubuntu2204
+    container: ubuntu2204DebPkg
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     # Skipping all container-based testing for now.
@@ -50,7 +50,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
-    container: debian11Amd64
+    container: debian12Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
     # Skipping all container-based testing for now.
