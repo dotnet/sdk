@@ -101,7 +101,7 @@ Options:
                 .Execute(solutionCommand, "InvalidSolution.sln", "list");
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
-                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "").TrimEnd("."));
+                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -121,7 +121,7 @@ Options:
                 .Execute(solutionCommand, "list");
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
-                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFullPath, "").TrimEnd("."));
+                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFullPath, "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 

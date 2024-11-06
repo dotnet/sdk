@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Sln.List
             {
                 paths = solution.SolutionFolders
                     // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
-                    .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart("/")))
+                    .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))
                     .ToArray();
             }
             else
