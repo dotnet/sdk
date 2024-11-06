@@ -176,27 +176,6 @@ extends:
             - name: _Test
               value: -test
 
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Darwin
-            pool:
-              name: Azure Pipelines
-              image: macos-13
-              os: macOS
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.1200.Amd64.Open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.1200.Amd64
-            variables:
-            - name: _BuildConfig
-              value: Release
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
-
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:

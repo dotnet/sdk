@@ -142,23 +142,6 @@ stages:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build-pr.yml
-      parameters:
-        agentOs: Darwin
-        pool:
-          vmImage: 'macos-12'
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1200.Amd64.Open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1200.Amd64
-        strategy:
-          matrix:
-            Build_Release:
-              _BuildConfig: Release
-              _PublishArgs: ''
-              _SignType: test
-              _Test: -test
-
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/templates/job/publish-build-assets.yml
       parameters:
