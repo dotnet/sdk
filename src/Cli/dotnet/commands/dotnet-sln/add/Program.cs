@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private string GetSolutionFolderPathWithForwardSlashes()
         {
             // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
-            return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join("/", _solutionFolderPath)) );
+            return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(_solutionFolderPath).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
 
         private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
@@ -116,9 +117,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             }
             catch (ArgumentException ex)
             {
+                // TODO: Update with error codes from vs-solutionpersistence
                 if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
                 {
                     solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                }
+                else
+                {
+                    throw new ArgumentException(ex.Message, ex.ParamName, ex.InnerException);
                 }
             }
         }
