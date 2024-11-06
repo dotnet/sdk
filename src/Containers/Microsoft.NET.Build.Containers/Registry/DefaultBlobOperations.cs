@@ -76,6 +76,6 @@ internal class DefaultBlobOperations : IBlobOperations
     private async Task<T> LogAndThrowContainerHttpException<T>(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         await response.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
-        throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPullFailed)), response.RequestMessage?.RequestUri?.ToString());
+        throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPullFailed)), response.RequestMessage?.RequestUri?.ToString(), response.StatusCode);
     }
 }

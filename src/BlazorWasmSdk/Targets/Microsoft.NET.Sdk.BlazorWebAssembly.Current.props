@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalEmbeddedPublishProperties>$(StaticWebAssetsAdditionalEmbeddedPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalEmbeddedPublishProperties>
-
+    <StaticWebAssetStandaloneHosting Condition="'$(StaticWebAssetStandaloneHosting)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetStandaloneHosting>
     <StaticWebAssetsGetEmbeddedPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectEmbeddedPublishStaticWebAssetItems</StaticWebAssetsGetEmbeddedPublishAssetsTargets>
   </PropertyGroup>
 

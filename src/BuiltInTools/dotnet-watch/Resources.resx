@@ -122,14 +122,81 @@
   </data>
   <data name="Error_MultipleProjectsFound" xml:space="preserve">
     <value>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</value>
+    <comment>{Locked="--project"}</comment>
   </data>
   <data name="Error_NoProjectsFound" xml:space="preserve">
     <value>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</value>
+    <comment>{Locked="--project"}</comment>
   </data>
   <data name="Error_QuietAndVerboseSpecified" xml:space="preserve">
     <value>Cannot specify both '--quiet' and '--verbose' options.</value>
+    <comment>{Locked="--quiet"}{Locked="--verbose"}</comment>
   </data>
   <data name="Warning_ProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
+    <comment>{Locked="-p"}{Locked="--project"}</comment>
+  </data>
+  <data name="Help_NonInteractive" xml:space="preserve">
+    <value>
+      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
+      Use this option to prevent console input from being captured.
+    </value>
+  </data>
+  <data name="Help_NoHotReload" xml:space="preserve">
+    <value>
+      Suppress hot reload for supported apps.
+    </value>
+  </data>
+  <data name="Help_List" xml:space="preserve">
+    <value>
+      Lists all discovered files without starting the watcher.
+    </value>
+  </data>
+  <data name="Help_Verbose" xml:space="preserve">
+    <value>
+      Show verbose output
+    </value>
+  </data>
+  <data name="Help_Quiet" xml:space="preserve">
+    <value>
+      Suppresses all output except warnings and errors
+    </value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>
+<![CDATA[
+Environment variables:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  When set to '1' or 'true', dotnet-watch will poll the file system for
+  changes. This is required for some file systems, such as network shares,
+  Docker mounted volumes, and other virtual file systems.
+
+  DOTNET_WATCH
+  dotnet-watch sets this variable to '1' on all child processes launched.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch sets this variable to '1' and increments by one each time
+  a file is changed and the command is restarted.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  When set to '1' or 'true', dotnet-watch will not show emojis in the 
+  console output.
+
+Remarks:
+  The special option '--' is used to delimit the end of the options and
+  the beginning of arguments that will be passed to the child dotnet process.
+
+  For example: dotnet watch -- --verbose run
+
+  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
+  indicates that '--verbose' should be treated instead as an argument for
+  dotnet-run.
+
+Examples:
+  dotnet watch run
+  dotnet watch test
+]]>
+    </value>
   </data>
 </root>
