@@ -425,9 +425,20 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(new[] { "--verbosity", "q" }, new[] { "-verbosity:q" })]
         [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { "-property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
-        [InlineData(new[] { "--artifacts-path", @"C:\x\y" }, new[] { @"-property:ArtifactsPath=C:\x\y" })]
         public void ForwardedBuildOptions(string[] args, string[] buildArgs)
         {
+            var options = VerifyOptions(["run", .. args]);
+            AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+        }
+
+        [Fact]
+        public void ForwardedBuildOptions_ArtifactsPath()
+        {
+            var path = TestContext.Current.TestAssetsDirectory;
+
+            var args = new[] { "--artifacts-path", path };
+            var buildArgs = new[] { @"-property:ArtifactsPath=" + path };
+
             var options = VerifyOptions(["run", .. args]);
             AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
         }
