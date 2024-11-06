@@ -9,14 +9,9 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     internal interface IConsole
     {
-        event ConsoleCancelEventHandler CancelKeyPress;
         event Action<ConsoleKeyInfo> KeyPressed;
         TextWriter Out { get; }
         TextWriter Error { get; }
-        TextReader In { get; }
-        bool IsInputRedirected { get; }
-        bool IsOutputRedirected { get; }
-        bool IsErrorRedirected { get; }
         ConsoleColor ForegroundColor { get; set; }
         void ResetColor();
         void Clear();

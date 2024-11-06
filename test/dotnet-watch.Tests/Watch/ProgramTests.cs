@@ -1,19 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
-    public class ProgramTests : DotNetWatchTestBase
+    public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        public ProgramTests(ITestOutputHelper logger)
-            : base(logger)
-        {
-        }
-
         [Fact]
         public async Task ConsoleCancelKey()
         {
@@ -40,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await watching.WaitAsync();
 
-            console.PressCancelKey();
+            console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
 
             var exitCode = await run;
             Assert.Equal(0, exitCode);
@@ -235,6 +229,32 @@ namespace Microsoft.DotNet.Watcher.Tests
             App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
             await App.AssertOutputLine(line => line.Contains("warning : The value of property is '123'", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task ProjectGraphLoadFailure()
+        {
+            var testAsset = TestAssets
+                .CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource()
+                .WithProjectChanges((path, proj) =>
+                {
+                    if (Path.GetFileName(path) == "App.WithDeps.csproj")
+                    {
+                        proj.Root.Descendants()
+                            .Single(e => e.Name.LocalName == "ItemGroup")
+                            .Add(XElement.Parse("""
+                            <ProjectReference Include="NonExistentDirectory\X.csproj" />
+                            """));
+                    }
+                });
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
+
+            App.AssertOutputContains(@"dotnet watch ⌚ Failed to load project graph.");
+            App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
         }
     }
 }

@@ -4,22 +4,39 @@
 #nullable enable
 
 using System.Diagnostics;
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
     internal class TestReporter(ITestOutputHelper output) : IReporter
     {
         private readonly Dictionary<int, Action> _actions = [];
+        public readonly List<string> ProcessOutput = [];
 
-        public bool ReportProcessOutput
+        public bool EnableProcessOutputReporting
             => true;
 
-        public event Action<string, string>? OnProcessOutput;
+        public event Action<string, OutputLine>? OnProjectProcessOutput;
+        public event Action<OutputLine>? OnProcessOutput;
 
-        public void ProcessOutput(string projectPath, string data)
+        public void ReportProcessOutput(OutputLine line)
         {
-            output.WriteLine($"[{Path.GetFileName(projectPath)}]: {data}");
-            OnProcessOutput?.Invoke(projectPath, data);
+            output.WriteLine(line.Content);
+            ProcessOutput.Add(line.Content);
+
+            OnProcessOutput?.Invoke(line);
+        }
+
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
+        {
+            var content = $"[{project.GetDisplayName()}]: {line.Content}";
+
+            output.WriteLine(content);
+            ProcessOutput.Add(content);
+
+            OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 
         public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)

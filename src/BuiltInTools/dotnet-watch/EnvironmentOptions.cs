@@ -17,6 +17,12 @@ namespace Microsoft.DotNet.Watcher
         /// Elevates the severity of <see cref="MessageDescriptor.WaitingForChanges"/> from <see cref="MessageSeverity.Output"/>.
         /// </summary>
         ElevateWaitingForChangesMessageSeverity = 1 << 2,
+
+        /// <summary>
+        /// Instead of using <see cref="Console.ReadKey()"/> to watch for Ctrl+C, Ctlr+R, and other keys, read from standard input.
+        /// This allows tests to trigger key based events.
+        /// </summary>
+        ReadKeyFromStdin = 1 << 3,
     }
 
     internal sealed record EnvironmentOptions(
