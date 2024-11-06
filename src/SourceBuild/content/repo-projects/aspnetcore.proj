@@ -12,6 +12,7 @@
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
     <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
