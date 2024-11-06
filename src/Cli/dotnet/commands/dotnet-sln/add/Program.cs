@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    solution.AddProject(relativePath, null, solutionFolder);
+                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (Exception ex)
@@ -106,6 +106,21 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
             return PathUtility.EnsureTrailingForwardSlash( PathUtility.GetPathWithForwardSlashes(Path.Join("/", _solutionFolderPath)) );
+        }
+
+        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
+        {
+            try
+            {
+                solution.AddProject(relativePath, null, solutionFolder);
+            }
+            catch (ArgumentException ex)
+            {
+                if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
+                {
+                    solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                }
+            }
         }
     }
 }
