@@ -1,16 +1,16 @@
-From bb08646395ccc8930656bb44b1821d646c993e16 Mon Sep 17 00:00:00 2001
+From b6100609c16295746b0c875494d5d66dabe35560 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Wed, 6 Nov 2024 16:43:26 +0000
 Subject: [PATCH] Update to .NET 10 SDK and TFM to net10.0 in arcade
 
 Backport: https://github.com/dotnet/arcade/pull/15221
 ---
- Directory.Build.props                                       | 5 +++++
- global.json                                                 | 4 ++--
- .../src/build/Packaging.targets                             | 4 ++++
- .../Sdk/tools/xunit-runner/XUnitRunner.targets              | 2 +-
- .../Microsoft.DotNet.XliffTasks.csproj                      | 6 +-----
- 5 files changed, 13 insertions(+), 8 deletions(-)
+ Directory.Build.props                                        | 5 +++++
+ global.json                                                  | 4 ++--
+ .../src/build/Packaging.targets                              | 4 ++++
+ .../Sdk/tools/xunit-runner/XUnitRunner.targets               | 2 +-
+ .../Microsoft.DotNet.XliffTasks.csproj                       | 4 ----
+ 5 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
 index 9d84f1dc6..b25de0091 100644
@@ -74,10 +74,10 @@ index 0ae8d1482..9312e2672 100644
  
      <XUnitRunnerVersion Condition="'$(XUnitRunnerVersion)' == ''">2.9.2</XUnitRunnerVersion>
 diff --git a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
-index 1059c3bc4..4da46b7da 100644
+index 1059c3bc4..165a4a7d5 100644
 --- a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
 +++ b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
-@@ -1,11 +1,7 @@
+@@ -1,10 +1,6 @@
  <Project Sdk="Microsoft.NET.Sdk">
  
    <PropertyGroup>
@@ -85,9 +85,7 @@ index 1059c3bc4..4da46b7da 100644
 -       We need to target net8.0 while Arcade SDK 8 is being used.
 -       Xliff tasks were moved from dotnet/xliff-tasks to Arcade in V9, so they are not available in release/8.0 branch.
 -    -->
--    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
-+    <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
+     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
      <IsPackable>true</IsPackable>
      <IsBuildTaskProject>true</IsBuildTaskProject>
-     <RootNamespace>XliffTasks</RootNamespace>
 -- 
