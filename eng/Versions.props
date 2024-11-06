@@ -134,15 +134,15 @@
     <SystemCompositionRuntimePackageVersion>10.0.0-alpha.1.24554.9</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>10.0.0-alpha.1.24554.9</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>10.0.0-alpha.1.24554.9</SystemConfigurationConfigurationManagerPackageVersion>
-    <SystemReflectionMetadataLoadContextVersion>9.0.0-rc.2.24473.5</SystemReflectionMetadataLoadContextVersion>
-    <SystemResourcesExtensionsPackageVersion>9.0.0-rc.2.24473.5</SystemResourcesExtensionsPackageVersion>
+    <SystemReflectionMetadataLoadContextVersion>10.0.0-alpha.1.24554.9</SystemReflectionMetadataLoadContextVersion>
+    <SystemResourcesExtensionsPackageVersion>10.0.0-alpha.1.24554.9</SystemResourcesExtensionsPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>10.0.0-alpha.1.24554.9</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>10.0.0-alpha.1.24554.9</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>10.0.0-alpha.1.24554.9</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>9.0.0-rc.2.24473.5</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>10.0.0-alpha.1.24554.9</SystemSecurityPermissionsPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>10.0.0-alpha.1.24554.9</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>10.0.0-alpha.1.24554.9</SystemTextJsonPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>9.0.0-rc.2.24473.5</SystemWindowsExtensionsPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>10.0.0-alpha.1.24554.9</SystemWindowsExtensionsPackageVersion>
     <SystemIOHashingPackageVersion>10.0.0-alpha.1.24554.9</SystemIOHashingPackageVersion>
     <SystemFormatsAsn1Version>10.0.0-alpha.1.24554.9</SystemFormatsAsn1Version>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
