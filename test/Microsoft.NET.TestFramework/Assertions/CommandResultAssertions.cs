@@ -66,10 +66,23 @@ namespace Microsoft.NET.TestFramework.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern)
+        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[] ignoredPatterns = null)
         {
-            Execute.Assertion.ForCondition(!_commandResult.StdOut.Contains(pattern))
+            string filteredStdOut = _commandResult.StdOut;
+            if (ignoredPatterns != null && ignoredPatterns.Length > 0)
+            {
+                foreach (var ignoredPattern in ignoredPatterns)
+                {
+                    filteredStdOut = string.Join(Environment.NewLine, filteredStdOut
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                        .Where(line => !line.Contains(ignoredPattern)));
+                }
+            }
+
+            // Perform the assertion on the filtered output
+            Execute.Assertion.ForCondition(!filteredStdOut.Contains(pattern))
                 .FailWith(AppendDiagnosticsTo($"The command output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
+
             return new AndConstraint<CommandResultAssertions>(this);
         }
 

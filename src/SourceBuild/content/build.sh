@@ -199,7 +199,7 @@ while [[ $# > 0 ]]; do
       prepare_machine=true
       ;;
     -use-mono-runtime)
-      properties+=( "/p:SourceBuildUseMonoRuntime=true" )
+      properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
     -dev)
       use_dev_versioning=true

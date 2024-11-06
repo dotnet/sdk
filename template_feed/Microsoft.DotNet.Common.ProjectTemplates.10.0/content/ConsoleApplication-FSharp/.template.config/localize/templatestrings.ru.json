@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Переопределение целевой платформы",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net10.0/description": "Целевая среда net10.0",
-  "symbols/Framework/choices/net10.0/displayName": "NET 10.0",
+  "symbols/Framework/choices/net10.0/displayName": ".NET 10.0",
   "symbols/Framework/displayName": "Платформа",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/skipRestore/displayName": "Пропустить восстановление",

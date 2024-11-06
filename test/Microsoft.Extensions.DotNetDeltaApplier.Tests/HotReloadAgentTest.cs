@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var assembly3 = GetAssembly("Microsoft.AspNetCore.Components", new[] { new AssemblyName("System.Private.CoreLib"), });
             var assembly4 = GetAssembly("Microsoft.AspNetCore.Components.Web", new[] { new AssemblyName("Microsoft.AspNetCore.Components"), new AssemblyName("System.Text.Json"), });
 
-            var sortedList = HotReloadAgent.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
+            var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
 
             // Assert
             Assert.Equal(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList);
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var assembly3 = GetAssembly("Microsoft.AspNetCore.Components", new[] { new AssemblyName("System.Private.CoreLib"), new AssemblyName("Microsoft.Extensions.DependencyInjection"), });
             var assembly4 = GetAssembly("Microsoft.AspNetCore.Components.Web", new[] { new AssemblyName("Microsoft.AspNetCore.Components"), new AssemblyName("System.Text.Json"), });
 
-            var sortedList = HotReloadAgent.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
+            var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
 
             // Assert
             Assert.Equal(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList);
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var assembly4 = GetAssembly("Microsoft.AspNetCore.Components", new[] { new AssemblyName("System.Private.CoreLib"), new AssemblyName("Microsoft.Extensions.DependencyInjection"), });
             var assembly5 = GetAssembly("Microsoft.AspNetCore.Components.Web", new[] { new AssemblyName("Microsoft.AspNetCore.Components"), new AssemblyName("System.Text.Json"), });
 
-            var sortedList = HotReloadAgent.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3, assembly5 });
+            var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3, assembly5 });
 
             // Assert
             Assert.Equal(new[] { assembly1, assembly3, assembly2, assembly4, assembly5 }, sortedList);
@@ -58,14 +58,11 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void GetHandlerActions_DiscoversActionsOnTypeWithClearCache()
         {
-            // Arrange
-            var actions = new HotReloadAgent.UpdateHandlerActions();
-            var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithClearCache)]);
 
-            agent.GetHandlerActions(actions, typeof(HandlerWithClearCache));
-
-            Assert.Empty(log);
+            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
             Assert.Single(actions.ClearCache);
             Assert.Empty(actions.UpdateApplication);
         }
@@ -73,14 +70,11 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void GetHandlerActions_DiscoversActionsOnTypeWithUpdateApplication()
         {
-            // Arrange
-            var actions = new HotReloadAgent.UpdateHandlerActions();
-            var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithUpdateApplication)]);
 
-            agent.GetHandlerActions(actions, typeof(HandlerWithUpdateApplication));
-
-            Assert.Empty(log);
+            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
             Assert.Empty(actions.ClearCache);
             Assert.Single(actions.UpdateApplication);
         }
@@ -88,14 +82,11 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void GetHandlerActions_DiscoversActionsOnTypeWithBothActions()
         {
-            // Arrange
-            var actions = new HotReloadAgent.UpdateHandlerActions();
-            var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithBothActions)]);
 
-            agent.GetHandlerActions(actions, typeof(HandlerWithBothActions));
-
-            Assert.Empty(log);
+            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
             Assert.Single(actions.ClearCache);
             Assert.Single(actions.UpdateApplication);
         }
@@ -103,16 +94,16 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void GetHandlerActions_LogsMessageIfMethodHasIncorrectSignature()
         {
-            // Arrange
-            var actions = new HotReloadAgent.UpdateHandlerActions();
-            var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+
             var handlerType = typeof(HandlerWithIncorrectSignature);
+            var actions = invoker.GetMetadataUpdateHandlerActions([handlerType]);
 
-            agent.GetHandlerActions(actions, handlerType);
-
-            var message = Assert.Single(log);
-            Assert.Equal($"Type '{handlerType}' has method 'Void ClearCache()' that does not match the required signature.", message);
+            var log = reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors);
+            var logEntry = Assert.Single(log);
+            Assert.Equal($"Type '{handlerType}' has method 'Void ClearCache()' that does not match the required signature.", logEntry.message);
+            Assert.Equal(AgentMessageSeverity.Warning, logEntry.severity);
             Assert.Empty(actions.ClearCache);
             Assert.Single(actions.UpdateApplication);
         }
@@ -120,17 +111,18 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
         [Fact]
         public void GetHandlerActions_LogsMessageIfNoActionsAreDiscovered()
         {
-            // Arrange
-            var actions = new HotReloadAgent.UpdateHandlerActions();
-            var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var reporter = new AgentReporter();
+            var invoker = new MetadataUpdateHandlerInvoker(reporter);
+
             var handlerType = typeof(HandlerWithNoActions);
+            var actions = invoker.GetMetadataUpdateHandlerActions([handlerType]);
 
-            agent.GetHandlerActions(actions, handlerType);
+            var log = reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors);
+            var logEntry = Assert.Single(log);
+            Assert.Equal(
+                $"Expected to find a static method 'ClearCache' or 'UpdateApplication' on type '{handlerType.AssemblyQualifiedName}' but neither exists.", logEntry.message);
 
-            var message = Assert.Single(log);
-            Assert.Equal($"No invokable methods found on metadata handler type '{handlerType}'. " +
-                    $"Allowed methods are ClearCache, UpdateApplication", message);
+            Assert.Equal(AgentMessageSeverity.Warning, logEntry.severity);
             Assert.Empty(actions.ClearCache);
             Assert.Empty(actions.UpdateApplication);
         }
