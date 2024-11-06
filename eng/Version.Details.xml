@@ -331,22 +331,22 @@
       <Sha>a3b3c6e6e9fc473f8c0871acff54b86c00d77947</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24555.5">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24555.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>26ca8d1fb521b1c3566a0ccc7f409a45443998f4</Sha>
+      <Sha>fe3286518d4996e087f131136845cf3af47015cf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24555.5">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24555.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>26ca8d1fb521b1c3566a0ccc7f409a45443998f4</Sha>
+      <Sha>fe3286518d4996e087f131136845cf3af47015cf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24555.5">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24555.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>26ca8d1fb521b1c3566a0ccc7f409a45443998f4</Sha>
+      <Sha>fe3286518d4996e087f131136845cf3af47015cf</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24555.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24555.7">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>26ca8d1fb521b1c3566a0ccc7f409a45443998f4</Sha>
+      <Sha>fe3286518d4996e087f131136845cf3af47015cf</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.24554.9">
