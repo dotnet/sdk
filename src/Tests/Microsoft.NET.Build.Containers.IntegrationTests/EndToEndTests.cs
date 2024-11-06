@@ -207,7 +207,7 @@ public class EndToEndTests : IDisposable
                 }
                 else
                 {
-                    Assert.False(true, $"Unexpected entry in tarball: {entry.Name}");
+                    Assert.True(false, $"Unexpected entry in tarball: {entry.Name}");
                 }
 
                 entry = tarReader.GetNextEntry();
@@ -222,7 +222,7 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public async Task ApiEndToEndOciImageWithArchiveWritingAndLoad()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndOciImageWithArchiveWritingAndLoad));
 
         // Build the image
 
@@ -295,7 +295,7 @@ public class EndToEndTests : IDisposable
                 }
                 else
                 {
-                    Assert.False(true, $"Unexpected entry in tarball: {entry.Name}");
+                    Assert.True(false, $"Unexpected entry in tarball: {entry.Name}");
                 }
 
                 entry = tarReader.GetNextEntry();
