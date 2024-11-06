@@ -35,9 +35,6 @@ internal sealed class ImageConfig
     /// </summary>
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
 
-    internal string Architecture => _architecture;
-    internal string OS => _os;
-
     public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
     public HashSet<Port> Ports => _exposedPorts;
 
