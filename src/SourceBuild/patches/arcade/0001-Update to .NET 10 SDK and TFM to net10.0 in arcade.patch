@@ -88,4 +88,3 @@ index 1059c3bc4..165a4a7d5 100644
      <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
      <IsPackable>true</IsPackable>
      <IsBuildTaskProject>true</IsBuildTaskProject>
--- 
