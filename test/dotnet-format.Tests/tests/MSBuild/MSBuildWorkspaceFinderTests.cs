@@ -12,6 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         public MSBuildWorkspaceFinderTests(ITestOutputHelper log) : base(log)
         {
         }
+        
         private string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
 
         [Fact]
