@@ -11,7 +11,9 @@ public class DockerRegistryManager
 {
     public const string RuntimeBaseImage = "dotnet/runtime";
     public const string AspNetBaseImage = "dotnet/aspnet";
+    public const string Nginx = "library/nginx";
     public const string BaseImageSource = "mcr.microsoft.com";
+    public const string LibraryImageSourse = "docker.io";
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
     public const string Net8ImageTag = "8.0";
@@ -23,7 +25,12 @@ public class DockerRegistryManager
 
     internal class SameArchManifestPicker : IManifestPicker
     {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier) 
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+
+        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
         {
             return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
         }
@@ -33,7 +40,8 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new DockerCli(loggerFactory).IsAvailable()) {
+        if (!new DockerCli(loggerFactory).IsAvailable())
+        {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
 
@@ -43,7 +51,7 @@ public class DockerRegistryManager
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
 
-        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
+        var mcrPullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
         var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
@@ -70,13 +78,13 @@ public class DockerRegistryManager
                     string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
-                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(),  CancellationToken.None);
-                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
-                    var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
-                    logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
-                    await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
-                    logger.LogInformation($"Pushed image  for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
+                    await PullFromRemoteRegistryThenPushToLocalRegistry(mcrPullRegistry, pushRegistry, BaseImageSource, RuntimeBaseImage, tag, logger);
                 }
+
+                var nginxTag = "latest";
+                var librPullRegistry = new Registry(LibraryImageSourse, logger, RegistryMode.Pull);
+                await PullFromRemoteRegistryThenPushToLocalRegistry(librPullRegistry, pushRegistry, LibraryImageSourse, Nginx, nginxTag, logger);
+
                 return;
             }
             catch (Exception ex)
@@ -92,7 +100,7 @@ public class DockerRegistryManager
                     {
                         ContainerCli.StopCommand(testOutput, s_registryContainerId).Execute();
                     }
-                    catch(Exception ex2)
+                    catch (Exception ex2)
                     {
                         logger.LogError(ex2, "Failed to stop the registry {id}.", s_registryContainerId);
                     }
@@ -104,6 +112,22 @@ public class DockerRegistryManager
             }
         }
         throw new InvalidOperationException($"The registry was not loaded after {spawnRegistryMaxRetry} retries. {failureReasons}");
+    }
+
+    private static async Task PullFromRemoteRegistryThenPushToLocalRegistry(
+        Registry remoteRegistry,
+        Registry localRegistry,
+        string imageSource,
+        string repositoryName,
+        string tag,
+        ILogger logger)
+    {
+        var image = await remoteRegistry.GetImageManifestAsync(repositoryName, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
+        var source = new SourceImageReference(remoteRegistry, repositoryName, tag);
+        var dest = new DestinationImageReference(localRegistry, repositoryName, [tag]);
+        logger.LogInformation($"Pushing image for {imageSource}/{repositoryName}:{tag}");
+        await localRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
+        logger.LogInformation($"Pushed image  for {imageSource}/{repositoryName}:{tag}");
     }
 
     public static void ShutdownDockerRegistry(ITestOutputHelper testOutput)
