@@ -86,18 +86,17 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
-                catch (Exception ex)
+                catch (ArgumentException ex)
                 {
-                    // TODO: Update with error codes from vs-solutionpersistence
-                    // Duplicate project
-                    if (Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success || Regex.Match(ex.Message, @"Duplicate item '.*' of type 'Project'\.").Success)
+                    // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit. 
+                    if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success)
                     {
-                        Reporter.Output.WriteLine(
-                            string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath));
-                        continue;
+                        Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                     }
-                    // Invalid project
-                    throw new GracefulException(ex.Message, ex);
+                    else
+                    {
+                        throw new ArgumentException(ex.Message, ex.ParamName, ex.InnerException);
+                    }
                 }
             }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
