@@ -207,7 +207,7 @@ public class EndToEndTests : IDisposable
                 }
                 else
                 {
-                    Assert.True(false, $"Unexpected entry in tarball: {entry.Name}");
+                    Assert.Fail($"Unexpected entry in tarball: {entry.Name}");
                 }
 
                 entry = tarReader.GetNextEntry();
@@ -295,7 +295,7 @@ public class EndToEndTests : IDisposable
                 }
                 else
                 {
-                    Assert.True(false, $"Unexpected entry in tarball: {entry.Name}");
+                    Assert.Fail($"Unexpected entry in tarball: {entry.Name}");
                 }
 
                 entry = tarReader.GetNextEntry();
