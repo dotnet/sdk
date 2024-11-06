@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Tests
 
         private static void RunTest(string nugetConfigFilename, bool useOnlineFeeds, string[] sources, string[]? customSources = null, bool sourceBuild = false)
         {
-            string psmAssetsDir = Path.Combine(Directory.GetCurrentDirectory(), "assets", "PackageSourceMappingsTests");
+            string psmAssetsDir = Path.Combine(Directory.GetCurrentDirectory(), "assets", nameof(PackageSourceMappingsTests));
             string originalNugetConfig = Path.Combine(psmAssetsDir, "original", nugetConfigFilename);
             string expectedNugetConfig = Path.Combine(psmAssetsDir, "expected", nugetConfigFilename);
 
