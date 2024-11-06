@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                context.RootProjectOptions.Command is "run" or "test")
+                CommandLineOptions.IsCodeExecutionCommand(context.RootProjectOptions.Command))
             {
                 if (RequiresRevaluation)
                 {
