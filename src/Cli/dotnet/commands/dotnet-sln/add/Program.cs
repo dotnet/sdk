@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
                 }); 
             }
-            SolutionFolderModel solutionFolder = (!_inRoot && _solutionFolderPath != null)
+            SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes())
                 : null;
             foreach (var projectPath in projectPaths)
@@ -89,13 +89,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 catch (ArgumentException ex)
                 {
                     // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit. 
-                    if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder\.").Success)
+                    if (solution.SolutionProjects.Any((p) =>
+                        string.Equals(p.FilePath, relativePath, StringComparison.OrdinalIgnoreCase)))
                     {
                         Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                     }
                     else
                     {
-                        throw new ArgumentException(ex.Message, ex.ParamName, ex.InnerException);
+                        throw;
                     }
                 }
             }
@@ -123,7 +124,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 }
                 else
                 {
-                    throw new ArgumentException(ex.Message, ex.ParamName, ex.InnerException);
+                    throw;
                 }
             }
         }
