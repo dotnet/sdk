@@ -3,6 +3,7 @@ From: Matt Thalman <mthalman@microsoft.com>
 Date: Thu, 7 Nov 2024 09:00:10 -0600
 Subject: [PATCH] Runtime patch to support net10.0
 
+Backport: https://github.com/dotnet/runtime/pull/109619
 ---
  .../src/ILLink.Tasks/build/Microsoft.NET.ILLink.Tasks.props     | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
