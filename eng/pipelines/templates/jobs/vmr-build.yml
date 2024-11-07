@@ -640,4 +640,4 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
         ArtifactName: VerticalManifests
       displayName: Publish Vertical Manifest
-      condition: succeededOrFailed()
+      condition: succeeded()
