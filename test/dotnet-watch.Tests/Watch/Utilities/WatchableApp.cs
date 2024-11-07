@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         /// </summary>
         public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null)
         {
-            Logger.WriteLine($"Test waiting for output: '{expectedPrefix}'");
+            Logger.WriteLine($"[TEST] Test waiting for output: '{expectedPrefix}'");
 
             var line = await Process.GetOutputLineAsync(
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
@@ -128,6 +128,11 @@ namespace Microsoft.DotNet.Watcher.Tests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
+
+            // suppress all DCP timeouts:
+            commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
+            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
+            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
 
             foreach (var env in EnvironmentVariables)
             {

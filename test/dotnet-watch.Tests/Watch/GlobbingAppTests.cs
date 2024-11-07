@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             App.DotnetWatchArgs.Clear();
             App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("watch :"));
+            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
 
             AssertEx.EqualFileList(
                 testAsset.Path,

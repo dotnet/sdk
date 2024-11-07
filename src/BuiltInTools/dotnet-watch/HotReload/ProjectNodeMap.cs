@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         public readonly ProjectGraph Graph = graph;
 
+        // full path of proj file to list of nodes representing all target frameworks of the project:
         public readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> Map = 
             graph.ProjectNodes.GroupBy(n => n.ProjectInstance.FullPath).ToDictionary(
                 keySelector: static g => g.Key,

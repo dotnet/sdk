@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watch;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -57,28 +58,17 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
 
-                if (exitCode != 0 || !File.Exists(watchList))
+                var success = exitCode == 0 && File.Exists(watchList);
+
+                if (!success)
                 {
-                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'");
-
+                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
                     reporter.Output($"MSBuild output from target '{TargetName}':");
-                    reporter.Output(string.Empty);
+                }
 
-                    foreach (var (line, isError) in capturedOutput)
-                    {
-                        var message = "   " + line;
-                        if (isError)
-                        {
-                            reporter.Error(message);
-                        }
-                        else
-                        {
-                            reporter.Output(message);
-                        }
-                    }
-
-                    reporter.Output(string.Empty);
-
+                BuildUtilities.ReportBuildOutput(reporter, capturedOutput, verboseOutput: success);
+                if (!success)
+                {
                     return null;
                 }
 

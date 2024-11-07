@@ -3,13 +3,16 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Watch;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class HotReloadDotNetWatcher : Watcher
+    internal sealed partial class HotReloadDotNetWatcher : Watcher
     {
         private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
 
@@ -120,12 +123,18 @@ namespace Microsoft.DotNet.Watcher
                         };
                     }
 
+                    if (!await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken))
+                    {
+                        // error has been reported:
+                        waitForFileChangeBeforeRestarting = false;
+                        return;
+                    }
+
                     rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
                         rootProjectOptions,
                         rootProcessTerminationSource,
                         onOutput: null,
-                        restartOperation: new RestartOperation((_, _) => throw new InvalidOperationException("Root project shouldn't be restarted")),
-                        build: true,
+                        restartOperation: new RestartOperation(_ => throw new InvalidOperationException("Root project shouldn't be restarted")),
                         iterationCancellationToken);
 
                     if (rootRunningProject == null)
@@ -221,44 +230,10 @@ namespace Microsoft.DotNet.Watcher
                             break;
                         }
 
-                        var changedFiles = Interlocked.Exchange(ref changedFilesAccumulator, []);
+                        var changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: null);
                         if (changedFiles is [])
                         {
                             continue;
-                        }
-
-                        // When a new file is added we need to run design-time build to find out
-                        // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
-                        // We don't need to rebuild and restart the application though.
-                        if (changedFiles.Any(f => f.Change is ChangeKind.Add))
-                        {
-                            Context.Reporter.Verbose("File addition triggered re-evaluation.");
-
-                            evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
-
-                            // additional directories may have been added:
-                            fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
-
-                            await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
-
-                            if (shutdownCancellationToken.IsCancellationRequested)
-                            {
-                                // Ctrl+C:
-                                return;
-                            }
-
-                            // update files in the change set with new evaluation info:
-                            changedFiles = changedFiles.Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
-                                .ToImmutableList();
-
-                            ReportFileChanges(changedFiles);
-                        }
-                        else
-                        {
-                            ReportFileChanges(changedFiles);
-
-                            // update the workspace to reflect changes in the file content:
-                            await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                         }
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.Main);
@@ -274,7 +249,7 @@ namespace Microsoft.DotNet.Watcher
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToBeRebuilt, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projects, cancellationToken) =>
+                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projects, cancellationToken) =>
                         {
                             if (_rudeEditRestartPrompt != null)
                             {
@@ -329,24 +304,141 @@ namespace Microsoft.DotNet.Watcher
                             break;
                         }
 
-                        if (projectsToRestart.Any())
+                        if (projectsToRebuild.Count > 0)
                         {
-                            // Restart all terminated child processes and wait until their build completes:
-                            await Task.WhenAll(
-                                projectsToRestart.Select(async runningProject =>
+                            while (true)
+                            {
+                                iterationCancellationToken.ThrowIfCancellationRequested();
+
+                                // pause accumulating file changes during build:
+                                fileWatcher.OnFileChange -= fileChangedCallback;
+                                try
                                 {
-                                    var newRunningProject = await runningProject.RestartOperation(build: true, shutdownCancellationToken);
-                                    runningProject.Dispose();
-                                    await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
-                                }))
-                                .WaitAsync(shutdownCancellationToken);
+                                    var buildResults = await Task.WhenAll(
+                                        projectsToRebuild.Values.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
+
+                                    if (buildResults.All(success => success))
+                                    {
+                                        break;
+                                    }
+                                }
+                                finally
+                                {
+                                    fileWatcher.OnFileChange += fileChangedCallback;
+                                }
+
+                                iterationCancellationToken.ThrowIfCancellationRequested();
+
+                                _ = await fileWatcher.WaitForFileChangeAsync(
+                                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
+                                    shutdownCancellationToken);
+                            }
 
                             // Update build completion time, so that file changes caused by the rebuild do not affect our file watcher:
                             buildCompletionTime = DateTime.UtcNow;
-                            changedFilesAccumulator = [];
+
+                            // Changes made since last snapshot of the accumulator shouldn't be included in next Hot Reload update.
+                            // Apply them to the workspace.
+                            _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
                             // Restart session to capture new baseline that reflects the changes to the restarted projects.
-                            await compilationHandler.RestartSessionAsync(projectsToBeRebuilt, iterationCancellationToken);
+                            await compilationHandler.RestartSessionAsync(projectsToRebuild, iterationCancellationToken);
+                        }
+
+                        if (projectsToRestart is not [])
+                        {
+                            await Task.WhenAll(
+                                projectsToRestart.Select(async runningProject =>
+                                {
+                                    var newRunningProject = await runningProject.RestartOperation(shutdownCancellationToken);
+
+                                    try
+                                    {
+                                        await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
+                                    }
+                                    catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
+                                    {
+                                        // Process might have exited while we were trying to communicate with it.
+                                    }
+                                    finally
+                                    {
+                                        runningProject.Dispose();
+                                    }
+                                }))
+                                .WaitAsync(shutdownCancellationToken);
+                        }
+
+                        async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)
+                        {
+                            var changedFiles = Interlocked.Exchange(ref changedFilesAccumulator, []);
+                            if (changedFiles is [])
+                            {
+                                return [];
+                            }
+
+                            // When a new file is added we need to run design-time build to find out
+                            // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
+                            // We don't need to rebuild and restart the application though.
+                            var hasAddedFile = changedFiles.Any(f => f.Change is ChangeKind.Add);
+
+                            if (hasAddedFile)
+                            {
+                                Context.Reporter.Verbose("File addition triggered re-evaluation.");
+
+                                evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
+
+                                // additional directories may have been added:
+                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+
+                                await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
+
+                                if (shutdownCancellationToken.IsCancellationRequested)
+                                {
+                                    // Ctrl+C:
+                                    return [];
+                                }
+
+                                // Update files in the change set with new evaluation info.
+                                changedFiles = changedFiles
+                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
+                                    .ToImmutableList();
+                            }
+
+                            if (rebuiltProjects != null)
+                            {
+                                // Filter changed files down to those contained in projects being rebuilt.
+                                // File changes that affect projects that are not being rebuilt will stay in the accumulator
+                                // and be included in the next Hot Reload change set.
+                                var rebuiltProjectPaths = rebuiltProjects.Values.ToHashSet();
+
+                                var newAccumulator = ImmutableList<ChangedFile>.Empty;
+                                var newChangedFiles = ImmutableList<ChangedFile>.Empty;
+
+                                foreach (var file in changedFiles)
+                                {
+                                    if (file.Item.ContainingProjectPaths.All(containingProjectPath => rebuiltProjectPaths.Contains(containingProjectPath)))
+                                    {
+                                        newChangedFiles = newChangedFiles.Add(file);
+                                    }
+                                    else
+                                    {
+                                        newAccumulator = newAccumulator.Add(file);
+                                    }
+                                }
+
+                                changedFiles = newChangedFiles;
+                                ImmutableInterlocked.Update(ref changedFilesAccumulator, accumulator => accumulator.AddRange(newAccumulator));
+                            }
+
+                            ReportFileChanges(changedFiles);
+
+                            if (!hasAddedFile)
+                            {
+                                // update the workspace to reflect changes in the file content:
+                                await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
+                            }
+
+                            return changedFiles;
                         }
                     }
                 }
@@ -432,7 +524,6 @@ namespace Microsoft.DotNet.Watcher
                 fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile]);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
-                    (path, change) => new ChangedFile(new FileItem() { FilePath = path }, change),
                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }
@@ -496,7 +587,7 @@ namespace Microsoft.DotNet.Watcher
 
             if (kind == ChangeKind.Add)
             {
-                return new ChangedFile(new FileItem { FilePath = path }, kind);
+                return new ChangedFile(new FileItem { FilePath = path, ContainingProjectPaths = [] }, kind);
             }
 
             return null;
@@ -574,6 +665,38 @@ namespace Microsoft.DotNet.Watcher
                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
+        }
+
+        private async Task<bool> BuildProjectAsync(string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
+        {
+            var buildOutput = new List<OutputLine>();
+
+            var processSpec = new ProcessSpec
+            {
+                Executable = Context.EnvironmentOptions.MuxerPath,
+                WorkingDirectory = Path.GetDirectoryName(projectPath)!,
+                OnOutput = line =>
+                {
+                    lock (buildOutput)
+                    {
+                        buildOutput.Add(line);
+                    }
+                },
+                // pass user-specified build arguments last to override defaults:
+                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
+            };
+
+            Context.Reporter.Output($"Building '{projectPath}' ...");
+
+            var exitCode = await ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+            BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, verboseOutput: exitCode == 0);
+
+            if (exitCode == 0)
+            {
+                Context.Reporter.Output("Build succeeded.");
+            }
+
+            return exitCode == 0;
         }
 
         private string GetRelativeFilePath(string path)
