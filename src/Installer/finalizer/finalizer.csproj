@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <PublishAot>true</PublishAot>
     <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <_IsPublishing>true</_IsPublishing>
@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Dtf.WindowsInstaller" />
+    <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallUILevel.cs" />
+    <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallState.cs" />
   </ItemGroup>
 
   <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" />

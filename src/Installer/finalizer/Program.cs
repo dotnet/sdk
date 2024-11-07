@@ -1,105 +1,108 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.Win32;
-using WixToolset.Dtf.WindowsInstaller;
+using Microsoft.Win32.Msi;
 
 if (args.Length < 3)
 {
-  Console.WriteLine("Invalid arguments. Usage: finalizer <logPath> <sdkVersion> <platform>");
-  return;
+    Console.WriteLine("Invalid arguments. Usage: finalizer <logPath> <sdkVersion> <platform>");
+    return;
 }
 
 string logPath = args[0];
 string sdkVersion = args[1];
 string platform = args[2];
 
-Console.WriteLine($"{nameof(logPath)}: {logPath}");
-Console.WriteLine($"{nameof(sdkVersion)}: {sdkVersion}");
-Console.WriteLine($"{nameof(platform)}: {platform}");
+using StreamWriter logStream = new StreamWriter(logPath);
+
+Logger.Init(logStream);
+
+Logger.Log($"{nameof(logPath)}: {logPath}");
+Logger.Log($"{nameof(sdkVersion)}: {sdkVersion}");
+Logger.Log($"{nameof(platform)}: {platform}");
 
 try
 {
-  // Step 1: Parse and format SDK feature band version
-  string featureBandVersion = ParseSdkVersion(sdkVersion);
+    // Step 1: Parse and format SDK feature band version
+    string featureBandVersion = ParseSdkVersion(sdkVersion);
 
-  // Step 2: Check if SDK feature band is installed
-  bool isInstalled = DetectSdk(featureBandVersion, platform);
-  if (isInstalled)
-  {
-    Console.WriteLine($"SDK with feature band {featureBandVersion} is already installed.");
-    return;
-  }
+    // Step 2: Check if SDK feature band is installed
+    bool isInstalled = DetectSdk(featureBandVersion, platform);
+    if (isInstalled)
+    {
+        Logger.Log($"SDK with feature band {featureBandVersion} is already installed.");
+        return;
+    }
 
-  // Step 3: Remove dependent components if necessary
-  bool restartRequired = RemoveDependent(featureBandVersion);
-  if (restartRequired)
-  {
-    Console.WriteLine("A restart may be required after removing the dependent component.");
-  }
+    // Step 3: Remove dependent components if necessary
+    bool restartRequired = RemoveDependent(featureBandVersion);
+    if (restartRequired)
+    {
+        Logger.Log("A restart may be required after removing the dependent component.");
+    }
 
-  // Step 4: Delete workload records
-  DeleteWorkloadRecords(featureBandVersion, platform);
+    // Step 4: Delete workload records
+    DeleteWorkloadRecords(featureBandVersion, platform);
 
-  // Step 5: Clean up install state file
-  RemoveInstallStateFile(featureBandVersion, platform);
+    // Step 5: Clean up install state file
+    RemoveInstallStateFile(featureBandVersion, platform);
 
-  // Final reboot check
-  if (restartRequired || IsRebootPending())
-  {
-    Console.WriteLine("A system restart is recommended to complete the operation.");
-  }
-  else
-  {
-    Console.WriteLine("Operation completed successfully. No restart is required.");
-  }
+    // Final reboot check
+    if (restartRequired || IsRebootPending())
+    {
+        Logger.Log("A system restart is recommended to complete the operation.");
+    }
+    else
+    {
+        Logger.Log("Operation completed successfully. No restart is required.");
+    }
 }
 catch (Exception ex)
 {
-  Console.WriteLine($"Error: {ex}");
+    Logger.Log($"Error: {ex}");
 }
 
 static string ParseSdkVersion(string sdkVersion)
 {
-  var parts = sdkVersion.Split('.');
-  if (parts.Length < 3)
-    throw new ArgumentException("Invalid SDK version format.");
+    var parts = sdkVersion.Split('.');
+    if (parts.Length < 3)
+        throw new ArgumentException("Invalid SDK version format.");
 
-  if (!int.TryParse(parts[2], out int patch) || patch < 100)
-    throw new ArgumentException("Invalid patch level in SDK version.");
+    if (!int.TryParse(parts[2], out int patch) || patch < 100)
+        throw new ArgumentException("Invalid patch level in SDK version.");
 
-  int featureBand = patch - (patch % 100);
-  return $"{parts[0]}.{parts[1]}.{featureBand}";
+    int featureBand = patch - (patch % 100);
+    return $"{parts[0]}.{parts[1]}.{featureBand}";
 }
 
 static bool DetectSdk(string featureBandVersion, string platform)
 {
-  string registryPath = $@"SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\{platform}\sdk";
-  using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath))
-  {
-    if (key == null)
+    string registryPath = $@"SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\{platform}\sdk";
+    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath))
     {
-      Console.WriteLine("SDK registry path not found.");
-      return false;
-    }
+        if (key == null)
+        {
+            Logger.Log("SDK registry path not found.");
+            return false;
+        }
 
-    foreach (var valueName in key.GetValueNames())
-    {
-      if (valueName.Contains(featureBandVersion))
-      {
-        Console.WriteLine($"SDK version detected: {valueName}");
-        return true;
-      }
+        foreach (var valueName in key.GetValueNames())
+        {
+            if (valueName.Contains(featureBandVersion))
+            {
+                Logger.Log($"SDK version detected: {valueName}");
+                return true;
+            }
+        }
     }
-  }
-  return false;
+    return false;
 }
 
 static bool RemoveDependent(string dependent)
 {
-    Installer.SetInternalUI(InstallUIOptions.Silent);
+    // Disable MSI UI
+    _ = MsiSetInternalUI((uint)InstallUILevel.NoChange, IntPtr.Zero);
 
     // Open the installer dependencies registry key
     // This has to be an exhaustive search as we're not looking for a specific provider key, but for a specific dependent
@@ -107,14 +110,14 @@ static bool RemoveDependent(string dependent)
     using var hkInstallerDependenciesKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Dependencies", writable: true);
     if (hkInstallerDependenciesKey == null)
     {
-        Console.WriteLine("Installer dependencies key does not exist.");
-        return false; // No dependencies to remove
+        Logger.Log("Installer dependencies key does not exist.");
+        return false;
     }
 
     // Iterate over each provider key in the dependencies
     foreach (string providerKeyName in hkInstallerDependenciesKey.GetSubKeyNames())
     {
-        Console.WriteLine($"Processing provider key: {providerKeyName}");
+        Logger.Log($"Processing provider key: {providerKeyName}");
 
         using var hkProviderKey = hkInstallerDependenciesKey.OpenSubKey(providerKeyName, writable: true);
         if (hkProviderKey == null) continue;
@@ -124,10 +127,8 @@ static bool RemoveDependent(string dependent)
         if (hkDependentsKey == null) continue;
 
         // Check if the dependent exists and continue if it does not
-        string[] dependentsKeys = hkDependentsKey.GetSubKeyNames();
         bool dependentExists = false;
-
-        foreach (string dependentsKeyName in dependentsKeys)
+        foreach (string dependentsKeyName in hkDependentsKey.GetSubKeyNames())
         {
             if (string.Equals(dependentsKeyName, dependent, StringComparison.OrdinalIgnoreCase))
             {
@@ -138,20 +139,20 @@ static bool RemoveDependent(string dependent)
 
         if (!dependentExists)
         {
-            continue; // Skip to the next provider key if the dependent does not exist
+            continue;
         }
 
-        Console.WriteLine($"Dependent match found: {dependent}");
+        Logger.Log($"Dependent match found: {dependent}");
 
         // Attempt to remove the dependent key
         try
         {
             hkDependentsKey.DeleteSubKey(dependent);
-            Console.WriteLine("Dependent deleted");
+            Logger.Log("Dependent deleted");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception while removing dependent key: {ex.Message}");
+            Logger.Log($"Exception while removing dependent key: {ex.Message}");
             return false;
         }
 
@@ -163,13 +164,13 @@ static bool RemoveDependent(string dependent)
             {
                 string productCode = hkProviderKey.GetValue("ProductId").ToString();
 
-                // Configure the product to be absent
-                Installer.ConfigureProduct(productCode, 0, InstallState.Absent, "");
-                Console.WriteLine("Product configured to absent successfully.");
+                // Configure the product to be absent (uninstall the product)
+                uint error = MsiConfigureProductEx(productCode, (int)InstallUILevel.Default, InstallState.ABSENT, "");
+                Logger.Log("Product configured to absent successfully.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error handling product configuration: {ex.Message}");
+                Logger.Log($"Error handling product configuration: {ex.Message}");
                 return false;
             }
         }
@@ -181,66 +182,88 @@ static bool RemoveDependent(string dependent)
 
 static void DeleteWorkloadRecords(string featureBandVersion, string platform)
 {
-  string workloadKey = $@"SOFTWARE\Microsoft\dotnet\InstalledWorkloads\Standalone\{platform}";
+    string workloadKey = $@"SOFTWARE\Microsoft\dotnet\InstalledWorkloads\Standalone\{platform}";
 
-  using (RegistryKey key = Registry.LocalMachine.OpenSubKey(workloadKey, writable: true))
-  {
-    if (key != null)
+    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(workloadKey, writable: true))
     {
-      key.DeleteSubKeyTree(featureBandVersion, throwOnMissingSubKey: false);
-      Console.WriteLine($"Deleted workload records for '{featureBandVersion}'.");
+        if (key != null)
+        {
+            key.DeleteSubKeyTree(featureBandVersion, throwOnMissingSubKey: false);
+            Logger.Log($"Deleted workload records for '{featureBandVersion}'.");
+        }
+        else
+        {
+            Logger.Log("No workload records found to delete.");
+        }
     }
-    else
-    {
-      Console.WriteLine("No workload records found to delete.");
-    }
-  }
 }
 
 static void RemoveInstallStateFile(string featureBandVersion, string platform)
 {
-  string programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-  string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion, "installstate", "default.json");
+    string programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+    string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion, "installstate", "default.json");
 
-  if (File.Exists(installStatePath))
-  {
-    File.Delete(installStatePath);
-    Console.WriteLine($"Deleted install state file: {installStatePath}");
-
-    var dir = new DirectoryInfo(installStatePath).Parent;
-    while (dir != null && dir.Exists && dir.GetFiles().Length == 0 && dir.GetDirectories().Length == 0)
+    if (File.Exists(installStatePath))
     {
-      dir.Delete();
-      dir = dir.Parent;
+        File.Delete(installStatePath);
+        Logger.Log($"Deleted install state file: {installStatePath}");
+
+        var dir = new DirectoryInfo(installStatePath).Parent;
+        while (dir != null && dir.Exists && dir.GetFiles().Length == 0 && dir.GetDirectories().Length == 0)
+        {
+            dir.Delete();
+            dir = dir.Parent;
+        }
     }
-  }
-  else
-  {
-    Console.WriteLine("Install state file does not exist.");
-  }
+    else
+    {
+        Logger.Log("Install state file does not exist.");
+    }
 }
 
 static bool IsRebootPending()
 {
-  using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
-  {
-    if (key != null)
+    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
     {
-      Console.WriteLine("Reboot is pending due to component-based servicing.");
-      return true;
+        if (key != null)
+        {
+            Logger.Log("Reboot is pending due to component-based servicing.");
+            return true;
+        }
     }
-  }
 
-  using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager"))
-  {
-    var value = key?.GetValue("PendingFileRenameOperations");
-    if (value != null)
+    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager"))
     {
-      Console.WriteLine("Pending file rename operations indicate a reboot is pending.");
-      return true;
+        var value = key?.GetValue("PendingFileRenameOperations");
+        if (value != null)
+        {
+            Logger.Log("Pending file rename operations indicate a reboot is pending.");
+            return true;
+        }
     }
-  }
 
-  Console.WriteLine("No reboot pending.");
-  return false;
+    Logger.Log("No reboot pending.");
+    return false;
+}
+
+[DllImport("msi.dll", CharSet = CharSet.Unicode)]
+[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+static extern uint MsiConfigureProductEx(string szProduct, int iInstallLevel, InstallState eInstallState, string szCommandLine);
+
+[DllImport("msi.dll", CharSet = CharSet.Unicode)]
+[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+static extern uint MsiSetInternalUI(uint dwUILevel, IntPtr phWnd);
+
+static class Logger
+{
+    static StreamWriter s_logStream;
+
+    public static void Init(StreamWriter logStream) => s_logStream = logStream;
+
+    public static void Log(string message)
+    {
+        var pid = Environment.ProcessId;
+        var tid = Environment.CurrentManagedThreadId;
+        s_logStream.WriteLine($"[{pid:X4}:{tid:X4}][{DateTime.Now:yyyy-MM-ddTHH:mm:ss}] Finalizer: {message}");
+    }
 }

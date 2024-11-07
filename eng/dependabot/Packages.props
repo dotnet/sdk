@@ -3,8 +3,6 @@
   <!-- Packages in this file have versions updated periodically by Dependabot. Versions managed by Darc/Maestro should be in ..\Packages.props. -->
 
   <ItemGroup>
-    <PackageVersion Include="WixToolset.Dtf.WindowsInstaller" Version="4.0.6" />
-
     <!--Test dependencies-->
     <PackageVersion Include="Verify.Xunit" Version="25.0.2" />
     <PackageVersion Include="Verify.DiffPlex" Version="3.0.0" />
