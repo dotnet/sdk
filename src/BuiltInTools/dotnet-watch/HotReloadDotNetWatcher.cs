@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Watcher
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildArguments);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();

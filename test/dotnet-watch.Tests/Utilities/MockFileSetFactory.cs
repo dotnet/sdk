@@ -7,8 +7,7 @@ namespace Microsoft.DotNet.Watcher.Tools;
 
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
-    targetFramework: null,
-    buildProperties: [],
+    buildArguments: [],
     new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
     NullReporter.Singleton)
 {

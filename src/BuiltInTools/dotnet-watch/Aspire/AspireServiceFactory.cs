@@ -34,7 +34,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private readonly ProjectLauncher _projectLauncher;
         private readonly AspireServerService _service;
-        private readonly IReadOnlyList<(string name, string value)> _buildProperties;
+        private readonly IReadOnlyList<string> _buildArguments;
 
         /// <summary>
         /// Lock to access:
@@ -47,10 +47,10 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         private int _sessionIdDispenser;
         private volatile bool _isDisposed;
 
-        public SessionManager(ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
+        public SessionManager(ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
         {
             _projectLauncher = projectLauncher;
-            _buildProperties = buildProperties;
+            _buildArguments = buildArguments;
 
             _service = new AspireServerService(
                 this,
@@ -239,7 +239,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
                 WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory, // TODO: Should DCP protocol specify?
-                BuildProperties = _buildProperties, // TODO: Should DCP protocol specify?
+                BuildArguments = _buildArguments, // TODO: Should DCP protocol specify?
                 Command = "run",
                 CommandArguments = arguments,
                 LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(kvp => (kvp.Key, kvp.Value)).ToArray() ?? [],
@@ -255,8 +255,8 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
     public static readonly AspireServiceFactory Instance = new();
     public const string AppHostProjectCapability = "Aspire";
 
-    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
+    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
         => projectNode.GetCapabilities().Contains(AppHostProjectCapability)
-            ? new SessionManager(projectLauncher, buildProperties)
+            ? new SessionManager(projectLauncher, buildArguments)
             : null;
 }

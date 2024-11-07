@@ -223,9 +223,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (projectOptions.Command != "run")
+            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose("Browser refresh is only supported for run commands.");
+                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
                 return false;
             }
 

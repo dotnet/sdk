@@ -58,7 +58,7 @@ internal sealed class ProjectLauncher(
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
-            Arguments = build || projectOptions.Command is not ("run" or "test")
+            Arguments = build || !CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command)
                 ? [projectOptions.Command, .. projectOptions.CommandArguments]
                 : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
         };
