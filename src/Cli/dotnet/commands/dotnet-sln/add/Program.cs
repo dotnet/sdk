@@ -4,6 +4,8 @@
 using System.CommandLine;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
@@ -83,14 +85,20 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
+                    // Try to open the project to see if it is valid
+                    ProjectRootElement p = ProjectRootElement.Open(projectPath);
                     AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
+                }
+                catch (InvalidProjectFileException ex)
+                {
+                    Reporter.Error.WriteLine(string.Format(
+                        CommonLocalizableStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
                 }
                 catch (ArgumentException ex)
                 {
                     // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit. 
-                    if (solution.SolutionProjects.Any((p) =>
-                        string.Equals(p.FilePath, relativePath, StringComparison.OrdinalIgnoreCase)))
+                    if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
                     {
                         Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                     }
