@@ -234,6 +234,11 @@
         <target state="translated">CONTAINER2010: 提供的 {0} 無效: {1}。{0} 必須是有效映像標記的分號分隔清單。映像標記必須是英數字元、底線、連字號或句號。</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: 權杖回應沒有權杖，也沒有access_token。</target>

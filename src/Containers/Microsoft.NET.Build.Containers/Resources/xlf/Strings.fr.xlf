@@ -234,6 +234,11 @@
         <target state="translated">CONTAINER2010: {0} non valide fournie : {1}. {0} doit être une liste de balises d’image valides délimitées par des points-virgules. Les balises d’image doivent être alphanumériques, traits de soulignement, traits d’union ou point.</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: la réponse de jeton n’avait ni jeton ni access_token.</target>

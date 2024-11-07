@@ -113,32 +113,35 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
         else
         {
-            ValidateTargetRuntimeIdentiriers();
-            var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
-            if (ComputeRepositoryAndTag(out var repository, out var tag))
+            if (TargetRuntimeIdentiriersAreValid())
             {
-                ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
-                LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
+                if (ComputeRepositoryAndTag(out var repository, out var tag))
+                {
+                    ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
+                    LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                }
             }
             return !Log.HasLoggedErrors;
         }
     }
 
-    private void ValidateTargetRuntimeIdentiriers()
+    private bool TargetRuntimeIdentiriersAreValid()
     {
-        // also check that the os is same for each rid
         var muslRidsCount = TargetRuntimeIdentifiers.Count(rid => rid.StartsWith("linux-musl", StringComparison.Ordinal));
         if (muslRidsCount > 0)
         {
-            if (muslRidsCount != TargetRuntimeIdentifiers.Length)
+            if (muslRidsCount == TargetRuntimeIdentifiers.Length)
             {
-                // log error if there is a mix of musl and non-musl RIDs
+                IsMuslRid = true;              
             }
             else
-            { // all RIDs are musl
-                IsMuslRid = true;
+            {
+                Log.LogError(Resources.Strings.InvalidTargetRuntimeIdentifiers);
+                return false;
             }
         }
+        return true;
     }
 
     private string UbuntuCodenameForSDKVersion(SemanticVersion version)

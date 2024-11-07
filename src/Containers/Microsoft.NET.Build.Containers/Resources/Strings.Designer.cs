@@ -484,6 +484,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid string[] TargetRuntimeIdentifiers. Either all should be &apos;linux-musl&apos; or none..
+        /// </summary>
+        internal static string InvalidTargetRuntimeIdentifiers {
+            get {
+                return ResourceManager.GetString("InvalidTargetRuntimeIdentifiers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1003: Token response had neither token nor access_token..
         /// </summary>
         internal static string InvalidTokenResponse {

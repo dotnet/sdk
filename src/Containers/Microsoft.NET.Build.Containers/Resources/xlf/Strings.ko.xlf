@@ -234,6 +234,11 @@
         <target state="translated">CONTAINER2010: 잘못된 {0}이(가) 제공됨: {1}. {0}은(는) 세미콜론으로 구분된 유효한 이미지 태그 목록이어야 합니다. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: 토큰 응답에 토큰이나 access_token이 없습니다.</target>

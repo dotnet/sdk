@@ -234,6 +234,11 @@
         <target state="translated">CONTAINER2010: предоставлен недопустимый {0}: {1}. {0} должен быть списком допустимых тегов изображений, разделенных точкой с запятой. В качестве тегов изображений допускаются буквы, цифры, символы подчеркивания, дефисы и точки.</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: ответ токена не содержит маркера и access_token.</target>
