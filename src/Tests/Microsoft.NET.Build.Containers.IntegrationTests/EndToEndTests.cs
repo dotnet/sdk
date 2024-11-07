@@ -130,35 +130,7 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
-        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
-            nameof(ApiEndToEndWithArchiveWritingAndLoad), "app.tar.gz");
-
-        // Build the image
-        (BuiltImage builtImage, SourceImageReference sourceReference, DestinationImageReference destinationReference) =
-            await BuildDockerImageWithArciveDestinationAsync(archiveFile, ["latest", "1.0"], nameof(ApiEndToEndWithArchiveWritingAndLoad));
-
-        // Write the image to disk
-        await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
-
-        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
-
-        // Load the archive
-        ContainerCli.LoadCommand(_testOutput, "--input", archiveFile)
-            .Execute()
-            .Should().Pass();
-
-        // Run the image
-        foreach (string tag in destinationReference.Tags)
-        {
-            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
-                .Execute()
-                .Should().Pass();
-        }
-    }
-
-    private async Task<(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference)> BuildDockerImageWithArciveDestinationAsync(string archiveFile, string[] tags, string testName)
-    {
-        ILogger logger = _loggerFactory.CreateLogger(testName);
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
         string publishDirectory = BuildLocalApp(tfm: "net8.0");
 
         // Build the image
@@ -182,10 +154,27 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Write the image to disk
+        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
+            nameof(ApiEndToEndWithArchiveWritingAndLoad), "app.tar.gz");
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
-        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), tags);
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), new[] { "latest", "1.0" });
 
-        return (builtImage, sourceReference, destinationReference);
+        await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+
+        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+
+        // Load the archive
+        ContainerCli.LoadCommand(_testOutput, "--input", archiveFile)
+            .Execute()
+            .Should().Pass();
+
+        // Run the image
+        foreach (string tag in destinationReference.Tags)
+        {
+            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
+        }
     }
 
     [DockerAvailableFact]
@@ -212,6 +201,28 @@ public class EndToEndTests : IDisposable
         Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckOciTarballStructure(archiveFile);
+    }
+
+    private async Task<(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference)> BuildDockerImageWithArciveDestinationAsync(string archiveFile, string[] tags, string testName)
+    {
+        ILogger logger = _loggerFactory.CreateLogger(testName);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+
+        ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8ImageTag,
+            "linux-x64",
+            ToolsetUtils.RidGraphManifestPicker,
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Write the image to disk
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), tags);
+
+        return (builtImage, sourceReference, destinationReference);
     }
 
     private BuiltImage ConvertToOciImage(BuiltImage builtImage)
