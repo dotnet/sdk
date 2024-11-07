@@ -623,13 +623,11 @@
                             CrossgenLayout;
                             LayoutAppHostTemplate;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          BeforeTargets="AfterBuild"
-          Condition="'$(PackInstaller)' != false" />
+          BeforeTargets="AfterBuild" />
 
   <Target Name="GenerateInternalLayout"
           DependsOnTargets="GenerateLayout"
-          BeforeTargets="AfterBuild"
-          Condition="'$(PackInstaller)' != false" >
+          BeforeTargets="AfterBuild" >
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
 
