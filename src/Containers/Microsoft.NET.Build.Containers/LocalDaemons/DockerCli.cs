@@ -269,11 +269,11 @@ internal sealed class DockerCli
 #if NET
     public static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
-        if (image.Manifest.MediaType == SchemaTypes.DockerManifestV2)
+        if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
         {
             await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
-        else if (image.Manifest.MediaType == SchemaTypes.OciManifestV1)
+        else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
         {
             await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
