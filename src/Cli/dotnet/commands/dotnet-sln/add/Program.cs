@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 var fullPath = Path.GetFullPath(project);
                 return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-            }).ToArray();
+            });
             try
             {
                 AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             }
         }
 
-        private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, string[] projectPaths, CancellationToken cancellationToken)
+        private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
         {
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
@@ -109,10 +109,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 }
             }
             solution.DistillProjectConfigurations();
-            foreach (var solutionPropertyBag in SlnV12Extensions.GetSlnProperties(solution))
-            {
-                solution.AddSlnProperties(solutionPropertyBag);
-            }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
@@ -140,10 +136,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 {
                     throw;
                 }
-            }
-            foreach (var solutionPropertyBag in SlnV12Extensions.GetSlnProperties(project))
-            {
-                solution.AddSlnProperties(solutionPropertyBag);
             }
         }
     }
