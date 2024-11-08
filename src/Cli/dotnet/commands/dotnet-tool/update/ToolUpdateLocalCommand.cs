@@ -55,12 +55,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
-            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
-                IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, _restoreActionConfig);
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,

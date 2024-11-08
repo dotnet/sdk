@@ -86,10 +86,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
-
+            var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                _parseResult,
-                _createToolPackageStoresAndDownloader,
+                parseResult,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
