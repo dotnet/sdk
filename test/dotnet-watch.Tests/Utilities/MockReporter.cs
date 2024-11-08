@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools;
@@ -11,9 +13,12 @@ internal class MockReporter : IReporter
 {
     public readonly List<string> Messages = [];
 
-    public bool ReportProcessOutput => false;
+    public bool EnableProcessOutputReporting => false;
 
-    public void ProcessOutput(string projectPath, string data)
+    public void ReportProcessOutput(OutputLine line)
+    => throw new InvalidOperationException();
+
+    public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
         => throw new InvalidOperationException();
 
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)

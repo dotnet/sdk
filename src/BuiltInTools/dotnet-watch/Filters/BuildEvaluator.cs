@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                context.RootProjectOptions.Command is "run" or "test")
+                CommandLineOptions.IsCodeExecutionCommand(context.RootProjectOptions.Command))
             {
                 if (RequiresRevaluation)
                 {
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     return result;

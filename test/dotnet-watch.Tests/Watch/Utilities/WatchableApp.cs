@@ -1,13 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
-    internal sealed class WatchableApp : IDisposable
+    internal sealed class WatchableApp(ITestOutputHelper logger) : IDisposable
     {
         // Test apps should output this message as soon as they start running:
         private const string StartedMessage = "Started";
@@ -18,27 +19,37 @@ namespace Microsoft.DotNet.Watcher.Tests
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
-        public readonly ITestOutputHelper Logger;
-        private bool _prepared;
+        public TestFlags TestFlags { get; private set; }
 
-        public WatchableApp(ITestOutputHelper logger)
-        {
-            Logger = logger;
-        }
+        public ITestOutputHelper Logger => logger;
 
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = new() { "--verbose" };
+        public List<string> DotnetWatchArgs { get; } = ["--verbose", "/bl:DotnetRun.binlog"];
 
-        public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
         public bool UsePollingWatcher { get; set; }
 
-        public static string GetLinePrefix(MessageDescriptor descriptor)
-            => $"dotnet watch {descriptor.Emoji} {descriptor.Format}";
+        public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
+            => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, Predicate<string> failure = null)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor), failure);
+        public void AssertOutputContains(string message)
+            => AssertEx.Contains(message, Process.Output);
+
+        public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
+            => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
+
+        public async ValueTask WaitUntilOutputContains(string message)
+        {
+            if (!Process.Output.Any(line => line.Contains(message)))
+            {
+                _ = await AssertOutputLine(line => line.Contains(message));
+            }
+        }
+
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -97,24 +108,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        private void Prepare(string projectDirectory)
-        {
-            if (_prepared)
-            {
-                return;
-            }
-
-            var buildCommand = new BuildCommand(Logger, projectDirectory);
-            buildCommand.Execute().Should().Pass();
-
-            _prepared = true;
-        }
-
         public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
         {
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
-
-            Prepare(projectDirectory);
 
             var commandSpec = new DotnetCommand(Logger, ["watch", .. DotnetWatchArgs, .. arguments])
             {
@@ -138,11 +134,27 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             Process = new AwaitableProcess(commandSpec, Logger);
             Process.Start();
+
+            TestFlags = testFlags;
         }
 
         public void Dispose()
         {
             Process?.Dispose();
+        }
+
+        public void SendControlC()
+            => SendKey(PhysicalConsole.CtrlC);
+
+        public void SendControlR()
+            => SendKey(PhysicalConsole.CtrlR);
+
+        public void SendKey(char c)
+        {
+            Assert.True(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
+
+            Process.Process.StandardInput.Write(c);
+            Process.Process.StandardInput.Flush();
         }
     }
 }
