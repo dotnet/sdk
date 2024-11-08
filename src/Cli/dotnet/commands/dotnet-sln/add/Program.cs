@@ -108,6 +108,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }
             }
+            solution.DistillProjectConfigurations();
+            foreach (var solutionPropertyBag in SlnV12Extensions.GetSlnProperties(solution))
+            {
+                solution.AddSlnProperties(solutionPropertyBag);
+            }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
@@ -119,21 +124,26 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
+            SolutionProjectModel project;
             try
             {
-                solution.AddProject(relativePath, null, solutionFolder);
+                project = solution.AddProject(relativePath, null, solutionFolder);
             }
             catch (ArgumentException ex)
             {
                 // TODO: Update with error codes from vs-solutionpersistence
                 if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
                 {
-                    solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                    project = solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
                 }
                 else
                 {
                     throw;
                 }
+            }
+            foreach (var solutionPropertyBag in SlnV12Extensions.GetSlnProperties(project))
+            {
+                solution.AddSlnProperties(solutionPropertyBag);
             }
         }
     }
