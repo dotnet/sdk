@@ -1,4 +1,4 @@
-From b6100609c16295746b0c875494d5d66dabe35560 Mon Sep 17 00:00:00 2001
+From d0be677b1b67cf2fa586bde07fbbf79b1f6e8a13 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Wed, 6 Nov 2024 16:43:26 +0000
 Subject: [PATCH] Update to .NET 10 SDK and TFM to net10.0 in arcade
@@ -28,6 +28,23 @@ index 9d84f1dc6..b25de0091 100644
    </PropertyGroup>
  
  </Project>
+diff --git a/global.json b/global.json
+index f34ace5f6..b1abaf570 100644
+--- a/global.json
++++ b/global.json
+@@ -1,10 +1,10 @@
+ {
+   "sdk": {
+-    "version": "9.0.100-rc.2.24474.11",
++    "version": "10.0.100-alpha.1.24551.9",
+     "rollForward": "latestFeature"
+   },
+   "tools": {
+-    "dotnet": "9.0.100-rc.2.24474.11"
++    "dotnet": "10.0.100-alpha.1.24551.9"
+   },
+   "msbuild-sdks": {
+     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24555.3",
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 index b94b6736d..e0fadabb2 100644
 --- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
