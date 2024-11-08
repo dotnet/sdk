@@ -32,7 +32,7 @@ diff --git a/global.json b/global.json
 index 3a7409606..3054e30d7 100644
 --- a/global.json
 +++ b/global.json
-@@ -1,10 +1,10 @@
+@@ -1,9 +1,9 @@
  {
    "sdk": {
 -    "version": "9.0.100-rc.2.24474.11",
@@ -44,7 +44,6 @@ index 3a7409606..3054e30d7 100644
 +    "dotnet": "10.0.100-alpha.1.24551.9"
    },
    "msbuild-sdks": {
-     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24530.1",
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 index b94b6736d..e0fadabb2 100644
 --- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
