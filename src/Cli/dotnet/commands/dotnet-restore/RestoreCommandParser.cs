@@ -25,11 +25,12 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
         .AllowSingleArgPerToken();
 
-        private static IEnumerable<CliOption> FullRestoreOptions() => 
+        private static IEnumerable<CliOption> FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
-                new CliOption[] {
+                [
                     CommonOptions.VerbosityOption,
                     CommonOptions.InteractiveMsBuildForwardOption,
+                    CommonOptions.ArtifactsPathOption,
                     new ForwardedOption<bool>("--use-lock-file")
                     {
                         Description = LocalizableStrings.CmdUseLockFileOptionDescription,
@@ -46,7 +47,8 @@ namespace Microsoft.DotNet.Cli
                     new ForwardedOption<bool>("--force-evaluate")
                     {
                         Description = LocalizableStrings.CmdReevaluateOptionDescription
-                    }.ForwardAs("-property:RestoreForceEvaluate=true") });
+                    }.ForwardAs("-property:RestoreForceEvaluate=true"),
+                ]);
 
         private static readonly CliCommand Command = ConstructCommand();
 

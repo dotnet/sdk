@@ -22,14 +22,24 @@
         <target state="translated">{0} オプションと {1} オプションを併用することはできません。ロールバック ファイルからインストールする場合、{0} を削除してください。その他の場合には、{1} を削除します</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。いずれかのオプションを削除してください。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">global.json ファイル {0} に既にバージョンが指定されている場合は、コマンド ラインで --version または --from-history を使用して特定のワークロード バージョンを指定することはできません。グローバルにインストールされたワークロード バージョンを更新するには、その global.json ファイルを含むパスの外部でコマンドを実行するか、global.json ファイルで指定されたバージョンを更新して、"dotnet workload update" を実行します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">ワークロードのバージョンが global.json で指定されている場合、{0} オプションは使用できません。{0} オプションを削除するか、{1} から 'workloadVersion' 要素を削除してください。</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">更新されたワークロード マニフェストを確認しています。</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">更新されたワークロード バージョンを確認しています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -80,6 +90,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">マニフェスト {0} のバージョン {1} をインストールできませんでした: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">ワークロード バージョン {0} をインストールできませんでした: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -155,11 +170,6 @@
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
         <target state="translated">ワークロードをインストールするターゲット フレームワーク。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">ID を持つ {0} マニフェストが存在しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -375,11 +385,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">パス</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">ワークロードのバージョンを {0} から {1} に更新しています。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
