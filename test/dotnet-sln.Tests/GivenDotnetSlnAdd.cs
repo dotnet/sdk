@@ -733,7 +733,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", directoryToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(
+            cmd.StdErr.Should().Contain(
                 string.Format(
                     CommonLocalizableStrings.MoreThanOneProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToAdd)));

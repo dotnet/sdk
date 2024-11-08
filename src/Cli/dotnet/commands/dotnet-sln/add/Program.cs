@@ -44,22 +44,26 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
             PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-            var fullProjectPaths = _projects.Select(project =>
-            {
-                var fullPath = Path.GetFullPath(project);
-                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-            });
             try
             {
+                var fullProjectPaths = _projects.Select(project =>
+                {
+                    var fullPath = Path.GetFullPath(project);
+                    return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+                });
                 AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
                 return 0;
             }
+            catch (GracefulException)
+            {
+                throw;
+            }
+            catch (SolutionException ex)
+            {
+                throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            }
             catch (Exception ex)
             {
-                if (ex is SolutionException || ex.InnerException is SolutionException)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
-                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -86,8 +90,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 try
                 {
                     // Try to open the project to see if it is valid
-                    ProjectRootElement p = ProjectRootElement.Open(projectPath);
-                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
+                    ProjectRootElement project = ProjectRootElement.Open(projectPath);
+                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder, project.GetProjectTypeGuid());
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (InvalidProjectFileException ex)
@@ -118,19 +122,19 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(_solutionFolderPath).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
 
-        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
+        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder, string guid)
         {
             SolutionProjectModel project;
             try
             {
-                project = solution.AddProject(relativePath, null, solutionFolder);
+                solution.AddProject(relativePath, guid, solutionFolder);
             }
             catch (ArgumentException ex)
             {
                 // TODO: Update with error codes from vs-solutionpersistence
                 if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
                 {
-                    project = solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                    solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
                 }
                 else
                 {
