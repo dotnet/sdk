@@ -58,12 +58,12 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 throw;
             }
-            catch (SolutionException ex)
-            {
-                throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
-            }
             catch (Exception ex)
             {
+                if (ex is SolutionException || ex.InnerException is SolutionException)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -112,8 +112,23 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }
             }
-            solution.DistillProjectConfigurations();
+            AddDefaultProjectConfigurations(solution);
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
+        }
+
+        private void AddDefaultProjectConfigurations(SolutionModel solution)
+        {
+            string[] defaultConfigurationPlatforms = { "Any CPU", "x86", "x64" };
+            foreach (var platform in defaultConfigurationPlatforms)
+            {
+                solution.AddPlatform(platform);
+            }
+            string[] defaultConfigurationBuildTypes = { "Debug", "Release" };
+            foreach (var buildType in defaultConfigurationBuildTypes)
+            {
+                solution.AddBuildType(buildType);
+            }
+            solution.DistillProjectConfigurations();
         }
 
         private string GetSolutionFolderPathWithForwardSlashes()
