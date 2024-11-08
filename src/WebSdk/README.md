@@ -217,7 +217,7 @@ Sample MsDeploy Publish Profile:
     <MSDeployPublishMethod>WMSVC</MSDeployPublishMethod>
     <EnableMSDeployBackup>True</EnableMSDeployBackup>
     <UserName>$vramakwebappwithdb</UserName>
-    <Password>DeployPassword</Password>
+    <Password></$Credential></Password>
   </PropertyGroup>
 </Project>
 ```
@@ -276,7 +276,7 @@ Sample MsDeploy Profile With Destination Connection String & EF Migrations:
     <MSDeployPublishMethod>WMSVC</MSDeployPublishMethod>
     <EnableMSDeployBackup>True</EnableMSDeployBackup>
     <UserName>$vramakwebappwithdb</UserName>
-    <Password>DeployPassword</Password>
+    <Password></$Credential></Password>
   </PropertyGroup>
   <ItemGroup>
     <DestinationConnectionStrings Include="ShoppingCartConnection">
@@ -285,7 +285,7 @@ Sample MsDeploy Profile With Destination Connection String & EF Migrations:
   </ItemGroup>
   <ItemGroup>
     <EFMigrations Include="ShoppingCartContext">
-      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=efMigrationUser@dbserver;Password=password</Value>
+      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=efMigrationUser@dbserver;Password=</$Credential></Value>
     </EFMigrations>
   </ItemGroup>
 </Project>
