@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
-            var assemblyPartitionInfos = scheduler.Schedule(targetPath, netFramework: netFramework);
+            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)

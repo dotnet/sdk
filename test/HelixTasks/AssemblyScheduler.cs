@@ -79,16 +79,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             private readonly string _assemblyPath;
             private readonly int _methodLimit;
             private readonly bool _hasEventListenerGuard;
-            private readonly bool _netFramework;
             private int _currentId;
             private List<TypeInfo> _currentTypeInfoList = new();
 
-            private AssemblyInfoBuilder(string assemblyPath, int methodLimit, bool hasEventListenerGuard, bool netFramework = false)
+            private AssemblyInfoBuilder(string assemblyPath, int methodLimit, bool hasEventListenerGuard)
             {
                 _assemblyPath = assemblyPath;
                 _methodLimit = methodLimit;
                 _hasEventListenerGuard = hasEventListenerGuard;
-                _netFramework = netFramework;
             }
 
             internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList, bool netFramework = false)
@@ -107,19 +105,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var typeInfo in typeInfoList)
                 {
                     _currentTypeInfoList.Add(typeInfo);
-                    if (_netFramework)
-                    {
-                        if (_builder.Length > 0)
-                        {
-                            _builder.Append("|");
-                        }
-                        _builder.Append($@"{typeInfo.FullName}");
 
-                    }
-                    else
+                    if (_builder.Length > 0)
                     {
-                        _builder.Append($@"-class ""{typeInfo.FullName}"" ");
+                        _builder.Append("|");
                     }
+                    _builder.Append($@"{typeInfo.FullName}");
+
                     CheckForPartitionLimit(done: false);
                 }
 
