@@ -90,8 +90,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 try
                 {
                     // Try to open the project to see if it is valid
-                    ProjectRootElement project = ProjectRootElement.Open(projectPath);
-                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder, project.GetProjectTypeGuid());
+                    ProjectRootElement.Open(projectPath);
+                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (InvalidProjectFileException ex)
@@ -137,12 +137,12 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(_solutionFolderPath).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
 
-        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder, string guid)
+        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
             SolutionProjectModel project;
             try
             {
-                solution.AddProject(relativePath, guid, solutionFolder);
+                solution.AddProject(relativePath, null, solutionFolder);
             }
             catch (ArgumentException ex)
             {
