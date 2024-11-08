@@ -324,23 +324,19 @@
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
     
     <ItemGroup>
-      <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''">
-        <IsMusl>$([System.String]::Copy('%(Identity)').StartsWith('linux-musl'))</IsMusl>
-        <_ridWithoutMusl Condition="!'%(IsMusl)'">%(Identity)</_ridWithoutMusl>
-        <_ridWithoutMusl Condition="'%(IsMusl)'">linux$([System.String]::Copy('%(Identity)').Substring(10))</_ridWithoutMusl>
-      </_rids>
+      <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
+      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
 
-      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''">
-        <IsMusl>$([System.String]::Copy('%(Identity)').StartsWith('linux-musl'))</IsMusl>
-        <_ridWithoutMusl Condition="!'%(IsMusl)'">%(Identity)</_ridWithoutMusl>
-        <_ridWithoutMusl Condition="'%(IsMusl)'">linux$([System.String]::Copy('%(Identity)').Substring(10))</_ridWithoutMusl>
-      </_rids>
+      <_ridsFiltered Include="@(_rids)">
+        <RidWithoutMusl Condition="!$([System.String]::Copy('%(Identity)').StartsWith('linux-musl-'))">%(Identity)</RidWithoutMusl>
+        <RidWithoutMusl Condition="$([System.String]::Copy('%(Identity)').StartsWith('linux-musl-'))">linux$([System.String]::Copy('%(Identity)').Substring(10))</RidWithoutMusl>
+      </_ridsFiltered>
 
       <_InnerBuild
         Include="$(MSBuildProjectFullPath)"
         AdditionalProperties="
-          ContainerRuntimeIdentifier=%(_rids.Identity);
-          RuntimeIdentifier=%(_rids._ridWithoutMusl);
+          ContainerRuntimeIdentifier=%(_ridsFiltered.Identity);
+          RuntimeIdentifier=%(_ridsFiltered.RidWithoutMusl);
           ContainerBaseRegistry=$(ContainerBaseRegistry);
           ContainerBaseName=$(ContainerBaseName);
           ContainerBaseTag=$(ContainerBaseTag);
@@ -362,6 +358,7 @@
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
         "/>
       <_rids Remove ="$(_rids)" />
+      <_ridsFiltered Remove="$(_ridsFiltered)" />
     </ItemGroup>
 
     <MSBuild
