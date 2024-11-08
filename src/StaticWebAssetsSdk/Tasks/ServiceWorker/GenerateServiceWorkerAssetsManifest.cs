@@ -1,92 +1,142 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public partial class GenerateServiceWorkerAssetsManifest : Task
 {
-    public partial class GenerateServiceWorkerAssetsManifest : Task
+    private static readonly JsonSerializerOptions ManifestSerializationOptions = new()
     {
-        [Required]
-        public ITaskItem[] Assets { get; set; }
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
 
-        public string Version { get; set; }
+    [Required]
+    public ITaskItem[] Assets { get; set; }
 
-        [Required]
-        public string OutputPath { get; set; }
+    public string Version { get; set; }
 
-        [Output]
-        public string CalculatedVersion { get; set; }
+    [Required]
+    public string OutputPath { get; set; }
 
-        public override bool Execute()
+    [Output]
+    public string CalculatedVersion { get; set; }
+
+    public override bool Execute()
+    {
+        CalculatedVersion = GenerateAssetManifest();
+        return !Log.HasLoggedErrors;
+    }
+
+    private string GenerateAssetManifest()
+    {
+        var assets = Assets.Select(a => (StaticWebAsset.FromTaskItem(a), a.GetMetadata("AssetUrl"))).ToArray();
+        var entries = new ManifestEntry[Assets.Length];
+        for (var i = 0; i < Assets.Length; i++)
         {
-            using var fileStream = File.Create(OutputPath);
-            CalculatedVersion = GenerateAssetManifest(fileStream);
-
-            return true;
-        }
-
-        internal string GenerateAssetManifest(Stream stream)
-        {
-            var assets = new AssetsManifestFileEntry[Assets.Length];
-            Parallel.For(0, assets.Length, i =>
+            var (asset, url) = assets[i];
+            var hash = asset.Integrity;
+            entries[i] = new ManifestEntry
             {
-                var item = Assets[i];
-                var hash = item.GetMetadata("FileHash");
-                var url = item.GetMetadata("AssetUrl");
-
-                if (string.IsNullOrEmpty(hash))
-                {
-                    // Some files that are part of the service worker manifest may not have their hashes previously
-                    // calcualted. Calculate them at this time.
-                    using var sha = SHA256.Create();
-                    using var file = File.OpenRead(item.ItemSpec);
-                    var bytes = sha.ComputeHash(file);
-
-                    hash = Convert.ToBase64String(bytes);
-                }
-
-                assets[i] = new AssetsManifestFileEntry
-                {
-                    hash = "sha256-" + hash,
-                    url = url,
-                };
-            });
-
-            var version = Version;
-            if (string.IsNullOrEmpty(version))
-            {
-                // If a version isn't specified (which is likely the most common case), construct a Version by combining
-                // the file names + hashes of all the inputs.
-
-                var combinedHash = string.Join(
-                    Environment.NewLine,
-                    assets.OrderBy(f => f.url, StringComparer.Ordinal).Select(f => f.hash));
-
-                using var sha = SHA256.Create();
-                var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(combinedHash));
-                version = Convert.ToBase64String(bytes).Substring(0, 8);
-            }
-
-            var data = new AssetsManifestFile
-            {
-                version = version,
-                assets = assets,
+                Hash = $"sha256-{hash}",
+                Url = url,
             };
-
-            using var streamWriter = new StreamWriter(stream, Encoding.UTF8, bufferSize: 50, leaveOpen: true);
-            streamWriter.Write("self.assetsManifest = ");
-            streamWriter.Flush();
-
-            using var jsonWriter = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, ownsStream: false, indent: true);
-            new DataContractJsonSerializer(typeof(AssetsManifestFile)).WriteObject(jsonWriter, data);
-            jsonWriter.Flush();
-
-            streamWriter.WriteLine(";");
-
-            return version;
         }
+
+        Array.Sort(entries, (a, b) =>
+        {
+            var urlComparison = string.Compare(a.Url, b.Url, StringComparison.Ordinal);
+            if (urlComparison != 0)
+            {
+                return urlComparison;
+            }
+            return string.Compare(a.Hash, b.Hash, StringComparison.Ordinal);
+        });
+        var version = !string.IsNullOrEmpty(Version) ? Version : ComputeVersion(entries);
+
+        var manifest = new ServiceWorkerManifest
+        {
+            Version = version,
+            Assets = entries,
+        };
+
+        PersistManifest(manifest);
+        return version;
+    }
+
+    private static string ComputeVersion(ManifestEntry[] assets)
+    {
+        // If a version isn't specified (which is likely the most common case), construct a Version by combining
+        // the file names + hashes of all the inputs.
+
+        var combinedHash = string.Join(
+            Environment.NewLine,
+            assets.OrderBy(f => f.Url, StringComparer.Ordinal).Select(f => f.Hash));
+
+        var data = Encoding.UTF8.GetBytes(combinedHash);
+#if !NET9_0_OR_GREATER
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(data);
+        var version = Convert.ToBase64String(bytes).Substring(0, 8);
+#else
+        var bytes = SHA256.HashData(data);
+        var version = Convert.ToBase64String(bytes)[..8];
+#endif
+
+        return version;
+    }
+
+    private void PersistManifest(ServiceWorkerManifest manifest)
+    {
+        var data = JsonSerializer.Serialize(manifest, ManifestSerializationOptions);
+        var content = $"self.assetsManifest = {data};{Environment.NewLine}";
+        var contentHash = GenerateServiceWorkerAssetsManifest.ComputeFileHash(content);
+        var fileExists = File.Exists(OutputPath);
+        var existingManifestHash = fileExists ? GenerateServiceWorkerAssetsManifest.ComputeFileHash(File.ReadAllText(OutputPath)) : "";
+
+        if (!fileExists)
+        {
+            Log.LogMessage(MessageImportance.Low, $"Creating manifest with content hash '{contentHash}' because manifest file '{OutputPath}' does not exist.");
+            File.WriteAllText(OutputPath, content);
+        }
+        else if (!string.Equals(contentHash, existingManifestHash, StringComparison.Ordinal))
+        {
+            Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest hash '{contentHash}' is different from existing manifest hash '{existingManifestHash}'.");
+            File.WriteAllText(OutputPath, content);
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, $"Skipping manifest updated because manifest hash '{contentHash}' has not changed.");
+        }
+    }
+
+    private static string ComputeFileHash(string contents)
+    {
+        var data = Encoding.UTF8.GetBytes(contents);
+#if !NET9_0_OR_GREATER
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(data);
+#else
+        var bytes = SHA256.HashData(data);
+#endif
+        return Convert.ToBase64String(bytes);
+    }
+
+    private sealed class ServiceWorkerManifest
+    {
+        public string Version { get; set; }
+        public ManifestEntry[] Assets { get; set; }
+    }
+
+    private sealed class ManifestEntry
+    {
+        public string Hash { get; set; }
+        public string Url { get; set; }
     }
 }

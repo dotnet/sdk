@@ -436,7 +436,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/39772")]
+#pragma warning restore xUnit1004
         [InlineData("console --search")]
         [InlineData("--search console")]
         [InlineData("search console")]
@@ -478,7 +480,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameter()
         {
@@ -544,7 +546,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByNonChoiceParameter()
         {
@@ -591,7 +593,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void IgnoresValueForNonChoiceParameter()
         {
@@ -638,7 +640,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameterWithValue()
         {
@@ -685,7 +687,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CannotSearchTemplatesWithUnknownParameter()
         {
@@ -958,6 +960,7 @@ For more information, run:
                 bool rightIsShrunk = right.EndsWith("...");
                 if (!(leftIsShrunk ^ rightIsShrunk))
                 {
+                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                     return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 }
 
@@ -967,8 +970,9 @@ For more information, run:
                 }
                 if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return 1;
+                    return -1;
                 }
+                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
             }
         }
@@ -994,11 +998,11 @@ For more information, run:
 
                 if (x != "<1k")
                 {
-                    _ = int.TryParse(x.Trim().AsSpan(0, x.Length - 1), out xInt);
+                    _ = int.TryParse(x.Trim().AsSpan(0, x.Length - 1), System.Globalization.NumberStyles.AllowThousands, null, out xInt);
                 }
                 if (y != "<1k")
                 {
-                    _ = int.TryParse(y.Trim().AsSpan(0, y.Length - 1), out yInt);
+                    _ = int.TryParse(y.Trim().AsSpan(0, y.Length - 1), System.Globalization.NumberStyles.AllowThousands, null, out yInt);
                 }
                 return xInt.CompareTo(yInt);
             }

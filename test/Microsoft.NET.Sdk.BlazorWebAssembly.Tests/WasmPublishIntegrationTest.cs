@@ -12,15 +12,22 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_MinimalApp_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
 
-            var publishCommand = new PublishCommand(testInstance);
-            publishCommand.Execute().Should().Pass()
+            var publishCommand = CreatePublishCommand(testInstance);
+            ExecuteCommand(publishCommand).Should().Pass()
                 .And.NotHaveStdOutContaining("warning IL");
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
@@ -44,15 +51,22 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, Path.Combine(publishDirectory.ToString(), "wwwroot"));
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithDefaultSettings_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -89,12 +103,19 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_Works_WithLibraryUsingHintPath()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
 
             testInstance.WithProjectChanges((project, document) =>
             {
@@ -113,14 +134,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var buildLibraryCommand = new BuildCommand(testInstance, "razorclasslibrary");
-            buildLibraryCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildLibraryCommand.Execute()
+            var buildLibraryCommand = CreateBuildCommand(testInstance, "razorclasslibrary");
+            ExecuteCommand(buildLibraryCommand)
                 .Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -137,16 +156,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithScopedCss_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -179,16 +205,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_InRelease_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:Configuration=Release").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
 
@@ -215,7 +249,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -225,30 +259,35 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:Configuration=Release").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:Configuration=Release").Should().Pass();
 
             // Verify web.config
-            var outputDirectory = new BuildCommand(testInstance, "blazorwasm").GetOutputDirectory(configuration: "Release");
+            var outputDirectory = CreateBuildCommand(testInstance, "blazorwasm").GetOutputDirectory(configuration: "Release");
             var webConfig = outputDirectory.File("web.config");
             webConfig.Should().Exist();
             webConfig.Should().Contain(webConfigContents);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithNoBuild_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:NoBuild=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -279,7 +318,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyCompression(testInstance, blazorPublishDirectory);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("different-path")]
         [InlineData("/different-path")]
         public void Publish_WithStaticWebBasePathWorks(string basePath)
@@ -295,13 +334,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("StaticWebAssetBasePath", basePath));
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                     project.Root.Add(itemGroup);
                 }
 
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -341,7 +381,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 staticWebAssetsBasePath: "different-path");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("different-path/")]
         [InlineData("/different-path/")]
         public void Publish_Hosted_WithStaticWebBasePathWorks(string basePath)
@@ -356,13 +396,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("StaticWebAssetBasePath", basePath));
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                     project.Root.Add(itemGroup);
                 }
 
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -408,7 +449,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             uncompressedText.Should().Be(originalText);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithTrimmingdDisabled_Works()
         {
             // Arrange
@@ -422,13 +463,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("PublishTrimmed", false));
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                     project.Root.Add(itemGroup);
                 }
-
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -479,12 +520,22 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
         public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -492,6 +543,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = new XElement(ns + "PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
                     propertyGroup.Add(new XElement("DefineConstants", @"$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies"));
                     var itemGroup = new XElement(ns + "ItemGroup");
                     itemGroup.Add(new XElement("ProjectReference", new XAttribute("Include", @"..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj")));
@@ -500,8 +552,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -520,16 +572,25 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_DefaultSettings_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -604,19 +665,29 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             var wwwroot = Path.Combine(testInstance.TestRoot, "blazorwasm", "wwwroot");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var buildOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -636,12 +707,22 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
         public void Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -652,6 +733,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var propertyGroup = new XElement(ns + "PropertyGroup");
 
                     propertyGroup.Add(new XElement("PublishTrimmed", false));
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
                     propertyGroup.Add(new XElement("DefineConstants", @"$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies"));
                     var itemGroup = new XElement(ns + "ItemGroup");
                     itemGroup.Add(new XElement("ProjectReference", new XAttribute("Include", @"..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj")));
@@ -664,9 +746,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var resxfileInProject = Path.Combine(testInstance.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
             File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
@@ -685,7 +766,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         // Regression test for https://github.com/dotnet/aspnetcore/issues/18752
         public void Publish_HostedApp_WithoutTrimming_Works()
         {
@@ -699,19 +780,19 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = new XElement(ns + "PropertyGroup");
-
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
                     propertyGroup.Add(new XElement("PublishTrimmed", false));
                     project.Root.Add(propertyGroup);
                 }
             });
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand).Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildDependencies=false /bl").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:BuildDependencies=false", "/bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -786,19 +867,28 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
-            var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+            ExecuteCommand(buildCommand).Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:NoBuild=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -839,21 +929,31 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:BuildInsideVisualStudio=true").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/p:BuildInsideVisualStudio=true").Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             // Make sure the main project exists
@@ -923,23 +1023,34 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.Execute("/p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/bl:build.msbuild.binlog", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
             // Publish
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/bl:publish.msbuild.binlog", "/p:BuildProjectReferences=false", "/p:BuildInsideVisualStudio=true", "/p:Configuration=Release").Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm, "Release");
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
 
             // Make sure the main project exists
@@ -1015,11 +1126,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
         public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -1027,6 +1148,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = new XElement(ns + "PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
                     propertyGroup.Add(new XElement("DefineConstants", @"$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies"));
                     var itemGroup = new XElement(ns + "ItemGroup");
                     itemGroup.Add(new XElement("ProjectReference", new XAttribute("Include", @"..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj")));
@@ -1038,13 +1160,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var resxfileInProject = Path.Combine(testInstance.TestRoot, "blazorwasm", "Resources.ja.resx.txt");
             File.Move(resxfileInProject, Path.Combine(testInstance.TestRoot, "blazorwasm", "Resource.ja.resx"));
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
-            buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl:build-msbuild.binlog").Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
+            ExecuteCommand(buildCommand, "/bl:build-msbuild.binlog").Should().Pass();
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:BuildProjectReferences=false", "/bl:publish-msbuild.binlog").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand, "/p:BuildProjectReferences=false", "/bl:publish-msbuild.binlog").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -1067,21 +1187,30 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRidSpecifiedInCLI_Works()
         {
             // Arrange
             var testAppName = "BlazorHostedRID";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/p:RuntimeIdentifier=linux-x64").Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand, "/p:RuntimeIdentifier=linux-x64").Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        [ConditionalFact()]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRidSpecifiedAsArgument_NoSelfContained_Works()
         {
             // Arrange
@@ -1100,13 +1229,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     </ProjectReference>
     """));
                 }
+
+                if (Path.GetFileName(project) == "blazorwasm.csproj")
+                {
+                    var ns = doc.Root.Name.Namespace;
+                    var propertyGroup = new XElement(ns + "PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    doc.Root.Add(propertyGroup);
+                }
             });
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
             publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            var result = publishCommand.Execute("--no-self-contained");
+            var result = ExecuteCommand(publishCommand, "--no-self-contained");
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true, selfContained: false);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true, selfContained: false);
         }
 
         [Fact]
@@ -1114,32 +1251,51 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorHostedRID";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithRuntime("linux-x64");
-            var result = publishCommand.Execute("--self-contained");
+            publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
+            var result = ExecuteCommand(publishCommand, "--self-contained");
 
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRid_Works()
         {
             // Arrange
             var testAppName = "BlazorHostedRID";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (path.Contains("blazorwasm"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        project.Root.Add(itemGroup);
+                    }
+                });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        private void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
+        private void AssertRIDPublishOutput(PublishCommand command, TestAsset testInstance, bool hosted = false)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Debug", "linux-x64");
 
@@ -1219,7 +1375,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        private void AssertRIDPublishOuput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
+        private void AssertRIDPublishOutput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Release", "linux-x64");
 
@@ -1246,7 +1402,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 "wwwroot/_framework/blazorwasm.wasm",
                 "wwwroot/_framework/System.Text.Json.wasm"
             });
-
 
             publishDirectory.Should().HaveFiles(new[]
             {
@@ -1302,7 +1457,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -1313,12 +1468,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = new XElement(ns + "PropertyGroup");
+                itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                 itemGroup.Add(new XElement("InvariantGlobalization", true));
                 project.Root.Add(itemGroup);
             });
 
-            var publishCommand = new PublishCommand(testInstance);
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance);
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -1337,16 +1493,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostingMultipleBlazorWebApps_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/29264
             // Arrange
             var testAppName = "BlazorMultiApp";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var itemGroup = new XElement(ns + "PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(itemGroup);
+                });
 
-            var publishCommand = new PublishCommand(testInstance, "BlazorMultipleApps.Server");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "BlazorMultipleApps.Server");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -1382,9 +1545,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var secondBootJsonPath = Path.Combine(secondAppPublishDirectory, "_framework", "blazor.boot.json");
             var secondBootJson = ReadBootJsonData(secondBootJsonPath);
 
-            // Do a sanity check that the boot json has files.
-            secondBootJson.resources.assembly.Keys.Should().Contain("System.Private.CoreLib.wasm");
-
             VerifyBootManifestHashes(testInstance, secondAppPublishDirectory);
 
             // Verify compression works
@@ -1394,14 +1554,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "Newtonsoft.Json.wasm.br")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithTransitiveReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmWithLibrary");
 
-            var buildCommand = new BuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
-            buildCommand.Execute().Should().Pass();
+            var buildCommand = CreateBuildCommand(testInstance, "classlibrarywithsatelliteassemblies");
+            ExecuteCommand(buildCommand).Should().Pass();
             var referenceAssemblyPath = new FileInfo(Path.Combine(
                 buildCommand.GetOutputDirectory(DefaultTfm).ToString(),
                 "classlibrarywithsatelliteassemblies.dll"));
@@ -1423,6 +1583,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
                     project.Root.Add(itemGroup);
                 }
+
+                if (path.Contains("blazorwasm"))
+                {
+                    var propertyGroup = new XElement("PropertyGroup");
+                    propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    project.Root.Add(propertyGroup);
+                }
             });
 
             // Ensure a compile time reference exists between the project and the assembly added as a reference. This is required for
@@ -1434,8 +1601,8 @@ public class TestReference
     public void Method() => System.GC.KeepAlive(typeof(classlibrarywithsatelliteassemblies.Class1));
 }");
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             // Assert
             var outputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();

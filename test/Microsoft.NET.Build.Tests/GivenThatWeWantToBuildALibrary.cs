@@ -473,8 +473,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("netcoreapp3.1", new[] { "NETCOREAPP", "NETCOREAPP3_1", "NETCOREAPP3_1_OR_GREATER" })]
-        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER", "NET5_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
+        [InlineData("net8.0", new[] { "NETCOREAPP", "NET", "NET8_0", "NET8_0_OR_GREATER" })]
+        [InlineData("net9.0", new[] { "NETCOREAPP", "NET", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET9_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
         public void It_can_use_implicitly_defined_compilation_constants(string targetFramework, string[] expectedOutput, string targetPlatformIdentifier = null, string targetPlatformVersion = null)
         {
             var testProj = new TestProject()
@@ -504,17 +504,20 @@ class Program
         #if NETCOREAPP3_1
             Console.WriteLine(""NETCOREAPP3_1"");
         #endif
-        #if NETCOREAPP3_1_OR_GREATER
-            Console.WriteLine(""NETCOREAPP3_1_OR_GREATER"");
-        #endif
         #if NET
             Console.WriteLine(""NET"");
         #endif
-        #if NET5_0
-            Console.WriteLine(""NET5_0"");
+        #if NET8_0
+            Console.WriteLine(""NET8_0"");
         #endif
-        #if NET5_0_OR_GREATER
-            Console.WriteLine(""NET5_0_OR_GREATER"");
+        #if NET8_0_OR_GREATER
+            Console.WriteLine(""NET8_0_OR_GREATER"");
+        #endif
+        #if NET9_0
+            Console.WriteLine(""NET9_0"");
+        #endif
+        #if NET9_0_OR_GREATER
+            Console.WriteLine(""NET9_0_OR_GREATER"");
         #endif
         #if WINDOWS
             Console.WriteLine(""WINDOWS"");
@@ -706,7 +709,7 @@ class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp9.1")]
+        [InlineData("netcoreapp10.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {
@@ -1064,7 +1067,7 @@ namespace ProjectNameWithSpaces
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()
@@ -1072,10 +1075,11 @@ namespace ProjectNameWithSpaces
                 Name = "ProjA",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041"
             };
-            //  Use a previous version of the Microsoft.Windows.SDK.NET.Ref package, to
-            //  simulate the scenario where a project is compiling against a library from NuGet
-            //  which was built with a more recent SDK version.
-            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.6-preview";
+            // We're specifically setting a newer version of the Windows SDK projections package
+            // in 'testProjectA' than the one set for 'testProjectB', to simulate the scenario
+            // where a project is compiling against a library from NuGet which was built with
+            // a more recent SDK version.
+            testProjectA.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.38";
             testProjectA.SourceFiles.Add("ProjA.cs", @"namespace ProjA
 {
     public class ProjAClass
@@ -1089,6 +1093,10 @@ namespace ProjectNameWithSpaces
                 Name = "ProjB",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041",
             };
+
+            // Temporary until new projections flow to tests
+            testProjectB.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.39";
+
             testProjectB.SourceFiles.Add("ProjB.cs", @"namespace ProjB
 {
     public class ProjBClass

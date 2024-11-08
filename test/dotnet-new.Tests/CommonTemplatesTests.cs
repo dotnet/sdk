@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("EditorConfig file", ".editorconfig", new[] { "--empty" })]
         [InlineData("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit", "--use-artifacts" })]
         [InlineData("MSBuild Directory.Build.targets file", "buildtargets", new[] { "--inherit" })]
-        public async void AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
+        public async Task AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //
 
         //[Fact]
-        //public async void EditorConfigTests_Default()
+        //public async Task EditorConfigTests_Default()
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
         //    {
@@ -162,10 +162,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Theory]
         [InlineData(new object[] { "console", "C#" })]
         [InlineData(new object[] { "console", "VB" })]
-        public async void AotVariants(string name, string language)
+        public async Task AotVariants(string name, string language)
         {
             // template framework needs to be hardcoded here during the major version transition.
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // Templates have not been updated to net10.0 yet "net9.0";
+            // string currentDefaultFramework = "net9.0";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
@@ -230,8 +232,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             var templatesToTest = new[]
             {
-                new { Template = consoleTemplateShortname,  Frameworks = new[] { null, "net6.0", "net7.0", "net8.0" } },
-                new { Template = "classlib", Frameworks = new[] { null, "net6.0", "net7.0", "net8.0", "netstandard2.0", "netstandard2.1" } }
+                new { Template = consoleTemplateShortname,  Frameworks = new[] { null, "net6.0", "net8.0" } },
+                new { Template = "classlib", Frameworks = new[] { null, "net6.0", "net8.0", "netstandard2.0", "netstandard2.1" } }
             };
 
             //features: top-level statements; nullables; implicit usings; filescoped namespaces
@@ -240,9 +242,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             //C# 12 is not supported yet - https://github.com/dotnet/sdk/issues/29195
             string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "11", /*"12",*/ "latest", "latestMajor", "default", "preview" };
 
-            string?[] nullableSupportedInFrameworkByDefault = { null, "net6.0", "net7.0", "net8.0", "netstandard2.1" };
-            string?[] implicitUsingsSupportedInFramework = { null, "net6.0", "net7.0", "net8.0" };
-            string?[] fileScopedNamespacesSupportedFrameworkByDefault = { null, "net6.0", "net7.0", "net8.0" };
+            string?[] nullableSupportedInFrameworkByDefault = { null, "net6.0", "net8.0", "netstandard2.1" };
+            string?[] implicitUsingsSupportedInFramework = { null, "net6.0", "net8.0" };
+            string?[] fileScopedNamespacesSupportedFrameworkByDefault = { null, "net6.0", "net8.0" };
 
             string?[] nullableSupportedLanguages = { "8.0", "9.0", "10.0", "11.0", "11", /*"12",*/ "latest", "latestMajor", "default", "preview" };
             string?[] topLevelStatementSupportedLanguages = { null, "9.0", "10.0", "11", "11.0", /*"12",*/ "latest", "latestMajor", "default", "preview" };
@@ -321,7 +323,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
         [MemberData(nameof(FeaturesSupport_Data))]
-        public async void FeaturesSupport(
+        public async Task FeaturesSupport(
             string name,
             bool buildPass,
             string? framework,
@@ -334,8 +336,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // Templates have not been updated to net9.0 yet "net8.0";
-            // string currentDefaultFramework = "net8.0";
+            // Templates have not been updated to net10.0 yet "net9.0";
+            // string currentDefaultFramework = "net9.0";
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");

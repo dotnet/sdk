@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Tools.Internal;
+
 namespace Microsoft.DotNet.Watcher.Tests
 {
     public class BrowserLaunchTests : DotNetWatchTestBase
@@ -18,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
+            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
             // Verify we launched the browser.
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: https://localhost:5001/");
@@ -32,7 +34,9 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
 
-            await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
+            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
 
             // Verify we launched the browser.
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: mycustombrowser.bat https://localhost:5001/");

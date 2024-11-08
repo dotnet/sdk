@@ -7,12 +7,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmCompressionTests(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        itemGroup.Add(serviceWorkerAssetsManifest);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
             publishCommand.Execute().Should().Pass();
@@ -49,12 +60,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(blazorBootJsonCompressedThumbPrint, newBlazorBootJsonCompressedThumbPrint);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        itemGroup.Add(serviceWorkerAssetsManifest);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
             publishCommand.Execute("/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
@@ -82,7 +104,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -102,8 +124,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             for (var i = 0; i < 3; i++)
             {
-                var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-                buildCommand.Execute().Should().Pass();
+                var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+                ExecuteCommand(buildCommand).Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
@@ -114,7 +136,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -134,8 +156,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             for (var i = 0; i < 3; i++)
             {
-                var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-                buildCommand.Execute("/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
+                var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+                ExecuteCommand(buildCommand, "/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
@@ -146,7 +168,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_CompressesAllFrameworkFiles()
         {
             // Arrange

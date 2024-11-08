@@ -35,20 +35,21 @@
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
-           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->    
+           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
-    
+
     <ComputeDotnetBaseImageAndTag
-      Condition="$(_ContainerIsUsingMicrosoftDefaultImages)"
+      UserBaseImage="$(ContainerBaseImage)"
       SdkVersion="$(NetCoreSdkVersion)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
       FrameworkReferences="@(FrameworkReference)"
       IsSelfContained="$(_ContainerIsSelfContained)"
       IsAotPublished="$(PublishAot)"
+      IsTrimmed="$(PublishTrimmed)"
       UsesInvariantGlobalization="$(InvariantGlobalization)"
       TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
       ContainerFamily="$(ContainerFamily)">
@@ -92,16 +93,15 @@
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
 
       <!-- Set the WorkingDirectory depending on the RID -->
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows) ">/app</ContainerWorkingDirectory>
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
     </PropertyGroup>
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
       <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == ''" Include="dotnet;$(TargetFileName)" />
+      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -140,6 +140,7 @@
       <ContainerGenerateLabelsImageTitle Condition="'$(ContainerGenerateLabelsImageTitle)' == ''">true</ContainerGenerateLabelsImageTitle>
       <ContainerGenerateLabelsImageBaseDigest Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == ''">true</ContainerGenerateLabelsImageBaseDigest>
       <ContainerGenerateLabelsImageBaseName Condition="'$(ContainerGenerateLabelsImageBaseName)' == ''">true</ContainerGenerateLabelsImageBaseName>
+      <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''">true</ContainerGenerateLabelsDotnetToolset>
     </PropertyGroup>
 
     <PropertyGroup Label="Defaults for Container Labels">
@@ -166,12 +167,19 @@
       <!-- Need to compute digests, not just names, before we can light this up. This suggests we need a task where all of the 'read' steps are done. -->
       <!-- <ContainerLabel Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == 'true' and '$(ContainerBaseImageDigest)' != ''" Include="org.opencontainers.image.base.digest" Value="$(ContainerBaseImageDigest)" /> -->
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageBaseName)' == 'true' and '$(ContainerBaseImage)' != ''" Include="org.opencontainers.image.base.name" Value="$(ContainerBaseImage)" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="net.dot.runtime.majorminor" Value="$(_TargetFrameworkVersionWithoutV)" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
     </ItemGroup>
 
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.
              In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here.  -->
+    <PropertyGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
+      <!-- Sourcelink gives us the .git suffix, but scanning tools aren't looking for that so we trim it off here. -->
+      <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.LastIndexOf('.git'))))</_TrimmedRepositoryUrl>
+      <_TrimmedRepositoryUrl Condition="'$(_TrimmedRepositoryUrl)' == '' and '$(PrivateRepositoryUrl)' != ''">$(PrivateRepositoryUrl)</_TrimmedRepositoryUrl>
+    </PropertyGroup>
     <ItemGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageSource)' == 'true' and '$(PrivateRepositoryUrl)' != ''" Include="org.opencontainers.image.source" Value="$(PrivateRepositoryUrl)" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageSource)' == 'true' and '$(_TrimmedRepositoryUrl)' != ''" Include="org.opencontainers.image.source" Value="$(_TrimmedRepositoryUrl)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageRevision)' == 'true' and '$(SourceRevisionId)' != ''" Include="org.opencontainers.image.revision" Value="$(SourceRevisionId)" />
     </ItemGroup>
   </Target>
@@ -186,12 +194,36 @@
 
   <Target Name="_CheckContainersPackage" AfterTargets="Build">
     <PropertyGroup>
-      <ContainersPackageIdentity>Microsoft.NET.Build.Containers</ContainersPackageIdentity>
+      <!-- facts to base on comparisons on -->
+      <_ContainersPackageIdentity>Microsoft.NET.Build.Containers</_ContainersPackageIdentity>
+      <_WebDefaultSdkVersion>7.0.300</_WebDefaultSdkVersion>
+      <_WorkerDefaultSdkVersion>8.0.100</_WorkerDefaultSdkVersion>
+      <_ConsoleDefaultSdkVersion>8.0.200</_ConsoleDefaultSdkVersion>
+
+      <!-- capability detection for the executing SDK -->
+      <_SdkCanPublishWeb>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WebDefaultSdkVersion)'))</_SdkCanPublishWeb>
+      <_SdkCanPublishWorker>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WorkerDefaultSdkVersion)'))</_SdkCanPublishWorker>
+      <_SdkCanPublishConsole>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_ConsoleDefaultSdkVersion)'))</_SdkCanPublishConsole>
+
+      <!-- capability detection for the executing project -->
+      <_ContainerPackageIsPresent>false</_ContainerPackageIsPresent>
+      <_ContainerPackageIsPresent Condition="@(PackageReference->AnyHaveMetadataValue('Identity', '$(_ContainersPackageIdentity)'))">true</_ContainerPackageIsPresent>
+      <_IsWebProject>false</_IsWebProject>
+      <_IsWebProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWeb'))">true</_IsWebProject>
+      <_IsWorkerProject>false</_IsWorkerProject>
+      <_IsWorkerProject Condition="@(ProjectCapability->AnyHaveMetadataValue('Identity', 'DotNetCoreWorker'))">true</_IsWorkerProject>
     </PropertyGroup>
-    <ItemGroup>
-      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'"/>
-    </ItemGroup>
-    <Warning Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK." Condition="'@(ContainersPackage)' != ''" />
+
+    <Warning
+      Condition="$(_ContainerPackageIsPresent)
+        and (
+          ($(_SdkCanPublishWeb) and $(_IsWebProject)) or
+          ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
+          ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
+        )"
+      Code="CONTAINER005"
+      Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
+
     <PropertyGroup>
       <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
     </PropertyGroup>
@@ -231,12 +263,15 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
-                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                    GenerateLabels="$(ContainerGenerateLabels)"
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
   </Target>
 </Project>

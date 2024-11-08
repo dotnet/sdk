@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
 
 <Project>
 
@@ -13,15 +13,10 @@
     <PropertyGroup>
       <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\source-build.slnf"</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:UseSharedCompilation=false</InnerBuildArgs>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:SkipBuildingInstallers=true</InnerBuildArgs>
+      <InnerBuildArgs>$(InnerBuildArgs) /p:IncludeAdditionalSharedFrameworks=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:DISABLE_CROSSGEN=true</InnerBuildArgs>
     </PropertyGroup>
-  </Target>
-
-  <Target Name="GetSdkCategorizedIntermediateNupkgContents"
-          BeforeTargets="GetCategorizedIntermediateNupkgContents">
-    <ItemGroup>
-      <!-- Add the internal toolset zip required by dotnet/installer. -->
-      <IntermediateNupkgArtifactFile Include="$(CurrentRepoSourceBuildArtifactsPackagesDir)NonShipping\dotnet-toolset-internal-*.zip" />
-    </ItemGroup>
   </Target>
 
 </Project>

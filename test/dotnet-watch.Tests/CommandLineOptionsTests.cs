@@ -7,6 +7,34 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         private readonly MockReporter _testReporter = new();
 
+        private CommandLineOptions VerifyOptions(string[] args, string expectedOutput = "", string[] expectedMessages = null)
+            => VerifyOptions(args, actualOutput => AssertEx.Equal(expectedOutput, actualOutput), expectedMessages ?? []);
+
+        private CommandLineOptions VerifyOptions(string[] args, Action<string> outputValidator, string[] expectedMessages)
+        {
+            var output = new StringWriter();
+            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+
+            Assert.Equal(expectedMessages, _testReporter.Messages);
+            outputValidator(output.ToString());
+
+            Assert.NotNull(options);
+            Assert.Equal(0, errorCode);
+            return options;
+        }
+
+        private void VerifyErrors(string[] args, params string[] expectedErrors)
+        {
+            var output = new StringWriter();
+            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+
+            AssertEx.Equal(expectedErrors, _testReporter.Messages);
+            Assert.Empty(output.ToString());
+
+            Assert.Null(options);
+            Assert.NotEqual(0, errorCode);
+        }
+
         [Theory]
         [InlineData(new object[] { new[] { "-h" } })]
         [InlineData(new object[] { new[] { "-?" } })]
@@ -14,8 +42,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(new object[] { new[] { "--help", "--bogus" } })]
         public void HelpArgs(string[] args)
         {
-            StringWriter output = new();
-            Assert.Null(CommandLineOptions.Parse(args, _testReporter, out var errorCode, output: output));
+            var output = new StringWriter();
+            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            Assert.Null(options);
             Assert.Equal(0, errorCode);
 
             Assert.Empty(_testReporter.Messages);
@@ -27,260 +56,243 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData("P==", "P", "=")]
         [InlineData("P=A=B", "P", "A=B")]
         [InlineData(" P\t = V ", "P", " V ")]
+        [InlineData("P=", "P", "")]
         public void BuildProperties_Valid(string argValue, string name, string value)
         {
-            StringWriter error = new();
-            var args = new[] { "--property", argValue };
-            var options = CommandLineOptions.Parse(args, _testReporter, out var errorCode, error: error);
-            Assert.Equal(new[] { (name, value) }, options.BuildProperties);
-            Assert.Equal(0, errorCode);
-            Assert.Equal("", error.ToString());
+            var options = VerifyOptions(["--property", argValue]);
+            Assert.Equal([(name, value)], options.BuildProperties);
         }
 
         [Theory]
-        [InlineData("P2=")]
+        [InlineData("P")]
         [InlineData("=P3")]
         [InlineData("=")]
         [InlineData("==")]
         public void BuildProperties_Invalid(string value)
         {
-            StringWriter error = new();
-            var args = new[] { "--property", value };
-            CommandLineOptions.Parse(args, _testReporter, out var errorCode, error: error);
-            Assert.Equal(1, errorCode);
-            Assert.Equal($"Invalid property format: '{value}'. Expected 'name=value'.", error.ToString().Trim());
+            var options = VerifyOptions(["--property", value]);
+            Assert.Empty(options.BuildProperties);
         }
 
         [Fact]
-        public void RunOptions_NoRun()
+        public void ImplicitCommand()
         {
-            StringWriter output = new();
-            var args = new[] { "--verbose" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-
-            Assert.True(options.Verbose);
-            Assert.False(options.WatchNoLaunchProfile);
-            Assert.Null(options.WatchLaunchProfileName);
-            Assert.Empty(options.RemainingArguments);
-
-            Assert.Equal(new[] { "run" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out var watchNoProfile, out var watchProfileName));
-            Assert.False(watchNoProfile);
-            Assert.Null(watchProfileName);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out watchNoProfile, out watchProfileName));
-            Assert.False(watchNoProfile);
-            Assert.Null(watchProfileName);
-
-            Assert.Empty(output.ToString());
+            var options = VerifyOptions([]);
+            Assert.Equal("run", options.Command);
+            Assert.Empty(options.CommandArguments);
         }
 
-        [Fact]
-        public void RunOptions_Run()
+        [Theory]
+        [InlineData("add")]
+        [InlineData("build")]
+        [InlineData("build-server")]
+        [InlineData("clean")]
+        [InlineData("format")]
+        [InlineData("help")]
+        [InlineData("list")]
+        [InlineData("msbuild")]
+        [InlineData("new")]
+        [InlineData("nuget")]
+        [InlineData("pack")]
+        [InlineData("publish")]
+        [InlineData("remove")]
+        [InlineData("restore")]
+        [InlineData("run")]
+        [InlineData("sdk")]
+        [InlineData("solution")]
+        [InlineData("store")]
+        [InlineData("test")]
+        [InlineData("tool")]
+        [InlineData("vstest")]
+        [InlineData("workload")]
+        public void ExplicitCommand(string command)
         {
-            StringWriter output = new();
-            var args = new[] { "--verbose", "run" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions([command]);
+            Assert.Equal(command, options.ExplicitCommand);
+            Assert.Equal(command, options.Command);
+            Assert.Empty(options.CommandArguments);
+        }
 
-            Assert.True(options.Verbose);
-            Assert.False(options.WatchNoLaunchProfile);
-            Assert.Null(options.WatchLaunchProfileName);
-            Assert.Empty(options.RemainingArguments);
-
-            Assert.False(options.CommandNoLaunchProfile);
-            Assert.Null(options.CommandLaunchProfileName);
-
-            Assert.Equal(new[] { "run" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out var watchNoProfile, out var watchProfileName));
-            Assert.False(watchNoProfile);
-            Assert.Null(watchProfileName);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out watchNoProfile, out watchProfileName));
-            Assert.False(watchNoProfile);
-            Assert.Null(watchProfileName);
-
-            Assert.Empty(output.ToString());
+        [Theory]
+        [CombinatorialData]
+        public void WatchOptions_NotPassedThrough_BeforeCommand(
+            [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
+            bool before)
+        {
+            var options = VerifyOptions(before ? [option, "test"] : ["test", option]);
+            Assert.Equal("test", options.Command);
+            Assert.Empty(options.CommandArguments);
         }
 
         [Fact]
         public void RunOptions_LaunchProfile_Watch()
         {
-            StringWriter output = new();
-            var args = new[] { "-lp", "P", "run" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-
-            Assert.Equal("P", options.WatchLaunchProfileName);
-            Assert.Null(options.CommandLaunchProfileName);
-
-            Assert.Equal(new[] { "run" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out var watchProfileName));
-            Assert.Equal("P", watchProfileName);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out watchProfileName));
-            Assert.Equal("P", watchProfileName);
-
-            Assert.Empty(output.ToString());
+            var options = VerifyOptions(["-lp", "P", "run"]);
+            Assert.Equal("P", options.LaunchProfileName);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["-lp", "P"], options.CommandArguments);
         }
 
         [Fact]
         public void RunOptions_LaunchProfile_Run()
         {
-            StringWriter output = new();
-            var args = new[] { "run", "-lp", "P" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-
-            Assert.Null(options.WatchLaunchProfileName);
-            Assert.Equal("P", options.CommandLaunchProfileName);
-
-            Assert.Equal(new[] { "run", "--launch-profile", "P" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out var watchProfileName));
-            Assert.Null(watchProfileName);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out watchProfileName));
-            Assert.Equal("P", watchProfileName);
-
-            Assert.Empty(output.ToString());
+            var options = VerifyOptions(["run", "-lp", "P"]);
+            Assert.Equal("P", options.LaunchProfileName);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["-lp", "P"], options.CommandArguments);
         }
 
         [Fact]
         public void RunOptions_LaunchProfile_Both()
         {
-            StringWriter output = new();
-            var args = new[] { "-lp", "P1", "run", "-lp", "P2" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-
-            Assert.Equal("P1", options.WatchLaunchProfileName);
-            Assert.Equal("P2", options.CommandLaunchProfileName);
-
-            Assert.Equal(new[] { "run", "--launch-profile", "P2" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out var watchProfileName));
-            Assert.Equal("P1", watchProfileName);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out watchProfileName));
-            Assert.Equal("P1", watchProfileName);
-
-            Assert.Equal(new[] { "warn ⌚ Using launch profile name 'P1', ignoring 'P2'." }, _testReporter.Messages);
-            Assert.Empty(output.ToString());
+            VerifyErrors(["-lp", "P1", "run", "-lp", "P2"],
+                "error ❌ Option '-lp' expects a single argument but 2 were provided.");
         }
 
         [Fact]
         public void RunOptions_NoProfile_Watch()
         {
-            StringWriter output = new();
-            var args = new[] { "--no-launch-profile", "run" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(["--no-launch-profile", "run"]);
 
-            Assert.True(options.WatchNoLaunchProfile);
-            Assert.False(options.CommandNoLaunchProfile);
-
-            Assert.Equal(new[] { "run", }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out var watchNoLaunchProfile, out _));
-            Assert.True(watchNoLaunchProfile);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out watchNoLaunchProfile, out _));
-            Assert.True(watchNoLaunchProfile);
-
-            Assert.Empty(output.ToString());
+            Assert.True(options.NoLaunchProfile);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
         public void RunOptions_NoProfile_Run()
         {
-            StringWriter output = new();
-            var args = new[] { "run", "--no-launch-profile" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(["run", "--no-launch-profile"]);
 
-            Assert.False(options.WatchNoLaunchProfile);
-            Assert.True(options.CommandNoLaunchProfile);
-
-            Assert.Equal(new[] { "run", "--no-launch-profile" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out var watchNoLaunchProfile, out _));
-            Assert.False(watchNoLaunchProfile);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out watchNoLaunchProfile, out _));
-            Assert.True(watchNoLaunchProfile);
-
-            Assert.Empty(output.ToString());
+            Assert.True(options.NoLaunchProfile);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
         public void RunOptions_NoProfile_Both()
         {
-            StringWriter output = new();
-            var args = new[] { "--no-launch-profile", "run", "--no-launch-profile" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(["--no-launch-profile", "run", "--no-launch-profile"]);
 
-            Assert.True(options.WatchNoLaunchProfile);
-            Assert.True(options.CommandNoLaunchProfile);
-
-            Assert.Equal(new[] { "run", "--no-launch-profile" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out var watchNoLaunchProfile, out _));
-            Assert.True(watchNoLaunchProfile);
-
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out watchNoLaunchProfile, out _));
-            Assert.True(watchNoLaunchProfile);
-
-            Assert.Empty(output.ToString());
+            Assert.True(options.NoLaunchProfile);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
         public void RemainingOptions()
         {
-            StringWriter output = new();
-            var args = new[] { "-watchArg", "--verbose", "run", "-runArg" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-            //dotnet watch -- --verbose run
-            Assert.True(options.Verbose);
-            Assert.Equal(["-watchArg", "-runArg"], options.RemainingArguments);
+            var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
 
-            Assert.Equal(["run", "-watchArg", "-runArg"], options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out _));
-            Assert.Equal(["-watchArg", "-runArg"], options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out _));
+            Assert.True(options.GlobalOptions.Verbose);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["-watchArg", "-runArg"], options.CommandArguments);
+        }
 
-            Assert.Empty(output.ToString());
+        [Fact]
+        public void UnknownOption()
+        {
+            var options = VerifyOptions(["--verbose", "--unknown", "x", "y", "run", "--project", "p"]);
+
+            Assert.Equal("p", options.ProjectPath);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["--project", "p", "--unknown", "x", "y"], options.CommandArguments);
         }
 
         [Fact]
         public void RemainingOptionsDashDash()
         {
-            StringWriter output = new();
-            var args = new[] { "-watchArg", "--", "--verbose", "run", "-runArg" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
-            Assert.False(options.Verbose);
-            Assert.Equal(new[] { "-watchArg", "--verbose", "run", "-runArg" }, options.RemainingArguments);
-
-            Assert.Equal(new[] { "run", "-watchArg", "--verbose", "run", "-runArg" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out _));
-            Assert.Equal(new[] { "-watchArg", "--verbose", "run", "-runArg" }, options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out _));
-
-            Assert.Empty(output.ToString());
+            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["-watchArg", "--", "--verbose", "run", "-runArg"], options.CommandArguments);
         }
 
         [Fact]
         public void RemainingOptionsDashDashRun()
         {
-            StringWriter output = new();
-            var args = new[] { "--", "run" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(["--", "run"]);
 
-            Assert.False(options.Verbose);
-            Assert.Equal(new[] { "run" }, options.RemainingArguments);
+            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal("run", options.Command);
+            Assert.Equal(["--", "run"], options.CommandArguments);
+        }
 
-            Assert.Equal(new[] { "run", "run" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out _));
-            Assert.Equal(new[] { "run" }, options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out _));
+        [Fact]
+        public void NoOptionsAfterDashDash()
+        {
+            var options = VerifyOptions(["--"]);
+            Assert.Equal("run", options.Command);
+            Assert.Empty(options.CommandArguments);
+        }
 
-            Assert.Empty(output.ToString());
+        /// <summary>
+        /// dotnet watch needs to understand some options that are passed to the subcommands.
+        /// For example, `-f TFM`
+        /// When `dotnet watch run -- -f TFM` is parsed `-f TFM` is ignored.
+        /// Therfore, it has to also be ignored by `dotnet run`,
+        /// otherwise the TFMs would be inconsistent between `dotnet watch` and `dotnet run`.
+        /// </summary>
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Framework()
+        {
+            var options = VerifyOptions(["--", "-f", "TFM"]);
+
+            Assert.Null(options.TargetFramework);
+            Assert.Equal(["--", "-f", "TFM"], options.CommandArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Project()
+        {
+            var options = VerifyOptions(["--", "--project", "proj"]);
+
+            Assert.Null(options.ProjectPath);
+            Assert.Equal(["--", "--project", "proj"], options.CommandArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_NoLaunchProfile()
+        {
+            var options = VerifyOptions(["--", "--no-launch-profile"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["--", "--no-launch-profile"], options.CommandArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_LaunchProfile()
+        {
+            var options = VerifyOptions(["--", "--launch-profile", "p"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["--", "--launch-profile", "p"], options.CommandArguments);
+        }
+
+        [Fact]
+        public void ParsedNonWatchOptionsAfterDashDash_Property()
+        {
+            var options = VerifyOptions(["--", "--property", "x=1"]);
+
+            Assert.False(options.NoLaunchProfile);
+            Assert.Equal(["--", "--property", "x=1"], options.CommandArguments);
         }
 
         [Theory]
         [CombinatorialData]
         public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
         {
-            StringWriter output = new();
             var args = new[] { "--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2" };
             args = afterRun ? args.Prepend("run").ToArray() : args.Append("run").ToArray();
 
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(args);
 
-            Assert.Equal("P", options.Project);
+            Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
-            Assert.Equal(new[] { ("P1", "V1"), ("P2", "V2") }, options.BuildProperties);
+            Assert.Equal([("P1", "V1"), ("P2", "V2")], options.BuildProperties);
 
-            Assert.Equal(new[] { "run", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2" }, options.GetLaunchProcessArguments(hotReload: false, _testReporter, out _, out _));
-            Assert.Empty(options.GetLaunchProcessArguments(hotReload: true, _testReporter, out _, out _));
-
-            Assert.Empty(output.ToString());
+            Assert.Equal(["--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -302,7 +314,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                 "--non-interactive")]
             string arg)
         {
-            StringWriter output = new();
             var args = new[] { arg };
 
             args = position switch
@@ -313,129 +324,89 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _ => args,
             };
 
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
+            var options = VerifyOptions(args);
 
             Assert.True(arg switch
             {
-                "--verbose" => options.Verbose,
-                "--quiet" => options.Quiet,
+                "--verbose" => options.GlobalOptions.Verbose,
+                "--quiet" => options.GlobalOptions.Quiet,
                 "--list" => options.List,
-                "--no-hot-reload" => options.NoHotReload,
-                "--non-interactive" => options.NonInteractive,
+                "--no-hot-reload" => options.GlobalOptions.NoHotReload,
+                "--non-interactive" => options.GlobalOptions.NonInteractive,
                 _ => false
             });
+        }
 
-            Assert.Empty(output.ToString());
+        [Fact]
+        public void MultiplePropertyValues()
+        {
+            var options = VerifyOptions(["--property", "P1=V1", "run", "--property", "P2=V2"]);
+            AssertEx.SequenceEqual(["P1=V1", "P2=V2"], options.BuildProperties.Select(p => $"{p.name}={p.value}"));
+
+            // options must be repeated since --property does not support multiple args
+            AssertEx.SequenceEqual(["--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         [Theory]
-        [InlineData("--property", "P1=V1", "P2=V2")]
-        public void OptionDuplicates_Allowed_Strings(string argName, string argValue1, string argValue2)
+        [InlineData("--project")]
+        [InlineData("--framework")]
+        public void OptionDuplicates_NotAllowed(string option)
         {
-            StringWriter output = new();
-            var args = new[] { argName, argValue1, "run", argName, argValue2 };
-
-            var options = CommandLineOptions.Parse(args, _testReporter, out var errorCode, output: output);
-
-            Assert.Equal(new[] { argValue1, argValue2 }, argName switch
-            {
-                "--property" => options.BuildProperties.Select(p => $"{p.name}={p.value}"),
-                _ => null,
-            });
-
-            Assert.Equal(0, errorCode);
-            Assert.Equal("", output.ToString());
-        }
-
-        [Theory]
-        [InlineData(new object[] { new[] { "--project", "abc" } })]
-        [InlineData(new object[] { new[] { "--framework", "abc" } })]
-        public void OptionDuplicates_NotAllowed(string[] args)
-        {
-            StringWriter output = new();
-            args = args.Concat(new[] { "run" }).Concat(args).ToArray();
-
-            var options = CommandLineOptions.Parse(args, _testReporter, out var errorCode, output: output);
-            Assert.Null(options);
-            Assert.Equal(1, errorCode);
-
-            // TODO: Re-enable this check when a new version of S.CL is released with this fix in it:
-            // https://github.com/dotnet/command-line-api/pull/2289
-            //Assert.Equal("", output.ToString());
+            VerifyErrors([option, "abc", "run", option, "xyz"],
+                $"error ❌ Option '{option}' expects a single argument but 2 were provided.");
         }
 
         [Theory]
         [InlineData(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
-        [InlineData(new[] { "run" }, new string[0])]
-        [InlineData(new[] { "run", "--", "runarg" }, new[] { "runarg" })]
-        [InlineData(new[] { "-watcharg", "run", "runarg1", "-runarg2" }, new[] { "-watcharg", "runarg1", "-runarg2" })]
+        [InlineData(new[] { "run" }, new string[] { })]
+        [InlineData(new[] { "run", "--", "runarg" }, new[] { "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] { "runarg1", "-runarg2" })]
         // run is after -- and therefore not parsed as a command:
-        [InlineData(new[] { "-watcharg", "--", "run", "--", "runarg" }, new[] { "-watcharg", "run", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { "--", "run", "--", "runarg" })]
         // run is before -- and therefore parsed as a command:
-        [InlineData(new[] { "-watcharg", "run", "--", "--", "runarg" }, new[] { "-watcharg" , "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { "--", "--", "runarg" })]
         public void ParsesRemainingArgs(string[] args, string[] expected)
         {
-            StringWriter output = new();
-            var options = CommandLineOptions.Parse(args, _testReporter, out _, output: output);
-
-            Assert.NotNull(options);
-
-            Assert.Equal(expected, options.RemainingArguments);
-            Assert.Empty(output.ToString());
+            var options = VerifyOptions(args);
+            Assert.Equal(expected, options.CommandArguments);
         }
 
         [Fact]
         public void CannotHaveQuietAndVerbose()
         {
-            StringWriter error = new();
-            var args = new[] { "--quiet", "--verbose" };
-            _ = CommandLineOptions.Parse(args, _testReporter, out _, error: error);
-
-            Assert.Contains(Resources.Error_QuietAndVerboseSpecified, error.ToString());
+            VerifyErrors(["--quiet", "--verbose"],
+                $"error ❌ {Resources.Error_QuietAndVerboseSpecified}");
         }
 
         [Fact]
         public void ShortFormForProjectArgumentPrintsWarning()
         {
-            var args = new[] { "-p", "MyProject.csproj" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _);
+            var options = VerifyOptions(["-p", "MyProject.csproj"],
+                expectedMessages: [$"warning ⌚ {Resources.Warning_ProjectAbbreviationDeprecated}"]);
 
-            Assert.Equal(new[] { $"warn ⌚ {Resources.Warning_ProjectAbbreviationDeprecated}" }, _testReporter.Messages);
-            Assert.NotNull(options);
-            Assert.Equal("MyProject.csproj", options.Project);
+            Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
 
         [Fact]
         public void LongFormForProjectArgumentWorks()
         {
-            var args = new[] { "--project", "MyProject.csproj" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _);
-
-            Assert.Empty(_testReporter.Messages);
-            Assert.NotNull(options);
-            Assert.Equal("MyProject.csproj", options.Project);
+            var options = VerifyOptions(["--project", "MyProject.csproj"]);
+            Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
 
         [Fact]
         public void LongFormForLaunchProfileArgumentWorks()
         {
-            var args = new[] { "--launch-profile", "CustomLaunchProfile" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _);
-
-            Assert.Empty(_testReporter.Messages);
+            var options = VerifyOptions(["--launch-profile", "CustomLaunchProfile"]);
             Assert.NotNull(options);
-            Assert.Equal("CustomLaunchProfile", options.WatchLaunchProfileName);
+            Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
 
         [Fact]
         public void ShortFormForLaunchProfileArgumentWorks()
         {
-            var args = new[] { "-lp", "CustomLaunchProfile" };
-            var options = CommandLineOptions.Parse(args, _testReporter, out _);
-
-            Assert.Empty(_testReporter.Messages);
-            Assert.NotNull(options);
-            Assert.Equal("CustomLaunchProfile", options.WatchLaunchProfileName);
+            var options = VerifyOptions(["-lp", "CustomLaunchProfile"]);
+            Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
     }
 }

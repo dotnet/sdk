@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -12,6 +13,8 @@
     <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GereateLayout.targets. -->
     <!-- Property info: https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#disabling-the-up-to-date-check -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <Import Project="targets\BuildToolsetTasks.targets" />
@@ -26,7 +29,6 @@
   <Import Project="targets\MSBuildExtensions.targets" />
 
   <ItemGroup>
-    <PackageReference Include="dotnet-format" GeneratePathProperty="true" ExcludeAssets="All" />
     <PackageReference Include="NuGet.Build.Tasks" />
     <PackageReference Include="NuGet.Build.Tasks.Console" />
     <PackageReference Include="NuGet.Common" /><!-- Keeps this from being bumped by transitive refs (templating) -->
@@ -40,7 +42,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
-    <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
     <PackageReference Include="System.CodeDom" />
@@ -69,6 +72,7 @@
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -104,16 +108,4 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolvePublishFSharpNuGetPackages"
-       AfterTargets="CoreCompile">
-
-    <PropertyGroup>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-    </PropertyGroup>
-    <ItemGroup>
-        <ItemsToPushToBlobFeed Include="$(PkgMicrosoft_FSharp_Compiler)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg"/>
-        <ItemsToPushToBlobFeed Include="$(PkgMicrosoft_FSharp_Compiler)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-    </ItemGroup>
- </Target>
 </Project>

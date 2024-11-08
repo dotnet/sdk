@@ -185,7 +185,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win", "freebsd" },
+                    new[] { "linux", "linux-musl", "osx", "win", "freebsd", "illumos" },
                     out _);
 
             // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
@@ -198,6 +198,14 @@ namespace Microsoft.NET.Build.Tasks
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     portablePlatform = "linux";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
+                {
+                    portablePlatform = "freebsd";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ILLUMOS")))
+                {
+                    portablePlatform = "illumos";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -212,6 +220,7 @@ namespace Microsoft.NET.Build.Tasks
                 "osx" => "osx",
                 "win" => "windows",
                 "freebsd" => "freebsd",
+                "illumos" => "illumos",
                 _ => null
             };
 
@@ -260,6 +269,9 @@ namespace Microsoft.NET.Build.Tasks
 #if !NETFRAMEWORK
                 case "riscv64":
                     architecture = Architecture.RiscV64;
+                    break;
+                case "loongarch64":
+                    architecture = Architecture.LoongArch64;
                     break;
 #endif
                 case "x64":
@@ -431,6 +443,7 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.Arm64 => "arm64",
 #if !NETFRAMEWORK
                 Architecture.RiscV64 => "riscv64",
+                Architecture.LoongArch64 => "loongarch64",
 #endif
                 _ => null
             };

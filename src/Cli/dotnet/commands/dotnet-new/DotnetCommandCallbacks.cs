@@ -36,14 +36,15 @@ namespace Microsoft.DotNet.Tools.New
         internal static bool RestoreProject(string pathToRestore)
         {
             PathUtility.EnsureAllPathsExist(new[] { pathToRestore }, CommonLocalizableStrings.FileNotFound, allowDirectories: true);
-            return RestoreCommand.Run(new string[] { pathToRestore }) == 0;
+            // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
+            return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet"]) == 0;
         }
 
         internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
         {
             PathUtility.EnsureAllPathsExist(new[] { solutionPath }, CommonLocalizableStrings.FileNotFound, allowDirectories: false);
             PathUtility.EnsureAllPathsExist(projectsToAdd, CommonLocalizableStrings.FileNotFound, allowDirectories: false);
-            IEnumerable<string> commandArgs = new[] { "sln", solutionPath, "add" }.Concat(projectsToAdd);
+            IEnumerable<string> commandArgs = new[] { "solution", solutionPath, "add" }.Concat(projectsToAdd);
             if (!string.IsNullOrWhiteSpace(solutionFolder))
             {
                 commandArgs = commandArgs.Append(SlnAddParser.SolutionFolderOption.Name).Append(solutionFolder);

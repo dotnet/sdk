@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("enum", "", "net7.0")]
         [InlineData("enum", "9.0", "netstandard2.0")]
         [InlineData("enum", "", "netstandard2.0")]
-        public async void DotnetCSharpClassTemplatesTest(
+        public async Task DotnetCSharpClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
             string targetFramework = "")
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("module", "latest", "net6.0")]
         [InlineData("module", "15.3", "netstandard2.0")]
         [InlineData("module", "15.5", "netstandard2.0", "CustomFileName")]
-        public async void DotnetVisualBasicClassTemplatesTest(
+        public async Task DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
             string targetFramework = "",

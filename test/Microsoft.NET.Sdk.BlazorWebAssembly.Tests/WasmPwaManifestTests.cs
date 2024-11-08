@@ -8,11 +8,9 @@ using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmPwaManifestTests : AspNetSdkTest
+    public class WasmPwaManifestTests(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public WasmPwaManifestTests(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
             // Arrange
@@ -25,14 +23,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     {
                         var itemGroup = new XElement("PropertyGroup");
                         var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
                         itemGroup.Add(serviceWorkerAssetsManifest);
                         doc.Root.Add(itemGroup);
                     }
                 });
 
-            var buildCommand = new BuildCommand(testInstance, "blazorwasm");
+            var buildCommand = CreateBuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute()
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -59,7 +58,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                assetsManifestPath: "service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_HostedAppWithServiceWorker_Works()
         {
             // Arrange
@@ -67,8 +66,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var buildCommand = new BuildCommand(testInstance, "blazorhosted");
-            buildCommand.Execute()
+            var buildCommand = CreateBuildCommand(testInstance, "blazorhosted");
+            ExecuteCommand(buildCommand)
                 .Should().Pass();
 
             var buildOutputDirectory = OutputPathCalculator.FromProject(Path.Combine(testInstance.TestRoot, "blazorwasm")).GetOutputDirectory();
@@ -85,7 +84,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishWithPWA_ProducesAssets()
         {
             // Arrange
@@ -93,8 +92,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -113,7 +112,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange
@@ -121,8 +120,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
-            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -141,7 +140,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_UpdatesServiceWorkerVersionHash_WhenSourcesChange()
         {
             // Arrange
@@ -158,13 +157,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     }
                 });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             var serviceWorkerFile = Path.Combine(publishOutputDirectory, "wwwroot", "serviceworkers", "my-service-worker.js");
-            var version = File.ReadAllLines(serviceWorkerFile).Last();
+            var version = File.ReadAllLines(serviceWorkerFile).First();
             var match = Regex.Match(version, "\\/\\* Manifest version: (.{8}) \\*\\/");
             match.Success.Should().BeTrue();
             match.Groups.Count.Should().Be(2);
@@ -177,10 +176,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             File.WriteAllText(cssFile, ".updated { }");
 
             // Assert
-            publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
-            var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
+            var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
 
             updatedMatch.Success.Should().BeTrue();
@@ -191,7 +190,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             updatedCapture.Should().NotBe(capture);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_DeterministicAcrossBuilds_WhenNoSourcesChange()
         {
             // Arrange
@@ -208,13 +207,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     }
                 });
 
-            var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute().Should().Pass();
+            var publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             var serviceWorkerFile = Path.Combine(publishOutputDirectory, "wwwroot", "serviceworkers", "my-service-worker.js");
-            var version = File.ReadAllLines(serviceWorkerFile).Last();
+            var version = File.ReadAllLines(serviceWorkerFile).First();
             var match = Regex.Match(version, "\\/\\* Manifest version: (.{8}) \\*\\/");
             match.Success.Should().BeTrue();
             match.Groups.Count.Should().Be(2);
@@ -223,10 +222,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var capture = match.Groups[1].Value;
 
             // Act && Assert
-            publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
-            publishCommand.Execute().Should().Pass();
+            publishCommand = CreatePublishCommand(testInstance, "blazorwasm");
+            ExecuteCommand(publishCommand).Should().Pass();
 
-            var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
+            var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
 
             updatedMatch.Success.Should().BeTrue();

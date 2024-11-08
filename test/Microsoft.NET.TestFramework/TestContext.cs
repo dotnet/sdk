@@ -51,6 +51,17 @@ namespace Microsoft.NET.TestFramework
 
         public const string LatestRuntimePatchForNetCoreApp2_0 = "2.0.9";
 
+        public static string GetRuntimeGraphFilePath()
+        {
+            string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+
+            DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
+
+            var lastWrittenSdk = sdksDir.EnumerateDirectories().OrderByDescending(di => di.LastWriteTime).First();
+
+            return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
+        }
+
         public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
         {
             environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
@@ -74,6 +85,11 @@ namespace Microsoft.NET.TestFramework
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
 
+            foreach (var (name, value) in commandLine.EnvironmentVariables)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+
             Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
 
             //  Reset this environment variable so that if the dotnet under test is different than the
@@ -83,10 +99,10 @@ namespace Microsoft.NET.TestFramework
             TestContext testContext = new();
 
             bool runAsTool = false;
-            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
+            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "TestAssets")))
             {
                 runAsTool = true;
-                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
+                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "TestAssets");
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
             {
@@ -95,7 +111,7 @@ namespace Microsoft.NET.TestFramework
                 //  variable instead of packing the test, and installing it as a global tool.
                 runAsTool = true;
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
             {
@@ -116,12 +132,6 @@ namespace Microsoft.NET.TestFramework
             else if (!commandLine.NoRepoInference && !runAsTool)
             {
                 repoRoot = GetRepoRoot();
-
-                //if (repoRoot != null)
-                //{
-                //    // assumes tests are always executed from the "artifacts/bin/Tests/$MSBuildProjectFile/$Configuration" directory
-                //    repoConfiguration = new DirectoryInfo(AppContext.BaseDirectory).Name;
-                //}
             }
 
             if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory))
@@ -140,7 +150,7 @@ namespace Microsoft.NET.TestFramework
             {
                 testContext.TestExecutionDirectory = (Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory), "tmp", repoConfiguration));
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
             }
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);
@@ -185,10 +195,15 @@ namespace Microsoft.NET.TestFramework
                 var nugetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false)
                     ?? Path.Combine(testContext.TestExecutionDirectory, ".nuget");
 
-
                 testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
                 testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
+
+                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
+                if (Directory.Exists(testPackages))
+                {
+                    testContext.TestPackages = testPackages;
+                }
             }
 
             if (commandLine.SdkVersion != null)

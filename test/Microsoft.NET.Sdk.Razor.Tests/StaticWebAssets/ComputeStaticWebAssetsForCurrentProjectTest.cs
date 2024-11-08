@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -272,7 +273,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
             string sourceType,
@@ -297,29 +298,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CopyToOutputDirectory = "",
                 CopyToPublishDirectory = "",
                 OriginalItemSpec = itemSpec,
+                // Add these to avoid accessing the disk to compute them
+                Integrity = "integrity",
+                Fingerprint = "fingerprint",
             };
 
             result.ApplyDefaults();
             result.Normalize();
-
-            return result.ToTaskItem();
-        }
-
-        private ITaskItem CreatePatternCandidate(
-            string name,
-            string basePath,
-            string contentRoot,
-            string pattern,
-            string source)
-        {
-            var result = new StaticWebAssetsDiscoveryPattern()
-            {
-                Name = name,
-                BasePath = basePath,
-                ContentRoot = contentRoot,
-                Pattern = pattern,
-                Source = source
-            };
 
             return result.ToTaskItem();
         }

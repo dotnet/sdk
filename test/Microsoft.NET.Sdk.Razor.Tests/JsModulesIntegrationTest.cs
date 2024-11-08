@@ -5,12 +5,8 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class JsModulesIntegrationTest : AspNetSdkBaselineTest
+    public class JsModulesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesIntegrationTest))
     {
-        public JsModulesIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [Fact]
         public void Build_NoOps_WhenJsModulesIsDisabled()
         {
@@ -20,9 +16,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Directory.CreateDirectory(Path.Combine(projectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
 
-            var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute("/p:JsModulesEnabled=false").Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build, "/p:JsModulesEnabled=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -33,20 +28,24 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Build_GeneratesManifestWhenItFindsALibrary()
         {
             var testAsset = "RazorComponentApp";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(p => {
+                     var fingerprintContent = p.Descendants()
+                         .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
+                     fingerprintContent.Value = "true";
+                 });
 
             Directory.CreateDirectory(Path.Combine(projectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
 
-            var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             var file = new FileInfo(Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json"));
             file.Should().Exist();
-            file.Should().Contain("ComponentApp.lib.module.js");
+            file.Should().Match("""ComponentApp\.[a-zA-Z-0-9]{10}\.lib\.module\.js""");
         }
 
         [Fact]
@@ -62,9 +61,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml");
             CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml.js");
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -85,16 +83,20 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void Publish_PublishesBundleToTheRightLocation()
+        public void Publish_PublishesJsModuleBundleBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(p => {
+                    var fingerprintContent = p.Descendants()
+                        .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
+                    fingerprintContent.Value = "true";
+                });
             Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -117,8 +119,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
@@ -132,9 +134,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var build = new BuildCommand(projectDirectory);
-            build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
@@ -155,8 +156,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
 
             // Act & Assert 1
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
             var directoryPath = Path.Combine(intermediateOutputPath, "jsmodules");
@@ -171,8 +172,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Act & Assert 2
             for (var i = 0; i < 2; i++)
             {
-                build = new BuildCommand(projectDirectory);
-                build.Execute().Should().Pass();
+                build = CreateBuildCommand(projectDirectory);
+                ExecuteCommand(build).Should().Pass();
 
                 foreach (var file in files)
                 {
@@ -182,21 +183,31 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
+        private void CreateFile(string content, params string[] path)
+        {
+            Directory.CreateDirectory(Path.Combine(path[..^1].Prepend(ProjectDirectory.TestRoot).ToArray()));
+            File.WriteAllText(Path.Combine(path.Prepend(ProjectDirectory.TestRoot).ToArray()), content);
+        }
+    }
+
+    public class JsModulesPackagesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesPackagesIntegrationTest))
+    {
         [Fact]
         public void BuildProjectWithReferences_IncorporatesInitializersFromClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            restore.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");
             CreateFile("console.log('Hello world ClassLibrary')", "ClassLibrary", "wwwroot", "ClassLibrary.lib.module.js");
 
-            var build = new BuildCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            build.WithWorkingDirectory(ProjectDirectory.Path);
-            build.Execute().Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -224,17 +235,18 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            restore.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");
 
             // Notice that it does not follow the pattern $(PackageId).lib.module.js
             CreateFile("console.log('Hello world ClassLibrary')", "ClassLibrary", "wwwroot", "AnotherClassLib.lib.module.js");
 
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.WithWorkingDirectory(ProjectDirectory.Path);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish).Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -268,8 +280,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorAppWithPackageAndP2PReference";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var restore = new RestoreCommand(Log, Path.Combine(ProjectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
-            restore.Execute().Should().Pass();
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
 
             CreateFile("console.log('Hello world AnotherClassLib publish')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.js");
             CreateFile("console.log('Hello world AnotherClassLib')", "AnotherClassLib", "wwwroot", "AnotherClassLib.lib.module.build.js");
@@ -284,9 +298,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                             new XAttribute("TargetPath", "wwwroot\\AnotherClassLib.lib.module.js"))));
                 }
             });
-            var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.WithWorkingDirectory(ProjectDirectory.Path);
-            publish.Execute().Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(publish).Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -322,7 +335,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             moduleFile.Should().Exist();
             moduleFile.Should().Contain("console.log('Hello world AnotherClassLib publish')");
         }
-
 
         private void CreateFile(string content, params string[] path)
         {

@@ -22,10 +22,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CommandOptionProjectDescription
         };
 
-        public static readonly CliOption<IEnumerable<string>> PropertyOption = new ForwardedOption<IEnumerable<string>>("--property", "-p")
-        {
-            Description = LocalizableStrings.PropertyOptionDescription
-        }.SetForwardingFunction((values, parseResult) => parseResult.GetRunCommandPropertyValues().Select(value => $"-p:{value}"));
+        public static readonly CliOption<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
         public static readonly CliOption<string> LaunchProfileOption = new("--launch-profile", "-lp")
         {
@@ -50,7 +47,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-        public static readonly CliArgument<IEnumerable<string>> ApplicationArguments = new("applicationArguments")
+        public static readonly CliArgument<string[]> ApplicationArguments = new("applicationArguments")
         {
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = "Arguments passed to the application that is being run."
@@ -83,6 +80,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
+            command.Options.Add(CommonOptions.ArtifactsPathOption);
 
             command.Arguments.Add(ApplicationArguments);
 

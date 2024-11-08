@@ -96,6 +96,34 @@ namespace Microsoft.DotNet.Tools.Common
         }
 
         /// <summary>
+        /// Deletes the provided file. Then deletes the parent directory if empty
+        /// and continues to its parent until it fails. Returns whether it succeeded
+        /// in deleting the file it was intended to delete.
+        /// </summary>
+        public static bool DeleteFileAndEmptyParents(string path, int maxDirectoriesToDelete = int.MaxValue)
+        {
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            File.Delete(path);
+            var dir = Path.GetDirectoryName(path);
+
+            int directoriesDeleted = 0;
+
+            while (!Directory.EnumerateFileSystemEntries(dir).Any() &&
+                directoriesDeleted < maxDirectoriesToDelete)
+            {
+                Directory.Delete(dir);
+                directoriesDeleted++;
+                dir = Path.GetDirectoryName(dir);
+            }
+
+            return !File.Exists(path);
+        }
+
+        /// <summary>
         /// Returns childItem relative to directory, with Path.DirectorySeparatorChar as separator
         /// </summary>
         public static string GetRelativePath(DirectoryInfo directory, FileSystemInfo childItem)

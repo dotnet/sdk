@@ -441,13 +441,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
 
         // Utility function to log all public instance property to CustomerBuildEventArgs 
-        private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(CustomBuildWithPropertiesEventArgs cbpEventArg, object obj)
+        private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(ExtendedCustomBuildEventArgs cbpEventArg, object obj)
         {
 #if NET472
             if (obj != null)
             {
                 Type thisType = obj.GetType();
-                cbpEventArg.Add("ArgumentType", thisType.ToString());
+                cbpEventArg.ExtendedMetadata["ArgumentType"] = thisType.ToString();
                 System.Reflection.MemberInfo[] arrayMemberInfo = thisType.FindMembers(System.Reflection.MemberTypes.Property, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, null, null);
                 if (arrayMemberInfo != null)
                 {
@@ -455,59 +455,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     {
                         object val = thisType.InvokeMember(memberInfo.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty, null, obj, null, System.Globalization.CultureInfo.InvariantCulture);
                         if (val != null)
-                            cbpEventArg.Add(memberInfo.Name, val);
+                        {
+                            cbpEventArg.ExtendedMetadata[memberinfo.Name] = val.ToString();
+                        }
                     }
                 }
             }
 #endif
         }
-
-        ///// <summary>
-        ///// Log Trace information in the command line
-        ///// </summary>
-        ///// <param name="e"></param>
-        //protected override void LogTrace(Microsoft.Web.Deployment.DeploymentTraceEventArgs args)
-        //{
-        //    string strMsg = args.Message;
-        //    string strEventType =  "Trace";
-        //    Framework.MessageImportance messageImportance = Microsoft.Build.Framework.MessageImportance.Low;
-
-        //    if (args is Deployment.DeploymentFileSerializationEventArgs ||
-        //        args is Deployment.DeploymentPackageSerializationEventArgs ||
-        //        args is Deployment.DeploymentObjectChangedEventArgs ||
-        //        args is Deployment.DeploymentSyncParameterEventArgs )
-        //    {
-        //        //promote those message only for those event
-        //        strEventType = "Action";
-        //        messageImportance = Microsoft.Build.Framework.MessageImportance.High;
-        //    }
-
-        //    if (!string.IsNullOrEmpty(strMsg))
-        //    {
-        //         switch (args.EventLevel)
-        //         {
-        //             case System.Diagnostics.TraceLevel.Off:
-        //                 break;
-        //             case System.Diagnostics.TraceLevel.Error:
-        //                 _host.Log.LogError(strMsg);
-        //                 break;
-        //             case System.Diagnostics.TraceLevel.Warning:
-        //                 _host.Log.LogWarning(strMsg);
-        //                 break;
-        //             default: // Is Warning is a Normal message
-        //                 _host.Log.LogMessageFromText(strMsg, messageImportance);
-        //                 break;
-
-        //         }
-        //    }
-        //    // additionally we fire the Custom event for the detail information
-        //    CustomBuildWithPropertiesEventArgs customBuildWithPropertiesEventArg = new CustomBuildWithPropertiesEventArgs(args.Message, null, TaskName);
-
-        //    customBuildWithPropertiesEventArg.Add("TaskName", TaskName);
-        //    customBuildWithPropertiesEventArg.Add("EventType", strEventType);
-        //    AddAllPropertiesToCustomBuildWithPropertyEventArgs(customBuildWithPropertiesEventArg, args);
-        //    _host.BuildEngine.LogCustomEvent(customBuildWithPropertiesEventArg);
-        //}
 
         protected override void LogTrace(dynamic args, IDictionary<string, MessageImportance> customTypeLoging)
         {
@@ -550,11 +505,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                 }
             }
-            // additionally we fire the Custom event for the detail information
-            CustomBuildWithPropertiesEventArgs customBuildWithPropertiesEventArg = new(args.Message, null, TaskName);
 
-            customBuildWithPropertiesEventArg.Add("TaskName", TaskName);
-            customBuildWithPropertiesEventArg.Add("EventType", strEventType);
+            // additionally we fire the Custom event for the detail information
+            var customBuildWithPropertiesEventArg = new ExtendedCustomBuildEventArgs(args.GetType().ToString(), args.Message, null, TaskName)
+            {
+                ExtendedMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "TaskName", TaskName },
+                    { "EventType", strEventType }
+                }
+            };
+
             AddAllPropertiesToCustomBuildWithPropertyEventArgs(customBuildWithPropertiesEventArg, args);
             _host.BuildEngine.LogCustomEvent(customBuildWithPropertiesEventArg);
         }
@@ -621,9 +582,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private ITaskItem[]? m_skipRuleItemsITaskItem = null;
         private ITaskItem[]? m_declareParameterItems = null;
         private ITaskItem[]? m_importDeclareParametersItems = null;
-        private ITaskItem[]? m_simpleSetParamterItems = null;
+        private ITaskItem[]? m_simpleSetParameterItems = null;
         private ITaskItem[]? m_importSetParametersItems = null;
-        private ITaskItem[]? m_setParamterItems = null;
+        private ITaskItem[]? m_setParameterItems = null;
 
         private BaseMSDeployDriver? m_msdeployDriver = null;
 
@@ -751,8 +712,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public ITaskItem[]? SimpleSetParameterItems
         {
-            get { return m_simpleSetParamterItems; }
-            set { m_simpleSetParamterItems = value; }
+            get { return m_simpleSetParameterItems; }
+            set { m_simpleSetParameterItems = value; }
         }
 
         public ITaskItem[]? ImportSetParametersItems
@@ -763,8 +724,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public ITaskItem[]? SetParameterItems
         {
-            get { return m_setParamterItems; }
-            set { m_setParamterItems = value; }
+            get { return m_setParameterItems; }
+            set { m_setParameterItems = value; }
         }
 
         public bool EnableMSDeployBackup { get; set; }

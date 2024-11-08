@@ -183,13 +183,49 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
         /// <param name="newMode">Whether to use workload sets or not</param>
         /// <returns></returns>
-        public InstallResponseMessage SendUpdateWorkloadModeRequest(SdkFeatureBand sdkFeatureBand, bool newMode)
+        public InstallResponseMessage SendUpdateWorkloadModeRequest(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             return Send(new InstallRequestMessage
             {
                 RequestType = InstallRequestType.AdjustWorkloadMode,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
                 UseWorkloadSets = newMode,
+            });
+        }
+
+        /// <summary>
+        /// Send an <see cref="InstallRequestMessage"/> to adjust the workload set version used for installing and updating workloads
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
+        /// <param name="newVersion">The workload set version</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendUpdateWorkloadSetRequest(SdkFeatureBand sdkFeatureBand, string newVersion)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.AdjustWorkloadSetVersion,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                WorkloadSetVersion = newVersion,
+            });
+        }
+
+        public InstallResponseMessage SendRecordWorkloadSetInGlobalJsonRequest(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                GlobalJsonPath = globalJsonPath,
+                WorkloadSetVersion = workloadSetVersion,
+            });
+        }
+
+        public InstallResponseMessage SendGetGlobalJsonWorkloadSetVersionsRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.GetGlobalJsonWorkloadSetVersions,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
             });
         }
     }

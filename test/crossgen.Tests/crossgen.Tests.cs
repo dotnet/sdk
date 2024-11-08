@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Fact(Skip = "This coverage needs to be in core-sdk, which is where crossgen is applied")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42506")]
         public void CLI_SDK_assemblies_must_be_crossgened()
         {
             //  TODO: Update method of finding cliPath (right now it's finding a ref path in stage 0
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tests
             CheckDirectoryIsCrossgened(cliPath);
         }
 
-        [Fact(Skip = "This coverage needs to be in core-sdk, which is where crossgen is applied")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42506")]
         public void Shared_Fx_assemblies_must_be_crossgened()
         {
             //  TODO: Update method of finding sharedFxPath

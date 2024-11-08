@@ -269,23 +269,23 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                 namespace Foo
                 {
-                    public partial record DerivedRecord(string s, int i, double d) : RecordClass2(default(string)!, default(int))
+                    public partial record DerivedRecord(string s, int i, double d) : RecordClass2(default!, default)
                     {
                     }
 
-                    public partial record DerivedRecord2(string x, int i, double d) : RecordClass2(default(string)!, default(int))
+                    public partial record DerivedRecord2(string x, int i, double d) : RecordClass2(default!, default)
                     {
                     }
 
-                    public partial record DerivedRecord3(string x, int i, double d) : RecordClass2(default(string)!, default(int))
+                    public partial record DerivedRecord3(string x, int i, double d) : RecordClass2(default!, default)
                     {
                     }
 
-                    public partial record DerivedRecord4(double d) : RecordClass2(default(string)!, default(int))
+                    public partial record DerivedRecord4(double d) : RecordClass2(default!, default)
                     {
                     }
 
-                    public partial record DerivedRecord5() : RecordClass2(default(string)!, default(int))
+                    public partial record DerivedRecord5() : RecordClass2(default!, default)
                     {
                     }
 
@@ -2125,7 +2125,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/67019")]
+        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithOperatorGeneration()
         {
             RunTest(original: """
@@ -2149,7 +2149,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                  includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/67019")]
+        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithCheckedOperatorGeneration()
         {
             RunTest(original: """

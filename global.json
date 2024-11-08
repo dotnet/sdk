@@ -1,9 +1,9 @@
 {
   "tools": {
-    "dotnet": "9.0.100-preview.1.24101.2",
+    "dotnet": "10.0.100-alpha.1.24551.9",
     "runtimes": {
       "dotnet": [
-        "$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)"
+        "$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)"
       ],
       "aspnetcore": [
         "$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)"
@@ -13,9 +13,13 @@
       "version": "16.8"
     }
   },
+  "native-tools": {
+    "cmake": "latest"
+  },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24154.2",
-    "Microsoft.DotNet.Helix.Sdk": "9.0.0-beta.24154.2",
-    "Microsoft.Build.NoTargets": "3.7.0"
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24555.1",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24555.1",
+    "Microsoft.Build.NoTargets": "3.7.0",
+    "Microsoft.DotNet.CMake.Sdk": "9.0.0-beta.24217.1"
   }
 }

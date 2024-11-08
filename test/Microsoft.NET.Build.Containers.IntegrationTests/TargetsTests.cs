@@ -7,26 +7,50 @@ using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
+[Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
-    [InlineData("SelfContained", true, "/app/foo.exe")]
-    [InlineData("SelfContained", false, "dotnet", "/app/foo.dll")]
-    [InlineData("PublishSelfContained", true, "/app/foo.exe")]
-    [InlineData("PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
-    public void CanDeferEntrypoint(string selfContainedPropertyName, bool selfContainedPropertyValue, params string[] entrypointArgs)
+    [MemberData(nameof(ContainerAppCommands))]
+    public void CanDeferContainerAppCommand(
+        string os,
+        string prop,
+        bool value,
+        params string[] expectedAppCommandArgs)
     {
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
-            [selfContainedPropertyName] = selfContainedPropertyValue.ToString()
-        }, projectName: $"{nameof(CanDeferEntrypoint)}_{selfContainedPropertyName}_{selfContainedPropertyValue}_{string.Join("_", entrypointArgs)}");
+            [prop] = value.ToString(),
+            [ContainerRuntimeIdentifier] = $"{os}-x64",
+
+        }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
-        Assert.True(project.Build(ComputeContainerConfig));
-        var computedEntrypointArgs = project.GetItems(ContainerEntrypoint).Select(i => i.EvaluatedInclude).ToArray();
-        foreach (var (First, Second) in entrypointArgs.Zip(computedEntrypointArgs))
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
+        instance.Build([ ComputeContainerConfig ], []);
+        var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
+
+        // The test was not testing anything previously, as the list returned was zero length,
+        // and the Zip didn't yield any results.
+        // So, to make sure we actually test something, we check that we actually get the expected collection.
+        computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
+    }
+
+
+    public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
+    {
+        char s = Path.DirectorySeparatorChar;
+        return new TheoryData<string, string, bool, string[]>
         {
-            Assert.Equal(First, Second);
-        }
+            { "win", "SelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "SelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "win", "PublishSelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "PublishSelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "linux", "SelfContained", true, ["/app/foo"] },
+            { "linux", "SelfContained", false, ["dotnet", "/app/foo.dll"] },
+            { "linux", "PublishSelfContained", true, ["/app/foo"] },
+            { "linux", "PublishSelfContained", false, ["dotnet", "/app/foo.dll"] },
+        };
     }
 
     [Fact]
@@ -150,6 +174,92 @@ public class TargetsTests
         };
     }
 
+    [InlineData("https://git.cosmere.com/shard/whimsy.git", "https://git.cosmere.com/shard/whimsy")]
+    [InlineData("https://repos.git.cosmere.com/shard/whimsy.git", "https://repos.git.cosmere.com/shard/whimsy")]
+    [Theory]
+    public void ShouldTrimTrailingGitSuffixFromRepoUrls(string repoUrl, string expectedLabel)
+    {
+        var commitHash = "abcdef";
+
+        static string NormalizeString(string s) => s.Replace(':', '_').Replace('/', '_');
+
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["PublishRepositoryUrl"] = true.ToString(),
+            ["PrivateRepositoryUrl"] = repoUrl,
+            ["SourceRevisionId"] = commitHash,
+            ["RepositoryType"] = "git"
+        }, projectName: $"{nameof(ShouldNotIncludeSourceControlLabelsUnlessUserOptsIn)}_{NormalizeString(repoUrl)}_{NormalizeString(expectedLabel)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+
+        labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+            .And.ContainSingle(label => LabelMatch("org.opencontainers.image.source", expectedLabel, label), String.Join(",", logger.AllMessages));
+    }
+
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ShouldIncludeBaseImageLabelsUnlessUserOptsOut(bool includeBaseImageLabels)
+    {
+        var expectedBaseImage = "mcr.microsoft.com/dotnet/runtime:7.0";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerGenerateLabelsImageBaseName"] = includeBaseImageLabels.ToString(),
+            ["ContainerBaseImage"] = expectedBaseImage,
+            ["ContainerGenerateLabels"] = true.ToString()
+        }, projectName: $"{nameof(ShouldIncludeBaseImageLabelsUnlessUserOptsOut)}_{includeBaseImageLabels}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+        if (includeBaseImageLabels)
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.ContainSingle(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
+        }
+        else
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.NotContain(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
+        };
+    }
+
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ShouldIncludeSDKAndRuntimeVersionLabelsUnlessUserOptsOut(bool includeToolsetVersionLabels)
+    {
+        var runtimeMajorMinor = "7.0";
+        var randomSdkVersion = "8.0.100";
+        var expectedBaseImage = $"mcr.microsoft.com/dotnet/runtime:{runtimeMajorMinor}";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerGenerateLabelsDotnetToolset"] = includeToolsetVersionLabels.ToString(),
+            ["ContainerBaseImage"] = expectedBaseImage,
+            ["ContainerGenerateLabels"] = true.ToString(), // always include other labels, but not necessarily the toolset labels
+            ["NETCoreSdkVersion"] = randomSdkVersion // not functionally relevant for the test, just need a known version
+        }, projectName: $"{nameof(ShouldIncludeSDKAndRuntimeVersionLabelsUnlessUserOptsOut)}_{includeToolsetVersionLabels}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+        if (includeToolsetVersionLabels)
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.ContainSingle(label => LabelMatch("net.dot.runtime.majorminor", runtimeMajorMinor, label))
+                .And.ContainSingle(label => LabelMatch("net.dot.sdk.version", randomSdkVersion, label));
+        }
+        else
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.NotContain(label => LabelMatch("net.dot.runtime.majorminor", runtimeMajorMinor, label))
+                .And.NotContain(label => LabelMatch("net.dot.sdk.version", randomSdkVersion, label));
+        };
+    }
+
     [InlineData("7.0.100", "v7.0", "7.0")]
     [InlineData("7.0.100-preview.7", "v7.0", "7.0")]
     [InlineData("7.0.100-rc.1", "v7.0", "7.0")]
@@ -235,7 +345,10 @@ public class TargetsTests
     [InlineData("8.0.100-preview.2", "v8.0", "jammy", "8.0.0-preview.2-jammy")]
     [InlineData("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
     [InlineData("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
-    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled")]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
     [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
@@ -295,20 +408,91 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-extra")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
     public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
-            ["NetCoreSdkVersion"] = "8.0.100",
+            ["NetCoreSdkVersion"] = "8.0.300",
             ["TargetFrameworkVersion"] = "v8.0",
             [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = false.ToString()
         }, projectName: $"{nameof(AOTAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [Theory]
+    public void TrimmedAppsWithCulturesGetExtraImages(string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.300",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [Theory]
+    public void TrimmedAppsWithoutCulturesGetbaseImages(string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.300",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData(true, false, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData(true, false, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
+    [InlineData(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+
+    [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-noble-chiseled-aot")]
+    [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [Theory]
+    public void TheBigMatrixOfTrimmingInference(bool trimmed, bool aot, string rid, bool invariant, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.300",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = trimmed.ToString(),
+            [KnownStrings.Properties.PublishAot] = aot.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = invariant.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
@@ -330,6 +514,47 @@ public class TargetsTests
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = true.ToString(),
         }, projectName: $"{nameof(AOTAppsLessThan8DoNotGetAOTImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtras()
+    {
+        var expectedImage = "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = "jammy-chiseled",
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, projectName: $"{nameof(FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtras)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtras()
+    {
+        var expectedImage = "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = "jammy-chiseled",
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, bonusItems: new()
+        {
+            [KnownStrings.Items.FrameworkReference] = KnownFrameworkReferences.WebApp
+        }, projectName: $"{nameof(FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtras)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
@@ -373,7 +598,7 @@ public class TargetsTests
         }, projectName: $"{nameof(AspNetFDDAppsGetAspNetBaseImage)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.Build(new[] { ComputeContainerBaseImage }, [logger], null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }

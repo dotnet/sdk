@@ -74,25 +74,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
-            // Loading all of the extensions should succeed as the dependency checker will have already
-            // loaded them.
-            var extensions = new RazorExtension[ExtensionNames.Values.Count];
-            string razorCompilerPath = null;
-            for (var i = 0; i < ExtensionNames.Values.Count; i++)
-            {
-                // If the extension is the Razor compiler, we'll use the referenced assembly (instead of the SDK one).
-                // Otherwise the extension's ProvideRazorExtensionInitializerAttribute would be different from the AssemblyExtension's one,
-                // hence the extension would not be loaded properly.
-                razorCompilerPath ??= DiscoverCommand.GetRazorCompilerPath();
-                var assembly = string.Equals(ExtensionFilePaths.Values[i], razorCompilerPath, StringComparison.OrdinalIgnoreCase)
-                    ? typeof(AssemblyExtension).Assembly
-                    : Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]);
-
-                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], assembly);
-            }
-
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = RazorConfiguration.Create(version, Configuration.Value(), extensions);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,
@@ -203,6 +186,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
+                b.RegisterExtensions();
+
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
                 b.Features.Add(new DefaultTypeNameFeature());
 
@@ -245,7 +230,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             foreach (var result in results)
             {
-                var errorCount = result.CSharpDocument.Diagnostics.Count;
+                var errorCount = result.CSharpDocument.Diagnostics.Length;
                 for (var i = 0; i < errorCount; i++)
                 {
                     var error = result.CSharpDocument.Diagnostics[i];

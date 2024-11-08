@@ -97,6 +97,8 @@ namespace Microsoft.DotNet.Cli
                 {
                     parseResult.ShowHelp();
                 }
+                // Only return 1 or 0
+                return exitCode == 0 ? 0 : 1;
             });
 
             return searchCommand;

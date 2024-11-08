@@ -107,10 +107,10 @@ namespace Microsoft.DotNet.Cli
             return arg;
         }
 
-        public static CliOption<bool> NoRestoreOption = new("--no-restore")
+        public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
         {
             Description = CommonLocalizableStrings.NoRestoreDescription
-        };
+        }.ForwardAs("-restore:false");
 
         public static CliOption<bool> InteractiveMsBuildForwardOption =
             new ForwardedOption<bool>("--interactive")
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Description = CommonLocalizableStrings.DisableBuildServersOptionDescription
             }
-            .ForwardAsMany(_ => new string[] { "-p:UseRazorBuildServer=false", "-p:UseSharedCompilation=false", "/nodeReuse:false" });
+            .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
         public static CliOption<string> ArchitectureOption =
             new ForwardedOption<string>("--arch", "-a")

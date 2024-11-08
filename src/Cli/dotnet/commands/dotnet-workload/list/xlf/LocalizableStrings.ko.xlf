@@ -12,10 +12,25 @@
         <target state="translated">`dotnet workload search`을 사용하여 설치할 추가 워크로드를 찾습니다.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="needs-review-translation">{1}의 global.json 파일에 고정되어 워크로드 버전 {0}을(를) 찾았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload version: {0}</source>
+        <target state="translated">워크로드 버전: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">다음 워크로드에 대한 업데이트를 사용할 수 있습니다. {0}. 최신 버전을 받으려면 `dotnet workload update`를 실행하세요.</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(설치되지 않음)</target>
+        <note />
       </trans-unit>
     </body>
   </file>

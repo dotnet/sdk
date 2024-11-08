@@ -27,7 +27,7 @@ path-to-application:
 
 sdk-options:
   -d|--diagnostics  {LocalizableStrings.SDKDiagnosticsCommandDefinition}
-  -h|--help         {LocalizableStrings.HelpDefinition}
+  -h|--help         {LocalizableStrings.SDKOptionsHelpDefinition}
   --info            {LocalizableStrings.SDKInfoCommandDefinition}
   --list-runtimes   {LocalizableStrings.SDKListRuntimesCommandDefinition}
   --list-sdks       {LocalizableStrings.SDKListSdksCommandDefinition}
@@ -50,7 +50,7 @@ sdk-options:
   restore           {LocalizableStrings.RestoreDefinition}
   run               {LocalizableStrings.RunDefinition}
   sdk               {LocalizableStrings.SdkDefinition}
-  sln               {LocalizableStrings.SlnDefinition}
+  solution          {LocalizableStrings.SlnDefinition}
   store             {LocalizableStrings.StoreDefinition}
   test              {LocalizableStrings.TestDefinition}
   tool              {LocalizableStrings.ToolDefinition}

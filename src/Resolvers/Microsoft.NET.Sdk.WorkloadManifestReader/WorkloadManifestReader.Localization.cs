@@ -4,12 +4,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using JsonTokenType = Newtonsoft.Json.JsonToken;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {

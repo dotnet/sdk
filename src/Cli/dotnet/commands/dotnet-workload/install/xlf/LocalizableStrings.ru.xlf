@@ -22,9 +22,24 @@
         <target state="translated">Невозможно использовать параметры {0} и {1} одновременно. При установке из файла отката удалите {0}, в противном случае удалите {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">Невозможно использовать параметры {0} и {1} одновременно.  Удалите один из параметров.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">Невозможно указать конкретную версию рабочей нагрузки в командной строке с помощью --version или --from-history, если в файле global.json уже указана версия {0}. Чтобы обновить глобально установленную версию рабочей нагрузки, выполните команду вне пути, содержащего этот файл global.json, либо измените версию в файле global.json и выполните команду "dotnet workload update".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">Невозможно использовать параметр {0}, если версия рабочей нагрузки указана в файле global.json.  Удалите параметр {0} или удалите элемент "workloadVersion" из {1}.</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">Проверка обновленных манифестов рабочей нагрузки.</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">Проверка обновленной версии рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -35,6 +50,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Идет удаление пакета рабочих нагрузок {0} версии {1}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Удаление версии рабочей нагрузки {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -75,6 +95,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">Не удалось установить манифест {0} версии {1}: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">Не удалось установить версию рабочей нагрузки {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -152,11 +177,6 @@
         <target state="translated">Целевая платформа для установки рабочей нагрузки.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Манифест с идентификатором {0} не существует.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">MSI манифеста не найден в пакете NuGet {0}</target>
@@ -180,6 +200,11 @@
       <trans-unit id="MsiProgressUninstall">
         <source>Removing {0} </source>
         <target state="translated">Идет удаление {0} </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Установка версии рабочей нагрузки {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
@@ -277,6 +302,11 @@
         <target state="translated">Печатать только список ссылок для скачивания, не выполняя загрузку.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">Режим установки рабочей нагрузки изменен на {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Установка пакета {0} версии {1} из автономного кэша {2}.</target>
@@ -362,9 +392,9 @@
         <target state="translated">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">Укажите, должны ли будущие операции рабочей нагрузки использовать наборы рабочей нагрузки или свободные манифесты.</target>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Обновление до указанной версии рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

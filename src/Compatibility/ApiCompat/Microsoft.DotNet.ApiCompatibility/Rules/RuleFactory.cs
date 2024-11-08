@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new CannotSealType(settings, context),
                 new EnumsMustMatch(settings, context),
                 new MembersMustExist(settings, context),
-                new CannotChangeVisibility(settings, context)
+                new CannotChangeVisibility(settings, context),
+                new CannotChangeGenericConstraints(settings, context),
             };
 
             if (enableRuleAttributesMustMatch)

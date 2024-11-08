@@ -2,6 +2,8 @@
   "solution": {
     "path": "..\\..\\sdk.sln",
     "projects": [
+      "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.Package.csproj",
+      "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.shproj",
       "src\\BuiltInTools\\BrowserRefresh\\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj",
       "src\\BuiltInTools\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
       "src\\BuiltInTools\\DotNetWatchTasks\\DotNetWatchTasks.csproj",

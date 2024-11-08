@@ -6,9 +6,9 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
-public static class ContainerBuilder
+internal static class ContainerBuilder
 {
-    public static async Task<int> ContainerizeAsync(
+    internal static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
         string baseRegistry,
@@ -31,6 +31,8 @@ public static class ContainerBuilder
         string localRegistry,
         string? containerUser,
         string? archiveOutputPath,
+        bool generateLabels,
+        bool generateDigestLabel,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -43,7 +45,8 @@ public static class ContainerBuilder
         logger.LogTrace("Trace logging: enabled.");
 
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger);
+        RegistryMode sourceRegistryMode = baseRegistry.Equals(outputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
@@ -124,11 +127,20 @@ public static class ContainerBuilder
         }
         imageBuilder.SetEntrypointAndCmd(imageEntrypoint, imageCmd);
 
-        foreach (KeyValuePair<string, string> label in labels)
+        if (generateLabels)
         {
-            // labels are validated by System.CommandLine API
-            imageBuilder.AddLabel(label.Key, label.Value);
+            foreach (KeyValuePair<string, string> label in labels)
+            {
+                // labels are validated by System.CommandLine API
+                imageBuilder.AddLabel(label.Key, label.Value);
+            }
+
+            if (generateDigestLabel)
+            {
+                imageBuilder.AddBaseImageDigestLabel();
+            }
         }
+
         foreach (KeyValuePair<string, string> envVar in envVars)
         {
             imageBuilder.AddEnvironmentVariable(envVar.Key, envVar.Value);

@@ -5,25 +5,29 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorWasmStaticWebAssetsIntegrationTest : BlazorWasmBaselineTests
+    public class BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory);
+
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -45,19 +49,26 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "App.razor.css"), "h1 { font-size: 16px; }");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "appsettings.development.json"), "{}");
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -75,16 +86,25 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
-            var build = new BuildCommand(ProjectDirectory, "blazorhosted");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -106,20 +126,29 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             // Check that static web assets is correctly configured by setting up a css file to triger css isolation.
             // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory, "blazorhosted");
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -137,20 +166,29 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_DoesNotIncludeXmlDocumentationFiles_AsAssets()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             // Check that static web assets is correctly configured by setting up a css file to triger css isolation.
             // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute("/p:GenerateDocumentationFile=true");
+            var publish = CreatePublishCommand(ProjectDirectory, "blazorhosted");
+            var publishResult = ExecuteCommand(publish, "/p:GenerateDocumentationFile=true");
             publishResult.Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -193,9 +231,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var build = new BuildCommand(ProjectDirectory, "blazorhosted");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -247,9 +284,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // The list of publish files should not include bundle.scp.css and should include blazorwasm.styles.css
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
-            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory, "blazorhosted");
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();

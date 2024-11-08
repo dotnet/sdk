@@ -105,8 +105,28 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                         case InstallRequestType.AdjustWorkloadMode:
                             UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
-                            string newMode = request.UseWorkloadSets ? "workload sets" : "loose manifests";
+                            string newMode = request.UseWorkloadSets == null ? "<null>" : request.UseWorkloadSets.Value ? "workload sets" : "loose manifests";
                             Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
+                            break;
+
+                        case InstallRequestType.AdjustWorkloadSetVersion:
+                            AdjustWorkloadSetInInstallState(new SdkFeatureBand(request.SdkFeatureBand), request.WorkloadSetVersion);
+                            Dispatcher.ReplySuccess($"Updated workload set version in install state to {request.WorkloadSetVersion}.");
+                            break;
+
+                        case InstallRequestType.RecordWorkloadSetInGlobalJson:
+                            RecordWorkloadSetInGlobalJson(new SdkFeatureBand(request.SdkFeatureBand), request.GlobalJsonPath, request.WorkloadSetVersion);
+                            Dispatcher.ReplySuccess($"Recorded workload set {request.WorkloadSetVersion} in {request.GlobalJsonPath} for SDK feature band {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.GetGlobalJsonWorkloadSetVersions:
+                            Dispatcher.Reply(new InstallResponseMessage()
+                            {
+                                Message = "Got global.json GC roots",
+                                HResult = Win32.Msi.Error.S_OK,
+                                Error = Win32.Msi.Error.SUCCESS,
+                                GlobalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(new SdkFeatureBand(request.SdkFeatureBand))
+                            });
                             break;
 
                         default:

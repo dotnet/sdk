@@ -214,7 +214,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
 
-            const string tfm = "net5.0";
+            const string tfm = "net6.0";
 
             var testProject = new TestProject()
             {
@@ -226,6 +226,9 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles.Add("Program.cs", _useCsWinrtApi);
             testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
             testProject.AdditionalProperties.Add("TargetPlatformVersion", "10.0.17763");
+
+            // Use an old projection that also supports .NET 6
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.38";
 
             var asset = _testAssetsManager.CreateTestProject(testProject);
 

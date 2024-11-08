@@ -12,10 +12,25 @@
         <target state="translated">Verwenden Sie „dotnet workload search“, um zusätzliche zu installierende Workloads zu finden.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="needs-review-translation">Es wurde eine in der global.json-Datei unter {1} angeheftete Workload-Version {0} gefunden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload version: {0}</source>
+        <target state="translated">Workloadversion: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">Updates sind für die folgenden Workloads verfügbar: {0}. Führen Sie „dotnet workload update“ aus, um die neueste Updates zu erhalten.</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(nicht installiert)</target>
+        <note />
       </trans-unit>
     </body>
   </file>

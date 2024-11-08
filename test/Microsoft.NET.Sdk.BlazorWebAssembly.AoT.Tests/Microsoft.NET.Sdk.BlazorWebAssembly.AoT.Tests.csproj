@@ -46,7 +46,6 @@
     <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\BootJsonData.cs" Link="BootJsonData.cs" />
     <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\WasmPublishIntegrationTestBase.cs" Link="WasmPublishIntegrationTestBase.cs" />
     <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\ServiceWorkerAssert.cs" Link="ServiceWorkerAssert.cs" />
-    <Compile Include="..\..\src\StaticWebAssetsSdk\Tasks\ServiceWorker\AssetsManifestFile.cs" Link="AssetsManifestFile.cs" />
   </ItemGroup>
 
   <ItemGroup>

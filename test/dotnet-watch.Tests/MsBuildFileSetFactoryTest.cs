@@ -19,6 +19,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             _muxerPath = TestContext.Current.ToolsetUnderTest.DotNetHostPath;
         }
 
+        private static string InspectPath(string path, string rootDir)
+            => path.Substring(rootDir.Length + 1).Replace("\\", "/");
+
+        private static IEnumerable<string> Inspect(string rootDir, IReadOnlyDictionary<string, FileItem> files)
+            => files
+            .OrderBy(entry => entry.Key)
+            .Select(entry => $"{InspectPath(entry.Key, rootDir)}: [{string.Join(", ", entry.Value.ContainingProjectPaths.Select(p => InspectPath(p, rootDir)))}]");
+
         [Fact]
         public async Task FindsCustomWatchItems()
         {
@@ -36,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteFile(project, "app.js");
             WriteFile(project, "gulpfile.js");
 
-            var fileset = await GetFileSet(project);
+            var result = await Evaluate(project);
 
             AssertEx.EqualFileList(
                 GetTestProjectDirectory(project),
@@ -47,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     "Program.cs",
                     "app.js"
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -71,7 +79,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteFile(project, "Program.cs");
             WriteFile(project, "Strings.resx");
 
-            var fileset = await GetFileSet(project);
+            var result = await Evaluate(project);
 
             AssertEx.EqualFileList(
                 GetTestProjectDirectory(project),
@@ -81,7 +89,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     "Project1.cs",
                     "Program.cs",
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -102,7 +110,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteFile(project, Path.Combine("obj", "Class1.cs"));
             WriteFile(project, Path.Combine("Properties", "Strings.resx"));
 
-            var fileset = await GetFileSet(project);
+            var result = await Evaluate(project);
 
             AssertEx.EqualFileList(
                 GetTestProjectDirectory(project),
@@ -114,7 +122,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     "Class1.cs",
                     "Properties/Strings.resx",
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -140,7 +148,7 @@ $@"<ItemGroup>
             WriteFile(project, "Class1.desktop.cs");
             WriteFile(project, "Class1.notincluded.cs");
 
-            var fileset = await GetFileSet(project);
+            var result = await Evaluate(project);
 
             AssertEx.EqualFileList(
                 GetTestProjectDirectory(project),
@@ -150,7 +158,7 @@ $@"<ItemGroup>
                     "Class1.netcore.cs",
                     "Class1.desktop.cs",
                 },
-                fileset
+                 result.Files.Keys
             );
         }
 
@@ -171,7 +179,7 @@ $@"<ItemGroup>
             WriteFile(testDir, Path.Combine("wwwroot", "js", "site.js"));
             WriteFile(testDir, Path.Combine("wwwroot", "favicon.ico"));
 
-            var fileset = await GetFileSet(project);
+            var result = await Evaluate(project);
 
             AssertEx.EqualFileList(
                 testDir.Path,
@@ -183,7 +191,7 @@ $@"<ItemGroup>
                     "wwwroot/js/site.js",
                     "wwwroot/favicon.ico",
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -214,7 +222,7 @@ $@"<ItemGroup>
             WriteFile(testDir, Path.Combine("Project1", "Program.cs"));
 
 
-            var fileset = await GetFileSet(projectPath);
+            var result = await Evaluate(projectPath);
 
             AssertEx.EqualFileList(
                 testDir.Path,
@@ -227,7 +235,7 @@ $@"<ItemGroup>
                     "RCL1/wwwroot/js/site.js",
                     "RCL1/wwwroot/favicon.ico",
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -245,7 +253,7 @@ $@"<ItemGroup>
                 ReferencedProjects = { project2.TestProject, },
             });
 
-            var fileset = await GetFileSet(project1);
+            var result = await Evaluate(project1);
 
             AssertEx.EqualFileList(
                 project1.TestRoot,
@@ -256,7 +264,7 @@ $@"<ItemGroup>
                     "Project1/Project1.csproj",
                     "Project1/Project1.cs",
                 },
-                fileset
+                result.Files.Keys
             );
         }
 
@@ -280,7 +288,7 @@ $@"<ItemGroup>
                 ReferencedProjects = { project2.TestProject, },
             });
 
-            var fileset = await GetFileSet(project1);
+            var result = await Evaluate(project1);
 
             AssertEx.EqualFileList(
                 project1.TestRoot,
@@ -293,10 +301,10 @@ $@"<ItemGroup>
                     "Project1/Project1.csproj",
                     "Project1/Project1.cs",
                 },
-                fileset
+                result.Files.Keys
             );
 
-            Assert.All(fileset, f => Assert.False(f.IsStaticFile, $"File {f.FilePath} should not be a static file."));
+            Assert.All(result.Files.Values, f => Assert.False(f.IsStaticFile, $"File {f.FilePath} should not be a static file."));
         }
 
         [Fact]
@@ -316,47 +324,60 @@ $@"<ItemGroup>
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var output = new OutputSink();
-            var options = GetWatchOptions();
-            var filesetFactory = new MsBuildFileSetFactory(options, _reporter, _muxerPath, projectA, targetFramework: null, buildProperties: null, output, waitOnError: false, trace: true);
+            var options = new EnvironmentOptions(
+                MuxerPath: _muxerPath,
+                WorkingDirectory: testDirectory);
 
-            var fileset = await filesetFactory.CreateAsync(CancellationToken.None);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: null, options, _reporter, output, trace: true);
 
-            Assert.NotNull(fileset);
+            var result = await filesetFactory.TryCreateAsync(CancellationToken.None);
+            Assert.NotNull(result);
 
             _reporter.Output(string.Join(
                 Environment.NewLine,
                 output.Current.Lines.Select(l => "Sink output: " + l)));
 
-            var includedProjects = new[] { "A", "B", "C", "D", "E", "F", "G" };
-            AssertEx.EqualFileList(
-                testDirectory,
-                includedProjects
-                    .Select(p => $"{p}/{p}.csproj"),
-                fileset
-            );
+            AssertEx.SequenceEqual(
+            [
+                "A/A.cs: [A/A.csproj]",
+                "A/A.csproj: [A/A.csproj]",
+                "B/B.cs: [B/B.csproj]",
+                "B/B.csproj: [B/B.csproj]",
+                "C/C.cs: [C/C.csproj]",
+                "C/C.csproj: [C/C.csproj]",
+                "Common.cs: [A/A.csproj, G/G.csproj]",
+                "D/D.cs: [D/D.csproj]",
+                "D/D.csproj: [D/D.csproj]",
+                "E/E.cs: [E/E.csproj]",
+                "E/E.csproj: [E/E.csproj]",
+                "F/F.cs: [F/F.csproj]",
+                "F/F.csproj: [F/F.csproj]",
+                "G/G.cs: [G/G.csproj]",
+                "G/G.csproj: [G/G.csproj]",
+            ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
-            Assert.All(includedProjects,
+            Assert.All(
+                ["A", "B", "C", "D", "E", "F", "G"],
                 projectName =>
                     Assert.Single(output.Current.Lines,
-                        line => line.Contains($"Collecting watch items from '{projectName}'"))
-            );
+                        line => line.Contains($"Collecting watch items from '{projectName}'")));
         }
 
-        private Task<FileSet> GetFileSet(TestAsset target)
+        private Task<EvaluationResult> Evaluate(TestAsset projectPath)
+            => Evaluate(GetTestProjectPath(projectPath));
+
+        private async Task<EvaluationResult> Evaluate(string projectPath)
         {
-            var projectPath = GetTestProjectPath(target);
-            return GetFileSet(projectPath);
-        }
+            var options = new EnvironmentOptions(
+                MuxerPath: _muxerPath,
+                WorkingDirectory: Path.GetDirectoryName(projectPath));
 
-        private Task<FileSet> GetFileSet(string projectPath)
-        {
-            DotNetWatchOptions options = GetWatchOptions();
-            return new MsBuildFileSetFactory(options, _reporter, _muxerPath, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), waitOnError: false, trace: false).CreateAsync(CancellationToken.None);
+            var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: null, options, _reporter, new OutputSink(), trace: false);
+            var result = await factory.TryCreateAsync(CancellationToken.None);
+            Assert.NotNull(result);
+            return result;
         }
-
-        private static DotNetWatchOptions GetWatchOptions() =>
-            new(false, false, false, false, false, TestFlags.None);
 
         private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
 

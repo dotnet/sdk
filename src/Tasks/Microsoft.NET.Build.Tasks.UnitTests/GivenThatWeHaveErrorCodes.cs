@@ -28,6 +28,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1041,
             1062,
             1066,
+            1092,
             1101,
             1108,
             1180,
@@ -100,13 +101,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 if (name.EndsWith("_Info"))
                 {
-                    comment.Should().NotContain("StrBegin",
+                    comment.Should().NotContain("StrBegins",
                         because: "informational messages should not have error codes.");
                 }
                 else if (!_infoExceptions.Contains(name))
                 {
 
-                    comment.Should().StartWith($@"{{StrBegin=""{prefix} ""}}",
+                    comment.Should().StartWith($@"{{StrBegins=""{prefix} ""}}",
                         because: $"localization instructions should indicate invariant error code as preceding translatable message.");
                 }
             }

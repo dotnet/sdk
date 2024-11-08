@@ -444,9 +444,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             }
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Not relevant due to matching on template options is not implemented.")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public async Task CacheSkipInvalidTemplatesTest()
         {
             string cacheLocation = TestUtils.CreateTemporaryFolder();

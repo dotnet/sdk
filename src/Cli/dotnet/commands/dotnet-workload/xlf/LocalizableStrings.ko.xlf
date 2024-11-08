@@ -22,6 +22,11 @@
         <target state="translated">표시할 설치된 워크로드가 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
         <source>Unable to bypass signature verification. The specified option conflicts with a global policy.</source>
         <target state="translated">서명 확인을 무시할 수 없습니다. 지정한 옵션이 전역 정책과 충돌합니다.</target>
@@ -57,7 +62,7 @@
         <target state="translated">워크로드를 확인하는 동안 문제가 발생했습니다. 자세한 내용을 확인하려면 "dotnet workload update"를 실행하세요.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">매니페스트 버전</target>
         <note />
@@ -67,6 +72,11 @@
         <target state="translated">매니페스트 경로</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">설치 원본</target>
@@ -75,6 +85,16 @@
       <trans-unit id="WorkloadVersionDescription">
         <source>Display the currently installed workload version.</source>
         <target state="translated">현재 설치된 워크로드 버전을 표시합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="translated">Visual Studio 워크로드에 대한 설치 레코드를 쓰는 중: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">새 매니페스트를 설치할 때 {0}을(를) 사용하도록 구성됩니다.</target>
         <note />
       </trans-unit>
     </body>

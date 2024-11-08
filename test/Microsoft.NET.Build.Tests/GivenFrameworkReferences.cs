@@ -887,7 +887,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms" },
-                notExpectedReferenceNames: new[] { "System.Windows.Presentation", "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -899,7 +899,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "System.Windows.Forms", "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -911,7 +911,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 

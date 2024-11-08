@@ -22,8 +22,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         public string? CommandName { get; init; }
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
-        public string? CommandLineArgs { get; init; }
-        public IReadOnlyDictionary<string, string>? EnvironmentVariables { get; init; }
 
         internal static LaunchSettingsProfile? ReadLaunchProfile(string projectDirectory, string? launchProfileName, IReporter reporter)
         {

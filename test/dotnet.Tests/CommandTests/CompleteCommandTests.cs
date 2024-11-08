@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -45,6 +46,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "restore",
                 "run",
                 "sln",
+                "solution",
                 "store",
                 "test",
                 "tool",
@@ -118,7 +120,8 @@ namespace Microsoft.DotNet.Tests.Commands
                 "push",
                 "verify",
                 "trust",
-                "sign"
+                "sign",
+                "why"
             };
 
             var reporter = new BufferedReporter();
@@ -287,6 +290,24 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenNuGetWhyCommandItDisplaysCompletions()
+        {
+            var expected = new[] {
+                "--framework",
+                "--help",
+                "-?",
+                "-f",
+                "-h",
+                "/?",
+                "/h"
+            };
+
+            var reporter = new BufferedReporter();
+            CompleteCommand.RunWithReporter(new[] { "dotnet nuget why " }, reporter).Should().Be(0);
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+        }
+
+        [Fact]
         public void GivenDotnetAddPackWithPosition()
         {
             var expected = new[] {
@@ -309,6 +330,98 @@ namespace Microsoft.DotNet.Tests.Commands
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(GetArguments("dotnet tool in$ abc"), reporter).Should().Be(0);
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+        }
+
+        [Fact]
+        public void CompletesNugetPackageIds()
+        {
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+
+            string[] expected = ["Newtonsoft.Json"];
+            var reporter = new BufferedReporter();
+            var currentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(testAsset.Path);
+                CompleteCommand.RunWithReporter(GetArguments("dotnet add package Newt$"), reporter).Should().Be(0);
+                reporter.Lines.Should().Contain(expected);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+            }
+        }
+
+        [Fact]
+        public void CompletesNugetPackageVersions()
+        {
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+
+            string knownPackage = "Newtonsoft.Json";
+            string knownVersion = "13.0.1"; // not exhaustive
+            var reporter = new BufferedReporter();
+            var currentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(testAsset.Path);
+                CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --version $"), reporter).Should().Be(0);
+                reporter.Lines.Should().Contain(knownVersion);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+            }
+        }
+
+        [Fact]
+        public void CompletesNugetPackageVersionsWithStem()
+        {
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+
+            string knownPackage = "Newtonsoft.Json";
+            string knownVersion = "13.0"; // not exhaustive
+            string[] expectedVersions = ["13.0.1", "13.0.2", "13.0.3"]; // not exhaustive
+            var reporter = new BufferedReporter();
+            var currentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(testAsset.Path);
+                CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --version {knownVersion}$"), reporter).Should().Be(0);
+                reporter.Lines.Should().Contain(expectedVersions);
+                // by default only stable versions should be shown
+                reporter.Lines.Should().AllSatisfy(v => v.Should().NotContain("-"));
+
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+            }
+        }
+
+        [Fact]
+        public void CompletesNugetPackageVersionsWithPrereleaseVersionsWhenSpecified()
+        {
+            NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
+            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+
+            string knownPackage = "Spectre.Console";
+            string knownVersion = "0.49.1";
+            string[] expectedVersions = ["0.49.1", "0.49.1-preview.0.2", "0.49.1-preview.0.5"]; // exhaustive for this specific version
+            var reporter = new BufferedReporter();
+            var currentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(testAsset.Path);
+                CompleteCommand.RunWithReporter(GetArguments($"dotnet add package {knownPackage} --prerelease --version {knownVersion}$"), reporter).Should().Be(0);
+                reporter.Lines.Should().Equal(expectedVersions);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+            }
         }
 
         /// <summary>

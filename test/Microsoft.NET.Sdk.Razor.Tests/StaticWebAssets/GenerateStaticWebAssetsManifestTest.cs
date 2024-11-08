@@ -32,6 +32,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -49,6 +50,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var manifest = StaticWebAssetsManifest.FromJsonString(File.ReadAllText(TempFilePath));
             manifest.Should().NotBeNull();
             manifest.Assets.Should().BeNullOrEmpty();
+            manifest.Endpoints.Should().BeNullOrEmpty();
             manifest.DiscoveryPatterns.Should().BeNullOrEmpty();
             manifest.ReferencedProjectsConfiguration.Should().BeNullOrEmpty();
             manifest.Version.Should().Be(1);
@@ -70,6 +72,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // GetTempFilePath automatically creates the file, which interferes with the test.
             File.Delete(TempFilePath);
             var asset = CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All");
+            var endpoint = CreateEndpoint(asset);
             var task = new GenerateStaticWebAssetsManifest
             {
                 BuildEngine = buildEngine.Object,
@@ -77,6 +80,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 {
                     asset.ToTaskItem()
                 },
+                Endpoints = [endpoint.ToTaskItem()],
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -96,31 +100,75 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             manifest.Assets.Should().HaveCount(1);
             var newAsset = manifest.Assets[0];
             newAsset.Should().Be(asset);
+            manifest.Endpoints.Should().HaveCount(1);
+            var newEndpoint = manifest.Endpoints[0];
+            newEndpoint.Should().Be(endpoint);
+        }
+
+        private static StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset)
+        {
+            return new StaticWebAssetEndpoint
+            {
+                Route = asset.ComputeTargetPath("", '/'),
+                AssetFile = asset.Identity,
+                Selectors = [],
+                EndpointProperties = [],
+                ResponseHeaders =
+                [
+                    new()
+                    {
+                        Name = "Content-Type",
+                        Value = "__content-type__"
+                    },
+                    new()
+                    {
+                        Name = "Content-Length",
+                        Value = "__content-length__",
+                    },
+                    new()
+                    {
+                        Name = "ETag",
+                        Value = "__etag__",
+                    },
+                    new()
+                    {
+                        Name = "Last-Modified",
+                        Value = "__last-modified__"
+                    },
+                    new()
+                    {
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
+                    }
+                ]
+            };
         }
 
         public static TheoryData<Action<StaticWebAsset>> GeneratesManifestFailsWhenInvalidAssetsAreProvidedData
         {
             get
             {
-                var theoryData = new TheoryData<Action<StaticWebAsset>>();
-                theoryData.Add(a => a.SourceId = "");
-                theoryData.Add(a => a.SourceType = "");
-                theoryData.Add(a => a.RelativePath = "");
-                theoryData.Add(a => a.ContentRoot = "");
-                theoryData.Add(a => a.OriginalItemSpec = "");
-                theoryData.Add(a => a.AssetKind = "");
-                theoryData.Add(a => a.AssetRole = "");
-                theoryData.Add(a => a.AssetMode = "");
-                theoryData.Add(a =>
+                var theoryData = new TheoryData<Action<StaticWebAsset>>
                 {
-                    a.AssetRole = "Related";
-                    a.RelatedAsset = "";
-                });
-                theoryData.Add(a =>
-                {
-                    a.AssetRole = "Alternative";
-                    a.RelatedAsset = "";
-                });
+                    a => a.SourceId = "",
+                    a => a.SourceType = "",
+                    a => a.RelativePath = "",
+                    a => a.ContentRoot = "",
+                    a => a.OriginalItemSpec = "",
+                    a => a.AssetKind = "",
+                    a => a.AssetRole = "",
+                    a => a.AssetMode = "",
+                    a =>
+                    {
+                        a.AssetRole = "Related";
+                        a.RelatedAsset = "";
+                    },
+                    a =>
+                    {
+                        a.AssetRole = "Alternative";
+                        a.RelatedAsset = "";
+                    }
+                };
 
                 return theoryData;
             }
@@ -146,6 +194,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 {
                     asset.ToTaskItem()
                 },
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -166,31 +215,38 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             get
             {
-                var data = new TheoryData<StaticWebAsset, StaticWebAsset>();
-                // Duplicate assets
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"));
+                var data = new TheoryData<StaticWebAsset, StaticWebAsset>
+                {
+                    // Duplicate assets
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All")
+                    },
 
-                // Conflicting Build asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Build"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Build"));
+                    // Conflicting Build asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Build"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Build")
+                    },
 
-                // Conflicting Publish asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Publish"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Publish"));
+                    // Conflicting Publish asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Publish"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Publish")
+                    },
 
-                // Conflicting All asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "All"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All"));
+                    // Conflicting All asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "All"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All")
+                    },
 
-                // Assets with compatible kinds but from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "Build"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "Publish"));
+                    // Assets with compatible kinds but from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "Build"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "Publish")
+                    }
+                };
 
                 return data;
             }
@@ -215,6 +271,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     first.ToTaskItem(),
                     second.ToTaskItem()
                 },
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -247,6 +304,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = new[] { projectReference.ToTaskItem() },
                 DiscoveryPatterns = Array.Empty<ITaskItem>(),
                 BasePath = "/",
@@ -284,6 +342,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
+                Endpoints = Array.Empty<ITaskItem>(),
                 ReferencedProjectsConfigurations = Array.Empty<ITaskItem>(),
                 DiscoveryPatterns = new[] { candidatePattern.ToTaskItem() },
                 BasePath = "/",
@@ -305,7 +364,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             newProjectConfig.Should().Be(candidatePattern);
         }
 
-        private StaticWebAssetsManifest.ReferencedProjectConfiguration CreateProjectReferenceConfiguration(
+        private static StaticWebAssetsManifest.ReferencedProjectConfiguration CreateProjectReferenceConfiguration(
             int version,
             string source,
             string publishTargets = "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
@@ -365,6 +424,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CopyToOutputDirectory = copyToOutputDirectory,
                 CopyToPublishDirectory = copytToPublishDirectory,
                 OriginalItemSpec = itemSpec,
+                // Add these to avoid accessing the disk to compute them
+                Integrity = "integrity",
+                Fingerprint = "fingerprint",
             };
 
             result.ApplyDefaults();
@@ -373,7 +435,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             return result;
         }
 
-        private StaticWebAssetsDiscoveryPattern CreatePatternCandidate(
+        private static StaticWebAssetsDiscoveryPattern CreatePatternCandidate(
             string name,
             string basePath,
             string pattern,

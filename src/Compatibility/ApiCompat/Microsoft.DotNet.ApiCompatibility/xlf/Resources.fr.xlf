@@ -62,6 +62,11 @@
         <target state="translated">Impossible d’ajouter l’attribut « {0} » à « {1} ».</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddGenericConstraint">
+        <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="translated">Impossible d’ajouter la contrainte « {0} » sur le paramètre de type « {1} » de « {2} ».</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
         <source>Cannot add interface member '{0}' to {1} because it does not exist on {2}</source>
         <target state="translated">Impossible d’ajouter le membre d’interface '{0}' à {1}, car il n’existe pas sur {2}</target>
@@ -112,6 +117,11 @@
         <target state="translated">Le type' {0} 'n’hérite pas du type de base' {1} 'sur {2} mais il le fait sur {3}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemoveGenericConstraint">
+        <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="translated">Impossible de supprimer la contrainte « {0} » sur le paramètre de type « {1} » de « {2} ».</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
         <source>Cannot remove virtual keyword from member '{0}'.</source>
         <target state="translated">Impossible de supprimer le mot-clé virtuel du membre '{0}'.</target>
@@ -119,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">L’élément ne doit pas être null. Null trouvé à l’index : {0}.</target>
+        <target state="translated">L’élément à l’index {0} ne doit pas être nul.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -134,7 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
+        <target state="translated">L’index {0} doit être compris entre zéro et {1} inclus.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -159,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">La valeur de « {0} » doit être supérieure à 0.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

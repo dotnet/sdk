@@ -96,9 +96,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private const string RazorCompilerFileName = "Microsoft.CodeAnalysis.Razor.Compiler.dll";
 
-        internal static string GetRazorCompilerPath()
-            => Path.Combine(Path.GetDirectoryName(typeof(Application).Assembly.Location), RazorCompilerFileName);
-
         /// <summary>
         /// Replaces the assembly for MVC extension with the one shipped alongside SDK (as opposed to the one from NuGet).
         /// </summary>
@@ -144,16 +141,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
-            // Loading all of the extensions should succeed as the dependency checker will have already
-            // loaded them.
-            var extensions = new RazorExtension[ExtensionNames.Values.Count];
-            for (var i = 0; i < ExtensionNames.Values.Count; i++)
-            {
-                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]));
-            }
-
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = RazorConfiguration.Create(version, Configuration.Value(), extensions);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var result = ExecuteCore(
                 configuration: configuration,
@@ -176,6 +165,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             var engine = RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
             {
+                b.RegisterExtensions();
+
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
                 b.Features.Add(new DefaultTagHelperDescriptorProvider());

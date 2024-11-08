@@ -22,6 +22,11 @@
         <target state="translated">没有要显示的已安装工作负载。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
         <source>Unable to bypass signature verification. The specified option conflicts with a global policy.</source>
         <target state="translated">无法绕过签名验证。指定的选项与全局策略冲突。</target>
@@ -57,7 +62,7 @@
         <target state="translated">验证工作负载时遇到问题。有关详细信息，请运行 "dotnet workload update"。</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">清单版本</target>
         <note />
@@ -67,6 +72,11 @@
         <target state="translated">清单路径</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">安装源文件</target>
@@ -75,6 +85,16 @@
       <trans-unit id="WorkloadVersionDescription">
         <source>Display the currently installed workload version.</source>
         <target state="translated">显示当前安装的工作负载版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="translated">写入 Visual Studio 工作负载的安装记录:“{0}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">配置为在安装新清单时使用 {0}。</target>
         <note />
       </trans-unit>
     </body>

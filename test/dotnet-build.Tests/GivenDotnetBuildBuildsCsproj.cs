@@ -94,6 +94,24 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         }
 
         [Fact]
+        public void ItDoesNotImplicitlyRestoreFromResponseFileWithTheNoRestoreOption()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            string responseFilePath = Path.Combine(testInstance.Path, "Directory.Build.rsp");
+
+            File.WriteAllText(responseFilePath, @"-restore");
+
+            new DotnetBuildCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--no-restore")
+                .Should().Fail()
+                .And.HaveStdOutContaining("project.assets.json");
+        }
+
+        [Fact]
         public void ItRunsWhenRestoringToSpecificPackageDir()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")

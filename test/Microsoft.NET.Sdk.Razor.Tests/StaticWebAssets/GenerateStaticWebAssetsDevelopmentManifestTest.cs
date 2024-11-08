@@ -63,6 +63,165 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             manifest.Should().BeEquivalentTo(expectedManifest);
         }
 
+        [Theory]
+        [InlineData("#[.{fingerprint}]?", "index.html", "optional.html")]
+        [InlineData("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
+        [InlineData("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
+        public void ComputeDevelopmentManifest_ReplacesAssetTokens(string fingerprintExpression, string path, string fileName)
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    (path, CreateMatchNode(0, path))),
+            Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var assets = new[] { CreateAsset(fileName, $"index{fingerprintExpression}.html", assetKind: StaticWebAsset.AssetKinds.All) };
+            var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+            // Act
+            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+            // Assert
+            manifest.Should().BeEquivalentTo(expectedManifest);
+        }
+
+        [Theory]
+        [InlineData("#[.{fingerprint}]?", "index.html", "optional.html")]
+        [InlineData("#[.{fingerprint}]!", "index.fingerprint.html", "preferred.html")]
+        [InlineData("#[.{fingerprint}]", "index.fingerprint.html", "required.html")]
+        public void ComputeDevelopmentManifest_ReplacesAssetTokens_FileExists(string fingerprintExpression, string path, string subPath)
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    (path, CreateMatchNode(0, subPath))),
+            Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var assets = new[] { CreateAsset(subPath, $"index{fingerprintExpression}.html", assetKind: StaticWebAsset.AssetKinds.All) };
+            var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+            var fileName = Path.Combine(Environment.CurrentDirectory, subPath);
+            try
+            {
+                File.WriteAllText(fileName, "content");
+                // Act
+                var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+                // Assert
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
+        }
+
+        [Fact]
+        public void ComputeDevelopmentManifest_UsesIdentitySubpath_WhenFileExists_AndContentRoot_IsPrefix()
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    ("_framework",
+                        CreateIntermediateNode(
+                            ("dotnet.native.fingerprint.js.gz", CreateMatchNode(0, "blob-hash.gz"))))),
+                Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var fileName = Path.Combine(Environment.CurrentDirectory, "blob-hash.gz");
+            try
+            {
+                File.WriteAllText(fileName, "content");
+                var assets = new[] { CreateAsset(
+                        fileName,
+                        $$"""_framework/dotnet.native#[.{fingerprint}]!.js.gz""",
+                        contentRoot: Environment.CurrentDirectory,
+                        assetKind: StaticWebAsset.AssetKinds.All) };
+                var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+                // Act
+                var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+                // Assert
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
+        }
+
+        [Fact]
+        public void ComputeDevelopmentManifest_UsesRelativePath_ReplacesAssetTokens_WhenFileDoesNotExist_AtIdentity()
+        {
+            // Arrange
+            var messages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
+
+            var expectedManifest = CreateExpectedManifest(
+                CreateIntermediateNode(
+                    ("_framework",
+                        CreateIntermediateNode(
+                            ("dotnet.native.fingerprint.js", CreateMatchNode(0, "_framework/dotnet.native.fingerprint.js"))))),
+                Environment.CurrentDirectory);
+
+            var task = new GenerateStaticWebAssetsDevelopmentManifest()
+            {
+                BuildEngine = buildEngine.Object,
+            };
+
+            var fileName = Path.Combine(Environment.CurrentDirectory, "dotnet.native.js");
+            var assets = new[] { CreateAsset(
+                    fileName,
+                    $$"""_framework/dotnet.native#[.{fingerprint}]!.js""",
+                    contentRoot: Environment.CurrentDirectory,
+                    assetKind: StaticWebAsset.AssetKinds.All) };
+            var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
+
+            // Act
+            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+            // Assert
+            manifest.Should().BeEquivalentTo(expectedManifest);
+        }
+
         [Fact]
         public void ComputeDevelopmentManifest_IncludesAllAssets()
         {
@@ -173,11 +332,23 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             };
             var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
 
-            // Act
-            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+            var fileName = Path.Combine(Environment.CurrentDirectory, "index.build.html");
+            try
+            {
+                File.WriteAllText(fileName, "content");
+                // Act
+                var manifest = task.ComputeDevelopmentManifest(assets, patterns);
 
-            // Assert
-            manifest.Should().BeEquivalentTo(expectedManifest);
+                // Assert
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
         }
 
         [Fact]
@@ -189,9 +360,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
                 .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
 
+            var filePath = Path.Combine("some", "subfolder", "index.build.html");
             var expectedManifest = CreateExpectedManifest(
                 CreateIntermediateNode(
-                    ("index.html", CreateMatchNode(0, StaticWebAsset.Normalize(Path.Combine("some", "subfolder", "index.build.html"))))),
+                    ("index.html", CreateMatchNode(0, StaticWebAsset.Normalize(filePath)))),
                 Environment.CurrentDirectory);
 
             var task = new GenerateStaticWebAssetsDevelopmentManifest()
@@ -201,15 +373,28 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             };
 
             var assets = new[] {
-                CreateAsset(Path.Combine("some", "subfolder", "index.build.html"), "index.html"),
+                CreateAsset(filePath, "index.html"),
             };
             var patterns = Array.Empty<StaticWebAssetsDiscoveryPattern>();
 
-            // Act
-            var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                File.WriteAllText(filePath, "content");
 
-            // Assert
-            manifest.Should().BeEquivalentTo(expectedManifest);
+                // Act
+                var manifest = task.ComputeDevelopmentManifest(assets, patterns);
+
+                // Assert
+                manifest.Should().BeEquivalentTo(expectedManifest);
+            }
+            finally
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
         }
 
         [Fact]
@@ -355,8 +540,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CreateIntermediateNode(
                     ("_other", CreateIntermediateNode(
                         ("_project", CreateIntermediateNode().AddPatterns(
-                            (0, "*.js", 2),
-                            (1, "*.css", 2)))))),
+                            (0, "*.css", 2),
+                            (1, "*.js", 2)))))),
                 Path.GetFullPath("wwwroot"),
                 Path.GetFullPath("styles"));
 
@@ -530,7 +715,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Asset = new StaticWebAssetMatch { ContentRootIndex = index, SubPath = subpath }
         };
 
-        private StaticWebAsset CreateAsset(
+        private static StaticWebAsset CreateAsset(
             string identity,
             string relativePath,
             string assetKind = default,
@@ -550,6 +735,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 AssetKind = assetKind ?? StaticWebAsset.AssetKinds.All,
                 AssetMode = assetMode ?? StaticWebAsset.AssetModes.All,
                 AssetRole = StaticWebAsset.AssetRoles.Primary,
+                Fingerprint = "fingerprint",
                 ContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot ?? Environment.CurrentDirectory),
                 OriginalItemSpec = identity
             };

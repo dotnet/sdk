@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
-    [UsesVerify]
     public partial class HelpTests
     {
         [Fact]

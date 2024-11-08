@@ -6,10 +6,12 @@ buildtargets
 classlib
 console
 editorconfig
+gitattributes
 gitignore
 globaljson
 grpc
 mstest
+mstest-class
 mstest-playwright
 mvc
 mvccontroller

@@ -18,6 +18,7 @@ internal static class KnownStrings
         public static readonly string ContainerImageTags = nameof(ContainerImageTags);
         public static readonly string ContainerWorkingDirectory = nameof(ContainerWorkingDirectory);
         public static readonly string ContainerEntrypoint = nameof(ContainerEntrypoint);
+        public static readonly string ContainerAppCommand = nameof(ContainerAppCommand);
         public static readonly string UseAppHost = nameof(UseAppHost);
         public static readonly string ContainerLabel = nameof(ContainerLabel);
         public static readonly string SelfContained = nameof(SelfContained);
@@ -36,6 +37,7 @@ internal static class KnownStrings
         public static readonly string ContainerRuntimeIdentifier = nameof(ContainerRuntimeIdentifier);
         public static readonly string RuntimeIdentifier = nameof(RuntimeIdentifier);
         public static readonly string PublishAot = nameof(PublishAot);
+        public static readonly string PublishTrimmed = nameof(PublishTrimmed);
         public static readonly string PublishSelfContained = nameof(PublishSelfContained);
         public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
     }
@@ -47,8 +49,14 @@ internal static class KnownStrings
 
     public static class ErrorCodes
     {
+        // current version doesn't support containerization
         public static readonly string CONTAINER002 = nameof(CONTAINER002);
+        // containerimagename rename
         public static readonly string CONTAINER003 = nameof(CONTAINER003);
+        // generic http error
+        public static readonly string CONTAINER004 = nameof(CONTAINER004);
+        // don't use the containers package
+        public static readonly string CONTAINER005 = nameof(CONTAINER005);
         public static readonly string CONTAINER1011 = nameof(CONTAINER1011);
         public static readonly string CONTAINER1012 = nameof(CONTAINER1012);
         public static readonly string CONTAINER1013 = nameof(CONTAINER1013);

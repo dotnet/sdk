@@ -41,8 +41,8 @@ SDK commands:
   build-server      Interact with servers started by a build.
   clean             Clean build outputs of a .NET project.
   format            Apply style preferences to a project or solution.
-  help              Show command line help.
-  list              List project references of a .NET project.
+  help              Opens the reference page in a browser for the specified command.
+  list              List packages or references of a .NET project.
   msbuild           Run Microsoft Build Engine (MSBuild) commands.
   new               Create a new .NET project or file.
   nuget             Provides additional NuGet commands.
@@ -52,7 +52,7 @@ SDK commands:
   restore           Restore dependencies specified in a .NET project.
   run               Build and run a .NET project output.
   sdk               Manage .NET SDK installation.
-  sln               Modify Visual Studio solution files.
+  solution          Modify Visual Studio solution files.
   store             Store the specified assemblies in the runtime package store.
   test              Run unit tests using the test runner specified in a .NET project.
   tool              Install or manage tools that extend the .NET experience.
@@ -130,7 +130,7 @@ Run 'dotnet [command] --help' for more information on a command.";
         public void WhenRunOnLinuxDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-            Assert.Equal("xdg-open", proc.StartInfo.FileName);
+            Assert.Contains("xdg-open", proc.StartInfo.FileName);
             Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
 
         }

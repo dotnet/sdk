@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
     {
         private readonly bool _cleanAll;
 
-        private string? _dotnetPath;
+        private string _dotnetPath;
         private string _userProfileDir;
 
         private readonly ReleaseVersion _sdkVersion;
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
 
         private void ExecuteGarbageCollection()
         {
-            _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+            _workloadInstaller.GarbageCollect(workloadVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadVersion),
                 cleanAllPacks: _cleanAll);
 
             DisplayUninstallableVSWorkloads();

@@ -41,6 +41,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Assert
             result.Should().Be(true);
             task.Assets.Should().BeEmpty();
+            task.Endpoints.Should().BeEmpty();
             task.DiscoveryPatterns.Should().BeEmpty();
             task.ReferencedProjectsConfiguration.Should().BeEmpty();
         }
@@ -62,7 +63,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
   ""ManifestType"": ""Build"",
   ""ReferencedProjectsConfiguration"": [],
   ""DiscoveryPatterns"": [],
-  ""Assets"": []
+  ""Assets"": [],
+  ""Endpoints"": []
 }";
             File.WriteAllText(TempFilePath, emptyManifest);
 
@@ -78,6 +80,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Assert
             result.Should().Be(true);
             task.Assets.Should().BeEmpty();
+            task.Endpoints.Should().BeEmpty();
             task.DiscoveryPatterns.Should().BeEmpty();
             task.ReferencedProjectsConfiguration.Should().BeEmpty();
         }
@@ -121,7 +124,42 @@ namespace Microsoft.NET.Sdk.Razor.Tests
       ""CopyToPublishDirectory"": ""PreserveNewest"",
       ""OriginalItemSpec"": ""{encodedIdentity}""
     }}
-]
+  ],
+""Endpoints"": [
+    {{
+      ""AssetFile"": ""{encodedIdentity}"",
+      ""Route"": ""_content/ComponentApp/ComponentApp.styles.css"",
+      ""Selectors"": [
+        {{
+          ""Name"": ""Content-Encoding"",
+          ""Value"": ""gzip"",
+          ""Quality"": ""0.9""
+        }}
+      ],
+      ""ResponseHeaders"": [
+        {{
+          ""Name"": ""Accept-Ranges"",
+          ""Value"": ""bytes""
+        }},
+        {{
+          ""Name"": ""Content-Length"",
+          ""Value"": ""__content-length__""
+        }},
+        {{
+          ""Name"": ""Content-Type"",
+          ""Value"": ""text/css""
+        }},
+        {{
+          ""Name"": ""ETag"",
+          ""Value"": ""__etag__""
+        }},
+        {{
+          ""Name"": ""Last-Modified"",
+          ""Value"": ""__last-modified__""
+        }}
+      ]
+    }}
+  ]
 }}";
             File.WriteAllText(TempFilePath, manifest);
 
@@ -155,6 +193,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             asset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().BeEquivalentTo("Never");
             asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)).Should().BeEquivalentTo("PreserveNewest");
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().BeEquivalentTo($"{identity}");
+
+            task.Endpoints.Length.Should().Be(1);
+            var endpoint = task.Endpoints[0];
+            endpoint.ItemSpec.Should().BeEquivalentTo("_content/ComponentApp/ComponentApp.styles.css");
+            endpoint.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile)).Should().BeEquivalentTo($"{identity}");
+            endpoint.GetMetadata(nameof(StaticWebAssetEndpoint.Selectors)).Should().BeEquivalentTo("""[{"Name":"Content-Encoding","Value":"gzip","Quality":"0.9"}]""");
+            endpoint.GetMetadata(nameof(StaticWebAssetEndpoint.ResponseHeaders))
+                            .Should()
+                            .BeEquivalentTo("""[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"__content-length__"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"__etag__"},{"Name":"Last-Modified","Value":"__last-modified__"}]""");
         }
 
         [Fact]
@@ -189,7 +236,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     }}
 ],
   ""DiscoveryPatterns"": [],
-  ""Assets"": []
+  ""Assets"": [],
+  ""Endpoints"": []
 }}";
             File.WriteAllText(TempFilePath, manifest);
 
@@ -206,6 +254,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().Be(true);
             task.ReferencedProjectsConfiguration.Length.Should().Be(1);
             task.Assets.Should().BeEmpty();
+            task.Endpoints.Should().BeEmpty();
             task.DiscoveryPatterns.Should().BeEmpty();
             var projectConfiguration = task.ReferencedProjectsConfiguration[0];
             projectConfiguration.ItemSpec.Should().BeEquivalentTo(identity);
@@ -246,7 +295,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
       ""Pattern"": ""**""
     }}
 ],
-  ""Assets"": []
+  ""Assets"": [],
+  ""Endpoints"": []
 }}";
             File.WriteAllText(TempFilePath, manifest);
 
@@ -264,6 +314,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.DiscoveryPatterns.Length.Should().Be(1);
             task.ReferencedProjectsConfiguration.Should().BeEmpty();
             task.Assets.Should().BeEmpty();
+            task.Endpoints.Should().BeEmpty();
             var discoveryPattern = task.DiscoveryPatterns[0];
 
             discoveryPattern.ItemSpec.Should().BeEquivalentTo(Path.Combine("AnotherClassLib", "wwwroot"));
@@ -322,6 +373,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().Be(false);
             errorMessages.Count.Should().Be(1);
             task.Assets.Should().BeNull();
+            task.Endpoints.Should().BeNull();
             task.DiscoveryPatterns.Should().BeNull();
             task.ReferencedProjectsConfiguration.Should().BeNull();
         }

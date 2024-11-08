@@ -66,10 +66,23 @@ namespace Microsoft.NET.TestFramework.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern)
+        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[] ignoredPatterns = null)
         {
-            Execute.Assertion.ForCondition(!_commandResult.StdOut.Contains(pattern))
+            string filteredStdOut = _commandResult.StdOut;
+            if (ignoredPatterns != null && ignoredPatterns.Length > 0)
+            {
+                foreach (var ignoredPattern in ignoredPatterns)
+                {
+                    filteredStdOut = string.Join(Environment.NewLine, filteredStdOut
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                        .Where(line => !line.Contains(ignoredPattern)));
+                }
+            }
+
+            // Perform the assertion on the filtered output
+            Execute.Assertion.ForCondition(!filteredStdOut.Contains(pattern))
                 .FailWith(AppendDiagnosticsTo($"The command output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
+
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -200,7 +213,42 @@ namespace Microsoft.NET.TestFramework.Assertions
             }
 
             return new AndConstraint<CommandResultAssertions>(this);
+        }
 
+        public AndConstraint<CommandResultAssertions> NuPkgContainsPatterns(string nupkgPath, params string[] filePatterns)
+        {
+            var unzipped = ReadNuPkg(nupkgPath, []);
+
+            foreach (var pattern in filePatterns)
+            {
+                var directory = Path.GetDirectoryName(pattern);
+                var path = Path.Combine(unzipped, directory);
+                var searchPattern = Path.GetFileName(pattern);
+
+                var condition = Directory.GetFiles(path, searchPattern).Length < 1;
+                Execute.Assertion.ForCondition(!condition)
+                    .FailWith(AppendDiagnosticsTo($"NuGet Package did not contain file {pattern}."));
+            }
+
+            return new AndConstraint<CommandResultAssertions>(this);
+        }
+
+        public AndConstraint<CommandResultAssertions> NuPkgDoesNotContainPatterns(string nupkgPath, params string[] filePatterns)
+        {
+            var unzipped = ReadNuPkg(nupkgPath, []);
+
+            foreach (var pattern in filePatterns)
+            {
+                var directory = Path.GetDirectoryName(pattern);
+                var path = Path.Combine(unzipped, directory);
+                var searchPattern = Path.GetFileName(pattern);
+
+                var condition = Directory.Exists(path) && Directory.GetFiles(path, searchPattern).Length > 0;
+                Execute.Assertion.ForCondition(!condition)
+                    .FailWith(AppendDiagnosticsTo($"NuGet Package contains file {pattern}."));
+            }
+
+            return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> NuPkgDoesNotContain(string nupkgPath, params string[] filePaths)

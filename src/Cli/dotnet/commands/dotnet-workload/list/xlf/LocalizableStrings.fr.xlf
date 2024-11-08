@@ -12,10 +12,25 @@
         <target state="translated">Utilisez `dotnet workload search` pour rechercher d’autres charges de travail à installer.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="needs-review-translation">Version de charge de travail trouvée {0} épinglée dans le fichier global.json à {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload version: {0}</source>
+        <target state="translated">Version de la charge de travail : {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">Des mises à jour sont disponibles pour les charges de travail suivantes : {0}. Exécutez `dotnet workload update` pour obtenir la dernière version.</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(non installé)</target>
+        <note />
       </trans-unit>
     </body>
   </file>

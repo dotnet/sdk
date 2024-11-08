@@ -13,6 +13,9 @@
     <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
     <IsPackable>true</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -25,7 +28,7 @@
     for Mac and other VS scenarios. During source-build, we only have access to
     the latest version, which targets NetCurrent. -->
     <PropertyGroup>
-      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net8.0\MSBuild.dll</MSBuildPathInPackage>
+      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net9.0\MSBuild.dll</MSBuildPathInPackage>
       <MSBuildPathInPackage Condition="'$(DotNetBuildSourceOnly)' == 'true' and !Exists($(MSBuildPathInPackage))">$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(NetCurrent)\MSBuild.dll</MSBuildPathInPackage>
     </PropertyGroup>
     <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
@@ -42,15 +45,12 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
-    <!-- nuget moved all type from NuGet.Packaging.Core to NuGet.Packaging and added type forwarding in 5.0.0-rtm.5821.
-        However to allow old msbuild tasks like Arcade tasks still function without recompile, NuGet.Packaging.Core need
-        to be referenced explicitly so the NuGet.Packaging.Core.dll will be part of the SDK and be available for type forwarding -->
-    <PackageReference Include="NuGet.Packaging.Core" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

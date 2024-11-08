@@ -22,9 +22,24 @@
         <target state="translated">Možnosti {0} a {1} nelze použít společně. Při instalaci ze souboru vráceného zpět odeberte {0}. V opačném případě odeberte {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">Možnosti {0} a {1} nelze použít společně.  Jednu z možností odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">Na příkazovém řádku nelze pomocí možnosti --version nebo --from-history zadat konkrétní verzi úlohy, pokud je již verze zadána v souboru global.json {0}. Pokud chcete aktualizovat globálně nainstalovanou verzi úlohy, spusťte příkaz mimo cestu obsahující daný soubor global.json nebo aktualizujte verzi uvedenou v souboru global.json a spusťte příkaz dotnet workload update.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">Možnost {0} se nedá použít, pokud je v global.json zadaná verze úlohy.  Odeberte možnost {0} nebo odeberte element workloadVersion z {1}.</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">Kontrolují se aktualizované manifesty úloh.</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">Kontroluje se aktualizovaná verze úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -35,6 +50,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Probíhá odinstalace sady funkcí {0} verze {1}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Odstraňuje se verze úlohy {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -75,6 +95,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">Nepodařilo se nainstalovat manifest {0} verze {1}: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">Nepovedlo se nainstalovat verzi úlohy {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -152,11 +177,6 @@
         <target state="translated">Cílová architektura, pro kterou se má úloha nainstalovat</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Neexistuje žádný manifest s ID {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">Instalační služba MSI manifestu se nenašla v balíčku NuGet {0}.</target>
@@ -180,6 +200,11 @@
       <trans-unit id="MsiProgressUninstall">
         <source>Removing {0} </source>
         <target state="translated">Odebírání {0}. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Probíhá instalace verze úlohy {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
@@ -277,6 +302,11 @@
         <target state="translated">Vytiskne pouze seznam odkazů, které se mají stáhnout, aniž by se tento seznam stahoval.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">Režim instalace úlohy se úspěšně aktualizoval na {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Instaluje se balíček {0} verze {1} z offline mezipaměti {2}.</target>
@@ -362,9 +392,9 @@
         <target state="translated">CESTA</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">Určete, jestli by budoucí operace úloh měly používat sady úloh nebo volné manifesty.</target>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Aktualizuje verzi na zadanou verzi úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

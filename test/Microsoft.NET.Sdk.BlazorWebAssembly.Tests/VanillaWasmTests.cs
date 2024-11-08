@@ -3,21 +3,24 @@
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests : BlazorWasmBaselineTests
+    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public VanillaWasmTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [CoreMSBuildOnlyFact]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
-            var targetFramework = "net8.0";
-            var testInstance = CreateAspNetSdkTestAsset(testAsset);
+            var targetFramework = "net9.0";
+            var testInstance = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
-            var build = new BuildCommand(testInstance);
-            build.Execute()
+            var build = CreateBuildCommand(testInstance);
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 

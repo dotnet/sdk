@@ -22,6 +22,11 @@
         <target state="translated">Il n'y a aucune charge de travail installée à afficher.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
         <source>Unable to bypass signature verification. The specified option conflicts with a global policy.</source>
         <target state="translated">Impossible de contourner la vérification de signature. L’option spécifiée est en conflit avec une stratégie globale.</target>
@@ -57,7 +62,7 @@
         <target state="translated">Un problème s’est produit lors de la vérification des charges de travail. Pour plus d’informations, exécutez « dotnet workload update ».</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Version de manifeste</target>
         <note />
@@ -67,6 +72,11 @@
         <target state="translated">Chemin d'accès au Manifeste</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">Source de l’installation</target>
@@ -75,6 +85,16 @@
       <trans-unit id="WorkloadVersionDescription">
         <source>Display the currently installed workload version.</source>
         <target state="translated">Affichez la version de charge de travail actuellement installée.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="translated">Écriture des enregistrements d'installation pour les charges de travail Visual Studio : « {0} »</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Configuré pour utiliser {0} lors de l’installation de nouveaux manifestes.</target>
         <note />
       </trans-unit>
     </body>

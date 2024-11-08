@@ -62,6 +62,11 @@
         <target state="translated">'{0}' özniteliği '{1}' sınıfına ekilemez.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddGenericConstraint">
+        <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="translated">'{1}'/'{2}' tür parametresindeki '{0}' kısıtlaması eklenemiyor.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
         <source>Cannot add interface member '{0}' to {1} because it does not exist on {2}</source>
         <target state="translated">'{0}' arabirim üyesi {2} üzerinde bulunmadığından {1} konumuna eklenemiyor</target>
@@ -112,6 +117,11 @@
         <target state="translated">'{0}' türü {2} üzerinde '{1}' temel türünden devralmıyor ancak {3} üzerinde devralıyor</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemoveGenericConstraint">
+        <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="translated">'{1}'/'{2}' tür parametresindeki '{0}' kısıtlaması kaldırılamıyor.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
         <source>Cannot remove virtual keyword from member '{0}'.</source>
         <target state="translated">Sanal anahtar sözcük, '{0}' üyesinden kaldırılamıyor.</target>
@@ -119,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">Öğe null olmamalıdır. Dizinde null bulundu: {0}.</target>
+        <target state="translated">{0} dizinindeki öğe null olmamalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -134,7 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
+        <target state="translated">{0} dizini sıfırdan başlayarak {1} dahil olmak üzere bu aralıkta olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -159,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">'{0}' değeri 0'dan büyük olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

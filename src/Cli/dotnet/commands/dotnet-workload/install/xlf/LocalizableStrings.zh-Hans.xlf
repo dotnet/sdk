@@ -22,9 +22,24 @@
         <target state="translated">不能同时使用 {0} 和 {1} 选项。如果从回滚文件安装，请删除 {0}。否则，请删除 {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">不能同时使用 {0} 和 {1} 选项。移除其中一个选项。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">当 global.json 文件 {0} 中已指定版本时，无法在命令行上通过 --version 或 --from-history 指定特定工作负载版本。若要更新全局安装的工作负载版本，请在包含该 global.json 文件的路径外部运行命令，或者更新 global.json 文件中指定的版本，然后运行 "dotnet workload update"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">在 global.json 中指定工作负载版本时，无法使用 {0} 选项。移除 {0} 选项，或从 {1} 中移除“workloadVersion”元素。</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">正在检查更新的工作负载清单。</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">正在检查更新的工作负载版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -35,6 +50,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">正在卸载工作负载包 {0} 版本 {1}…</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">正在删除工作负载版本 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -75,6 +95,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">未能安装清单 {0} 版本 {1}: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">未能安装工作负载版本 {0}：{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -152,11 +177,6 @@
         <target state="translated">要为其安装工作负载的目标框架。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">不存在 ID 为 {0} 的清单。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">在 NuGet 包 {0} 中找不到清单 MSI</target>
@@ -180,6 +200,11 @@
       <trans-unit id="MsiProgressUninstall">
         <source>Removing {0} </source>
         <target state="translated">正在删除 {0} </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">正在安装工作负载版本 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
@@ -277,6 +302,11 @@
         <target state="translated">仅打印要下载的链接的列表，而不下载列表。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">已成功更新工作负载安装模式以使用 {0}。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">正在从脱机缓存 {2} 安装程序包 {0} 版本 {1}。</target>
@@ -362,9 +392,9 @@
         <target state="translated">路径</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">控制未来的工作负载操作应该使用工作负载集还是松散清单。</target>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">更新到指定的工作负载版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

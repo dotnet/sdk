@@ -39,8 +39,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.1.0.60101")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
@@ -282,6 +280,87 @@ namespace Microsoft.NET.Build.Tests
             {
                 IsPE32(apphostPath).Should().Be(!Environment.Is64BitProcess);
             }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: rid);
+            string apphostPath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}.exe");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(apphostPath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
+        }
+
+        [Fact]
+        public void It_does_not_configure_dotnet_search_options_on_build()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "AppHostDotNetSearch",
+                TargetFrameworks = targetFramework,
+                RuntimeIdentifier = runtimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
+            testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: runtimeIdentifier);
+            outputDirectory.Should().HaveFiles(new[] { $"{testProject.Name}{Constants.ExeSuffix}" });
+
+            // Value in default apphost executable for configuration of how it will search for the .NET install
+            const string dotNetSearchPlaceholder = "\0\019ff3e9c3602ae8e841925bb461a0adb064a1f1903667a5e0d87e8f608f425ac";
+
+            // Output apphost should not have .NET search location options changed, so it
+            // should have the same placeholder sequence as in the default apphost binary
+            ReadOnlySpan<byte> expectedBytes = Encoding.UTF8.GetBytes(dotNetSearchPlaceholder);
+            ReadOnlySpan<byte> appBytes = File.ReadAllBytes(Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}"));
+            bool found = false;
+            for (int i = 0; i < appBytes.Length - expectedBytes.Length; i++)
+            {
+                if (!appBytes.Slice(i, expectedBytes.Length).SequenceEqual(expectedBytes))
+                    continue;
+
+                found = true;
+                break;
+            }
+
+            Assert.True(found, "Expected placeholder sequence for .NET install search options was not found");
         }
 
         [WindowsOnlyFact]

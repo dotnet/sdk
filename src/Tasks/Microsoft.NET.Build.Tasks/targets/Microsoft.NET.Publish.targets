@@ -312,11 +312,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Find all files in the final output directory. -->
     <FindUnderPath Path="$(_NormalizedPublishDir)" Files="@(_UnfilteredAbsolutePriorPublishFileWrites)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOuput"/>
+      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOutput"/>
     </FindUnderPath>
 
     <!-- Remove duplicates from files produced in the previous publish. -->
-    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOuput)" >
+    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOutput)" >
       <Output TaskParameter="Filtered" ItemName="_PriorPublishFileWrites"/>
     </RemoveDuplicates>
 
@@ -715,6 +715,36 @@ Copyright (c) .NET Foundation. All rights reserved.
                    Retries="$(CopyRetryCount)"
                    RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
+    _CreateAppHostForPublish
+    Create the apphost for the publish scenario if app is configuring .NET install search behaviour
+    Because there is no SDK support yet for output with a layout conforming to the configuration,
+    only do this on publish, such that the inner dev loop is unaffected.
+    ============================================================
+     -->
+  <Target Name="_CreateAppHostForPublish"
+          Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
+          Outputs="$(AppHostForPublishIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UpdateAppHostForPublish)' == 'true' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(AppHostSourcePath)')">
+    <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
+                   AppHostDestinationPath="$(AppHostForPublishIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
+                   DotNetSearchLocations="$(AppHostDotNetSearch)"
+                   AppRelativeDotNet="$(AppHostRelativeDotNet)"
                    />
   </Target>
 
@@ -761,6 +791,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="AssignTargetPaths;
                             DefaultCopyToPublishDirectoryMetadata;
                             _CreateSingleFileHost;
+                            _CreateAppHostForPublish;
                             _SplitProjectReferencesByFileExistence;
                             _GetProjectReferenceTargetFrameworkProperties">
 
@@ -858,6 +889,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Add the single-file host created as part of publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UpdateAppHostForPublish)' == 'true' and Exists('$(AppHostForPublishIntermediatePath)')">
+      <!-- Remove apphost from build from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the apphost created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(AppHostForPublishIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>
