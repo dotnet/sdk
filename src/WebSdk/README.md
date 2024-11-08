@@ -16,6 +16,25 @@ The `ProjectSystem` package defines the following for ASP.NET Core Web Projects:
 - Default [globs](https://learn.microsoft.com/dotnet/core/extensions/file-globbing)
 - Project Capabilities
 
+Password best practices
+======================
+
+In this document, replace `<Deploy-/p:Password>` with the deployment password.
+
+We recommend using the most secure secure authentication option. For .NET apps deployed to Azure, see:
+
+* [Managed identities for App Service and Azure Functions](https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity)
+* [Azure Key Vault libraries for .NET](https://learn.microsoft.com/dotnet/api/overview/azure/key-vault)
+* [.NET Aspire Azure Key Vault integration](https://learn.microsoft.com/dotnet/aspire/security/azure-security-key-vault-integration)
+
+Azure Key Vault and [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview) provide the most secure way to store and retrieve secrets. Azure Key Vault is a cloud service that safeguards encryption keys and secrets like certificates, connection strings, and passwords. For .NET Aspire, see [Secure communication between hosting and client integrations](https://learn.microsoft.com/dotnet/aspire/extensibility/secure-communication-between-integrations).
+
+Configuration data guidelines:
+
+* Never store passwords or other sensitive data in configuration provider code or in plain text configuration files.
+* Don't use production secrets in development or test environments.
+* Specify secrets outside of the project so that they can't be accidentally committed to a source code repository.
+
 `Microsoft.NET.Sdk.Publish`
 ======================
 
@@ -63,13 +82,13 @@ MSDeploy Publish:
 Using MsBuild with the default profile:
 
 ```
-msbuild  WebApplication.csproj /p:DeployOnBuild=true /p:WebPublishMethod=MSDeploy /p:MSDeployServiceURL=<msdeployUrl> /p:DeployIisAppPath=<IISSiteName> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultMSDeploy
+msbuild  WebApplication.csproj /p:DeployOnBuild=true /p:WebPublishMethod=MSDeploy /p:MSDeployServiceURL=<msdeployUrl> /p:DeployIisAppPath=<IISSiteName> /p:UserName=<username> /p:Password=<Deploy-/p:Password> /p:PublishProfile=DefaultMSDeploy
 ```
 
 Using dotnet with the default profile:
 
 ```
-dotnet publish WebApplication.csproj /p:WebPublishMethod=MSDeploy /p:MSDeployServiceURL=<msdeployUrl> /p:DeployIisAppPath=<IISSiteName> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultMSDeploy
+dotnet publish WebApplication.csproj /p:WebPublishMethod=MSDeploy /p:MSDeployServiceURL=<msdeployUrl> /p:DeployIisAppPath=<IISSiteName> /p:UserName=<username> /p:Password=<Deploy-/p:Password> /p:PublishProfile=DefaultMSDeploy
 ```
 
 Profile can be added to the following location in the project /Properties/PublishProfiles/<MsDeployProfile.pubxml>. MsDeploy Publish profile samples are available below:
@@ -77,13 +96,13 @@ Profile can be added to the following location in the project /Properties/Publis
 Using MsBuild with a profile:
 
 ```
-msbuild WebApplication.csproj /p:DeployOnBuild=true /p:PublishProfile=<MsDeployProfile name> /p:Password=<DeploymentPassword>
+msbuild WebApplication.csproj /p:DeployOnBuild=true /p:PublishProfile=<MsDeployProfile name> /p:Password=<Deploy-/p:Password>
 ```
 
 Using dotnet with a profile:
 
 ```
-dotnet publish WebApplication.csproj /p:PublishProfile=<MsDeployProfile name> /p:Password=<DeploymentPassword>
+dotnet publish WebApplication.csproj /p:PublishProfile=<MsDeployProfile name> /p:Password=<Deploy-/p:Password>
 ```
 
 MsDeploy Package:
@@ -121,13 +140,13 @@ Zip Deploy:
 Using MsBuild with the default profile:
 
 ```
-msbuild WebApplication.csproj /p:DeployOnBuild=true /p:WebPublishMethod=ZipDeploy /p:PublishUrl=<Destination URL> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultZipDeploy
+msbuild WebApplication.csproj /p:DeployOnBuild=true /p:WebPublishMethod=ZipDeploy /p:PublishUrl=<Destination URL> /p:UserName=<username> /p:Password=<Deploy-/p:Password> /p:PublishProfile=DefaultZipDeploy
 ```
 
 Using dotnet with the default profile:
 
 ```
-dotnet publish WebApplication.csproj /p:WebPublishMethod=ZipDeploy /p:PublishUrl=<Destination URL> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultZipDeploy
+dotnet publish WebApplication.csproj /p:WebPublishMethod=ZipDeploy /p:PublishUrl=<Destination URL> /p:UserName=<username> /p:Password=<Deploy-/p:Password> /p:PublishProfile=DefaultZipDeploy
 ```
 
 Profile can be added to the following location in the project /Properties/PublishProfiles/<ZipDeploy.pubxml>.
@@ -135,13 +154,13 @@ Profile can be added to the following location in the project /Properties/Publis
 Using MsBuild with a profile:
 
 ```
-msbuild WebApplication.csproj /p:DeployOnBuild=true /p:PublishProfile=<ZipDeployProfile name> /p:Password=<DeploymentPassword>
+msbuild WebApplication.csproj /p:DeployOnBuild=true /p:PublishProfile=<ZipDeployProfile name> /p:Password=<Deploy-/p:Password>
 ```
 
 Using dotnet with a profile:
 
 ```
-dotnet publish WebApplication.csproj /p:PublishProfile=<ZipDeployProfile name> /p:Password=<DeploymentPassword>
+dotnet publish WebApplication.csproj /p:PublishProfile=<ZipDeployProfile name> /p:Password=<Deploy-/p:Password>
 ```
 
 One Deploy:
@@ -151,7 +170,7 @@ Using dotnet with the default profile:
 
 ```
 
-dotnet publish WebJobApplication.csproj /p:WebPublishMethod=OneDeploy /p:PublishUrl=<DestinationUrl> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultWebJobOneDeploy
+dotnet publish WebJobApplication.csproj /p:WebPublishMethod=OneDeploy /p:PublishUrl=<DestinationUrl> /p:UserName=<username> /p:Password=<Deploy-/p:Password> /p:PublishProfile=DefaultWebJobOneDeploy
 ```
 
 Profile can be added to the following location in the project /Properties/PublishProfiles/<OneDeploy.pubxml>.
@@ -159,7 +178,7 @@ Profile can be added to the following location in the project /Properties/Publis
 Using dotnet with a profile:
 
 ```
-dotnet publish WebJobApplication.csproj /p:PublishProfile=<OneDeployProfile name> /p:Password=<DeploymentPassword>
+dotnet publish WebJobApplication.csproj /p:PublishProfile=<OneDeployProfile name> /p:Password=<Deploy-/p:Password>
 ```
 
 Sample folder profile:
