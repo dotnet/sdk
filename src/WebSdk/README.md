@@ -21,13 +21,7 @@ Password best practices
 
 In this document, replace `<Deploy-/p:Password>` with the deployment password.
 
-We recommend using the most secure secure authentication option. For .NET apps deployed to Azure, see:
-
-* [Managed identities for App Service and Azure Functions](https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity)
-* [Azure Key Vault libraries for .NET](https://learn.microsoft.com/dotnet/api/overview/azure/key-vault)
-* [.NET Aspire Azure Key Vault integration](https://learn.microsoft.com/dotnet/aspire/security/azure-security-key-vault-integration)
-
-Azure Key Vault and [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview) provide the most secure way to store and retrieve secrets. Azure Key Vault is a cloud service that safeguards encryption keys and secrets like certificates, connection strings, and passwords. For .NET Aspire, see [Secure communication between hosting and client integrations](https://learn.microsoft.com/dotnet/aspire/extensibility/secure-communication-between-integrations).
+[Azure Key Vault](https://learn.microsoft.com/azure/key-vault/general/overview) and [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview) provide the most secure way to store and retrieve secrets. Azure Key Vault is a cloud service that safeguards encryption keys and secrets like certificates, connection strings, and passwords. For .NET Aspire, see [Secure communication between hosting and client integrations](https://learn.microsoft.com/dotnet/aspire/extensibility/secure-communication-between-integrations).
 
 Configuration data guidelines:
 
