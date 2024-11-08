@@ -32,7 +32,14 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             KnownPackages = xDocuments
                 .SelectMany(doc => doc.Root!.Descendants("Package"))
-                .Select(package => new TaskItem(package.Attribute("Id")!.Value, new Dictionary<string, string> { { "Version", package.Attribute("Version")!.Value } }))
+                .Select(package =>
+                    new TaskItem(
+                        package.Attribute("Id")!.Value,
+                        new Dictionary<string, string>
+                        {
+                            { "Version", package.Attribute("Version")!.Value },
+                            { "DotNetReleaseShipping", package.Attribute("DotNetReleaseShipping")?.Value ?? "false" }
+                        }))
                 .ToArray();
 
             KnownBlobs = xDocuments

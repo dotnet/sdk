@@ -58,4 +58,18 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
   </ItemGroup>
 
+  <Target Name="SetNonShippingPackageSentinelVersions"
+    DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
+    BeforeTargets="CreateBuildInputProps">
+
+  <ItemGroup>
+    <!--
+      aspnetcore uses the Microsoft.NETCore.BrowserDebugHost.Transport package version as a sentinel for the non-shipping runtime version.
+      As a result, we need to always provide it, even when we don't build that package (which is only built in browser-wasm-targeting builds).
+      However, aspnetcore doesn't have any other dependencies on a non-shipping package from dotnet/runtime.
+      -->
+    <_NonShippingPackageVersion Include="@(_DependencyProducedPackage->WithMetadata('OriginalItemSpec','runtime.proj')->WithMetadata('DotNetReleaseShipping','false')->Distinct())" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreBrowserDebugHostTransportVersion" Version="%(_NonShippingPackageVersion.Identity)" />
+  </ItemGroup>
+
 </Project>
