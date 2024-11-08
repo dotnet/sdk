@@ -20,7 +20,7 @@
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/|msft   # Intentional - explicitly excluded from source-build
 
 # netfx tooling and tasks, not building in source-build - https://github.com/dotnet/source-build/issues/3514
-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net472/|msft
+./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/|msft
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/|msft
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/net472/|msft
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/|msft
@@ -30,11 +30,11 @@
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/tools/net472/|msft
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/net472/|msft
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/tools/net472/|msft
-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net472/|msft
-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net472/|msft
-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net472/|msft
-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net472/|msft
-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net472/|msft
+./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/|msft
+./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/|msft
+./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/|msft
+./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/|msft
+./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/|msft
 
 # vstest localization is disabled in Linux builds - https://github.com/dotnet/source-build/issues/3517
 ./sdk/x.y.z/*/Microsoft.CodeCoverage.IO.resources.dll|msft
