@@ -281,6 +281,15 @@
   <data name="DoNotRaiseReservedExceptionTypesMessageReserved" xml:space="preserve">
     <value>Exception type {0} is reserved by the runtime</value>
   </data>
+  <data name="DoNotUseEndOfStreamInAsyncMethodsTitle" xml:space="preserve">
+    <value>Do not use 'StreamReader.EndOfStream' in async methods</value>
+  </data>
+  <data name="DoNotUseEndOfStreamInAsyncMethodsDescription" xml:space="preserve">
+    <value>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</value>
+  </data>
+  <data name="DoNotUseEndOfStreamInAsyncMethodsMessage" xml:space="preserve">
+    <value>Do not use '{0}' in an async method</value>
+  </data>
   <data name="InitializeValueTypeStaticFieldsInlineTitle" xml:space="preserve">
     <value>Initialize value type static fields inline</value>
   </data>

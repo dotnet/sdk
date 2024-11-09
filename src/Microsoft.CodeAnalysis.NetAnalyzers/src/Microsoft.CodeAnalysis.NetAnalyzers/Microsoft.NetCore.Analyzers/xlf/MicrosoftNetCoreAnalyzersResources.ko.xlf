@@ -1088,6 +1088,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">사용되지 않는 보안 프로토콜 {0}의 하드 코드된 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
+        <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
+        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
+        <source>Do not use '{0}' in an async method</source>
+        <target state="new">Do not use '{0}' in an async method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
+        <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
+        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
         <source>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</source>
         <target state="translated">이 컬렉션을 직접 인덱싱할 수 있습니다. 여기에서 LINQ를 통과하면 불필요한 할당과 CPU 작업이 발생합니다.</target>

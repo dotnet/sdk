@@ -1088,6 +1088,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">非推奨のセキュリティ プロトコル {0} のハードコーディングされた使用</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
+        <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
+        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
+        <source>Do not use '{0}' in an async method</source>
+        <target state="new">Do not use '{0}' in an async method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
+        <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
+        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
         <source>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</source>
         <target state="translated">このコレクションは、直接インデックス可能です。ここで LINQ を実行すると、不要な割り当てと CPU 作業が生じます。</target>
