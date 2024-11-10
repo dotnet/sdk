@@ -608,7 +608,48 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public void EndToEnd_NoAPI_Console()
     {
-        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "CreateNewImageTest"));
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+
+        // Build & publish the project
+        new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            "/p:runtimeidentifier=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass();
+
+        var containerName = "test-container-2";
+        CommandResult processResult = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            containerName,
+            $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        .Execute();
+        processResult.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
+    private (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) CreateNewConsoleProject([CallerMemberName] string callerMemberName = "")
+    {
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
         DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
 
         if (newProjectDir.Exists)
@@ -649,39 +690,196 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
+        return (newProjectDir, privateNuGetAssets);
+    }
+
+    [Fact]
+    public void EndToEndMultiArch_NoRegistry()
+    {
         string imageName = NewImageName();
         string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
 
-        // Build & publish the project
-        new DotnetCommand(
+        // Create a new console project
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+
+        // Run PublishContainer for multi-arch
+        CommandResult commandResult = new DotnetCommand(
             _testOutput,
-            "publish",
+            "build",
             "/t:PublishContainer",
-            "/p:runtimeidentifier=linux-x64",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
-            $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute()
-            .Should().Pass();
+            .Execute();
 
-        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
-            .Execute()
-            .Should().Pass();
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
+            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
+            .And.NotHaveStdOutContaining("Pushed image index");
 
-        var containerName = "test-container-2";
-        CommandResult processResult = ContainerCli.RunCommand(
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--name",
-            containerName,
-            $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+            $"test-container-{imageName}-x64",
+            imageX64)
         .Execute();
-        processResult.Should().Pass().And.HaveStdOut("Hello, World!");
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
+        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-arm64",
+            imageArm64)
+        .Execute();
+        processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
+    private string GetPublishArtifactsPath(string projectDir, string rid)
+        => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
+
+    [Fact]
+    public void EndToEndMultiArch_Registry()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string registry = DockerRegistryManager.LocalRegistry;
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string imageIndex = $"{imageName}:{imageTag}";
+
+        // Create a new console project
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        
+        // Run PublishContainer for multi-arch with ContainerRegistry
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRegistry={registry}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry")
+            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry")
+            .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'");
+
+
+        // Check that the containers can be run
+        // First pull the image from the registry, then tag so the image won't be overwritten
+        string imageX64Tagged = $"{registry}/test-image-{imageName}-x64";
+        ContainerCli.PullCommand(
+            _testOutput,
+            "--platform",
+            "linux/amd64",
+            $"{registry}/{imageIndex}")
+            .Execute()
+            .Should().Pass();
+        ContainerCli.TagCommand(
+            _testOutput,
+            $"{registry}/{imageIndex}",
+            imageX64Tagged)
+            .Execute()
+            .Should().Pass();
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-x64",
+            imageX64Tagged)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        string imageArm64Tagged = $"{registry}/test-image-{imageName}-arm64";
+        ContainerCli.PullCommand(
+            _testOutput,
+            "--platform",
+            "linux/arm64",
+            $"{registry}/{imageIndex}")
+            .Execute()
+            .Should().Pass();
+        ContainerCli.TagCommand(
+            _testOutput,
+            $"{registry}/{imageIndex}",
+            imageArm64Tagged)
+            .Execute()
+            .Should().Pass();
+        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-arm64",
+            imageArm64Tagged)
+        .Execute();
+        processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
+    [Fact]
+    public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
+    {
+        // Create a new console project
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+
+        // Run PublishContainer for multi-arch with ContainerRuntimeIdentifiers
+        // RuntimeIdentifiers should contain all the RIDs from ContainerRuntimeIdentifiers to be able to publish
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            "/p:ContainerRuntimeIdentifiers=linux-arm64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published RID from ContainerRuntimeIdentifiers
+        // images were created locally RID from ContainerRuntimeIdentifiers
+        commandResult.Should().Pass()
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.NotHaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-x64' to local registry")
+            .And.HaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-arm64' to local registry");
+
+        // Cleanup
         newProjectDir.Delete(true);
         privateNuGetAssets.Delete(true);
     }
