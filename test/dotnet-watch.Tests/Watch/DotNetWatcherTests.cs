@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var value = await App.AssertOutputLineStartsWith(messagePrefix);
             Assert.Equal(1, int.Parse(value, CultureInfo.InvariantCulture));
 
-            await App.AssertWaitingForChanges();
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             UpdateSourceFile(source);
             await App.AssertStarted();

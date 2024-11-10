@@ -84,8 +84,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                     return result;
                 }
 
-                context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
-                await FileWatcher.WaitForFileChangeAsync(rootProjectFileSetFactory.RootProjectFile, context.Reporter, cancellationToken);
+                await FileWatcher.WaitForFileChangeAsync(
+                    rootProjectFileSetFactory.RootProjectFile,
+                    context.Reporter,
+                    startedWatching: () => context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit."),
+                    cancellationToken);
             }
         }
 

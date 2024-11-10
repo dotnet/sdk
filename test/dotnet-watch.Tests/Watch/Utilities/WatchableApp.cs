@@ -37,6 +37,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public void AssertOutputContains(string message)
             => AssertEx.Contains(message, Process.Output);
 
+        public void AssertOutputDoesNotContain(string message)
+            => AssertEx.DoesNotContain(message, Process.Output);
+
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
 
@@ -117,15 +120,14 @@ namespace Microsoft.DotNet.Watcher.Tests
                 WorkingDirectory = workingDirectory ?? projectDirectory,
             };
 
+            var testOutputPath = asset.GetWatchTestOutputPath();
+            Directory.CreateDirectory(testOutputPath);
+
             commandSpec.WithEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES", "1");
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
-
-            var encLogPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
-                ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-                : asset.Path + ".hotreload";
-
-            commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", encLogPath);
+            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
+            commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
 
             foreach (var env in EnvironmentVariables)
             {

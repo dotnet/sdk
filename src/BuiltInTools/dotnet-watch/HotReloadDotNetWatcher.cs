@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
@@ -10,6 +11,8 @@ namespace Microsoft.DotNet.Watcher
 {
     internal sealed class HotReloadDotNetWatcher : Watcher
     {
+        private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
+
         private readonly IConsole _console;
         private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
         private readonly RestartPrompt? _rudeEditRestartPrompt;
@@ -57,6 +60,8 @@ namespace Microsoft.DotNet.Watcher
                 Context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            using var fileWatcher = new FileWatcher(Context.Reporter);
+
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
             {
                 Interlocked.Exchange(ref forceRestartCancellationSource, new CancellationTokenSource())?.Dispose();
@@ -68,12 +73,12 @@ namespace Microsoft.DotNet.Watcher
                 var iterationCancellationToken = iterationCancellationSource.Token;
 
                 var waitForFileChangeBeforeRestarting = true;
-                HotReloadFileSetWatcher? fileSetWatcher = null;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
-                Task<ChangedFile[]?>? fileSetWatcherTask = null;
+                Task<ImmutableList<ChangedFile>>? fileWatcherTask = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
                 CompilationHandler? compilationHandler = null;
+                Action<string, ChangeKind>? fileChangedCallback = null;
 
                 try
                 {
@@ -171,30 +176,56 @@ namespace Microsoft.DotNet.Watcher
                         return;
                     }
 
-                    fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter, Context.EnvironmentOptions.TestFlags);
+                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+
+                    var changedFilesAccumulator = ImmutableList<ChangedFile>.Empty;
+
+                    void FileChangedCallback(string path, ChangeKind kind)
+                    {
+                        if (TryGetChangedFile(evaluationResult.Files, buildCompletionTime, path, kind) is { } changedFile)
+                        {
+                            ImmutableInterlocked.Update(ref changedFilesAccumulator, changedFiles => changedFiles.Add(changedFile));
+                        }
+                        else
+                        {
+                            Context.Reporter.Verbose($"Change ignored: {kind} '{path}'.");
+                        }
+                    }
+
+                    fileChangedCallback = FileChangedCallback;
+                    fileWatcher.OnFileChange += fileChangedCallback;
+                    ReportWatchingForChanges();
 
                     // Hot Reload loop - exits when the root process needs to be restarted.
                     while (true)
                     {
-                        fileSetWatcherTask = fileSetWatcher.GetChangedFilesAsync(iterationCancellationToken);
-
-                        var finishedTask = await Task.WhenAny(rootRunningProject.RunningProcess, fileSetWatcherTask).WaitAsync(iterationCancellationToken);
-                        if (finishedTask == rootRunningProject.RunningProcess)
+                        try
                         {
-                            // Cancel the iteration, but wait for a file change before starting a new one.
+                            // Use timeout to batch file changes. If the process doesn't exit within the given timespan we'll check
+                            // for accumulated file changes. If there are any we attempt Hot Reload. Otherwise we come back here to wait again.
+                            _ = await rootRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(50), iterationCancellationToken);
+
+                            // Process exited: cancel the iteration, but wait for a file change before starting a new one
+                            waitForFileChangeBeforeRestarting = true;
                             iterationCancellationSource.Cancel();
                             break;
                         }
-
-                        // File watcher returns null when canceled:
-                        if (fileSetWatcherTask.Result is not { } changedFiles)
+                        catch (TimeoutException)
+                        {
+                            // check for changed files
+                        }
+                        catch (OperationCanceledException)
                         {
                             Debug.Assert(iterationCancellationToken.IsCancellationRequested);
                             waitForFileChangeBeforeRestarting = false;
                             break;
                         }
 
-                        ReportFileChanges(changedFiles);
+                        var changedFiles = Interlocked.Exchange(ref changedFilesAccumulator, []);
+                        if (changedFiles is [])
+                        {
+                            continue;
+                        }
 
                         // When a new file is added we need to run design-time build to find out
                         // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
@@ -205,6 +236,9 @@ namespace Microsoft.DotNet.Watcher
 
                             evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
+                            // additional directories may have been added:
+                            fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+
                             await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
                             if (shutdownCancellationToken.IsCancellationRequested)
@@ -214,20 +248,15 @@ namespace Microsoft.DotNet.Watcher
                             }
 
                             // update files in the change set with new evaluation info:
-                            for (int i = 0; i < changedFiles.Length; i++)
-                            {
-                                if (evaluationResult.Files.TryGetValue(changedFiles[i].Item.FilePath, out var evaluatedFile))
-                                {
-                                    changedFiles[i] = changedFiles[i] with { Item = evaluatedFile };
-                                }
-                            }
+                            changedFiles = changedFiles.Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
+                                .ToImmutableList();
 
                             ReportFileChanges(changedFiles);
-
-                            fileSetWatcher = new HotReloadFileSetWatcher(evaluationResult.Files, buildCompletionTime, Context.Reporter, Context.EnvironmentOptions.TestFlags);
                         }
                         else
                         {
+                            ReportFileChanges(changedFiles);
+
                             // update the workspace to reflect changes in the file content:
                             await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                         }
@@ -313,7 +342,8 @@ namespace Microsoft.DotNet.Watcher
                                 .WaitAsync(shutdownCancellationToken);
 
                             // Update build completion time, so that file changes caused by the rebuild do not affect our file watcher:
-                            fileSetWatcher.UpdateBuildCompletionTime(DateTime.UtcNow);
+                            buildCompletionTime = DateTime.UtcNow;
+                            changedFilesAccumulator = [];
 
                             // Restart session to capture new baseline that reflects the changes to the restarted projects.
                             await compilationHandler.RestartSessionAsync(projectsToBeRebuilt, iterationCancellationToken);
@@ -326,6 +356,12 @@ namespace Microsoft.DotNet.Watcher
                 }
                 finally
                 {
+                    // stop watching file changes:
+                    if (fileChangedCallback != null)
+                    {
+                        fileWatcher.OnFileChange -= fileChangedCallback;
+                    }
+
                     if (runtimeProcessLauncher != null)
                     {
                         // Request cleanup of all processes created by the launcher before we terminate the root process.
@@ -347,7 +383,7 @@ namespace Microsoft.DotNet.Watcher
                     try
                     {
                         // Wait for the root process to exit.
-                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileSetWatcherTask }.Where(t => t != null)!);
+                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileWatcherTask }.Where(t => t != null)!);
                     }
                     catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -355,7 +391,7 @@ namespace Microsoft.DotNet.Watcher
                     }
                     finally
                     {
-                        fileSetWatcherTask = null;
+                        fileWatcherTask = null;
 
                         if (runtimeProcessLauncher != null)
                         {
@@ -364,22 +400,120 @@ namespace Microsoft.DotNet.Watcher
 
                         rootRunningProject?.Dispose();
 
-                        if (evaluationResult != null &&
-                            waitForFileChangeBeforeRestarting &&
+                        if (waitForFileChangeBeforeRestarting &&
                             !shutdownCancellationToken.IsCancellationRequested &&
                             !forceRestartCancellationSource.IsCancellationRequested)
                         {
-                            fileSetWatcher ??= new HotReloadFileSetWatcher(evaluationResult.Files, DateTime.MinValue, Context.Reporter, Context.EnvironmentOptions.TestFlags);
-                            Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-
                             using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
-                            await fileSetWatcher.GetChangedFilesAsync(shutdownOrForcedRestartSource.Token, forceWaitForNewUpdate: true);
+                            await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
                         }
-
-                        fileSetWatcher?.Dispose();
                     }
                 }
             }
+        }
+
+        private async ValueTask WaitForFileChangeBeforeRestarting(FileWatcher fileWatcher, EvaluationResult? evaluationResult, CancellationToken cancellationToken)
+        {
+            if (evaluationResult != null)
+            {
+                if (!fileWatcher.WatchingDirectories)
+                {
+                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                }
+
+                _ = await fileWatcher.WaitForFileChangeAsync(
+                    evaluationResult.Files,
+                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                    cancellationToken);
+            }
+            else
+            {
+                // evaluation cancelled - watch for any changes in the directory containing the root project:
+                fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile]);
+
+                _ = await fileWatcher.WaitForFileChangeAsync(
+                    (path, change) => new ChangedFile(new FileItem() { FilePath = path }, change),
+                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                    cancellationToken);
+            }
+        }
+
+        private ChangedFile? TryGetChangedFile(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, string path, ChangeKind kind)
+        {
+            // only handle file changes:
+            if (Directory.Exists(path))
+            {
+                return null;
+            }
+
+            if (kind != ChangeKind.Delete)
+            {
+                try
+                {
+                    // Do not report changes to files that happened during build:
+                    var creationTime = File.GetCreationTimeUtc(path);
+                    var writeTime = File.GetLastWriteTimeUtc(path);
+
+                    if (creationTime == s_fileNotExistFileTime || writeTime == s_fileNotExistFileTime)
+                    {
+                        // file might have been deleted since we received the event
+                        kind = ChangeKind.Delete;
+                    }
+                    else if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
+                    {
+                        Context.Reporter.Verbose(
+                            $"Ignoring file change during build: {kind} '{path}' " +
+                            $"(created {FormatTimestamp(creationTime)} and written {FormatTimestamp(writeTime)} before {FormatTimestamp(buildCompletionTime)}).");
+
+                        return null;
+                    }
+                    else if (writeTime > creationTime)
+                    {
+                        Context.Reporter.Verbose($"File change: {kind} '{path}' (written {FormatTimestamp(writeTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                    }
+                    else
+                    {
+                        Context.Reporter.Verbose($"File change: {kind} '{path}' (created {FormatTimestamp(creationTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Context.Reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
+                    return null;
+                }
+            }
+
+            if (kind == ChangeKind.Delete)
+            {
+                Context.Reporter.Verbose($"File '{path}' deleted after {FormatTimestamp(buildCompletionTime)}.");
+            }
+
+            if (fileSet.TryGetValue(path, out var fileItem))
+            {
+                // For some reason we are sometimes seeing Add events raised whan an existing file is updated:
+                return new ChangedFile(fileItem, (kind == ChangeKind.Add) ? ChangeKind.Update : kind);
+            }
+
+            if (kind == ChangeKind.Add)
+            {
+                return new ChangedFile(new FileItem { FilePath = path }, kind);
+            }
+
+            return null;
+        }
+
+        internal static string FormatTimestamp(DateTime time)
+            => time.ToString("HH:mm:ss.fffffff");
+
+        private void ReportWatchingForChanges()
+        {
+            var waitingForChanges = MessageDescriptor.WaitingForChanges;
+            if (Context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
+            {
+                waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
+            }
+
+            Context.Reporter.Report(waitingForChanges);
         }
 
         private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)
@@ -434,8 +568,11 @@ namespace Microsoft.DotNet.Watcher
                     return result;
                 }
 
-                Context.Reporter.Report(MessageDescriptor.FixBuildError);
-                await FileWatcher.WaitForFileChangeAsync(RootFileSetFactory.RootProjectFile, Context.Reporter, cancellationToken);
+                await FileWatcher.WaitForFileChangeAsync(
+                    RootFileSetFactory.RootProjectFile,
+                    Context.Reporter,
+                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
+                    cancellationToken);
             }
         }
 

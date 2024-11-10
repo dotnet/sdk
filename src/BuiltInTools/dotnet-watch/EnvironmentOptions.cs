@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.Watcher
         bool SuppressLaunchBrowser = false,
         bool SuppressBrowserRefresh = false,
         bool SuppressEmojis = false,
-        TestFlags TestFlags = TestFlags.None)
+        TestFlags TestFlags = TestFlags.None,
+        string TestOutput = "")
     {
         public static EnvironmentOptions FromEnvironment() => new
         (
@@ -46,7 +47,8 @@ namespace Microsoft.DotNet.Watcher
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
-            TestFlags: EnvironmentVariables.TestFlags
+            TestFlags: EnvironmentVariables.TestFlags,
+            TestOutput: EnvironmentVariables.TestOutputDir
         );
 
         public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }

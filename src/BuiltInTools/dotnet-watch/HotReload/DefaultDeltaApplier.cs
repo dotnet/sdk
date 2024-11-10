@@ -41,6 +41,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
                     return capabilities.Split(' ').ToImmutableArray();
                 }
+                catch (EndOfStreamException)
+                {
+                    // process terminated before capabilities sent:
+                    return [];
+                }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
                     // pipe might throw another exception when forcibly closed on process termination:

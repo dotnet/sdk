@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
 #endif
             {
-                arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
+                arguments.Add($"/bl:{Path.Combine(environmentOptions.TestOutput, "DotnetWatch.GenerateWatchList.binlog")}");
             }
 
             arguments.AddRange(buildArguments);

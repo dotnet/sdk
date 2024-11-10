@@ -128,9 +128,8 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
-                App.Process.Output);
+            await App.WaitUntilOutputContains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
         [Theory]
@@ -169,18 +168,16 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!",
-                App.Process.Output);
+            await App.WaitUntilOutputContains("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
 
             if (verbose)
             {
-                AssertEx.Contains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.", App.Process.Output);
+                App.AssertOutputContains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
             }
             else
             {
                 // shouldn't see any agent messages:
-                AssertEx.DoesNotContain("🕵️", App.Process.Output);
+                App.AssertOutputDoesNotContain("🕵️");
             }
         }
 
@@ -190,13 +187,14 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
                 .WithSource();
 
-            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
             await App.AssertWaitingForChanges();
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains("dotnet watch ⌚ Launching browser: http://localhost:5000/");
+            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
             AssertEx.DoesNotContain("🕵️", App.Process.Output);
@@ -225,7 +223,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                             """));
                 });
 
-            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
             await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
             await App.AssertWaitingForChanges();
