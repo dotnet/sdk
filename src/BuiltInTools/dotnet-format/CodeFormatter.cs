@@ -279,5 +279,31 @@ namespace Microsoft.CodeAnalysis.Tools
             formattableDocuments.AddRange(sourceGeneratedDocuments);
             return (projectFileCount + sourceGeneratedDocuments.Count, formattableDocuments.ToImmutable());
         }
+
+        private static bool IsFantomasInstalled()
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "tool list -g",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process { StartInfo = processStartInfo };
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return output.Contains("fantomas-tool");
+        }
+
+        private static void LogFantomasInstallationInstructions(ILogger logger)
+        {
+            logger.LogInformation("Fantomas tool is not installed. To install it, run the following command:");
+            logger.LogInformation("dotnet tool install -g fantomas-tool");
+        }
     }
 }

@@ -57,6 +57,11 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
                 }
 
+                if (!CodeFormatter.IsFantomasInstalled())
+                {
+                    CodeFormatter.LogFantomasInstallationInstructions(logger);
+                }
+
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
                 return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
