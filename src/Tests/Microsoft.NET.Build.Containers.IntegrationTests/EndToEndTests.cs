@@ -693,7 +693,7 @@ public class EndToEndTests : IDisposable
         return (newProjectDir, privateNuGetAssets);
     }
 
-    [Fact]
+    [DockerAvailableFact]
     public void EndToEndMultiArch_NoRegistry()
     {
         string imageName = NewImageName();
@@ -755,7 +755,7 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid)
         => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
-    [Fact]
+    [DockerAvailableFact]
     public void EndToEndMultiArch_Registry()
     {
         string imageName = NewImageName();
@@ -847,7 +847,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [Fact]
+    [DockerAvailableFact]
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
         // Create a new console project
@@ -871,13 +871,71 @@ public class EndToEndTests : IDisposable
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
-        // Check that the app was published RID from ContainerRuntimeIdentifiers
-        // images were created locally RID from ContainerRuntimeIdentifiers
+        // Check that the app was published only for RID from ContainerRuntimeIdentifiers
+        // images were created locally only for RID for from ContainerRuntimeIdentifiers
         commandResult.Should().Pass()
             .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
             .And.NotHaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-x64' to local registry")
             .And.HaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-arm64' to local registry");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
+    [DockerAvailableFact]
+    public void EndToEndMultiArch_EnvVariables()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+
+        // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_EnvVariables)}.csproj");
+        var csprojContent = File.ReadAllText(csprojPath);
+        csprojContent = csprojContent.Replace("</Project>",
+            """
+                <ItemGroup>
+                    <ContainerEnvironmentVariable Include="GoodEnvVar">
+                        <Value>Foo</Value>
+                    </ContainerEnvironmentVariable>
+                </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(csprojPath, csprojContent);
+        File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
+
+        // Run PublishContainer for multi-arch
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for RID
+        // images were created locally for RID
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
+
+        // Check that the env var is printed
+        CommandResult processResult = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}",
+            imageX64)
+        .Execute();
+        processResult.Should().Pass().And.HaveStdOut("Foo");
 
         // Cleanup
         newProjectDir.Delete(true);
