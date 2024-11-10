@@ -19,6 +19,11 @@ The `ProjectSystem` package defines the following for ASP.NET Core Web Projects:
 Password best practices
 ======================
 
+For production deployments:
+
+* Use MSBuild to create artifacts, but without deployment, so no credentials are required. Deploy apps as a separate non-MSBuild step that has fewer dependencies and is easier to audit.
+* Use deployment keys with short expiration times. A server in a separate root of trust is used to manage the deployment keys. Secrets aren't exposed to the project, ensuring that even if the project is compromised, the root of trust remains secure.
+
 In this document, replace `<Deploy-/p:Password>` with the deployment password.
 
 [Azure Key Vault](https://learn.microsoft.com/azure/key-vault/general/overview) and [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview) provide the most secure way to store and retrieve secrets. Azure Key Vault is a cloud service that safeguards encryption keys and secrets like certificates, connection strings, and passwords. For .NET Aspire, see [Secure communication between hosting and client integrations](https://learn.microsoft.com/dotnet/aspire/extensibility/secure-communication-between-integrations).
