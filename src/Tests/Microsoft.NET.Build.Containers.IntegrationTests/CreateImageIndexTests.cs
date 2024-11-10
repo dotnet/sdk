@@ -1,26 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Tasks;
+using Microsoft.NET.Build.Containers.IntegrationTests;
 using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.Win32;
 using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using static System.Net.Mime.MediaTypeNames;
 using Task = System.Threading.Tasks.Task;
 
-namespace Microsoft.NET.Build.Containers.IntegrationTests;
+namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [Collection("Docker tests")]
 public class CreateImageIndexTests
@@ -55,9 +45,7 @@ public class CreateImageIndexTests
 
         // Assert that the image index is created successfully
         Assert.True(cii.Execute(), FormatBuildMessages(errors));
-
         cii.GeneratedImageIndex.Should().NotBeNullOrEmpty();
-        // this is docker image, hence this is ManifestListV2
         var imageIndex = cii.GeneratedImageIndex.FromJson<ManifestListV2>();
         imageIndex.manifests.Should().HaveCount(2);
 
