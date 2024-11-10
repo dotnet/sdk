@@ -300,7 +300,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "tool list -g",
+                Arguments = "tool list",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
