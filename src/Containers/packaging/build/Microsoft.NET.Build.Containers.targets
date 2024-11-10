@@ -252,8 +252,12 @@
       <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
       <ContainerLabel Include="$(_ContainerLabel)"/>
       <ContainerPort Include="$(_ContainerPort)"/>
-      <_ParsedContainerEnvironmentVariables Include="$(_ContainerEnvironmentVariables)"/>
-      <ContainerEnvironmentVariables Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])">
+      <_ParsedContainerEnvironmentVariables
+        Condition="'$(_ContainerEnvironmentVariables)' != ':'"
+        Include="$(_ContainerEnvironmentVariables)"/>
+      <ContainerEnvironmentVariables
+        Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])">
         <Value>$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])</Value>
       </ContainerEnvironmentVariables>
     </ItemGroup>
@@ -313,8 +317,6 @@
         <Configuration>$(GeneratedContainerConfiguration)</Configuration>
         <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
         <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
-        <ArchiveOutputPath>$(GeneratedArchiveOutputPath)</ArchiveOutputPath>
-        <ContainerNames>@(GeneratedContainerName)</ContainerNames>
       </GeneratedContainers>
     </ItemGroup>
   </Target>
