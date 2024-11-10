@@ -42,9 +42,9 @@ public class CreateImageIndexTests
         cii.Repository = repository;
         cii.ImageTags = tags;
         cii.GeneratedContainers = [image1, image2];
-
-        // Assert that the image index is created successfully
         Assert.True(cii.Execute(), FormatBuildMessages(errors));
+
+        // Assert that the image index is created correctly
         cii.GeneratedImageIndex.Should().NotBeNullOrEmpty();
         var imageIndex = cii.GeneratedImageIndex.FromJson<ManifestListV2>();
         imageIndex.manifests.Should().HaveCount(2);
@@ -62,8 +62,8 @@ public class CreateImageIndexTests
         var logger = loggerFactory.CreateLogger(nameof(CreateImageIndex_Baseline));
         Registry registry = new(outputRegistry, logger, RegistryMode.Pull);
 
-        await AssertThatImageIsReerencedInImageIndex("linux-x64", repository, tags, registry);
-        await AssertThatImageIsReerencedInImageIndex("linux-arm64", repository, tags, registry);
+        await AssertThatImageIsReferencedInImageIndex("linux-x64", repository, tags, registry);
+        await AssertThatImageIsReferencedInImageIndex("linux-arm64", repository, tags, registry);
 
         newProjectDir.Delete(true);
     }
@@ -127,7 +127,7 @@ public class CreateImageIndexTests
         return generatedContainer;
     }
 
-    private async Task AssertThatImageIsReerencedInImageIndex(string rid, string repository, string[] tags, Registry registry)
+    private async Task AssertThatImageIsReferencedInImageIndex(string rid, string repository, string[] tags, Registry registry)
     {
         foreach (var tag in tags)
         {
