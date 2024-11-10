@@ -320,6 +320,12 @@ internal sealed class ImageBuilder
         }
     }
 
+    // For tests
+    internal string GetManifestConfigDigest()
+    {
+        return _manifest.Config.digest;
+    }
+
     internal static class EnvironmentVariables
     {
         public static readonly string APP_UID = nameof(APP_UID);
