@@ -252,7 +252,10 @@
       <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
       <ContainerLabel Include="$(_ContainerLabel)"/>
       <ContainerPort Include="$(_ContainerPort)"/>
-      <ContainerEnvironmentVariables Include="$(_ContainerEnvironmentVariables)"/>
+      <_ParsedContainerEnvironmentVariables Include="$(_ContainerEnvironmentVariables)"/>
+      <ContainerEnvironmentVariables Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])">
+        <Value>$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])</Value>
+      </ContainerEnvironmentVariables>
     </ItemGroup>
     <PropertyGroup>
       <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
@@ -322,7 +325,7 @@
                  !$(ContainerArchiveOutputPath.EndsWith('/')) and 
                  !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
-    
+
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -346,7 +349,7 @@
           _ContainerDefaultArgs=@(ContainerDefaultArgs, ';');
           _ContainerLabel=@(ContainerLabel, ';');
           _ContainerPort=@(ContainerPort, ';');
-          _ContainerEnvironmentVariables=@(ContainerEnvironmentVariables, ';');
+          _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
