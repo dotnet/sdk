@@ -70,11 +70,6 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
-                if (!CodeFormatter.IsFantomasInstalled())
-                {
-                    CodeFormatter.LogFantomasInstallationInstructions(logger);
-                }
-
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace };
 
                 return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);

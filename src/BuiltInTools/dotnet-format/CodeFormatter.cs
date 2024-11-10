@@ -280,7 +280,22 @@ namespace Microsoft.CodeAnalysis.Tools
             return (projectFileCount + sourceGeneratedDocuments.Count, formattableDocuments.ToImmutable());
         }
 
-        private static bool IsFantomasInstalled()
+        public static bool AnyFSharpFiles(string directoryPath)
+        {
+            foreach (var file in Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories))
+            {
+                if (file.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ||
+                    file.EndsWith(".fsx", StringComparison.OrdinalIgnoreCase) ||
+                    file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true; // Early return if any F# file is found
+                }
+            }
+
+            return false; // No F# files found after recursive search
+        }
+
+        public static async Task<bool> IsFantomasInstalled()
         {
             var processStartInfo = new ProcessStartInfo
             {
@@ -293,17 +308,40 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             using var process = new Process { StartInfo = processStartInfo };
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
 
-            return output.Contains("fantomas-tool");
+            process.Start();
+
+            var output = process.StandardOutput.ReadToEnd().ToLowerInvariant();
+
+            await process.WaitForExitAsync();
+
+            return output.Contains("fantomas");
         }
 
-        private static void LogFantomasInstallationInstructions(ILogger logger)
+        public static Task FantomasFormatAsync()
         {
-            logger.LogInformation("Fantomas tool is not installed. To install it, run the following command:");
-            logger.LogInformation("dotnet tool install -g fantomas-tool");
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "fantomas .",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process { StartInfo = processStartInfo };
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+
+            return process.WaitForExitAsync();
+        }
+
+        public static void LogFantomasInstallationInstructions(ILogger logger)
+        {
+            logger.LogInformation("Fantomas tool is not installed. To install it, run the following commands:");
+            logger.LogInformation("`dotnet new tool-manifest`");
+            logger.LogInformation("`dotnet tool install fantomas`");
         }
     }
 }
