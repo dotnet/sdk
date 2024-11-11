@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // referenced project.
             var cssFilePath = Path.GetFileNameWithoutExtension(containingProjectPath) + ".css";
             var message = new UpdateStaticFileMessage { Path = cssFilePath };
-            await browserRefreshServer.SendJsonSerlialized(message, cancellationToken);
+            await browserRefreshServer.SendJsonMessageAsync(message, cancellationToken);
         }
 
         private readonly struct UpdateStaticFileMessage

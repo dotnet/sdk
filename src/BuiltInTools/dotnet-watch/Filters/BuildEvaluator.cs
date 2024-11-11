@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                context.RootProjectOptions.Command is "run" or "test")
+                CommandLineOptions.IsCodeExecutionCommand(context.RootProjectOptions.Command))
             {
                 if (RequiresRevaluation)
                 {
@@ -78,14 +78,17 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     return result;
                 }
 
-                context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
-                await FileWatcher.WaitForFileChangeAsync(rootProjectFileSetFactory.RootProjectFile, context.Reporter, cancellationToken);
+                await FileWatcher.WaitForFileChangeAsync(
+                    rootProjectFileSetFactory.RootProjectFile,
+                    context.Reporter,
+                    startedWatching: () => context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit."),
+                    cancellationToken);
             }
         }
 

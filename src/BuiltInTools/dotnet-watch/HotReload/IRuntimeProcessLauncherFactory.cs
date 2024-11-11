@@ -12,5 +12,5 @@ namespace Microsoft.DotNet.Watcher;
 /// </summary>
 internal interface IRuntimeProcessLauncherFactory
 {
-    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties);
+    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments);
 }

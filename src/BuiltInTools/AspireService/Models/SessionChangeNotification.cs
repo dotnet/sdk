@@ -13,32 +13,80 @@ internal static class NotificationType
     public const string ServiceLogs = "serviceLogs";
 }
 
-internal class SessionNotificationBase
+/// <summary>
+/// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#common-notification-properties.
+/// </summary>
+internal class SessionNotification
 {
     public const string Url = "/notify";
 
+    /// <summary>
+    /// One of <see cref="NotificationType"/>.
+    /// </summary>
     [Required]
     [JsonPropertyName("notification_type")]
-    public string NotificationType { get; set; } = string.Empty;
+    public required string NotificationType { get; init; }
 
+    /// <summary>
+    /// The id of the run session that the notification is related to.
+    /// </summary>
+    [Required]
     [JsonPropertyName("session_id")]
-    public string SessionId { get; set; } = string.Empty;
+    public required string SessionId { get; init; }
 }
 
-internal class SessionChangeNotification : SessionNotificationBase
+/// <summary>
+/// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#session-terminated-notification.
+/// <see cref="SessionNotification.NotificationType"/> is <see cref="NotificationType.SessionTerminated"/>.
+/// </summary>
+internal sealed class SessionTerminatedNotification : SessionNotification
 {
+    /// <summary>
+    /// The process id of the service process associated with the run session.
+    /// </summary>
+    [Required]
     [JsonPropertyName("pid")]
-    public int PID { get; set; }
+    public required int Pid { get; init; }
 
+    /// <summary>
+    /// The exit code of the process associated with the run session.
+    /// </summary>
+    [Required]
     [JsonPropertyName("exit_code")]
-    public int? ExitCode { get; set; }
+    public required int? ExitCode { get; init; }
 }
 
-internal class SessionLogsNotification : SessionNotificationBase
+/// <summary>
+/// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#process-restarted-notification.
+/// <see cref="SessionNotification.NotificationType"/> is <see cref="NotificationType.ProcessRestarted"/>.
+/// </summary>
+internal sealed class ProcessRestartedNotification : SessionNotification
 {
-    [JsonPropertyName("is_std_err")]
-    public bool IsStdErr { get; set; }
+    /// <summary>
+    /// The process id of the service process associated with the run session.
+    /// </summary>
+    [Required]
+    [JsonPropertyName("pid")]
+    public required int PID { get; init; }
+}
 
+/// <summary>
+/// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#log-notification
+/// <see cref="SessionNotification.NotificationType"/> is <see cref="NotificationType.ServiceLogs"/>.
+/// </summary>
+internal sealed class ServiceLogsNotification : SessionNotification
+{
+    /// <summary>
+    /// True if the output comes from standard error stream, otherwise false (implying standard output stream).
+    /// </summary>
+    [Required]
+    [JsonPropertyName("is_std_err")]
+    public required bool IsStdErr { get; init; }
+
+    /// <summary>
+    /// The text written by the service program.
+    /// </summary>
+    [Required]
     [JsonPropertyName("log_message")]
-    public string LogMessage { get; set; } = string.Empty;
+    public required string LogMessage { get; init; }
 }

@@ -9,7 +9,7 @@ internal sealed record ProjectOptions
     public required string ProjectPath { get; init; }
     public required string WorkingDirectory { get; init; }
     public required string? TargetFramework { get; init; }
-    public required IReadOnlyList<(string name, string value)> BuildProperties { get; init; }
+    public required IReadOnlyList<string> BuildArguments { get; init; }
     public required bool NoLaunchProfile { get; init; }
     public required string? LaunchProfileName { get; init; }
 

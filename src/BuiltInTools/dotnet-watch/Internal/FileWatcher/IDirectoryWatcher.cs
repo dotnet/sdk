@@ -3,13 +3,13 @@
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal interface IFileSystemWatcher : IDisposable
+    internal interface IDirectoryWatcher : IDisposable
     {
         event EventHandler<(string filePath, ChangeKind kind)> OnFileChange;
 
         event EventHandler<Exception> OnError;
 
-        string BasePath { get; }
+        string WatchedDirectory { get; }
 
         bool EnableRaisingEvents { get; set; }
     }
