@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList, bool netFramework = false)
             {
                 var hasEventListenerGuard = typeInfoList.Any(x => x.FullName == EventListenerGuardFullName);
-                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit, hasEventListenerGuard, netFramework);
+                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit, hasEventListenerGuard);
                 builder.Build(typeInfoList);
                 partitionList = builder._partitionList;
                 assemblyInfoList = builder._assemblyInfoList;

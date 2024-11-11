@@ -121,11 +121,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             // These tests have to be executed slightly differently and we give them a different Identity so ADO can tell them apart
             var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
             var testIdentityDifferentiator = "";
-            bool netFramework = false;
             if (runtimeTargetFrameworkParsed.Framework == ".NETFramework")
             {
                 testIdentityDifferentiator = ".netfx";
-                netFramework = true;
             }
             else if (runtimeTargetFrameworkParsed.Framework != ".NETCoreApp")
             {
