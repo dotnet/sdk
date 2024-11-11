@@ -944,6 +944,64 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux-musl
+            targetArchitecture: x64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux-musl
+            targetArchitecture: arm64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxX64CrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -992,6 +1050,30 @@ stages:
             useMonoRuntime: true
             targetOS: osx
             targetArchitecture: arm64
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: OSX_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Mac }}
+            targetOS: osx
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: OSX_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Mac }}
+            targetOS: osx
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1050,6 +1132,30 @@ stages:
             useMonoRuntime: true
             targetOS: windows
             targetArchitecture: x64
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
