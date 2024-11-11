@@ -728,6 +728,8 @@ public class EndToEndTests : IDisposable
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
             imageX64)
@@ -737,6 +739,8 @@ public class EndToEndTests : IDisposable
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64)
@@ -827,6 +831,8 @@ public class EndToEndTests : IDisposable
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
             imageX64Tagged)
@@ -850,6 +856,8 @@ public class EndToEndTests : IDisposable
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64Tagged)
