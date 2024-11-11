@@ -279,12 +279,12 @@ Sample MsDeploy Profile With Destination Connection String & EF Migrations:
   </PropertyGroup>
   <ItemGroup>
     <DestinationConnectionStrings Include="ShoppingCartConnection">
-      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=appUser@dbserver;Password=</$;Credential;></Value>
+      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=appUser@dbserver;Password=</$DB_Credential></Value>
     </DestinationConnectionStrings>
   </ItemGroup>
   <ItemGroup>
     <EFMigrations Include="ShoppingCartContext">
-      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=efMigrationUser@dbserver;Password=</$;Credential;></Value>
+      <Value>Data Source=tcp:dbserver.database.windows.net,1433;Initial Catalog=shoppingcartdbdb_db;User Id=efMigrationUser@dbserver;Password=</$DB_Credential></Value>
     </EFMigrations>
   </ItemGroup>
 </Project>
