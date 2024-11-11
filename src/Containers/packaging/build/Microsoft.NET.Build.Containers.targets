@@ -256,24 +256,24 @@
         Include="$(_ContainerLabel)"/>
       <ContainerLabel
         Condition="@(_ParsedContainerLabel->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])">
-        <Value>$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])</Value>
-      </ContainerLabel>
+        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
 
-      <ParsedContainerPort Include="$(_ContainerPort)" Condition="'$(_ContainerPort)' != ':'"/>
-      <ContainerPort Condition="@(ParsedContainerPort->Count()) > 0 "
-        Include="$([System.String]::Copy('%(ParsedContainerPort.Identity)').Split(':')[0])">
-        <Type>$([System.String]::Copy('%(ParsedContainerPort.Identity)').Split(':')[1])</Type>
-      </ContainerPort>
+      <_ParsedContainerPort
+        Condition="'$(_ContainerPort)' != ':'"
+        Include="$(_ContainerPort)"/>
+      <ContainerPort
+        Condition="@(_ParsedContainerPort->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[0])"
+        Type="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[1])" />
       
       <_ParsedContainerEnvironmentVariables
         Condition="'$(_ContainerEnvironmentVariables)' != ':'"
         Include="$(_ContainerEnvironmentVariables)"/>
       <ContainerEnvironmentVariables
         Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])">
-        <Value>$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])</Value>
-      </ContainerEnvironmentVariables>
+        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
     </ItemGroup>
     <PropertyGroup>
       <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
