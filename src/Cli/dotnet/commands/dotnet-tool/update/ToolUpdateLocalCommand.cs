@@ -23,8 +23,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
 
-        internal readonly RestoreActionConfig _restoreActionConfig;
-
         public ToolUpdateLocalCommand(
             ParseResult parseResult,
             IToolPackageDownloader toolPackageDownloader = null,
