@@ -251,7 +251,13 @@
       <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
       <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
       <ContainerLabel Include="$(_ContainerLabel)"/>
-      <ContainerPort Include="$(_ContainerPort)"/>
+
+      <ParsedContainerPort Include="$(_ContainerPort)" Condition="'$(_ContainerPort)' != ':'"/>
+      <ContainerPort Condition="@(ParsedContainerPort->Count()) > 0 "
+        Include="$([System.String]::Copy('%(ParsedContainerPort.Identity)').Split(':')[0])">
+        <Type>$([System.String]::Copy('%(ParsedContainerPort.Identity)').Split(':')[1])</Type>
+      </ContainerPort>
+      
       <_ParsedContainerEnvironmentVariables
         Condition="'$(_ContainerEnvironmentVariables)' != ':'"
         Include="$(_ContainerEnvironmentVariables)"/>
@@ -350,7 +356,7 @@
           ContainerAppCommandInstruction=$(ContainerAppCommandInstruction);
           _ContainerDefaultArgs=@(ContainerDefaultArgs, ';');
           _ContainerLabel=@(ContainerLabel, ';');
-          _ContainerPort=@(ContainerPort, ';');
+          _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
