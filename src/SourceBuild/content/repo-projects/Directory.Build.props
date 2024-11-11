@@ -95,6 +95,16 @@
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
     <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
     <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
+
+    <!-- Pass RID and Portable/non-portable information -->
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -126,7 +136,7 @@
   <ItemGroup>
     <!-- TODO: Remove once net10.0 migration is complete -->
     <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=True" />
-  
+
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
