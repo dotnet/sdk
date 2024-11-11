@@ -34,6 +34,11 @@
     <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <!-- temporary workaround for https://github.com/dotnet/source-build/issues/4728 -->
+    <EnvironmentVariables Include="InstallerRuntimeIdentifier=linux-$(TargetArchitecture)" />
+  </ItemGroup>
+
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="cecil" />
