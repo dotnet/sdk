@@ -23,9 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
     {
         private readonly CreateShellShimRepository _createShellShimRepository;
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
-        private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
-
-        internal readonly RestoreActionConfig _restoreActionConfig;
+        internal readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
 
         public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
