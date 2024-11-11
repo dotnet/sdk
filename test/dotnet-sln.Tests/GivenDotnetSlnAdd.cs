@@ -109,6 +109,9 @@ Global
 		__LIB_PROJECT_GUID__.Release|x86.ActiveCfg = Release|Any CPU
 		__LIB_PROJECT_GUID__.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 EndGlobal
 ";
 

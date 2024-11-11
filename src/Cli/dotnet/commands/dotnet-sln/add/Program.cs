@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private void AddDefaultProjectConfigurations(SolutionModel solution)
         {
-            string[] defaultConfigurationPlatforms = { "Any CPU", "x86", "x64" };
+            string[] defaultConfigurationPlatforms = { "Any CPU", "x64", "x86" };
             foreach (var platform in defaultConfigurationPlatforms)
             {
                 solution.AddPlatform(platform);
@@ -127,6 +127,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var buildType in defaultConfigurationBuildTypes)
             {
                 solution.AddBuildType(buildType);
+            }
+            if (solution.SolutionProjects.Count > 1)
+            {
+                // https://stackoverflow.com/a/14714485
+                solution.RemoveProperties("HideSolutionNode");
             }
             solution.DistillProjectConfigurations();
         }
