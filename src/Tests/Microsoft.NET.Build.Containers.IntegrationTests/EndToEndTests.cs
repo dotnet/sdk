@@ -964,7 +964,10 @@ public class EndToEndTests : IDisposable
         csprojContent = csprojContent.Replace("</Project>",
             """
                 <ItemGroup>
-                    <ContainerPort Include="8082">
+                <ContainerPort Include="8082">
+                        <Type>tcp</Type>
+                    </ContainerPort>
+                    <ContainerPort Include="8083">
                         <Type>tcp</Type>
                     </ContainerPort>
                 </ItemGroup>
@@ -1005,8 +1008,17 @@ public class EndToEndTests : IDisposable
         .Execute();
         processResult.Should().Pass();
 
+        // Check the default port (8080)
+        ContainerCli.PortCommand(_testOutput, containerName, 8080)
+                .Execute().Should().Pass();
+        // Check the provided 8082 and 8083 ports
         ContainerCli.PortCommand(_testOutput, containerName, 8082)
                 .Execute().Should().Pass();
+        ContainerCli.PortCommand(_testOutput, containerName, 8083)
+               .Execute().Should().Pass();
+        // Check that not provided port is not available
+        ContainerCli.PortCommand(_testOutput, containerName, 8081)
+               .Execute().Should().Fail();
 
         // Cleanup
         ContainerCli.StopCommand(_testOutput, containerName)
