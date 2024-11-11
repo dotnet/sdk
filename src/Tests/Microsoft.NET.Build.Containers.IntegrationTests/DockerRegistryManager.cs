@@ -23,7 +23,12 @@ public class DockerRegistryManager
 
     internal class SameArchManifestPicker : IManifestPicker
     {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier) 
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+
+        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
         {
             return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
         }
@@ -33,7 +38,8 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new DockerCli(loggerFactory).IsAvailable()) {
+        if (!new DockerCli(loggerFactory).IsAvailable())
+        {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
 
@@ -70,13 +76,14 @@ public class DockerRegistryManager
                     string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
-                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(),  CancellationToken.None);
+                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
                     var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
                     var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
                     logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                     await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
                     logger.LogInformation($"Pushed image  for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                 }
+
                 return;
             }
             catch (Exception ex)
@@ -92,7 +99,7 @@ public class DockerRegistryManager
                     {
                         ContainerCli.StopCommand(testOutput, s_registryContainerId).Execute();
                     }
-                    catch(Exception ex2)
+                    catch (Exception ex2)
                     {
                         logger.LogError(ex2, "Failed to stop the registry {id}.", s_registryContainerId);
                     }
