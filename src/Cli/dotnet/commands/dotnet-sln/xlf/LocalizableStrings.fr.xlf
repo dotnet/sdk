@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SerializerNotFound">
-        <source>Could not find serializer for file {0}.</source>
-        <target state="new">Could not find serializer for file {0}.</target>
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
