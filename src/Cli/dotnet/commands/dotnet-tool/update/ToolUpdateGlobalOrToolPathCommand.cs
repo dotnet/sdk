@@ -36,14 +36,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             _createShellShimRepository =
                 createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
-
-            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
-                IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
                 
             _toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                
                     parseResult,
                     _createToolPackageStoreDownloaderUninstaller,
                     _createShellShimRepository,
