@@ -3,11 +3,14 @@
 
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
 using Microsoft.Win32;
+using static System.Net.Mime.MediaTypeNames;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -1020,6 +1023,50 @@ public class EndToEndTests : IDisposable
         ContainerCli.StopCommand(_testOutput, containerName)
            .Execute()
            .Should().Pass();
+        newProjectDir.Delete(true);
+    }
+
+    [DockerAvailableFact]
+    public void EndToEndMultiArch_Labels()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+
+        // Create new console app
+        DirectoryInfo newProjectDir = CreateNewProject("webapp");
+
+        // Run PublishContainer for multi-arch with ContainerGenerateLabels
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for RID
+        // images were created locally for RID
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
+
+        // Check that labels are set
+        CommandResult inspectResult = ContainerCli.InspectCommand(
+            _testOutput,
+            "--format={{json .Config.Labels}}",
+            imageX64)
+        .Execute();
+        inspectResult.Should().Pass();
+        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut);
+        labels.Should().NotBeNull().And.HaveCountGreaterThan(0);
+        labels!.Values.Should().AllSatisfy(value => value.Should().NotBeNullOrEmpty());
+
+        // Cleanup
         newProjectDir.Delete(true);
     }
 
