@@ -27,6 +27,11 @@
         <target state="translated">Přidá do souboru řešení jeden nebo více projektů.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Only .sln files can be migrated to .slnx format.</source>
+        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Umístěte projekt do kořene řešení, není potřeba vytvářet složku řešení.</target>
@@ -60,6 +65,11 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Vypíše seznam všech projektů v řešení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">

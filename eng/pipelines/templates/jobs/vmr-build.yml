@@ -300,7 +300,7 @@ jobs:
   - ${{ else }}:
     - ${{ if eq(parameters.targetOS, 'osx') }}:
       - script: |
-          $(sourcesPath)/src/runtime/eng/install-native-dependencies.sh osx
+          $(sourcesPath)/eng/common/native/install-dependencies.sh osx
         displayName: Install dependencies
     - ${{ if eq(parameters.buildSourceOnly, 'true') }}:
       - script: |
@@ -640,4 +640,3 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
         ArtifactName: VerticalManifests
       displayName: Publish Vertical Manifest
-      condition: succeededOrFailed()
