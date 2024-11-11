@@ -609,7 +609,46 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public void EndToEnd_NoAPI_Console()
     {
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "CreateNewImageTest"));
+        DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        if (privateNuGetAssets.Exists)
+        {
+            privateNuGetAssets.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+        privateNuGetAssets.Create();
+
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+
+        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // Add package to the project
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
 
         string imageName = NewImageName();
         string imageTag = "1.0";
@@ -648,52 +687,6 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    private (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) CreateNewConsoleProject(string template, [CallerMemberName] string callerMemberName = "")
-    {
-        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
-        DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
-
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
-        if (privateNuGetAssets.Exists)
-        {
-            privateNuGetAssets.Delete(recursive: true);
-        }
-
-        newProjectDir.Create();
-        privateNuGetAssets.Create();
-
-        new DotnetNewCommand(_testOutput, template, "-f", ToolsetInfo.CurrentTargetFramework)
-            .WithVirtualHive()
-            .WithWorkingDirectory(newProjectDir.FullName)
-            // do not pollute the primary/global NuGet package store with the private package(s)
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .Execute()
-            .Should().Pass();
-
-        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
-
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
-
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute()
-            .Should().Pass();
-
-        // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute()
-            .Should().Pass();
-
-        return (newProjectDir, privateNuGetAssets);
-    }
-
     [DockerAvailableFact]
     public void EndToEndMultiArch_NoRegistry()
     {
@@ -703,7 +696,7 @@ public class EndToEndTests : IDisposable
         string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
 
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console");
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
@@ -715,7 +708,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -750,7 +742,26 @@ public class EndToEndTests : IDisposable
 
         // Cleanup
         newProjectDir.Delete(true);
-        privateNuGetAssets.Delete(true);
+    }
+
+    private DirectoryInfo CreateNewProject(string template, [CallerMemberName] string callerMemberName = "")
+    {
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+
+        new DotnetNewCommand(_testOutput, template, "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        return newProjectDir;
     }
 
     private string GetPublishArtifactsPath(string projectDir, string rid)
@@ -767,7 +778,7 @@ public class EndToEndTests : IDisposable
         string imageIndex = $"{imageName}:{imageTag}";
 
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console");
         
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
@@ -780,7 +791,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -845,14 +855,13 @@ public class EndToEndTests : IDisposable
 
         // Cleanup
         newProjectDir.Delete(true);
-        privateNuGetAssets.Delete(true);
     }
 
     [DockerAvailableFact]
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console");
         string imageName = NewImageName();
         string imageTag = "1.0";
 
@@ -868,7 +877,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -882,7 +890,6 @@ public class EndToEndTests : IDisposable
 
         // Cleanup
         newProjectDir.Delete(true);
-        privateNuGetAssets.Delete(true);
     }
 
     [DockerAvailableFact]
@@ -893,18 +900,14 @@ public class EndToEndTests : IDisposable
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
 
         // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console");
         var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_EnvVariables)}.csproj");
         var csprojContent = File.ReadAllText(csprojPath);
         csprojContent = csprojContent.Replace("</Project>",
             """
                 <ItemGroup>
-                    <ContainerEnvironmentVariable Include="GoodEnvVar">
-                        <Value>Foo</Value>
-                    </ContainerEnvironmentVariable>
-                    <ContainerEnvironmentVariable Include="AnotherEnvVar">
-                        <Value>Bar</Value>
-                    </ContainerEnvironmentVariable>
+                    <ContainerEnvironmentVariable Include="GoodEnvVar" Value="Foo" />
+                    <ContainerEnvironmentVariable Include="AnotherEnvVar" Value="Bar" />
                 </ItemGroup>
             </Project>
             """);
@@ -925,7 +928,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -947,7 +949,6 @@ public class EndToEndTests : IDisposable
 
         // Cleanup
         newProjectDir.Delete(true);
-        privateNuGetAssets.Delete(true);
     }
 
     [DockerAvailableFact]
@@ -957,19 +958,15 @@ public class EndToEndTests : IDisposable
         string imageTag = "1.0";
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
 
-        // Create new console app, set ContainerPort
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("webapp");
+        // Create new web app, set ContainerPort
+        DirectoryInfo newProjectDir = CreateNewProject("webapp");
         var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_Ports)}.csproj");
         var csprojContent = File.ReadAllText(csprojPath);
         csprojContent = csprojContent.Replace("</Project>",
             """
                 <ItemGroup>
-                <ContainerPort Include="8082">
-                        <Type>tcp</Type>
-                    </ContainerPort>
-                    <ContainerPort Include="8083">
-                        <Type>tcp</Type>
-                    </ContainerPort>
+                    <ContainerPort Include="8082" Type="tcp" />
+                    <ContainerPort Include="8083" Type="tcp" />
                 </ItemGroup>
             </Project>
             """);
@@ -985,7 +982,6 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
-            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -1025,7 +1021,6 @@ public class EndToEndTests : IDisposable
            .Execute()
            .Should().Pass();
         newProjectDir.Delete(true);
-        privateNuGetAssets.Delete(true);
     }
 
     [DockerSupportsArchInlineData("linux/arm/v7", "linux-arm", "/app")]
