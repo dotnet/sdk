@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var command = new ToolUpdateLocalCommand(parseResult);
-            command._toolInstallLocalCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            command._toolInstallLocalCommand.Value._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
