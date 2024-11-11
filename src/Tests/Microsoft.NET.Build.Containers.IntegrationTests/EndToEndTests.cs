@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
+using Microsoft.Win32;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -608,7 +609,7 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public void EndToEnd_NoAPI_Console()
     {
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
 
         string imageName = NewImageName();
         string imageTag = "1.0";
@@ -647,7 +648,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    private (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) CreateNewConsoleProject([CallerMemberName] string callerMemberName = "")
+    private (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) CreateNewConsoleProject(string template, [CallerMemberName] string callerMemberName = "")
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
         DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
@@ -665,7 +666,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, template, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -702,7 +703,7 @@ public class EndToEndTests : IDisposable
         string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
 
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
@@ -766,7 +767,7 @@ public class EndToEndTests : IDisposable
         string imageIndex = $"{imageName}:{imageTag}";
 
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
         
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
@@ -851,7 +852,7 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
         // Create a new console project
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
         string imageName = NewImageName();
         string imageTag = "1.0";
 
@@ -892,7 +893,7 @@ public class EndToEndTests : IDisposable
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
 
         // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
-        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject();
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("console");
         var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_EnvVariables)}.csproj");
         var csprojContent = File.ReadAllText(csprojPath);
         csprojContent = csprojContent.Replace("</Project>",
@@ -938,6 +939,72 @@ public class EndToEndTests : IDisposable
         processResult.Should().Pass().And.HaveStdOut("Foo");
 
         // Cleanup
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
+    [DockerAvailableFact]
+    public void EndToEndMultiArch_Ports()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+
+        // Create new console app, set ContainerPort
+        (DirectoryInfo newProjectDir, DirectoryInfo privateNuGetAssets) = CreateNewConsoleProject("webapp");
+        var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_Ports)}.csproj");
+        var csprojContent = File.ReadAllText(csprojPath);
+        csprojContent = csprojContent.Replace("</Project>",
+            """
+                <ItemGroup>
+                    <ContainerPort Include="8082">
+                        <Type>tcp</Type>
+                    </ContainerPort>
+                </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(csprojPath, csprojContent);
+
+        // Run PublishContainer for multi-arch
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for RID
+        // images were created locally for RID
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
+
+        // Check that the port is correct
+        var containerName = $"test-container-{imageName}";
+        CommandResult processResult = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            containerName,
+            "-P",
+            "--detach",
+            imageX64)
+        .Execute();
+        processResult.Should().Pass();
+
+        ContainerCli.PortCommand(_testOutput, containerName, 8082)
+                .Execute().Should().Pass();
+
+        // Cleanup
+        ContainerCli.StopCommand(_testOutput, containerName)
+           .Execute()
+           .Should().Pass();
         newProjectDir.Delete(true);
         privateNuGetAssets.Delete(true);
     }
