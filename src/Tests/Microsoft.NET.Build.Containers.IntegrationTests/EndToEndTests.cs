@@ -687,7 +687,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_NoRegistry()
     {
         string imageName = NewImageName();
@@ -725,8 +725,6 @@ public class EndToEndTests : IDisposable
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
-            "--platform",
-            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
             imageX64)
@@ -736,8 +734,6 @@ public class EndToEndTests : IDisposable
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
-            "--platform",
-            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64)
@@ -771,7 +767,7 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid)
         => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
-    [DockerAvailableFact]
+    [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_Registry()
     {
         string imageName = NewImageName();
@@ -828,8 +824,6 @@ public class EndToEndTests : IDisposable
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
-            "--platform",
-            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
             imageX64Tagged)
@@ -853,8 +847,6 @@ public class EndToEndTests : IDisposable
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
-            "--platform",
-            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64Tagged)
