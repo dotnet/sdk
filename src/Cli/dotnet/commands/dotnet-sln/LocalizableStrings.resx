@@ -187,6 +187,6 @@
     <value>Cannot migrate .slnx file.</value>
   </data>
   <data name="SerializerNotFound" xml:space="preserve">
-    <value>Could not find serializer for file {0}.</value>
+    <value>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</value>
   </data>
 </root>

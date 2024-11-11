@@ -142,14 +142,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             SolutionProjectModel project;
             try
             {
-                solution.AddProject(relativePath, null, solutionFolder);
+                project = solution.AddProject(relativePath, null, solutionFolder);
             }
             catch (ArgumentException ex)
             {
                 // TODO: Update with error codes from vs-solutionpersistence
                 if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
                 {
-                    solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                    project = solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
                 }
                 else
                 {
