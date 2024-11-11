@@ -4,7 +4,6 @@
 using System.Diagnostics;
 #if NET
 using System.Formats.Tar;
-
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
