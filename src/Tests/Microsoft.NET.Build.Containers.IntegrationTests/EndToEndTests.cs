@@ -902,11 +902,18 @@ public class EndToEndTests : IDisposable
                     <ContainerEnvironmentVariable Include="GoodEnvVar">
                         <Value>Foo</Value>
                     </ContainerEnvironmentVariable>
+                    <ContainerEnvironmentVariable Include="AnotherEnvVar">
+                        <Value>Bar</Value>
+                    </ContainerEnvironmentVariable>
                 </ItemGroup>
             </Project>
             """);
         File.WriteAllText(csprojPath, csprojContent);
-        File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
+        File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"),
+            """
+            Console.Write(Environment.GetEnvironmentVariable("GoodEnvVar"));
+            Console.Write(Environment.GetEnvironmentVariable("AnotherEnvVar"));
+            """);
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
@@ -936,7 +943,7 @@ public class EndToEndTests : IDisposable
             $"test-container-{imageName}",
             imageX64)
         .Execute();
-        processResult.Should().Pass().And.HaveStdOut("Foo");
+        processResult.Should().Pass().And.HaveStdOut("FooBar");
 
         // Cleanup
         newProjectDir.Delete(true);
