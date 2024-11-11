@@ -20,5 +20,5 @@ index 2bb8687ae9c..a48fcf4e3f6 100644
 +    <!-- When building a non-portable build, BaseOS specifies a known (portable) RID that is a parent of the curent runtime identifier. -->
 +    <InstallerRuntimeIdentifier Condition="'$(PortableBuild)' != 'true' and '$(BaseOS)' != '$(RuntimeIdentifier)'">$(BaseOS)</InstallerRuntimeIdentifier>
    </PropertyGroup>
-
+   
    <Import Project="$(MSBuildThisFileDirectory)installer.singlerid.targets"
