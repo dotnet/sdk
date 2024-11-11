@@ -1,4 +1,4 @@
-From f84ade18d56da2fd643ce8f54ed2ca3a67b23d7e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
 Date: Mon, 11 Nov 2024 14:24:15 +0100
 Subject: [PATCH] Workaround for CreateRpmPackage issue
@@ -21,6 +21,3 @@ index a202a1bfd72..f8c82a1f47d 100644
      </PropertyGroup>
    </Target>
  
--- 
-2.41.0
-
