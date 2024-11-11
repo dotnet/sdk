@@ -183,7 +183,7 @@ public class EndToEndTests : IDisposable
 
     [DockerAvailableFact]
     public async Task TarballsHaveCorrectStructure()
-    {
+    { 
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
             nameof(TarballsHaveCorrectStructure), "app.tar.gz");
 
@@ -192,7 +192,7 @@ public class EndToEndTests : IDisposable
             await BuildDockerImageWithArciveDestinationAsync(archiveFile, ["latest"], nameof(TarballsHaveCorrectStructure));
 
         await destinationReference.LocalRegistry!.LoadAsync(dockerImage, sourceReference, destinationReference, default).ConfigureAwait(false);
-
+        
         Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckDockerTarballStructure(archiveFile);
