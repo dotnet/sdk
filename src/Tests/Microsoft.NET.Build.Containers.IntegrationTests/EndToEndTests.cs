@@ -737,7 +737,7 @@ public class EndToEndTests : IDisposable
             _testOutput,
             "--rm",
             "--platform",
-            "linux/arm64",
+            "linux/arm64/v8",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64)
@@ -854,7 +854,7 @@ public class EndToEndTests : IDisposable
             _testOutput,
             "--rm",
             "--platform",
-            "linux/arm64",
+            "linux/arm64/v8",
             "--name",
             $"test-container-{imageName}-arm64",
             imageArm64Tagged)
