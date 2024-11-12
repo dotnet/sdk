@@ -91,6 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResult,
+                _packageId,
                 _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,

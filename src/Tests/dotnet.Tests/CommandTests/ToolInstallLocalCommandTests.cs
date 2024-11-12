@@ -105,6 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
