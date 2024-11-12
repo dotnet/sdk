@@ -1,0 +1,269 @@
+
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <!-- Need to set to false to calculate RepositoryCommit. -->
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
+    <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
+  </ItemGroup>
+
+  <!-- After building, generate a prebuilt usage report. -->
+  <Target Name="ReportPrebuiltUsage"
+          AfterTargets="Build"
+          Condition="'$(SkipReportPrebuiltUsage)' != 'true'">
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
+  </Target>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WriteSBRPUsageReport" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="ReportSbrpUsage"
+          AfterTargets="Build"
+          Condition="'$(ReportSbrpUsage)' == 'true'">
+    <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
+                          SrcPath="$(SrcDir)"
+                          OutputPath="$(ArtifactsLogDir)" />
+  </Target>
+
+  <Target Name="DetermineSourceBuiltSdkNonStableVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+    <ItemGroup>
+      <SdkVersionFileItem Include="$(DotNetSdkExtractDir)/sdk/**/.version" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <SourceBuiltSdkNonStableVersion>$([System.Text.RegularExpressions.Regex]::Split('$([System.IO.File]::ReadAllText('%(SdkVersionFileItem.Identity)'))', '\r\n|\r|\n')[3])</SourceBuiltSdkNonStableVersion>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Determine symbols tarball names and discover all intermediate symbols,
+    to be used as inputs and outputs of symbols repackaging targets.
+  -->
+  <Target Name="DetermineSymbolsTargetsInputsAndOutputs"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion">
+    <PropertyGroup>
+      <UnifiedSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkNonStableVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkNonStableVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
+    </PropertyGroup>
+    <ItemGroup>
+      <IntermediateSymbol Include="$(IntermediateSymbolsRootDir)**/*" />
+    </ItemGroup>
+  </Target>
+
+  <!-- After building, repackage symbols into a single tarball. -->
+  <Target Name="RepackageSymbols"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSymbolsTargetsInputsAndOutputs"
+          Inputs="@(IntermediateSymbol)"
+          Outputs="$(UnifiedSymbolsTarball)">
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(UnifiedSymbolsTarball)'))" />
+    <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
+          WorkingDirectory="$(IntermediateSymbolsRootDir)" />
+
+    <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
+  </Target>
+
+  <!-- After building, create the sdk symbols tarball. -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="CreateSdkSymbolsTarball"
+          AfterTargets="Build"
+          DependsOnTargets="RepackageSymbols"
+          Inputs="@(IntermediateSymbol);$(SdkTarballPath)"
+          Outputs="$(SdkSymbolsTarball)">
+    <PropertyGroup>
+      <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
+    </PropertyGroup>
+
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(DotNetSdkExtractDir)"
+                            AllSymbolsPath="$(IntermediateSymbolsRootDir)"
+                            SdkSymbolsLayoutPath="$(IntermediateSdkSymbolsLayout)"
+                            FailOnMissingPDBs="false" />
+
+    <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
+          WorkingDirectory="$(IntermediateSdkSymbolsLayout)" />
+
+    <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
+
+    <RemoveDir Directories="$(IntermediateSdkSymbolsLayout)" />
+  </Target>
+
+  <!--
+    Dev scenario: rewrite a prebuilt-report. This makes it easy to add data to an existing
+    prebuilt report without performing another full build. This doesn't reevalutate which packages
+    are prebuilts or search the projects: it uses the existing usage.xml file to generate report
+    XMLs based on the info put in artifacts/.
+  -->
+  <Target Name="RewritePrebuiltUsageReport">
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj"
+             Targets="ReportPrebuiltUsage" />
+  </Target>
+
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
+  <Target Name="ReportPoisonUsage"
+          AfterTargets="Build"
+          Condition="'$(EnablePoison)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
+    <ItemGroup>
+      <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
+      <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
+      <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+      <!-- Include shipping nuget packages. -->
+      <PoisonFileToCheck Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
+      <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(PoisonFileToCheck) for poisoned files." />
+
+    <CheckForPoison FilesToCheck="@(PoisonFileToCheck)"
+                    ProjectDirPath="$(RepoRoot)"
+                    HashCatalogFilePath="$(PoisonReportDataFile)"
+                    MarkerFileName="$(PoisonMarkerFile)"
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageBurndownData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GeneratePrebuiltBurndownData"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" >
+    <PropertyGroup>
+      <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
+    </PropertyGroup>
+
+    <WriteUsageBurndownData RootDirectory="$(RepoRoot)"
+                            PrebuiltBaselineFile="$(BaselineDataFile)"
+                            OutputFilePath="$(PrebuiltBurndownDataFile)" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <Target Name="CreatePrebuiltsTarball"
+          AfterTargets="Build"
+          DependsOnTargets="
+            CheckIfPrebuiltsExistToPack;
+            CreatePrebuiltsTarballIfPrebuiltsExist;
+            ErrorOnPrebuilts"/>
+
+  <Target Name="CheckIfPrebuiltsExistToPack">
+    <!-- Directory existence doesn't mean there are files inside. Use a pattern to find files. -->
+    <ItemGroup>
+      <PrebuiltFile Include="$(ResultingPrebuiltPackagesDir)**" />
+    </ItemGroup>
+
+    <Message Text="Found @(PrebuiltFile->Count()) files in prebuilt packages dir." Importance="High" />
+  </Target>
+
+  <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion"
+          Condition="'@(PrebuiltFile)' != ''">
+    <PropertyGroup>
+      <PrebuiltsTarball>$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkNonStableVersion).$(TargetRid)$(ArchiveExtension)</PrebuiltsTarball>
+      <PrebuiltsTarballWorkingDir>$(ResultingPrebuiltPackagesDir)</PrebuiltsTarballWorkingDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(PrebuiltsTarball)'))" />
+    <Exec Command="tar --numeric-owner -zcf $(PrebuiltsTarball) -C $(PrebuiltsTarballWorkingDir) ." />
+
+    <Message Text="Tarball '$(PrebuiltsTarball)' was successfully created from '$(PrebuiltsTarballWorkingDir)'" Importance="High" />
+  </Target>
+
+  <Target Name="ErrorOnPrebuilts"
+          Condition="'@(PrebuiltFile)' != '' and '$(SkipErrorOnPrebuilts)' != 'true'">
+    <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
+  </Target>
+
+
+  <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion;ResolveProjectReferences">
+    <!-- Inputs: Packages to include in the tarball -->
+    <ItemGroup>
+      <ArtifactsPackageToBundle Include="$(ArtifactsShippingPackagesDir)**;
+                                          $(ArtifactsNonShippingPackagesDir)**"
+                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+      <ReferencePackageToBundle Include="$(ReferencePackagesDir)**"
+                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+      <MergedAssetManifest Include="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- Create a layout directory for the files that are to be included in the artifacts tarball. -->
+      <SourceBuiltLayoutDir>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', 'artifacts-layout'))</SourceBuiltLayoutDir>
+
+      <!-- Outputs -->
+      <SourceBuiltTarballName>$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkNonStableVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
+      <SourceBuiltVersionName>$(SourceBuiltLayoutDir).version</SourceBuiltVersionName>
+      <AllPackageVersionsPropsName>$(SourceBuiltLayoutDir)PackageVersions.props</AllPackageVersionsPropsName>
+      <SourceBuiltMergedAssetManifestName>$(SourceBuiltLayoutDir)%(MergedAssetManifest.Filename)%(MergedAssetManifest.Extension)</SourceBuiltMergedAssetManifestName>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Discover the produced packages from the merged asset manifest -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+    </GetKnownArtifactsFromAssetManifests>
+  </Target>
+
+  <!-- Create the SourceBuilt.Private.Artifacts archive when building source-only. -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="CreatePrivateSourceBuiltArtifactsArchive"
+          AfterTargets="Build"
+          DependsOnTargets="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive;GetProducedPackages"
+          Inputs="@(ArtifactsPackageToBundle);@(ReferencePackageToBundle);@(MergedAssetManifest)"
+          Outputs="$(SourceBuiltTarballName);$(SourceBuiltVersionName);$(AllPackageVersionsPropsName);$(SourceBuiltMergedAssetManifestName)">
+    <!-- Copy packages to layout directory. Since there are a large number of files,
+          this will use symlinks instead of copying files to make this execute quickly. -->
+    <Copy SourceFiles="@(ArtifactsPackageToBundle)"
+          DestinationFolder="$(SourceBuiltLayoutDir)"
+          UseSymbolicLinksIfPossible="true" />
+    <Copy SourceFiles="@(ReferencePackageToBundle)"
+          DestinationFolder="$(SourceBuiltLayoutDir)SourceBuildReferencePackages"
+          UseSymbolicLinksIfPossible="true" />
+
+    <!-- Content of the .version file to include in the tarball -->
+    <ItemGroup>
+      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkNonStableVersion)" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(SourceBuiltVersionName)"
+                      Lines="@(VersionFileContent)"
+                      Overwrite="true" />
+
+    <!-- Copy the merged asset manifest into the tarball -->
+    <Copy SourceFiles="@(MergedAssetManifest)"
+          DestinationFolder="$(SourceBuiltLayoutDir)"
+          UseSymbolicLinksIfPossible="true" />
+
+    <!-- Create a PackageVersions.props file that includes entries for all packages. -->
+    <WritePackageVersionsProps KnownPackages="@(ProducedPackage)"
+                               ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
+                               VersionPropsFlowType="AllPackages"
+                               OutputPath="$(AllPackageVersionsPropsName)" />
+
+    <Exec Command="tar --numeric-owner -czhf $(SourceBuiltTarballName) $([System.IO.Path]::GetFileName('$(SourceBuiltVersionName)')) *"
+          WorkingDirectory="$(SourceBuiltLayoutDir)" />
+
+    <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
+  </Target>
+
+</Project>
