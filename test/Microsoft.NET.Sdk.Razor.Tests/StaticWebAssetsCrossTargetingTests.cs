@@ -87,7 +87,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ExecuteCommand(restore).Should().Pass();
 
             var publish = CreatePublishCommand(ProjectDirectory);
-            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net9.0").Should().Pass();
+            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net10.0").Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
