@@ -89,12 +89,10 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 : null;
             foreach (var projectPath in projectPaths)
             {
-                // Get full project path
                 var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    // Try to open the project to see if it is valid
-                    ProjectRootElement.Open(projectPath);
+                    ProjectRootElement.Open(projectPath); // Try to open the project to see if it is valid
                     AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
@@ -105,7 +103,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 }
                 catch (ArgumentException ex)
                 {
-                    // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit. 
+                    // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit.
+                    // TODO: Update with error codes from vs-solutionpersistence
                     if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
                     {
                         Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
@@ -163,7 +162,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             if (solutionFolder is null)
             {
                 var relativePathDirectory = Path.GetDirectoryName(relativePath);
-                if (relativePathDirectory != null)
+                if (relativePathDirectory != null && !_inRoot)
                 {
                     SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
                     project.MoveToFolder(relativeSolutionFolder);
