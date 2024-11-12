@@ -359,9 +359,9 @@
     <comment/>
   </data>
   <data name="BuildingImageIndex" xml:space="preserve">
-    <value>Building image index '{0}' on top of images {1}.</value>
+    <value>Building image index '{0}' on top of manifests {1}.</value>
     <comment>
-      {0} is the name of the image index and its tag, {1} is the list of image digests
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </comment>
   </data>
   <data name="MixedMediaTypes" xml:space="preserve">

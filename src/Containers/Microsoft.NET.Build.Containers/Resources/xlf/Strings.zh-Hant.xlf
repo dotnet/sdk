@@ -58,10 +58,10 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
-        <source>Building image index '{0}' on top of images {1}.</source>
-        <target state="new">Building image index '{0}' on top of images {1}.</target>
+        <source>Building image index '{0}' on top of manifests {1}.</source>
+        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
         <note>
-      {0} is the name of the image index and its tag, {1} is the list of image digests
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">

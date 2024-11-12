@@ -169,7 +169,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Building image index &apos;{0}&apos; on top of images {1}..
+        ///   Looks up a localized string similar to Building image index &apos;{0}&apos; on top of manifests {1}..
         /// </summary>
         internal static string BuildingImageIndex {
             get {
