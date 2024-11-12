@@ -20,6 +20,16 @@
     <BuildArgs>$(BuildArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</BuildArgs>
     <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</BuildArgs>
+
+    <!-- Pass RID and Portable/non-portable information -->
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -159,7 +169,7 @@
       -->
       <AddNetSdkSupportingFeed>true</AddNetSdkSupportingFeed>
       <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
-      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
+      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json</NetSdkSupportingFeed>
     </PropertyGroup>
 
     <ItemGroup>
@@ -265,8 +275,7 @@
   </Target>
 
   <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
-  <Target Name="UpdateEngCommonFiles"
-          Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'">
+  <Target Name="UpdateEngCommonFiles">
     <ItemGroup>
       <OrchestratorEngCommonFile Include="$(RepositoryEngineeringDir)common\**\*" />
     </ItemGroup>
@@ -489,14 +498,14 @@
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
 
-    <!-- Propagate errors to the output when using the minimal console log feature. -->
-    <OnError ExecuteTargets="LogRepoBuildError" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
+    <OnError ExecuteTargets="MoveDotNetBuildLogs;LogRepoBuildError" />
   </Target>
 
-  <Target Name="LogRepoBuildError">
-    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
+  <!-- Propagate errors to the output when using the minimal console log feature. -->
+  <Target Name="LogRepoBuildError" Condition="'$(MinimalConsoleLogOutput)' == 'true'">
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)')" />
     <Message Importance="High" Text="'$(RepositoryName)' failed during build." />
-    <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
+    <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)')" />
   </Target>
 
   <!-- Log the new repo artifacts -->
@@ -621,8 +630,9 @@
     <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
     <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
 
-    <!-- Cleanup everything else -->
-    <RemoveDir Directories="@(DirsToDeleteWithTrailingSeparator)" />
+    <!-- Cleanup everything else. Ignore errors as out-of-band build servers don't reliably shut down, even with the build-server shutdown command.
+         https://github.com/dotnet/source-build/issues/4175 tracks a long term fix. -->
+    <RemoveDir Directories="@(DirsToDeleteWithTrailingSeparator)" ContinueOnError="true" />
 
     <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
     <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />

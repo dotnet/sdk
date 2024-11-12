@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="Command">
         <source>Command</source>
-        <target state="new">Command</target>
+        <target state="translated">Příkaz</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
-        <target state="new">Shows a history of workload installation actions.</target>
+        <target state="translated">Zobrazí historii akcí instalace úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
-        <target state="new">Date</target>
+        <target state="translated">Datum</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
-        <target state="new">Global.json Version</target>
+        <target state="translated">Verze souboru global.json</target>
         <note />
       </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
-        <target state="new">Id</target>
+        <target state="translated">ID</target>
         <note />
       </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
-        <target state="new">No workload history found</target>
+        <target state="translated">Nenašla se žádná historie úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
-        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <target state="translated">Řádky s nezaprotokolovanými změnami představují změny z jiných akcí než příkazů úloh rozhraní příkazového řádku .NET. Obvykle to představuje aktualizaci sady .NET SDK nebo sady Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">Verze úlohy</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
-        <target state="new">Workloads</target>
+        <target state="translated">Úlohy</target>
         <note />
       </trans-unit>
     </body>
