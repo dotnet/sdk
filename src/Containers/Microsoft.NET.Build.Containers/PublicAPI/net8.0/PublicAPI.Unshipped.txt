@@ -3,6 +3,7 @@ const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputedContainerBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
@@ -13,15 +14,17 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContaine
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 0 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber | Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 4 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = 8 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.Descriptor
 Microsoft.NET.Build.Containers.Descriptor.Annotations.get -> System.Collections.Generic.Dictionary<string!, string?>?
 Microsoft.NET.Build.Containers.Descriptor.Annotations.init -> void
@@ -69,6 +72,15 @@ Microsoft.NET.Build.Containers.ManifestListV2.mediaType.get -> string!
 Microsoft.NET.Build.Containers.ManifestListV2.mediaType.set -> void
 Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1
+Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1() -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1(int schemaVersion, string! mediaType, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]! manifests) -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.manifests.get -> Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]!
+Microsoft.NET.Build.Containers.ImageIndexV1.manifests.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.mediaType.get -> string!
+Microsoft.NET.Build.Containers.ImageIndexV1.mediaType.set -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.get -> int
+Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
@@ -78,7 +90,7 @@ Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.ManifestLayer>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
-Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string!
+Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string?
 Microsoft.NET.Build.Containers.ManifestV2.MediaType.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.init -> void
@@ -106,6 +118,19 @@ Microsoft.NET.Build.Containers.PlatformSpecificManifest.PlatformSpecificManifest
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.PlatformSpecificManifest(string! mediaType, long size, string! digest, Microsoft.NET.Build.Containers.PlatformInformation platform) -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.size.get -> long
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.size.set -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.digest.get -> string!
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.digest.set -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.mediaType.get -> string!
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.mediaType.set -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.platform.get -> Microsoft.NET.Build.Containers.PlatformInformation
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.platform.set -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.size.get -> long
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.size.set -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.PlatformSpecificOciManifest() -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.PlatformSpecificOciManifest(string! mediaType, long size, string! digest, Microsoft.NET.Build.Containers.PlatformInformation platform, System.Collections.Generic.Dictionary<string!, string!>! annotations) -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.annotations.get -> System.Collections.Generic.Dictionary<string!, string!>!
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.annotations.set -> void
 Microsoft.NET.Build.Containers.Port
 Microsoft.NET.Build.Containers.Port.Deconstruct(out int Number, out Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Equals(Microsoft.NET.Build.Containers.Port other) -> bool
@@ -125,7 +150,6 @@ Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Container
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputeDotnetBaseImageAndTag() -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void
@@ -198,6 +222,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
@@ -226,29 +252,36 @@ static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string? port
 static readonly Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.SupportedLocalRegistryTypes -> string![]!
 ~override Microsoft.NET.Build.Containers.PlatformInformation.ToString() -> string
 ~override Microsoft.NET.Build.Containers.PlatformSpecificManifest.ToString() -> string
+~override Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.ToString() -> string
 static Microsoft.NET.Build.Containers.PlatformInformation.operator !=(Microsoft.NET.Build.Containers.PlatformInformation left, Microsoft.NET.Build.Containers.PlatformInformation right) -> bool
 static Microsoft.NET.Build.Containers.PlatformSpecificManifest.operator !=(Microsoft.NET.Build.Containers.PlatformSpecificManifest left, Microsoft.NET.Build.Containers.PlatformSpecificManifest right) -> bool
+static Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.operator !=(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest left, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest right) -> bool
 static Microsoft.NET.Build.Containers.PlatformInformation.operator ==(Microsoft.NET.Build.Containers.PlatformInformation left, Microsoft.NET.Build.Containers.PlatformInformation right) -> bool
 ~override Microsoft.NET.Build.Containers.ManifestConfig.ToString() -> string
 static Microsoft.NET.Build.Containers.PlatformSpecificManifest.operator ==(Microsoft.NET.Build.Containers.PlatformSpecificManifest left, Microsoft.NET.Build.Containers.PlatformSpecificManifest right) -> bool
+static Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.operator ==(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest left, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest right) -> bool
 override Microsoft.NET.Build.Containers.PlatformInformation.GetHashCode() -> int
 static Microsoft.NET.Build.Containers.ManifestConfig.operator !=(Microsoft.NET.Build.Containers.ManifestConfig left, Microsoft.NET.Build.Containers.ManifestConfig right) -> bool
 override Microsoft.NET.Build.Containers.PlatformSpecificManifest.GetHashCode() -> int
+override Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.GetHashCode() -> int
 static Microsoft.NET.Build.Containers.ManifestConfig.operator ==(Microsoft.NET.Build.Containers.ManifestConfig left, Microsoft.NET.Build.Containers.ManifestConfig right) -> bool
 ~override Microsoft.NET.Build.Containers.PlatformInformation.Equals(object obj) -> bool
 ~override Microsoft.NET.Build.Containers.Descriptor.ToString() -> string
 ~override Microsoft.NET.Build.Containers.ManifestLayer.ToString() -> string
 override Microsoft.NET.Build.Containers.ManifestConfig.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.PlatformSpecificManifest.Equals(object obj) -> bool
+~override Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.PlatformInformation.Equals(Microsoft.NET.Build.Containers.PlatformInformation other) -> bool
 ~override Microsoft.NET.Build.Containers.ManifestConfig.Equals(object obj) -> bool
 static Microsoft.NET.Build.Containers.ManifestLayer.operator !=(Microsoft.NET.Build.Containers.ManifestLayer left, Microsoft.NET.Build.Containers.ManifestLayer right) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificManifest other) -> bool
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest other) -> bool
 static Microsoft.NET.Build.Containers.Descriptor.operator !=(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
 Microsoft.NET.Build.Containers.PlatformInformation.Deconstruct(out string! architecture, out string! os, out string? variant, out string![]! features, out string? version) -> void
 Microsoft.NET.Build.Containers.ManifestConfig.Equals(Microsoft.NET.Build.Containers.ManifestConfig other) -> bool
 static Microsoft.NET.Build.Containers.ManifestLayer.operator ==(Microsoft.NET.Build.Containers.ManifestLayer left, Microsoft.NET.Build.Containers.ManifestLayer right) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.Deconstruct(out string! mediaType, out long size, out string! digest, out Microsoft.NET.Build.Containers.PlatformInformation platform) -> void
+Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Deconstruct(out string! mediaType, out long size, out string! digest, out Microsoft.NET.Build.Containers.PlatformInformation platform, out System.Collections.Generic.Dictionary<string!, string!>! annotations) -> void
 Microsoft.NET.Build.Containers.ManifestConfig.Deconstruct(out string! mediaType, out long size, out string! digest) -> void
 static Microsoft.NET.Build.Containers.Descriptor.operator ==(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
 override Microsoft.NET.Build.Containers.ManifestLayer.GetHashCode() -> int
@@ -265,3 +298,10 @@ override Microsoft.NET.Build.Containers.ManifestListV2.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.ManifestListV2.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ManifestListV2.Equals(Microsoft.NET.Build.Containers.ManifestListV2 other) -> bool
 Microsoft.NET.Build.Containers.ManifestListV2.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
+~override Microsoft.NET.Build.Containers.ImageIndexV1.ToString() -> string
+static Microsoft.NET.Build.Containers.ImageIndexV1.operator !=(Microsoft.NET.Build.Containers.ImageIndexV1 left, Microsoft.NET.Build.Containers.ImageIndexV1 right) -> bool
+static Microsoft.NET.Build.Containers.ImageIndexV1.operator ==(Microsoft.NET.Build.Containers.ImageIndexV1 left, Microsoft.NET.Build.Containers.ImageIndexV1 right) -> bool
+override Microsoft.NET.Build.Containers.ImageIndexV1.GetHashCode() -> int
+~override Microsoft.NET.Build.Containers.ImageIndexV1.Equals(object obj) -> bool
+Microsoft.NET.Build.Containers.ImageIndexV1.Equals(Microsoft.NET.Build.Containers.ImageIndexV1 other) -> bool
+Microsoft.NET.Build.Containers.ImageIndexV1.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]! manifests) -> void
