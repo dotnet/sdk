@@ -22,6 +22,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private readonly IReadOnlyCollection<string> _projects;
         private readonly string? _solutionFolderPath;
 
+        private static string GetSolutionFolderPathWithForwardSlashes(string path)
+        {
+            // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
+            return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(path).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
+        }
         public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
@@ -80,7 +85,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 }); 
             }
             SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
-                ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes())
+                ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
                 : null;
             foreach (var projectPath in projectPaths)
             {
@@ -135,12 +140,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             solution.DistillProjectConfigurations();
         }
 
-        private string GetSolutionFolderPathWithForwardSlashes()
-        {
-            // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
-            return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(_solutionFolderPath).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
-        }
-
         private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
             SolutionProjectModel project;
@@ -159,6 +158,21 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 {
                     throw;
                 }
+            }
+            // Generate local solution folder
+            if (solutionFolder is null)
+            {
+                var relativePathDirectory = Path.GetDirectoryName(relativePath);
+                if (relativePathDirectory != null)
+                {
+                    SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
+                    project.MoveToFolder(relativeSolutionFolder);
+                    // Avoid duplicate folder/project names
+                    if (project.Parent is not null && project.Parent.ActualDisplayName == project.ActualDisplayName)
+                    {
+                        solution.RemoveFolder(project.Parent);
+                    }
+                }                
             }
         }
     }
