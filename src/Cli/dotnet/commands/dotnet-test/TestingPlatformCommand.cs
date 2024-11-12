@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -24,6 +25,7 @@ namespace Microsoft.DotNet.Cli
         private List<string> _args;
         private Dictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
         private byte _cancelled;
+        private bool _isDiscovery;
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
@@ -51,23 +53,29 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
+            if (parseResult.HasOption(TestingPlatformOptions.ListTestsOption))
+            {
+                _isDiscovery = true;
+            }
+
             BuiltInOptions builtInOptions = new(
                 parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
                 parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
 
             var console = new SystemConsole();
             var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1",
+                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
                 ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
                 UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });
             _output = output;
-            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism);
+            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
 
             if (ContainsHelpOption(parseResult.GetArguments()))
             {
@@ -183,13 +191,23 @@ namespace Microsoft.DotNet.Cli
 
         private void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
         {
+            var testApp = (TestApplication)sender;
+            var appInfo = _executions[testApp];
+            _executions[testApp] = appInfo;
+
+            foreach (var test in args.DiscoveredTests)
+            {
+                _output.TestDiscovered(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                        test.DisplayName,
+                        test.Uid);
+            }
+
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
             }
 
             var discoveredTestMessages = args.DiscoveredTests;
-
             VSTestTrace.SafeWriteTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
             foreach (DiscoveredTest discoveredTestMessage in discoveredTestMessages)
             {
@@ -203,13 +221,11 @@ namespace Microsoft.DotNet.Cli
             {
                 var testApp = (TestApplication)sender;
                 var appInfo = _executions[testApp];
-                // TODO: timespan for duration
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                     testResult.DisplayName,
                     ToOutcome(testResult.State),
-                    TimeSpan.FromSeconds(1),
-                    errorMessage: null,
-                    errorStackTrace: null,
+                    TimeSpan.FromTicks(testResult.Duration ?? 0),
+                    exceptions: null,
                     expected: null,
                     actual: null,
                     standardOutput: null,
@@ -219,16 +235,14 @@ namespace Microsoft.DotNet.Cli
             foreach (var testResult in args.FailedTestResults)
             {
                 var testApp = (TestApplication)sender;
-                // TODO: timespan for duration
                 // TODO: expected
                 // TODO: actual
                 var appInfo = _executions[testApp];
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                     testResult.DisplayName,
                     ToOutcome(testResult.State),
-                    TimeSpan.FromSeconds(1),
-                    errorMessage: testResult.ErrorMessage,
-                    errorStackTrace: testResult.ErrorStackTrace,
+                    TimeSpan.FromTicks(testResult.Duration ?? 0),
+                    exceptions: testResult.Exceptions.Select(fe => new Microsoft.Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
                     expected: null,
                     actual: null,
                     standardOutput: null,
@@ -252,8 +266,8 @@ namespace Microsoft.DotNet.Cli
             foreach (FailedTestResult failedTestResult in args.FailedTestResults)
             {
                 VSTestTrace.SafeWriteTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {failedTestResult.ErrorMessage}," +
-                $"{failedTestResult.ErrorStackTrace}, {failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
+                $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
             }
         }
 
@@ -273,6 +287,17 @@ namespace Microsoft.DotNet.Cli
 
         private void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
         {
+            var testApp = (TestApplication)sender;
+            var appInfo = _executions[testApp];
+
+            foreach (var artifact in args.FileArtifacts) {
+                // TODO: Is artifact out of process
+                _output.ArtifactAdded(
+                    outOfProcess: false,
+                    appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    artifact.TestDisplayName, artifact.FullPath);
+            }
+
             if (!VSTestTrace.TraceEnabled)
             {
                 return;
@@ -313,8 +338,12 @@ namespace Microsoft.DotNet.Cli
         {
             var testApplication = (TestApplication)sender;
 
-            var appInfo = _executions[testApplication];
-            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+            // If the application exits too early we might not start the execution,
+            // e.g. if the parameter is incorrect.
+            if (_executions.TryGetValue(testApplication, out var appInfo))
+            {
+                _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            }
 
             if (!VSTestTrace.TraceEnabled)
             {
