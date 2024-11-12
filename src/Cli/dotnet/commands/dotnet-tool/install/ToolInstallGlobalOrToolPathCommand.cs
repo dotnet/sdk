@@ -49,6 +49,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowPackageDowngrade;
 
 
+        internal readonly RestoreActionConfig _restoreActionConfig;
+
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
@@ -77,11 +79,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
-            var restoreAction = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
                 NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: _restoreActionConfig, verbosityOptions: _verbosity);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
 
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
@@ -153,7 +155,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         targetFramework: _framework,
                         verbosity: _verbosity,
                         isGlobalTool: true,
-                        isGlobalToolRollForward: _allowRollForward
+                        isGlobalToolRollForward: _allowRollForward,
+                        restoreActionConfig: _restoreActionConfig
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
