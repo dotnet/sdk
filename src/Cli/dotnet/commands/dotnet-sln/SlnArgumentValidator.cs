@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Sln
             Add,
             Remove
         }
-        public static void ParseAndValidateArguments(string _fileOrDirectory, IReadOnlyCollection<string> _arguments, CommandType commandType, bool _inRoot = false, string relativeRoot = null)
+        public static void ParseAndValidateArguments(IReadOnlyCollection<string> _arguments, CommandType commandType, bool _inRoot = false, string relativeRoot = null, string subcommand = null)
         {
             if (_arguments.Count == 0)
             {
@@ -35,11 +35,15 @@ namespace Microsoft.DotNet.Tools.Sln
                 string args;
                 if (_inRoot)
                 {
-                    args = $"--{SlnAddParser.InRootOption.Name} ";
+                    args = subcommand is "file" or "folder"
+                        ? $"{SlnAddParser.InRootOption.Name} "
+                        : $"--{SlnAddParser.InRootOption.Name} ";
                 }
                 else if (hasRelativeRoot)
                 {
-                    args = $"--{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
+                    args = subcommand is "file" or "folder"
+                        ? $"{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} "
+                        : $"--{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
                 }
                 else
                 {
@@ -47,13 +51,20 @@ namespace Microsoft.DotNet.Tools.Sln
                 }
 
                 var projectArgs = string.Join(" ", _arguments.Where(path => !path.EndsWith(".sln")));
-                string command = commandType == CommandType.Add ? "add" : "remove";
-                throw new GracefulException(new string[]
+                string command = commandType switch
                 {
+                    CommandType.Add => "add",
+                    CommandType.Remove => "remove",
+                    _ => throw new InvalidOperationException($"Unable to handle command type {commandType}"),
+                };
+                throw new GracefulException(
+                [
                     string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
                     CommonLocalizableStrings.DidYouMean,
-                    $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
-                });
+                    subcommand == null
+                        ? $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
+                        : $"  dotnet solution {slnFile} {command} {subcommand} {args}{projectArgs}"
+                ]);
             }
         }
     }

@@ -9,23 +9,23 @@ using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Tools.Sln.Add;
 
-internal class AddProjectToSolutionCommand : CommandBase
+internal class AddFolderToSolutionCommand : CommandBase
 {
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
     private readonly IList<string> _relativeRootSolutionFolders;
     private readonly IReadOnlyCollection<string> _arguments;
 
-    public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
+    public AddFolderToSolutionCommand(ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-        _arguments = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? [];
+        _arguments = parseResult.GetValue(SlnAddFolderParser.FolderPathArgument).ToArray();
 
-        _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
-        string relativeRoot = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
+        _inRoot = parseResult.GetValue(SlnAddFolderParser.InRootOption);
+        string relativeRoot = parseResult.GetValue(SlnAddFolderParser.SolutionFolderOption);
 
-        SlnArgumentValidator.ParseAndValidateArguments(_arguments, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot);
+        SlnArgumentValidator.ParseAndValidateArguments(_arguments, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot, subcommand: "folder");
 
         bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
 
@@ -44,30 +44,21 @@ internal class AddProjectToSolutionCommand : CommandBase
     {
         SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
 
-        var arguments = (_parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
-        if (arguments.Count == 0)
+        var arguments = _parseResult.GetValue(SlnAddFolderParser.FolderPathArgument).ToArray();
+        if (arguments.Length == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
+            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneFolderToAdd);
         }
 
-        PathUtility.EnsureAllPathsExist(arguments, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-
-        var fullProjectPaths = _arguments.Select(p =>
-        {
-            var fullPath = Path.GetFullPath(p);
-            return Directory.Exists(fullPath) ?
-                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName :
-                fullPath;
-        }).ToList();
+        var fullSolutionFolderPaths = _arguments.Select(Path.GetFullPath).ToList();
 
         var preAddProjectCount = slnFile.Projects.Count;
 
-        foreach (var fullProjectPath in fullProjectPaths)
+        foreach (var fullSolutionFolderPath in fullSolutionFolderPaths)
         {
             // Identify the intended solution folders
-            var solutionFolders = DetermineSolutionFolder(slnFile, fullProjectPath);
-
-            slnFile.AddProject(fullProjectPath, solutionFolders);
+            var solutionFolders = DetermineSolutionFolder(slnFile, fullSolutionFolderPath);
+            slnFile.AddSolutionFolder(fullSolutionFolderPath, solutionFolders);
         }
 
         if (slnFile.Projects.Count > preAddProjectCount)

@@ -7,23 +7,24 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class SlnAddParser
+public static class SlnAddFileParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.AddProjectPathArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> FilePathArgument = new(LocalizableStrings.AddFilePathArgumentName)
     {
-        HelpName = LocalizableStrings.AddProjectPathArgumentName,
-        Description = LocalizableStrings.AddProjectPathArgumentDescription,
-        Arity = ArgumentArity.ZeroOrMore,
+        HelpName = LocalizableStrings.AddFilePathArgumentName,
+        Description = LocalizableStrings.AddFilePathArgumentDescription,
+        Arity = ArgumentArity.OneOrMore,
     };
 
     public static readonly CliOption<bool> InRootOption = new("--in-root")
     {
+        // TODO: "Place *project* in root of the solution" isn't right
         Description = LocalizableStrings.InRoot
     };
 
     public static readonly CliOption<string> SolutionFolderOption = new("--solution-folder", "-s")
     {
-        Description = LocalizableStrings.AddProjectSolutionFolderArgumentDescription
+        Description = LocalizableStrings.AddFileSolutionFolderArgumentDescription
     };
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -35,20 +36,17 @@ public static class SlnAddParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AddAppFullName);
+        CliCommand command = new("file", LocalizableStrings.AddFileFullName);
 
-        command.Subcommands.Add(SlnAddFileParser.GetCommand());
-        command.Subcommands.Add(SlnAddFolderParser.GetCommand());
-        // TODO: Should we support `dotnet sln add project` to be consistent with the new subcommands?
-
-        // TODO: multiple input files should be allowed, at least one should be required
+        // TODO: the folder to place the files in should be an optional parameter, defaulting to the 'Solution Items' folder
         // TODO: Any intermediate folders in the 'destination folder' should be created as necessary
         // TODO: If the 'destination folder' exists, the files should be added to it, a new folder should not be created
-        command.Arguments.Add(ProjectPathArgument);
+        command.Arguments.Add(FilePathArgument);
+
         command.Options.Add(InRootOption);
         command.Options.Add(SolutionFolderOption);
 
-        command.SetAction((parseResult) => new AddProjectToSolutionCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new AddFileToSolutionCommand(parseResult).Execute());
 
         return command;
     }
