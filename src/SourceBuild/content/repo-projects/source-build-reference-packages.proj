@@ -19,16 +19,8 @@
     <BuiltSdkPackage Include="Microsoft.Build.Traversal" />
   </ItemGroup>
 
-  <Target Name="AddLocalNuGetPackageCacheDirectory"
-          AfterTargets="CopyNuGetConfig"
-          BeforeTargets="UpdateNuGetConfig">
-    <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
-             Directories="$(LocalNuGetPackageCacheDirectory)" />
-
-    <AddSourceToNuGetConfig
-      NuGetConfigFile="$(NuGetConfigFile)"
-      SourceName="$(SbrpCacheNuGetSourceName)"
-      SourcePath="$(LocalNuGetPackageCacheDirectory)" />
-  </Target>
+  <ItemGroup>
+    <AdditionalPackageSource Include="$(SbrpCacheNuGetSourceName)" Value="$(LocalNuGetPackageCacheDirectory)" />
+  </ItemGroup>
 
 </Project>

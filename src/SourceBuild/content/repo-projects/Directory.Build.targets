@@ -132,7 +132,7 @@
     </Copy>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddSourceToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddPackageSourcesToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveInternetSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateNuGetConfig"
@@ -151,22 +151,16 @@
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_CommonBuildSources Include="@(DependentRepoSourceName)" />
-      <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
-    </ItemGroup>
-
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
-          that need to utilize a VS-aligned version for development purposes may not have the latest product
-          daily build feed in their NuGet.config. This means that when a newer globally-specified .NET SDK
-          attempts to restore shared framework packages, they will not be found. Work around this by
-          ensuring that repos have the supporting SDK feed. Note that this is not required when the SDK
-          in use is a released SDK.
+           that need to utilize a VS-aligned version for development purposes may not have the latest product
+           daily build feed in their NuGet.config. This means that when a newer globally-specified .NET SDK
+           attempts to restore shared framework packages, they will not be found. Work around this by
+           ensuring that repos have the supporting SDK feed. Note that this is not required when the SDK
+           in use is a released SDK.
 
-          Currently we are using a preview .NET 9 SDK and not all repos are using the Net 9 SDK
-          If either of these are not true, set below to false.
-      -->
+           Currently we are using a preview .NET 10 SDK and not all repos are using the NET 10 SDK
+           If either of these are not true, set below to false. -->
       <AddNetSdkSupportingFeed>true</AddNetSdkSupportingFeed>
       <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
       <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json</NetSdkSupportingFeed>
@@ -175,9 +169,8 @@
     <ItemGroup>
       <_BuildSources Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)"
                      Condition="'$(DotNetBuildSourceOnly)' == 'true'"/>
-      <_BuildSources Include="@(_CommonBuildSources)" />
-      <_BuildSources Include="$(NetSdkSupportingFeedName)"
-                     Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+      <_BuildSources Include="@(DependentRepoSourceName)" />
+      <_BuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
 
     <RemoveInternetSourcesFromNuGetConfig
@@ -186,41 +179,27 @@
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="$(PrebuiltNuGetSourceName)"
-                            SourcePath="$(PrebuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+      <AdditionalPackageSource Include="$(PrebuiltNuGetSourceName)" Value="$(PrebuiltPackagesPath)" />
+      <AdditionalPackageSource Include="$(PreviouslySourceBuiltNuGetSourceName)" Value="$(PrebuiltSourceBuiltPackagesPath)" />
+      <AdditionalPackageSource Include="$(ReferencePackagesNuGetSourceName)" Value="$(ReferencePackagesDir)" />
+    </ItemGroup>
 
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
-                            SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <ItemGroup>
+      <AdditionalPackageSource Include="%(RepositoryReferenceInfo.ShippingSourceName)"
+                               Value="%(RepositoryReferenceInfo.ShippingPackagesPath)"
+                               Condition="Exists('%(RepositoryReferenceInfo.ShippingPackagesPath)')" />
+      <AdditionalPackageSource Include="%(RepositoryReferenceInfo.NonShippingSourceName)"
+                               Value="%(RepositoryReferenceInfo.NonShippingPackagesPath)"
+                               Condition="Exists('%(RepositoryReferenceInfo.NonShippingPackagesPath)')" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="$(ReferencePackagesNuGetSourceName)"
-                            SourcePath="$(ReferencePackagesDir)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+      <AdditionalPackageSource Include="$(ExtraSourcesNuGetSourceName)" Value="$(ExtraRestoreSourcePath)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
+      <AdditionalPackageSource Include="$(NetSdkSupportingFeedName)" Value="$(NetSdkSupportingFeed)" Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+    </ItemGroup>
 
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="%(RepositoryReferenceInfo.ShippingSourceName)"
-                            SourcePath="%(RepositoryReferenceInfo.ShippingPackagesPath)"
-                            Condition="Exists('%(RepositoryReferenceInfo.ShippingPackagesPath)')" />
-
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="%(RepositoryReferenceInfo.NonShippingSourceName)"
-                            SourcePath="%(RepositoryReferenceInfo.NonShippingPackagesPath)"
-                            Condition="Exists('%(RepositoryReferenceInfo.NonShippingPackagesPath)')" />
-
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="$(ExtraSourcesNuGetSourceName)"
-                            SourcePath="$(ExtraRestoreSourcePath)"
-                            Condition="'$(ExtraRestoreSourcePath)' != ''" />
-
-    <!-- See root Directory.Build.props for value. -->
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="$(NetSdkSupportingFeedName)"
-                            SourcePath="$(NetSdkSupportingFeed)"
-                            Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+    <AddPackageSourcesToNuGetConfig
+      NuGetConfigFile="$(NuGetConfigFile)"
+      PackageSources="@(AdditionalPackageSource)" />
 
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="$(NuGetConfigFile)"
