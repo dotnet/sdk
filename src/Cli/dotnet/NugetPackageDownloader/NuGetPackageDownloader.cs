@@ -347,7 +347,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
-            List<PackageSource> defaultSources = new();
+            HashSet<PackageSource> defaultSources = new();
             string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
@@ -365,7 +365,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             PackageSourceProvider packageSourceProvider = new(settings);
-            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
+            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToHashSet();
 
             packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
                 }
-                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToHashSet();
                 if (defaultSources.Count == 0)
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
@@ -389,7 +389,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 foreach (string source in packageSourceLocation?.AdditionalSourceFeed)
                 {
-                    if (string.IsNullOrWhiteSpace(source) || defaultSources.Contains(new PackageSource(source)))
+                    if (string.IsNullOrWhiteSpace(source))
                     {
                         continue;
                     }
@@ -407,7 +407,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 }
             }
 
-            return defaultSources;
+            return defaultSources.ToList();
         }
 
         private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
