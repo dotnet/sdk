@@ -892,12 +892,13 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_EnvVariables()
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
 
         // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -919,7 +920,7 @@ public class EndToEndTests : IDisposable
             """);
 
         // Run PublishContainer for multi-arch
-        CommandResult commandResult = new DotnetCommand(
+        new DotnetCommand(
             _testOutput,
             "build",
             "/t:PublishContainer",
@@ -929,34 +930,42 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute();
-
-        // Check that the app was published for RID
-        // images were created locally for RID
-        commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
+            .Execute()
+            .Should().Pass();
 
         // Check that the env var is printed
-        CommandResult processResult = ContainerCli.RunCommand(
+        string containerNameX64 = $"test-container-{imageName}-x64";
+        CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--name",
-            $"test-container-{imageName}",
+            containerNameX64,
             imageX64)
         .Execute();
-        processResult.Should().Pass().And.HaveStdOut("FooBar");
+        processResultX64.Should().Pass().And.HaveStdOut("FooBar");
+
+        // Check that the env var is printed
+        string containerNameArm64 = $"test-container-{imageName}-arm64";
+        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            containerNameArm64,
+            imageArm64)
+        .Execute();
+        processResultArm64.Should().Pass().And.HaveStdOut("FooBar");
 
         // Cleanup
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_Ports()
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
 
         // Create new web app, set ContainerPort
         DirectoryInfo newProjectDir = CreateNewProject("webapp");
@@ -973,54 +982,76 @@ public class EndToEndTests : IDisposable
         File.WriteAllText(csprojPath, csprojContent);
 
         // Run PublishContainer for multi-arch
-        CommandResult commandResult = new DotnetCommand(
+        new DotnetCommand(
             _testOutput,
             "build",
             "/t:PublishContainer",
-            "/p:RuntimeIdentifiers=linux-x64",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute();
+            .Execute()
+            .Should().Pass();
 
-        // Check that the app was published for RID
-        // images were created locally for RID
-        commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
-
-        // Check that the port is correct
-        var containerName = $"test-container-{imageName}";
-        CommandResult processResult = ContainerCli.RunCommand(
+        // Check that the ports are correct
+        var containerNameX64 = $"test-container-{imageName}-x64";
+        CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--name",
-            containerName,
+            containerNameX64,
             "-P",
             "--detach",
             imageX64)
         .Execute();
-        processResult.Should().Pass();
+        processResultX64.Should().Pass();
 
-        // Check the default port (8080)
-        ContainerCli.PortCommand(_testOutput, containerName, 8080)
-                .Execute().Should().Pass();
-        // Check the provided 8082 and 8083 ports
-        ContainerCli.PortCommand(_testOutput, containerName, 8082)
-                .Execute().Should().Pass();
-        ContainerCli.PortCommand(_testOutput, containerName, 8083)
-               .Execute().Should().Pass();
-        // Check that not provided port is not available
-        ContainerCli.PortCommand(_testOutput, containerName, 8081)
-               .Execute().Should().Fail();
+        // 8080 is the default port
+        CheckPorts(containerNameX64, [8080, 8082, 8083], [8081]);
+
+        // Check that the ports are correct
+        var containerNameArm64 = $"test-container-{imageName}-arm64";
+        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            containerNameArm64,
+            "-P",
+            "--detach",
+            imageArm64)
+        .Execute();
+        processResultArm64.Should().Pass();
+
+        // 8080 is the default port
+        CheckPorts(containerNameArm64, [8080, 8082, 8083], [8081]);
 
         // Cleanup
-        ContainerCli.StopCommand(_testOutput, containerName)
+        // we ran containers with detached option, so we need to stop them
+        ContainerCli.StopCommand(_testOutput, containerNameX64)
+           .Execute()
+           .Should().Pass();
+        ContainerCli.StopCommand(_testOutput, containerNameArm64)
            .Execute()
            .Should().Pass();
         newProjectDir.Delete(true);
+    }
+
+    private void CheckPorts(string containerName, int[] correctPorts, int[] incorrectPorts)
+    {
+        foreach (var port in correctPorts)
+        {
+            // Check the provided port is available
+            ContainerCli.PortCommand(_testOutput, containerName, port)
+                .Execute().Should().Pass();
+        }
+        foreach (var port in incorrectPorts)
+        {
+            // Check that not provided port is not available
+            ContainerCli.PortCommand(_testOutput, containerName, port)
+                .Execute().Should().Fail();
+        }
     }
 
     [DockerAvailableFact]
@@ -1034,23 +1065,18 @@ public class EndToEndTests : IDisposable
         DirectoryInfo newProjectDir = CreateNewProject("webapp");
 
         // Run PublishContainer for multi-arch with ContainerGenerateLabels
-        CommandResult commandResult = new DotnetCommand(
+        new DotnetCommand(
             _testOutput,
             "build",
             "/t:PublishContainer",
-            "/p:RuntimeIdentifiers=linux-x64",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute();
-
-        // Check that the app was published for RID
-        // images were created locally for RID
-        commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry");
+            .Execute()
+            .Should().Pass();
 
         // Check that labels are set
         CommandResult inspectResult = ContainerCli.InspectCommand(
