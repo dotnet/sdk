@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     // TODO: Update with error codes from vs-solutionpersistence
                     if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
                     {
-                        throw new GracefulException(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath, ex.Message);
+                        Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                     }
                     else
                     {
