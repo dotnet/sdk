@@ -335,7 +335,7 @@
 
     <MSBuild
         Projects="@(_InnerBuild)"
-        Targets="Publish;_ParseParametersForPublishingSingleContainer;_PublishSingleContainer"
+        Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
         BuildInParallel="true">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
     </MSBuild>
@@ -354,7 +354,7 @@
     </CreateImageIndex>
   </Target>
 
-  <Target Name="_ParseParametersForPublishingSingleContainer">
+  <Target Name="_ParseItemsForPublishingSingleContainer">
     <ItemGroup>
       <OriginalImageTags Include="$(_ContainerImageTags)"/>
       <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
