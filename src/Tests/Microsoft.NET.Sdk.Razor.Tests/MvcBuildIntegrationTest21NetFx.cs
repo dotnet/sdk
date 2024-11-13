@@ -1,22 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class MvcBuildIntegrationTest21NetFx : AspNetSdkTest
     {
         private const string TestProjectName ="SimpleMvc21NetFx";
-        private const string TargetFramework = "net461";
+        private const string TargetFramework = "net462";
         public const string OutputFileName = TestProjectName + ".exe";
         public MvcBuildIntegrationTest21NetFx(ITestOutputHelper log) : base(log) { }
 

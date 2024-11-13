@@ -1,21 +1,10 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FluentAssertions;
 using FluentAssertions.Json;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -47,14 +36,14 @@ namespace Microsoft.NET.Publish.Tests
                 // TestLibrary has a hard dependency on Newtonsoft.Json.
                 // TestApp has a PrivateAssets=All dependency on Microsoft.Extensions.DependencyModel, which depends on Newtonsoft.Json.
                 // This verifies that P2P references get walked correctly when doing PrivateAssets exclusion.
-                VerifyDependency(dependencyContext, "Newtonsoft.Json", "lib/netstandard1.0/", null);
+                VerifyDependency(dependencyContext, "Newtonsoft.Json", targetFramework == "net6.0" ? "lib/net6.0/" : "lib/netstandard1.3/", null);
 
                 // Verify P2P references get created correctly in the .deps.json file.
                 VerifyDependency(dependencyContext, "TestLibrary", "", null,
                     "da", "de", "fr");
 
                 // Verify package reference with satellites gets created correctly in the .deps.json file
-                VerifyDependency(dependencyContext, "Humanizer.Core", targetFramework == ToolsetInfo.CurrentTargetFramework ? "lib/netstandard2.0/" : "lib/netstandard1.0/", "Humanizer",
+                VerifyDependency(dependencyContext, "Humanizer.Core", targetFramework == "net6.0" ? "lib/netstandard2.0/" : "lib/netstandard1.0/", "Humanizer",
                     "af", "ar", "az", "bg", "bn-BD", "cs", "da", "de", "el", "es", "fa", "fi-FI", "fr", "fr-BE", "he", "hr",
                     "hu", "hy", "id", "it", "ja", "lv", "ms-MY", "mt", "nb", "nb-NO", "nl", "pl", "pt", "ro", "ru", "sk", "sl", "sr",
                     "sr-Latn", "sv", "tr", "uk", "uz-Cyrl-UZ", "uz-Latn-UZ", "vi", "zh-CN", "zh-Hans", "zh-Hant");
@@ -71,6 +60,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.AggressiveAttributeTrimming"": true,
             ""System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"": false,
             ""System.Diagnostics.Debugger.IsSupported"": true,
+            ""System.Diagnostics.Metrics.Meter.IsSupported"": false,
             ""System.Diagnostics.Tracing.EventSource.IsSupported"": false,
             ""System.Globalization.Invariant"": true,
             ""System.Globalization.PredefinedCulturesOnly"": true,
@@ -83,6 +73,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Reflection.NullabilityInfoContext.IsSupported"": false,
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,
             ""System.Resources.UseSystemResourceKeys"": true,
+            ""System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"": true,
             ""System.Runtime.InteropServices.BuiltInComInterop.IsSupported"": false,
             ""System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting"": false,
             ""System.Runtime.InteropServices.EnableCppCLIHostActivation"": false,
@@ -90,11 +81,15 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Runtime.TieredCompilation"": true,
             ""System.Runtime.TieredCompilation.QuickJit"": true,
             ""System.Runtime.TieredCompilation.QuickJitForLoops"": true,
+            ""System.Runtime.TieredPGO"": true,
             ""System.StartupHookProvider.IsSupported"": false,
             ""System.Text.Encoding.EnableUnsafeUTF7Encoding"": false,
+            ""System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"": false,
             ""System.Threading.Thread.EnableAutoreleasePool"": false,
             ""System.Threading.ThreadPool.MinThreads"": 2,
             ""System.Threading.ThreadPool.MaxThreads"": 9,
+            ""System.Threading.ThreadPool.UseWindowsThreadPool"": true,
+            ""System.Xml.XmlResolver.IsNetworkingEnabledByDefault"": false,
             ""extraProperty"": true
         },
         ""framework"": {
@@ -106,8 +101,8 @@ namespace Microsoft.NET.Publish.Tests
 }");
             baselineConfigJsonObject["runtimeOptions"]["tfm"] = targetFramework;
             baselineConfigJsonObject["runtimeOptions"]["framework"]["version"] =
-                targetFramework == ToolsetInfo.CurrentTargetFramework ? "6.0.0" : "1.1.2";
-            
+                targetFramework == "net6.0" ? "6.0.0" : "1.1.2";
+
             runtimeConfigJsonObject
                 .Should()
                 .BeEquivalentTo(baselineConfigJsonObject);
@@ -244,7 +239,7 @@ namespace Microsoft.NET.Publish.Tests
             get
             {
                 yield return new object[] {
-                    ToolsetInfo.CurrentTargetFramework,
+                    "net6.0",
                     new string[]
                     {
                         "TestApp.dll",
@@ -327,6 +322,12 @@ namespace Microsoft.NET.Publish.Tests
                         "TestLibrary.dll",
                         "TestLibrary.pdb",
                         "Newtonsoft.Json.dll",
+                        "System.Collections.NonGeneric.dll",
+                        "System.Collections.Specialized.dll",
+                        "System.ComponentModel.Primitives.dll",
+                        "System.ComponentModel.TypeConverter.dll",
+                        "System.Runtime.Serialization.Formatters.dll",
+                        "System.Xml.XmlDocument.dll",
                         "System.Runtime.Serialization.Primitives.dll",
                         "CompileCopyToOutput.cs",
                         "Resource1.resx",

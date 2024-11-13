@@ -1,9 +1,6 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
@@ -17,6 +14,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             Func<string> getCurrentDirectory = null,
             Func<string, string> hasher = null,
             Func<string> getMACAddress = null,
+            Func<string> getDeviceId = null,
             IDockerContainerDetector dockerContainerDetector = null,
             IUserLevelCacheWriter userLevelCacheWriter = null,
             ICIEnvironmentDetector ciEnvironmentDetector = null)
@@ -24,6 +22,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
             _hasher = hasher ?? Sha256Hasher.Hash;
             _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+            _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
             _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
             _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
             _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
@@ -34,6 +33,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private Func<string> _getCurrentDirectory;
         private Func<string, string> _hasher;
         private Func<string> _getMACAddress;
+        private Func<string> _getDeviceId;
         private IUserLevelCacheWriter _userLevelCacheWriter;
         private const string OSVersion = "OS Version";
         private const string OSPlatform = "OS Platform";
@@ -43,6 +43,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private const string ProductVersion = "Product Version";
         private const string TelemetryProfile = "Telemetry Profile";
         private const string CurrentPathHash = "Current Path Hash";
+        private const string DeviceId = "devdeviceid";
         private const string MachineId = "Machine ID";
         private const string MachineIdOld = "Machine ID Old";
         private const string DockerContainer = "Docker Container";
@@ -75,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 {CI, _ciEnvironmentDetector.IsCIEnvironment().ToString() },
                 {CurrentPathHash, _hasher(_getCurrentDirectory())},
                 {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
-                // we don't want to recalcuate a new id for every new SDK version. Reuse the same path accross versions.
+                // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.
                 // If we change the format of the cache later.
                 // We need to rename the cache from v1 to v2
                 {MachineId,
@@ -84,6 +85,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                             CliFolderPathCalculator.DotnetUserProfileFolderPath,
                             $"{MachineIdCacheKey}.v1.dotnetUserLevelCache"),
                         GetMachineId)},
+                {DeviceId, _getDeviceId()},
                 {KernelVersion, GetKernelVersion()},
                 {InstallationType, ExternalTelemetryProperties.GetInstallationType()},
                 {ProductType, ExternalTelemetryProperties.GetProductType()},

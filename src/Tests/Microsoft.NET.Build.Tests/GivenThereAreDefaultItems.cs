@@ -1,20 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Xunit;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit.Abstractions;
 using NuGet.ProjectModel;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -392,6 +379,7 @@ namespace Microsoft.NET.Build.Tests
                     XElement itemGroup = new XElement(ns + "ItemGroup");
                     project.Root.Add(itemGroup);
                     itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", testProject.Name + ".cs")));
+                    itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", testProject.Name + "Program.cs")));
                 });
 
             var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
@@ -409,7 +397,7 @@ namespace Microsoft.NET.Build.Tests
 
             var compileItems = getCompileItemsCommand.GetValues();
             RemoveGeneratedCompileItems(compileItems);
-            compileItems.ShouldBeEquivalentTo(new[] { testProject.Name + ".cs" });
+            compileItems.Should().BeEquivalentTo(new[] { testProject.Name + ".cs", testProject.Name + "Program.cs" });
 
             // Validate None items.
             var getNoneItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "None", GetValuesCommand.ValueType.Item);
@@ -594,7 +582,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "OverrideImplicitFrameworkReference",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
@@ -710,8 +698,8 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             
             testProject.SourceFiles["Test.cs"] = @"
 public class Class1
@@ -764,7 +752,7 @@ public class Class1
             var testProject = new TestProject()
             {
                 Name = "DontIncludeSourceFilesInNone",
-                TargetFrameworks = "net6.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
             };
 
@@ -799,7 +787,7 @@ public class Class1
                 .Pass();
 
             var getPRIResourceItems = getPRIResourceItemsCommand.GetValues();
-            getPRIResourceItems.ShouldBeEquivalentTo(new[] { "ResourcesResw.resw" });
+            getPRIResourceItems.Should().BeEquivalentTo(new[] { "ResourcesResw.resw" });
 
             // Validate Content items.
             var getContentItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "Content", GetValuesCommand.ValueType.Item);
@@ -808,7 +796,7 @@ public class Class1
                 .Pass();
 
             var getContentItems = getContentItemsCommand.GetValues();
-            getContentItems.ShouldBeEquivalentTo(imageFiles);
+            getContentItems.Should().BeEquivalentTo(imageFiles);
         }
 
         [Fact]
@@ -817,7 +805,7 @@ public class Class1
             var testProject = new TestProject()
             {
                 Name = "DontIncludeSourceFilesInNone",
-                TargetFrameworks = "net6.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
             };
 
@@ -842,7 +830,7 @@ public class Class1
             var getNoneItems = getNoneItemsCommand.GetValues();
             List<string> expectedFiles = imageFiles;
             expectedFiles.Add("ResourcesResw.resw");
-            getNoneItems.ShouldBeEquivalentTo(expectedFiles.ToArray());
+            getNoneItems.Should().BeEquivalentTo(expectedFiles.ToArray());
 
             // Validate PRIResource items.
             var getPRIResourceItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "PRIResource", GetValuesCommand.ValueType.Item);
