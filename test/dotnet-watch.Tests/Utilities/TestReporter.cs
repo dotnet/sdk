@@ -18,6 +18,9 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool EnableProcessOutputReporting
             => true;
 
+        public bool IsVerbose
+            => true;
+
         public event Action<string, OutputLine>? OnProjectProcessOutput;
         public event Action<OutputLine>? OnProcessOutput;
 
