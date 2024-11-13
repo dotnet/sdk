@@ -241,46 +241,6 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_ParseParametersForPublishingSingleContainer">
-    <ItemGroup>
-      <OriginalImageTags Include="$(_ContainerImageTags)"/>
-      <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
-      <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
-      <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
-      <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
-      <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
-      <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
-
-      <_ParsedContainerLabel
-        Condition="'$(_ContainerLabel)' != ':'"
-        Include="$(_ContainerLabel)"/>
-      <ContainerLabel
-        Condition="@(_ParsedContainerLabel->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
-        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
-
-      <_ParsedContainerPort
-        Condition="'$(_ContainerPort)' != ':'"
-        Include="$(_ContainerPort)"/>
-      <ContainerPort
-        Condition="@(_ParsedContainerPort->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[0])"
-        Type="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[1])" />
-      
-      <_ParsedContainerEnvironmentVariables
-        Condition="'$(_ContainerEnvironmentVariables)' != ':'"
-        Include="$(_ContainerEnvironmentVariables)"/>
-      <ContainerEnvironmentVariables
-        Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
-        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
-    </ItemGroup>
-    <PropertyGroup>
-      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
-      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="_PublishSingleContainer"
           Returns="@(GeneratedContainers)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
@@ -392,6 +352,46 @@
                       ImageTags="@(ContainerImageTags)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
+  </Target>
+
+  <Target Name="_ParseParametersForPublishingSingleContainer">
+    <ItemGroup>
+      <OriginalImageTags Include="$(_ContainerImageTags)"/>
+      <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
+      <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
+      <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
+      <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
+      <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
+      <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
+
+      <_ParsedContainerLabel
+        Condition="'$(_ContainerLabel)' != ':'"
+        Include="$(_ContainerLabel)"/>
+      <ContainerLabel
+        Condition="@(_ParsedContainerLabel->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
+
+      <_ParsedContainerPort
+        Condition="'$(_ContainerPort)' != ':'"
+        Include="$(_ContainerPort)"/>
+      <ContainerPort
+        Condition="@(_ParsedContainerPort->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[0])"
+        Type="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[1])" />
+
+      <_ParsedContainerEnvironmentVariables
+        Condition="'$(_ContainerEnvironmentVariables)' != ':'"
+        Include="$(_ContainerEnvironmentVariables)"/>
+      <ContainerEnvironmentVariables
+        Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
+    </ItemGroup>
+    <PropertyGroup>
+      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
+      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
+    </PropertyGroup>
   </Target>
 
   <Target Name="PublishContainer"
