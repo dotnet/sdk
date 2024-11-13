@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-            _projects = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+            _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []);
 
             _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
             _solutionFolderPath = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
@@ -41,16 +41,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         public override int Execute()
         {
-            var solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
-
+            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
             if (_projects.Count == 0)
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
-            PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
             try
             {
-                var fullProjectPaths = _projects.Select(project =>
+                PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
+                IEnumerable<string> fullProjectPaths = _projects.Select(project =>
                 {
                     var fullPath = Path.GetFullPath(project);
                     return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
@@ -89,17 +88,17 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 : null;
             foreach (var projectPath in projectPaths)
             {
-                var relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
+                SolutionProjectModel? project = null;
+                string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
                     ProjectRootElement.Open(projectPath); // Try to open the project to see if it is valid
-                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
+                    project = AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (InvalidProjectFileException ex)
                 {
-                    Reporter.Error.WriteLine(string.Format(
-                        CommonLocalizableStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
+                    Reporter.Error.WriteLine(string.Format(CommonLocalizableStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
                 }
                 catch (ArgumentException ex)
                 {
@@ -107,6 +106,10 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     // TODO: Update with error codes from vs-solutionpersistence
                     if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
                     {
+                        if (project is not null && project.Parent is not null)
+                        {
+                            throw new GracefulException(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath, ex.Message);
+                        }
                         Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                     }
                     else
@@ -139,7 +142,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             solution.DistillProjectConfigurations();
         }
 
-        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
+        private SolutionProjectModel AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
             SolutionProjectModel project;
             try
@@ -158,11 +161,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     throw;
                 }
             }
-            // Generate local solution folder
-            if (solutionFolder is null)
+            // Generate intermediate solution folders
+            if (solutionFolder is null && !_inRoot)
             {
                 var relativePathDirectory = Path.GetDirectoryName(relativePath);
-                if (relativePathDirectory != null && !_inRoot)
+                if (relativePathDirectory != null)
                 {
                     SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
                     project.MoveToFolder(relativeSolutionFolder);
@@ -173,6 +176,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }                
             }
+            return project;
         }
     }
 }
