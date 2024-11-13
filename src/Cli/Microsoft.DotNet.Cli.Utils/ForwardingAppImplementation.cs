@@ -4,6 +4,7 @@
 #if NET
 
 using System.Diagnostics;
+using System.Collections;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -96,7 +97,21 @@ namespace Microsoft.DotNet.Cli.Utils
         private string GetHostExeName()
         {
             // Should instead make this a full path to dotnet
-            return Environment.ProcessPath;
+            string processPath = Environment.ProcessPath;
+            if (!processPath.EndsWith("dotnet" + Constants.ExeSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+                if (!string.IsNullOrEmpty(dotnetHostPath))
+                {
+                    processPath = dotnetHostPath;
+                }
+                else
+                {
+                    var environmentBlock = string.Join(Environment.NewLine, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().Select(e => $"{e.Key}={e.Value}"));
+                    throw new Exception($"Failed to find dotnet host. Environment Block: {Environment.NewLine}{environmentBlock}");
+                }
+            }
+            return processPath;
         }
     }
 }
