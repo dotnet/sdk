@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 }
             }
 
-            return defaultSources;
+            return defaultSources.ToList();
         }
 
         public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
