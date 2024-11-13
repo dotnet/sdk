@@ -88,12 +88,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 : null;
             foreach (var projectPath in projectPaths)
             {
-                SolutionProjectModel? project = null;
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
                     ProjectRootElement.Open(projectPath); // Try to open the project to see if it is valid
-                    project = AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
+                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (InvalidProjectFileException ex)
@@ -106,11 +105,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     // TODO: Update with error codes from vs-solutionpersistence
                     if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
                     {
-                        if (project is not null && project.Parent is not null)
-                        {
-                            throw new GracefulException(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath, ex.Message);
-                        }
-                        Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
+                        throw new GracefulException(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath, ex.Message);
                     }
                     else
                     {

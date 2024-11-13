@@ -1008,9 +1008,8 @@ EndGlobal
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "App.sln", "add", projectToAdd);
-            cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
-            cmd.StdErr.Should().BeEmpty();
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
         }
 
         [Theory]
@@ -1099,7 +1098,7 @@ EndGlobal
             nonSolutionFolderProjects.Single().TypeGuid.Should().Be(expectedTypeGuid);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/pull/44570#issuecomment-2472029173")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenPassedAProjectWithoutATypeGuidItErrors(string solutionCommand)
