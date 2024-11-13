@@ -347,7 +347,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
-            HashSet<PackageSource> defaultSources = new();
+            List<PackageSource> defaultSources = new();
             string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
@@ -365,7 +365,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             PackageSourceProvider packageSourceProvider = new(settings);
-            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToHashSet();
+            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
 
             packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
                 }
-                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToHashSet();
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
                 if (defaultSources.Count == 0)
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
@@ -400,6 +400,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         _verboseLogger.LogWarning(string.Format(
                             LocalizableStrings.FailedToLoadNuGetSource,
                             source));
+                        continue;
+                    }
+
+                    if (defaultSources.Any(defaultSource => defaultSource.SourceUri == packageSource.SourceUri))
+                    {
                         continue;
                     }
 
