@@ -1,27 +1,29 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using System.CommandLine;
-
-using static Microsoft.DotNet.Tools.Format.FormatCommandCommon;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tools.Format
 {
     internal static partial class FormatCommandParser
     {
+        public static readonly string DocsLink = "https://aka.ms/dotnet-format";
+
+        private static readonly Command Command = ConstructCommand();
+
         public static Command GetCommand()
         {
-            var formatCommand = new Command("format", LocalizableStrings.Formats_code_to_match_editorconfig_settings)
-            {
-                FormatWhitespaceCommandParser.GetCommand(),
-                FormatStyleCommandParser.GetCommand(),
-                FormatAnalyzersCommandParser.GetCommand(),
-                DiagnosticsOption,
-                SeverityOption,
-            };
-            formatCommand.AddCommonOptions();
-            return formatCommand;
+            return Command;
+        }
+
+        private static Command ConstructCommand()
+        {
+            var command = new DocumentedCommand("format", DocsLink);
+
+            command.SetHandler(FormatCommand.Run);
+
+            return command;
         }
     }
 }

@@ -45,9 +45,9 @@ namespace Microsoft.NET.Build.Tests
                 var result = buildCommand.Execute($"/p:BuildingInsideVisualStudio={runningInVS}", $"/bl:binlog{runningInVS}.binlog")
                     .Should()
                     .Fail();
-               var warningString = "warning : Unable to locate the .NET SDK";
-               var errorString = "Unable to locate the .NET SDK. Check that it is installed";
-               if (runningInVS)
+                var warningString = "warning : Unable to locate the .NET SDK";
+                var errorString = "Unable to locate the .NET SDK. Check that it is installed";
+                if (runningInVS)
                 {
                     result.And
                         .HaveStdOutContaining(warningString)
