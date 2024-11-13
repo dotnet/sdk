@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -19,7 +20,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
+        internal readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
 
         public ToolUpdateLocalCommand(
