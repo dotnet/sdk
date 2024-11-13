@@ -389,7 +389,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 foreach (string source in packageSourceLocation?.AdditionalSourceFeed)
                 {
-                    if (string.IsNullOrWhiteSpace(source))
+                    if (string.IsNullOrWhiteSpace(source) || defaultSources.Contains(new PackageSource(source)))
                     {
                         continue;
                     }
