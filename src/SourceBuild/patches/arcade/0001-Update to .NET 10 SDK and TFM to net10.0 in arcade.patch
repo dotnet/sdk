@@ -1,19 +1,18 @@
-From 36e5ebcb943c6290f3981279def50362cd32dda4 Mon Sep 17 00:00:00 2001
+From 187fe8a47735935dc8df3dcae72aed3cb78ecf63 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Wed, 6 Nov 2024 16:43:26 +0000
-Subject: [PATCH] Update to .NET 10 SDK and TFM to net10.0 in arcade
+Subject: [PATCH 1/6] Update to .NET 10 SDK and TFM to net10.0 in arcade
 
-Backport: https://github.com/dotnet/arcade/pull/15221
 ---
- Directory.Build.props                                        | 5 +++++
- global.json                                                  | 4 ++--
- .../src/build/Packaging.targets                              | 4 ++++
- .../Sdk/tools/xunit-runner/XUnitRunner.targets               | 2 +-
- .../Microsoft.DotNet.XliffTasks.csproj                       | 4 ----
- 5 files changed, 12 insertions(+), 7 deletions(-)
+ Directory.Build.props                                       | 5 +++++
+ global.json                                                 | 4 ++--
+ .../src/build/Packaging.targets                             | 4 ++++
+ .../Sdk/tools/xunit-runner/XUnitRunner.targets              | 2 +-
+ .../Microsoft.DotNet.XliffTasks.csproj                      | 6 +-----
+ 5 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index 9d84f1dc6..b25de0091 100644
+index 9d84f1dc650..8f2908da0de 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
 @@ -16,6 +16,11 @@
@@ -23,16 +22,16 @@ index 9d84f1dc6..b25de0091 100644
 +    <!-- TODO: Remove when Arcade SDK updated TargetFrameworkDefaults.props for .NET 10. -->
 +    <NetCurrent>net10.0</NetCurrent>
 +    <NetPrevious>net9.0</NetPrevious>
-+    <NetToolCurrent>$(NetCurrent)</NetToolCurrent>
++    <NetToolCurrent>$(NetCurrent))</NetToolCurrent>
 +    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetToolCurrent)</NetToolMinimum>
    </PropertyGroup>
  
  </Project>
 diff --git a/global.json b/global.json
-index 5bb5771cf..b21bb7059 100644
+index 3a740960634..3054e30d700 100644
 --- a/global.json
 +++ b/global.json
-@@ -1,9 +1,9 @@
+@@ -1,10 +1,10 @@
  {
    "sdk": {
 -    "version": "9.0.100-rc.2.24474.11",
@@ -44,8 +43,9 @@ index 5bb5771cf..b21bb7059 100644
 +    "dotnet": "10.0.100-alpha.1.24551.9"
    },
    "msbuild-sdks": {
+     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24530.1",
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
-index b94b6736d..e0fadabb2 100644
+index b94b6736dac..e0fadabb2d0 100644
 --- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 +++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 @@ -954,6 +954,10 @@
@@ -60,7 +60,7 @@ index b94b6736d..e0fadabb2 100644
      <NETCore50RIDs Condition="'@(NETCore50RIDs)' == ''" Include="win10-x86;win10-x86-aot;win10-x64;win10-x64-aot;win10-arm;win10-arm-aot" />
      <DefaultValidateFramework Include="netcore50">
 diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
-index 0ae8d1482..9312e2672 100644
+index 0ae8d148264..9312e26723c 100644
 --- a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
 +++ b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
 @@ -2,7 +2,7 @@
@@ -73,10 +73,10 @@ index 0ae8d1482..9312e2672 100644
  
      <XUnitRunnerVersion Condition="'$(XUnitRunnerVersion)' == ''">2.9.2</XUnitRunnerVersion>
 diff --git a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
-index 1059c3bc4..165a4a7d5 100644
+index 1059c3bc488..4da46b7daba 100644
 --- a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
 +++ b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
-@@ -1,10 +1,6 @@
+@@ -1,11 +1,7 @@
  <Project Sdk="Microsoft.NET.Sdk">
  
    <PropertyGroup>
@@ -84,6 +84,153 @@ index 1059c3bc4..165a4a7d5 100644
 -       We need to target net8.0 while Arcade SDK 8 is being used.
 -       Xliff tasks were moved from dotnet/xliff-tasks to Arcade in V9, so they are not available in release/8.0 branch.
 -    -->
-     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+-    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
++    <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
      <IsPackable>true</IsPackable>
      <IsBuildTaskProject>true</IsBuildTaskProject>
+     <RootNamespace>XliffTasks</RootNamespace>
+
+From 0773a64235f520103db4afd1037299a79ce88338 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Wed, 6 Nov 2024 18:28:29 +0100
+Subject: [PATCH 2/6] Update Directory.Build.props
+
+---
+ Directory.Build.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 8f2908da0de..b25de00918c 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -19,7 +19,7 @@
+     <!-- TODO: Remove when Arcade SDK updated TargetFrameworkDefaults.props for .NET 10. -->
+     <NetCurrent>net10.0</NetCurrent>
+     <NetPrevious>net9.0</NetPrevious>
+-    <NetToolCurrent>$(NetCurrent))</NetToolCurrent>
++    <NetToolCurrent>$(NetCurrent)</NetToolCurrent>
+     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetToolCurrent)</NetToolMinimum>
+   </PropertyGroup>
+ 
+
+From 0ede45e938c0854aabe75d26d20443fc0d901d5f Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Wed, 6 Nov 2024 19:07:16 +0100
+Subject: [PATCH 3/6] Update Microsoft.DotNet.XliffTasks.csproj
+
+---
+ .../Microsoft.DotNet.XliffTasks.csproj                          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
+index 4da46b7daba..165a4a7d5fd 100644
+--- a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
++++ b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
++    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+     <IsBuildTaskProject>true</IsBuildTaskProject>
+     <RootNamespace>XliffTasks</RootNamespace>
+
+From 99e4951df1edc5a6b308f3149186c55a90208133 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 7 Nov 2024 12:53:51 +0000
+Subject: [PATCH 4/6] Update aspnetcore version
+
+---
+ src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props b/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
+index aa87be492d6..15d5a63aad1 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
+@@ -3,7 +3,7 @@
+ 
+   <PropertyGroup>
+     <IncludeDotNetCli Condition=" '$(IncludeDotNetCli)' != 'true' ">false</IncludeDotNetCli>
+-    <AspNetCoreRuntimeVersion>9.0.0-rc.2.24474.3</AspNetCoreRuntimeVersion>
++    <AspNetCoreRuntimeVersion>10.0.0-alpha.2.24531.4</AspNetCoreRuntimeVersion>
+     <DotNetCliPackageType Condition=" '$(DotNetCliPackageType)' == '' ">runtime</DotNetCliPackageType>
+     <DotNetCliVersion Condition=" '$(DotNetCliVersion)' == '' AND '$(DotNetCliPackageType)' == 'runtime' ">$(BundledNETCoreAppPackageVersion)</DotNetCliVersion>
+     <!-- TODO (https://github.com/dotnet/arcade/issues/7022): We are hardcoding this version to use the one tied to the SDK version from global.json -->
+
+From aafc019e50cedf18775a0550e0285fe6f618b834 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 11 Nov 2024 17:36:12 +0100
+Subject: [PATCH 5/6] Update TargetFrameworkDefaults.props
+
+---
+ .../tools/TargetFrameworkDefaults.props              | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
+index bd83cda601a..33c2fea4ed1 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
+@@ -11,21 +11,19 @@
+ 
+   <PropertyGroup>
+     <!-- The TFM of the major release of .NET that the Arcade SDK aligns with. -->
+-    <NetCurrent>net9.0</NetCurrent>
++    <NetCurrent>net10.0</NetCurrent>
+ 
+     <!-- The previously released version of .NET.
+          Undefined when NetMinimum and NetPrevious are identical. -->
+-    <NetPrevious />
++    <NetPrevious>net9.0</NetPrevious>
+ 
+-    <!-- Lowest supported version of .NET at the time of the release of NetCurrent.
+-         E.g. net8.0 when NetCurrent is net9.0. -->
++    <!-- Lowest supported version of .NET at the time of the release of NetCurrent. -->
+     <NetMinimum>net8.0</NetMinimum>
+ 
+     <!-- The TFM of the latest version of .NET Framework. -->
+     <NetFrameworkCurrent>net481</NetFrameworkCurrent>
+ 
+-    <!-- Lowest supported version of .NET Framework the time of the release of NetCurrent.
+-         E.g. if NetCurrent is net9.0, then NetFrameworkMinimum is net462. -->
++    <!-- Lowest supported version of .NET Framework the time of the release of NetCurrent. -->
+     <NetFrameworkMinimum>net462</NetFrameworkMinimum>
+   </PropertyGroup>
+ 
+@@ -33,7 +31,7 @@
+     <!-- The current version of .NET that tools (i.e. msbuild) target.
+          MSBuild tasks and tools should use this version to target the latest TFM that is supported by tooling.
+          Identical with NetCurrent when building from source. -->
+-    <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' != 'true'">net9.0</NetToolCurrent>
++    <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' != 'true'">net10.0</NetToolCurrent>
+     <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolCurrent>
+ 
+     <!-- Lowest version of .NET at the time of the release of NetCurrent that is supported by tooling.
+
+From d1bbf471f11f17987c983711bb195c0f6d858142 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 14 Nov 2024 10:47:16 +0100
+Subject: [PATCH 6/6] Disable aspnet-versioncheck test
+
+---
+ tests/UnitTests.proj | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/tests/UnitTests.proj b/tests/UnitTests.proj
+index 910ccf3b075..ad85e4bac70 100644
+--- a/tests/UnitTests.proj
++++ b/tests/UnitTests.proj
+@@ -116,9 +116,10 @@
+   <Import Project="$(MSBuildThisFileDirectory)\..\src\Microsoft.DotNet.Helix\Sdk\sdk\Sdk.targets"/>
+ 
+   <ItemGroup>
+-    <HelixWorkItem Condition="$(HelixTargetQueue.StartsWith('Windows'))" Include="AspNetCoreTest">
++    <!-- TODO: Re-enable aspnetcore version branding test: https://github.com/dotnet/arcade/issues/15249 -->
++    <!-- <HelixWorkItem Condition="$(HelixTargetQueue.StartsWith('Windows'))" Include="AspNetCoreTest">
+       <Command>powershell %HELIX_WORKITEM_PAYLOAD%\aspnet-versioncheck.ps1 -aspNetCoreVersion $(AspNetCoreRuntimeVersion)</Command>
+       <PayloadDirectory>$(MSBuildThisFileDirectory)\AspNetVersionCheck</PayloadDirectory>
+-    </HelixWorkItem>
++    </HelixWorkItem> -->
+   </ItemGroup>
+ </Project>
