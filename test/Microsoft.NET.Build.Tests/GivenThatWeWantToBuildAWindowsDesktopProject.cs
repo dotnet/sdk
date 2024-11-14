@@ -463,6 +463,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net9.0-windows10.0.22621.0"
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -484,6 +485,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard2.0"
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -505,6 +507,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net9.0-windows10.0.22621.0"
             };
             testProjectA.AdditionalProperties["UseUwp"] = "true";
+            testProjectA.AdditionalProperties["UseUwpTools"] = "false";
 
             TestProject testProjectB = new()
             {
@@ -579,6 +582,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             // Temporary until new projections flow to tests
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
