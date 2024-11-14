@@ -98,12 +98,14 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             // Should instead make this a full path to dotnet
             string processPath = Environment.ProcessPath;
-            if (!processPath.EndsWith("dotnet" + Constants.ExeSuffix, StringComparison.OrdinalIgnoreCase))
+            string hostName = "dotnet" + Constants.ExeSuffix;
+
+            if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
             {
                 var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
                 if (!string.IsNullOrEmpty(dotnetHostPath))
                 {
-                    processPath = dotnetHostPath;
+                    processPath = dotnetHostPath+ Path.DirectorySeparatorChar + hostName;
                 }
             }
 
