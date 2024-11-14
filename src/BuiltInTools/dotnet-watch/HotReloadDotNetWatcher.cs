@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Watch
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projects, cancellationToken) =>
+                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             if (_rudeEditRestartPrompt != null)
                             {
@@ -271,9 +271,9 @@ namespace Microsoft.DotNet.Watch
                                 {
                                     Context.Reporter.Output("Affected projects:");
 
-                                    foreach (var project in projects.OrderBy(p => p.Name))
+                                    foreach (var projectName in projectNames.OrderBy(n => n))
                                     {
-                                        Context.Reporter.Output("  " + project.Name);
+                                        Context.Reporter.Output("  " + projectName);
                                     }
 
                                     question = "Do you want to restart these projects?";
@@ -289,9 +289,9 @@ namespace Microsoft.DotNet.Watch
                             {
                                 Context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
 
-                                foreach (var project in projects)
+                                foreach (var projectName in projectNames)
                                 {
-                                    Context.Reporter.Verbose($"  Project to restart: '{project.Name}'");
+                                    Context.Reporter.Verbose($"  Project to restart: '{projectName}'");
                                 }
                             }
                         }, iterationCancellationToken);
@@ -312,6 +312,9 @@ namespace Microsoft.DotNet.Watch
 
                         if (projectsToRebuild.Count > 0)
                         {
+                            // Discard baselines before build.
+                            compilationHandler.DiscardProjectBaselines(projectsToRebuild, iterationCancellationToken);
+
                             while (true)
                             {
                                 iterationCancellationToken.ThrowIfCancellationRequested();
@@ -347,8 +350,8 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            // Restart session to capture new baseline that reflects the changes to the restarted projects.
-                            await compilationHandler.RestartSessionAsync(projectsToRebuild, iterationCancellationToken);
+                            // Update project baselines to reflect changes to the restarted projects.
+                            compilationHandler.UpdateProjectBaselines(projectsToRebuild, iterationCancellationToken);
                         }
 
                         if (projectsToRestart is not [])
