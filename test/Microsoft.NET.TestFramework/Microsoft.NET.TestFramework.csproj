@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

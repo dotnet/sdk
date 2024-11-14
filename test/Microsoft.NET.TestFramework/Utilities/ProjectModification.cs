@@ -7,7 +7,7 @@ namespace Microsoft.NET.TestFramework.Utilities
     {
         public static void AddDisplayMessageToProject(XDocument project, string beforeTargets)
         {
-            XNamespace ns = project.Root.Name.Namespace;
+            XNamespace ns = project.Root!.Name.Namespace;
 
             XElement target = new(ns + "Target", new XAttribute("Name", "DisplayMessages"),
                 new XAttribute("BeforeTargets", beforeTargets));

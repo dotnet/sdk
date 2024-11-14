@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         internal static string GetTestExecutionTempFolder()
         {
-            return Path.Combine(TestContext.Current.TestExecutionDirectory, "dotnet-new.IntegrationTests");
+            return Path.Combine(TestContext.Current?.TestExecutionDirectory!, "dotnet-new.IntegrationTests");
         }
 
         /// <summary>

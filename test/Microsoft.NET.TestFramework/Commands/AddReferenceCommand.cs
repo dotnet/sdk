@@ -7,7 +7,7 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class AddReferenceCommand : DotnetCommand
     {
-        private string _projectName = null;
+        private string? _projectName = null;
 
         public AddReferenceCommand(ITestOutputHelper log, params string[] args) : base(log, args)
         {
@@ -17,7 +17,7 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             List<string> newArgs = new();
             newArgs.Add("add");
-            if (!string.IsNullOrEmpty(_projectName))
+            if (_projectName != null && !string.IsNullOrEmpty(_projectName))
             {
                 newArgs.Add(_projectName);
             }

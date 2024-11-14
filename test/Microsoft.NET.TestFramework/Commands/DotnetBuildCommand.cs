@@ -15,7 +15,7 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             if (testAsset.TestProject != null)
             {
-                WorkingDirectory = Path.Combine(testAsset.TestRoot, testAsset.TestProject.Name);
+                WorkingDirectory = Path.Combine(testAsset.TestRoot, testAsset.TestProject.Name!);
             }
             else
             {

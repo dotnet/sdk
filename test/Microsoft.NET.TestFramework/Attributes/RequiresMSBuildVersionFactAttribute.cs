@@ -8,7 +8,7 @@ namespace Microsoft.NET.TestFramework
         /// <summary>
         /// Can be used to document the reason a test needs a specific version of MSBuild
         /// </summary>
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         public RequiresMSBuildVersionFactAttribute(string version)
         {

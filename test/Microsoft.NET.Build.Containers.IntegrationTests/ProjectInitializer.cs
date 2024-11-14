@@ -10,11 +10,11 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 public sealed class ProjectInitializer
 {
-    private static readonly string _combinedTargetsLocation;
+    private static readonly string? _combinedTargetsLocation;
 
     static ProjectInitializer()
     {
-        var artifactPackagingDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "packaging");
+        var artifactPackagingDirectory = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "Container", "packaging");
         var targetsFile = Path.Combine(artifactPackagingDirectory, "Microsoft.NET.Build.Containers.targets");
         var propsFile = Path.ChangeExtension(targetsFile, ".props");
         _combinedTargetsLocation = CombineFiles(propsFile, targetsFile);
@@ -27,7 +27,7 @@ public sealed class ProjectInitializer
         var combinedContent = new List<string>();
         combinedContent.AddRange(propsContent[..^1]);
         combinedContent.AddRange(targetsContent[1..]);
-        var tempTargetLocation = Path.Combine(TestSettings.TestArtifactsDirectory, "Containers", "Microsoft.NET.Build.Containers.targets");
+        var tempTargetLocation = Path.Combine(TestSettings.TestArtifactsDirectory!, "Containers", "Microsoft.NET.Build.Containers.targets");
         string? directoryName = Path.GetDirectoryName(tempTargetLocation);
         Assert.NotNull(directoryName);
         Directory.CreateDirectory(directoryName);

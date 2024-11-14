@@ -153,7 +153,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Write the image to disk
-        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
+        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory!,
             nameof(ApiEndToEndWithArchiveWritingAndLoad), "app.tar.gz");
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net9PreviewImageTag);
         var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), new[] { "latest", "1.0" });
@@ -178,7 +178,7 @@ public class EndToEndTests : IDisposable
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
     {
-        string workingDirectory = Path.Combine(TestSettings.TestArtifactsDirectory, testName);
+        string workingDirectory = Path.Combine(TestSettings.TestArtifactsDirectory!, testName);
 
         DirectoryInfo d = new(Path.Combine(workingDirectory, "MinimalTestApp"));
         if (d.Exists)
@@ -213,7 +213,7 @@ public class EndToEndTests : IDisposable
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
-        DirectoryInfo newSolutionDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_EndToEnd_MultiProjectSolution"));
+        DirectoryInfo newSolutionDir = new(Path.Combine(TestSettings.TestArtifactsDirectory!, $"CreateNewImageTest_EndToEnd_MultiProjectSolution"));
 
         if (newSolutionDir.Exists)
         {
@@ -298,8 +298,8 @@ public class EndToEndTests : IDisposable
     [InlineData("worker", true)]
     public async Task EndToEnd_NoAPI_ProjectType(string projectType, bool addPackageReference)
     {
-        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{projectType}_{addPackageReference}"));
-        DirectoryInfo privateNuGetAssets = new(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
+        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory!, $"CreateNewImageTest_{projectType}_{addPackageReference}"));
+        DirectoryInfo privateNuGetAssets = new(Path.Combine(TestSettings.TestArtifactsDirectory!, "ContainerNuGet"));
 
         if (newProjectDir.Exists)
         {
@@ -324,9 +324,9 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
-            File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+            File.Copy(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+            (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
             new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -471,8 +471,8 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
     public void EndToEnd_NoAPI_Console()
     {
-        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, "CreateNewImageTest"));
-        DirectoryInfo privateNuGetAssets = new(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
+        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory!, "CreateNewImageTest"));
+        DirectoryInfo privateNuGetAssets = new(Path.Combine(TestSettings.TestArtifactsDirectory!, "ContainerNuGet"));
 
         if (newProjectDir.Exists)
         {
@@ -495,9 +495,9 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+        File.Copy(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
         new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)

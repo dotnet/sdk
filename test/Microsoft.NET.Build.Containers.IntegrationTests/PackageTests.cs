@@ -23,7 +23,7 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
+        string projectFilePath = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "Container", "ProjectFiles", "containerize.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -52,7 +52,7 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
+        string projectFilePath = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -131,7 +131,7 @@ public class PackageTests
               $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
         };
 
-        (string packageFilePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packageFilePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
         using ZipArchive archive = new(File.OpenRead(packageFilePath), ZipArchiveMode.Read, false);
 
         IEnumerable<string> actualEntries = archive.Entries

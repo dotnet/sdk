@@ -22,7 +22,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string TargetName { get; set; } = "WriteValuesToFile";
 
-        public string Configuration { get; set; }
+        public string? Configuration { get; set; }
 
         public List<string> MetadataNames { get; set; } = new List<string>();
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
@@ -43,10 +43,10 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public GetValuesCommand(TestAsset testAsset,
             string valueName, ValueType valueType = ValueType.Property,
-            string targetFramework = null)
+            string? targetFramework = null)
             : base(testAsset, "WriteValuesToFile", relativePathToProject: null)
         {
-            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework;
+            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework!;
 
             _valueName = valueName;
             _valueType = valueType;
@@ -67,7 +67,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
             var project = XDocument.Load(ProjectFile);
 
-            var ns = project.Root.Name.Namespace;
+            var ns = project.Root!.Name.Namespace;
 
             string linesAttribute;
             if (_valueType == ValueType.Property)
@@ -102,12 +102,12 @@ namespace Microsoft.NET.TestFramework.Commands
                 new XAttribute("Name", TargetName),
                 ShouldCompile ? new XAttribute("DependsOnTargets", DependsOnTargets) : null);
 
-            customAfterDirectoryBuildTargets.Root.Add(target);
+            customAfterDirectoryBuildTargets.Root?.Add(target);
 
             if (Properties.Count != 0)
             {
                 propertyGroup = new XElement(ns + "PropertyGroup");
-                customAfterDirectoryBuildTargets.Root.Add(propertyGroup);
+                customAfterDirectoryBuildTargets.Root?.Add(propertyGroup);
 
                 foreach (var pair in Properties)
                 {
@@ -134,7 +134,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
+            return TestContext.Current?.ToolsetUnderTest?.CreateCommandForTarget(TargetName, newArgs)!;
         }
 
         public List<string> GetValues()

@@ -13,7 +13,7 @@ internal static class TestSettings
     /// <summary>
     /// Gets temporary location for test artifacts.
     /// </summary>
-    internal static string TestArtifactsDirectory
+    internal static string? TestArtifactsDirectory
     {
         get
         {
@@ -23,7 +23,7 @@ internal static class TestSettings
                 {
                     if (_testArtifactsDir == null)
                     {
-                        string tmpDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "ContainersTests", DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture));
+                        string tmpDir = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "ContainersTests", DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture));
                         if (!Directory.Exists(tmpDir))
                         {
                             Directory.CreateDirectory(tmpDir);

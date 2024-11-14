@@ -10,7 +10,7 @@ partial class Program
     public static int Main(string[] args)
     {
         var testCommandLine = TestCommandLine.HandleCommandLine(args);
-        var newArgs = testCommandLine.RemainingArgs.ToList();
+        var newArgs = testCommandLine.RemainingArgs?.ToList()!;
 
         // Help argument needs to be the first one to xunit, so don't insert assembly location in that case
         if (testCommandLine.ShouldShowHelp)
@@ -66,7 +66,7 @@ partial class Program
     {
         var log = new StringTestLogger();
         var command = new DotnetCommand(log, "--info");
-        var testDirectory = TestDirectory.Create(Path.Combine(TestContext.Current.TestExecutionDirectory, "sdkinfo"));
+        var testDirectory = TestDirectory.Create(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "sdkinfo"));
 
         command.WorkingDirectory = testDirectory.Path;
 

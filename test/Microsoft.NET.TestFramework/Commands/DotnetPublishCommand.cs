@@ -5,7 +5,7 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class DotnetPublishCommand : DotnetCommand
     {
-        private string _runtime;
+        private string? _runtime;
 
         public DotnetPublishCommand(ITestOutputHelper log, params string[] args) : base(log)
         {
@@ -16,7 +16,7 @@ namespace Microsoft.NET.TestFramework.Commands
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
             List<string> newArgs = new(args);
-            if (!string.IsNullOrEmpty(_runtime))
+            if (_runtime != null && !string.IsNullOrEmpty(_runtime))
             {
                 newArgs.Add("-r");
                 newArgs.Add(_runtime);

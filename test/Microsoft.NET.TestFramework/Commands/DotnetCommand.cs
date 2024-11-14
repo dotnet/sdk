@@ -5,20 +5,20 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class DotnetCommand : TestCommand
     {
-        public DotnetCommand(ITestOutputHelper log, params string[] args) : base(log)
+        public DotnetCommand(ITestOutputHelper log, params string?[] args) : base(log)
         {
-            Arguments.AddRange(args);
+            Arguments.AddRange(args!);
         }
 
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
             var sdkCommandSpec = new SdkCommandSpec()
             {
-                FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                FileName = TestContext.Current?.ToolsetUnderTest?.DotNetHostPath,
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory
             };
-            TestContext.Current.AddTestEnvironmentVariables(sdkCommandSpec.Environment);
+            TestContext.Current?.AddTestEnvironmentVariables(sdkCommandSpec.Environment!);
             return sdkCommandSpec;
         }
     }

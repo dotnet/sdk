@@ -45,8 +45,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string caseDescription)
         {
             _log.LogInformation($"Template with {caseDescription}");
-            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            Dictionary<string, string?> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            TestContext.Current?.AddTestEnvironmentVariables(environmentUnderTest);
             FileExtensions.AddTextExtension(".cshtml");
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: shortName)
@@ -56,11 +56,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 SnapshotsDirectory = "Approvals",
                 SettingsDirectory = _sharedHome.HomeDirectory,
                 DoNotAppendTemplateArgsToScenarioName = true,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current?.ToolsetUnderTest?.DotNetHostPath,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = $"{folderName.Substring(folderName.IndexOf("-") + 1)}{GetScenarioName(arguments)}"
             }
-            .WithCustomEnvironment(environmentUnderTest)
+            .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
                .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));

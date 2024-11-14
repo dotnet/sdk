@@ -596,6 +596,6 @@ public class CreateNewImageToolTaskTests
 
     private static string GetPathToContainerize()
     {
-        return Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "containerize");
+        return Path.Combine(TestContext.Current?.TestExecutionDirectory!, "Container", "containerize");
     }
 }
