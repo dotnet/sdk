@@ -7,13 +7,12 @@ Backport: https://github.com/dotnet/arcade/pull/15221
 ---
  Directory.Build.props                                |  5 +++++
  global.json                                          |  4 ++--
- .../tools/TargetFrameworkDefaults.props              | 12 +++++-------
  .../src/build/Packaging.targets                      |  4 ++++
  .../Sdk/tools/dotnet-cli/DotNetCli.props             |  2 +-
  .../Sdk/tools/xunit-runner/XUnitRunner.targets       |  2 +-
  .../Microsoft.DotNet.XliffTasks.csproj               |  4 ----
  tests/UnitTests.proj                                 |  5 +++--
- 8 files changed, 21 insertions(+), 17 deletions(-)
+ 7 files changed, 16 insertions(+), 10 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
 index 9d84f1dc6..b25de0091 100644
@@ -48,45 +47,6 @@ index 771c1a2bc..bcc101ef1 100644
    },
    "msbuild-sdks": {
      "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24562.15",
-diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
-index bd83cda60..33c2fea4e 100644
---- a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
-+++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
-@@ -11,21 +11,19 @@
- 
-   <PropertyGroup>
-     <!-- The TFM of the major release of .NET that the Arcade SDK aligns with. -->
--    <NetCurrent>net9.0</NetCurrent>
-+    <NetCurrent>net10.0</NetCurrent>
- 
-     <!-- The previously released version of .NET.
-          Undefined when NetMinimum and NetPrevious are identical. -->
--    <NetPrevious />
-+    <NetPrevious>net9.0</NetPrevious>
- 
--    <!-- Lowest supported version of .NET at the time of the release of NetCurrent.
--         E.g. net8.0 when NetCurrent is net9.0. -->
-+    <!-- Lowest supported version of .NET at the time of the release of NetCurrent. -->
-     <NetMinimum>net8.0</NetMinimum>
- 
-     <!-- The TFM of the latest version of .NET Framework. -->
-     <NetFrameworkCurrent>net481</NetFrameworkCurrent>
- 
--    <!-- Lowest supported version of .NET Framework the time of the release of NetCurrent.
--         E.g. if NetCurrent is net9.0, then NetFrameworkMinimum is net462. -->
-+    <!-- Lowest supported version of .NET Framework the time of the release of NetCurrent. -->
-     <NetFrameworkMinimum>net462</NetFrameworkMinimum>
-   </PropertyGroup>
- 
-@@ -33,7 +31,7 @@
-     <!-- The current version of .NET that tools (i.e. msbuild) target.
-          MSBuild tasks and tools should use this version to target the latest TFM that is supported by tooling.
-          Identical with NetCurrent when building from source. -->
--    <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' != 'true'">net9.0</NetToolCurrent>
-+    <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' != 'true'">net10.0</NetToolCurrent>
-     <NetToolCurrent Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolCurrent>
- 
-     <!-- Lowest version of .NET at the time of the release of NetCurrent that is supported by tooling.
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 index b94b6736d..e0fadabb2 100644
 --- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
