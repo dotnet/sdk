@@ -100,17 +100,13 @@ namespace Microsoft.DotNet.Cli.Utils
             string processPath = Environment.ProcessPath;
             if (!processPath.EndsWith("dotnet" + Constants.ExeSuffix, StringComparison.OrdinalIgnoreCase))
             {
-                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
                 if (!string.IsNullOrEmpty(dotnetHostPath))
                 {
                     processPath = dotnetHostPath;
                 }
-                else
-                {
-                    var environmentBlock = string.Join(Environment.NewLine, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().Select(e => $"{e.Key}={e.Value}"));
-                    throw new Exception($"Failed to find dotnet host. Environment Block: {Environment.NewLine}{environmentBlock}");
-                }
             }
+
             return processPath;
         }
     }
