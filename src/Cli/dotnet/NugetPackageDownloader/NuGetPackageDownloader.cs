@@ -415,7 +415,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return defaultSources;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
                 LoadOverrideSources(packageSourceLocation) :
