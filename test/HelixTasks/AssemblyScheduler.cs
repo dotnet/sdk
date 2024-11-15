@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Text;
 
 namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 {
@@ -35,15 +36,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
     public sealed class AssemblyScheduler
     {
-        /// <summary>
-        /// This is a test class inserted into assemblies to guard against a .NET desktop bug.  The tests
-        /// inside of it counteract the underlying issue.  If this test is included in any assembly it 
-        /// must be added to every partition to ensure the work around is present
-        /// 
-        /// https://github.com/dotnet/corefx/issues/3793
-        /// https://github.com/dotnet/roslyn/issues/8936
-        /// </summary>
-        private const string EventListenerGuardFullName = "Microsoft.CodeAnalysis.UnitTests.EventListenerGuard";
 
         private readonly struct TypeInfo
         {
@@ -78,21 +70,20 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             private readonly StringBuilder _builder = new();
             private readonly string _assemblyPath;
             private readonly int _methodLimit;
-            private readonly bool _hasEventListenerGuard;
+            private readonly bool _netFramework;
             private int _currentId;
             private List<TypeInfo> _currentTypeInfoList = new();
 
-            private AssemblyInfoBuilder(string assemblyPath, int methodLimit, bool hasEventListenerGuard)
+            private AssemblyInfoBuilder(string assemblyPath, int methodLimit, bool netFramework = false)
             {
                 _assemblyPath = assemblyPath;
                 _methodLimit = methodLimit;
-                _hasEventListenerGuard = hasEventListenerGuard;
+                _netFramework = netFramework;
             }
 
             internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList, bool netFramework = false)
             {
-                var hasEventListenerGuard = typeInfoList.Any(x => x.FullName == EventListenerGuardFullName);
-                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit, hasEventListenerGuard);
+                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit, netFramework);
                 builder.Build(typeInfoList);
                 partitionList = builder._partitionList;
                 assemblyInfoList = builder._assemblyInfoList;
@@ -105,13 +96,19 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var typeInfo in typeInfoList)
                 {
                     _currentTypeInfoList.Add(typeInfo);
-
-                    if (_builder.Length > 0)
+                    if (_netFramework)
                     {
-                        _builder.Append("|");
-                    }
-                    _builder.Append($@"{typeInfo.FullName}");
+                        if (_builder.Length > 0)
+                        {
+                            _builder.Append("|");
+                        }
+                        _builder.Append($@"{typeInfo.FullName}");
 
+                    }
+                    else
+                    {
+                        _builder.Append($@"-class ""{typeInfo.FullName}"" ");
+                    }
                     CheckForPartitionLimit(done: false);
                 }
 
@@ -123,12 +120,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 _currentId++;
                 _currentTypeInfoList = new List<TypeInfo>();
                 _builder.Length = 0;
-
-                // Ensure the EventListenerGuard is in every partition.
-                if (_hasEventListenerGuard)
-                {
-                    _builder.Append($@"-class ""{EventListenerGuardFullName}"" ");
-                }
             }
 
             private void CheckForPartitionLimit(bool done)
@@ -229,22 +220,25 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         private static List<TypeInfo> GetTypeInfoList(MetadataReader reader)
         {
             var list = new List<TypeInfo>();
-            foreach (var handle in reader.TypeDefinitions)
+            foreach (var handle in reader.MethodDefinitions)
             {
-                var type = reader.GetTypeDefinition(handle);
-                if (!IsValidIdentifier(reader, type.Name))
+                var method = reader.GetMethodDefinition(handle);
+
+                var name = reader.GetString(method.Name);
+                if (!IsValidIdentifier(reader, name))
                 {
                     continue;
                 }
 
-                var methodCount = GetMethodCount(reader, type);
-                if (!ShouldIncludeType(reader, type, methodCount))
+                if (!ShouldIncludeMethod(reader, method))
                 {
                     continue;
                 }
 
-                var fullName = GetFullName(reader, type);
-                list.Add(new TypeInfo(fullName, methodCount));
+                var type = reader.GetTypeDefinition(method.GetDeclaringType());
+                var fullName = GetFullName(reader, type) + "." + name;
+                list.Add(new TypeInfo(fullName, 1));
+
             }
 
             // Ensure we get classes back in a deterministic order.
@@ -253,69 +247,47 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         }
 
         /// <summary>
-        /// Determine if this type should be one of the <c>class</c> values passed to xunit.  This
-        /// code doesn't actually resolve base types or trace through inherrited Fact attributes
-        /// hence we have to error on the side of including types with no tests vs. excluding them.
+        /// Determine if this method method values passed to xunit. This doesn't check for skipping
+        /// Include any tests with the known theory and fact attributes
         /// </summary>
-        private static bool ShouldIncludeType(MetadataReader reader, TypeDefinition type, int testMethodCount)
+        private static bool ShouldIncludeMethod(MetadataReader reader, MethodDefinition method)
         {
-            // xunit only handles public, non-abstract, non-generic classes
-            var isPublic =
-                TypeAttributes.Public == (type.Attributes & TypeAttributes.VisibilityMask) ||
-                TypeAttributes.NestedPublic == (type.Attributes & TypeAttributes.VisibilityMask);
-            if (!isPublic ||
-                TypeAttributes.Abstract == (type.Attributes & TypeAttributes.Abstract) ||
-                type.GetGenericParameters().Count != 0 ||
-                TypeAttributes.Class != (type.Attributes & TypeAttributes.ClassSemanticsMask))
-            {
-                return false;
-            }
+                var methodAttributes = method.GetCustomAttributes();
+                bool isTestMethod = false;
 
-            // Compiler generated types / methods have the shape of the heuristic that we are looking
-            // at here.  Filter them out as well.
-            if (!IsValidIdentifier(reader, type.Name))
-            {
-                return false;
-            }
+                foreach (var attributeHandle in methodAttributes)
+                {
+                    var attribute = reader.GetCustomAttribute(attributeHandle);
+                    var attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
+                    var attributeTypeName = reader.GetString(attributeType.Name);
 
-            if (testMethodCount > 0)
-            {
-                return true;
-            }
-
-            // The case we still have to consider at this point is a class with 0 defined methods, 
-            // inheritting from a class with > 0 defined test methods.  That is a completely valid
-            // xunit scenario.  For now we're just going to exclude types that inherit from object
-            // because they clearly don't fit that category.
-            return !(InheritsFromObject(reader, type) ?? false);
+                    if (attributeTypeName == "FactAttribute" ||
+                        attributeTypeName == "TheoryAttribute" ||
+                        attributeTypeName == "CoreMSBuildAndWindowsOnlyFactAttribute" ||
+                        attributeTypeName == "CoreMSBuildAndWindowsOnlyTheoryAttribute" ||
+                        attributeTypeName == "CoreMSBuildOnlyFactAttribute" ||
+                        attributeTypeName == "CoreMSBuildOnlyTheoryAttribute" ||
+                        attributeTypeName == "FullMSBuildOnlyFactAttribute" ||
+                        attributeTypeName == "FullMSBuildOnlyTheoryAttribute" ||
+                        attributeTypeName == "PlatformSpecificFact" ||
+                        attributeTypeName == "PlatformSpecificTheory" ||
+                        attributeTypeName == "RequiresMSBuildVersionFactAttribute" ||
+                        attributeTypeName == "RequiresMSBuildVersionTheoryAttribute" ||
+                        attributeTypeName == "RequiresSpecificFrameworkFactAttribute" ||
+                        attributeTypeName == "RequiresSpecificFrameworkTheoryAttribute" ||
+                        attributeTypeName == "WindowsOnlyRequiresMSBuildVersionFactAttribute" ||
+                        attributeTypeName == "WindowsOnlyRequiresMSBuildVersionTheoryAttribute")
+                    {
+                        isTestMethod = true;
+                        break;
+                    }
+                }
+                return isTestMethod;
         }
 
-        private static int GetMethodCount(MetadataReader reader, TypeDefinition type)
+        private static bool IsValidIdentifier(MetadataReader reader, String name)
         {
-            var count = 0;
-            foreach (var handle in type.GetMethods())
-            {
-                var methodDefinition = reader.GetMethodDefinition(handle);
-                if (methodDefinition.GetCustomAttributes().Count == 0 ||
-                    !IsValidIdentifier(reader, methodDefinition.Name))
-                {
-                    continue;
-                }
-
-                if (MethodAttributes.Public != (methodDefinition.Attributes & MethodAttributes.Public))
-                {
-                    continue;
-                }
-
-                count++;
-            }
-
-            return count;
-        }
-
-        private static bool IsValidIdentifier(MetadataReader reader, StringHandle handle)
-        {
-            var name = reader.GetString(handle);
             for (int i = 0; i < name.Length; i++)
             {
                 switch (name[i])
@@ -328,19 +300,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             return true;
-        }
-
-        private static bool? InheritsFromObject(MetadataReader reader, TypeDefinition type)
-        {
-            if (type.BaseType.Kind != HandleKind.TypeReference)
-            {
-                return null;
-            }
-
-            var typeRef = reader.GetTypeReference((TypeReferenceHandle)type.BaseType);
-            return
-                reader.GetString(typeRef.Namespace) == "System" &&
-                reader.GetString(typeRef.Name) == "Object";
         }
 
         private static string GetFullName(MetadataReader reader, TypeDefinition type)
