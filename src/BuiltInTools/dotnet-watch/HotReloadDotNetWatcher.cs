@@ -191,10 +191,6 @@ namespace Microsoft.DotNet.Watch
                         {
                             ImmutableInterlocked.Update(ref changedFilesAccumulator, changedFiles => changedFiles.Add(changedFile));
                         }
-                        else
-                        {
-                            Context.Reporter.Verbose($"Change ignored: {kind} '{path}'.");
-                        }
                     }
 
                     fileChangedCallback = FileChangedCallback;
@@ -455,6 +451,11 @@ namespace Microsoft.DotNet.Watch
                 {
                     // start next iteration unless shutdown is requested
                 }
+                catch (Exception) when ((waitForFileChangeBeforeRestarting = false) == true)
+                {
+                    // unreachable
+                    throw new InvalidOperationException();
+                }
                 finally
                 {
                     // stop watching file changes:
@@ -599,6 +600,7 @@ namespace Microsoft.DotNet.Watch
                 return new ChangedFile(new FileItem { FilePath = path, ContainingProjectPaths = [] }, kind);
             }
 
+            Context.Reporter.Verbose($"Change ignored: {kind} '{path}'.");
             return null;
         }
 
