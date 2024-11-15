@@ -16,6 +16,7 @@
 
   <PropertyGroup>
     <PackageId>testSdkPublish</PackageId>
+    <XUnitWorkItemTimeout>01:00:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
   <ItemGroup>
