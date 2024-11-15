@@ -7,12 +7,14 @@ namespace Microsoft.DotNet.Watcher
 {
     internal readonly record struct FileItem
     {
-        public string FilePath { get; init; }
+        public required string FilePath { get; init; }
 
         /// <summary>
         /// List of all projects that contain this file (does not contain duplicates).
+        /// Empty if <see cref="Change"/> is <see cref="ChangeKind.Add"/> and the
+        /// item has not been assigned to a project yet.
         /// </summary>
-        public List<string> ContainingProjectPaths { get; init; }
+        public required List<string> ContainingProjectPaths { get; init; }
 
         public string? StaticWebAssetPath { get; init; }
 

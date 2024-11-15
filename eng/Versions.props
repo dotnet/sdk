@@ -91,6 +91,10 @@
     <MicrosoftDotNetDarcLibVersion>1.1.0-beta.24367.3</MicrosoftDotNetDarcLibVersion>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- Dependency from https://github.com/dotnet/aspire -->
+    <AspirePackageVersion>9.1.0-preview.1.24555.3</AspirePackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-rc.2.24474.1</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>

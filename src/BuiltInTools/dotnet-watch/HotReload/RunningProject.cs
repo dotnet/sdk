@@ -8,7 +8,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal delegate ValueTask<RunningProject> RestartOperation(bool build, CancellationToken cancellationToken);
+    internal delegate ValueTask<RunningProject> RestartOperation(CancellationToken cancellationToken);
 
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
@@ -68,7 +68,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
             await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
-            Reporter.Report(MessageDescriptor.BuildCompleted);
         }
     }
 }

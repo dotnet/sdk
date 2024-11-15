@@ -100,6 +100,12 @@ namespace Microsoft.DotNet.Watcher.Internal
         private static string EnsureTrailingSlash(string path)
             => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
 
+        public Task<ChangedFile?> WaitForFileChangeAsync(Action? startedWatching, CancellationToken cancellationToken)
+           => WaitForFileChangeAsync(
+               changeFilter: (path, kind) => new ChangedFile(new FileItem() { FilePath = path, ContainingProjectPaths = [] }, kind),
+               startedWatching,
+               cancellationToken);
+
         public Task<ChangedFile?> WaitForFileChangeAsync(IReadOnlyDictionary<string, FileItem> fileSet, Action? startedWatching, CancellationToken cancellationToken)
             => WaitForFileChangeAsync(
                 changeFilter: (path, kind) => fileSet.TryGetValue(path, out var fileItem) ? new ChangedFile(fileItem, kind) : null,
@@ -142,7 +148,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             watcher.WatchDirectories([Path.GetDirectoryName(filePath)!]);
 
             var fileChange = await watcher.WaitForFileChangeAsync(
-                changeFilter: (path, kind) => path == filePath ? new ChangedFile(new FileItem { FilePath = path }, kind) : null,
+                changeFilter: (path, kind) => path == filePath ? new ChangedFile(new FileItem { FilePath = path, ContainingProjectPaths = [] }, kind) : null,
                 startedWatching,
                 cancellationToken);
 
