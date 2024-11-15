@@ -53,62 +53,6 @@ index ------------
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/ja/Microsoft.NET.Build.Containers.resources.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/ko/
- ./sdk/x.y.z/Containers/tasks/netx.y/ko/Microsoft.NET.Build.Containers.resources.dll
-+./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Bcl.AsyncInterfaces.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/pl/
-@@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/pt-BR/Microsoft.NET.Build.Containers.resources.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/ru/
- ./sdk/x.y.z/Containers/tasks/netx.y/ru/Microsoft.NET.Build.Containers.resources.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.IO.Pipelines.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/tr/
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/ko/FSharp.DependencyManager.Nuget.resources.dll
- ./sdk/x.y.z/FSharp/library-packs/
- ./sdk/x.y.z/FSharp/library-packs/FSharp.Core.x.y.z.nupkg
-+./sdk/x.y.z/FSharp/Microsoft.Bcl.Cryptography.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Framework.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Tasks.Core.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Utilities.Core.dll
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/ru/FSharp.Compiler.Service.resources.dll
- ./sdk/x.y.z/FSharp/ru/FSharp.Core.resources.dll
- ./sdk/x.y.z/FSharp/ru/FSharp.DependencyManager.Nuget.resources.dll
--./sdk/x.y.z/FSharp/runtimes/
--./sdk/x.y.z/FSharp/runtimes/win/
--./sdk/x.y.z/FSharp/runtimes/win/lib/
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/FSharp/System.CodeDom.dll
- ./sdk/x.y.z/FSharp/System.Configuration.ConfigurationManager.dll
--./sdk/x.y.z/FSharp/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/FSharp/System.Formats.Asn1.dll
- ./sdk/x.y.z/FSharp/System.Formats.Nrbf.dll
- ./sdk/x.y.z/FSharp/System.Resources.Extensions.dll
-@@ ------------ @@
- ./sdk/x.y.z/ko/vstest.console.resources.dll
- ./sdk/x.y.z/Microsoft.ApplicationInsights.dll
- ./sdk/x.y.z/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll
-+./sdk/x.y.z/Microsoft.Bcl.AsyncInterfaces.dll
-+./sdk/x.y.z/Microsoft.Bcl.Cryptography.dll
- ./sdk/x.y.z/Microsoft.Build.dll
- ./sdk/x.y.z/Microsoft.Build.Framework.dll
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
  ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
@@ -117,46 +61,218 @@ index ------------
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
  ./sdk/x.y.z/Microsoft.Common.overridetasks
 @@ ------------ @@
- ./sdk/x.y.z/runtimes/any/native/NuGet.props
- ./sdk/x.y.z/runtimes/any/native/NuGet.RestoreEx.targets
- ./sdk/x.y.z/runtimes/any/native/NuGet.targets
--./sdk/x.y.z/runtimes/browser/
--./sdk/x.y.z/runtimes/browser/lib/
--./sdk/x.y.z/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/runtimes/win/
--./sdk/x.y.z/runtimes/win/lib/
--./sdk/x.y.z/runtimes/win/lib/netx.y/
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.ServiceProcess.ServiceController.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/SdkResolvers/
- ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/
- ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/Microsoft.Build.NuGetSdkResolver.xml
+ ./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net/zh-Hans/Microsoft.Build.Tasks.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net/zh-Hant/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/cs/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/de/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/es/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/fr/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/it/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ja/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ko/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/Microsoft.Build.Tasks.Git.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/Microsoft.Build.Tasks.Git.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/pl/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/pt-BR/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/ru/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/tr/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/zh-Hans/Microsoft.Build.Tasks.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/netframework/zh-Hant/Microsoft.Build.Tasks.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/
+ ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/
+ ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/Sdk.props
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.deps.json
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.runtimeconfig.json
-+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/System.Collections.Immutable.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/Sdk.props
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net/zh-Hans/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net/zh-Hant/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/cs/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/de/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/es/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/fr/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/it/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ja/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ko/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/Microsoft.SourceLink.AzureRepos.Git.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/Microsoft.SourceLink.AzureRepos.Git.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/pl/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/pt-BR/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/ru/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/tr/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/zh-Hans/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/netframework/zh-Hant/Microsoft.SourceLink.AzureRepos.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/build/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/build/Microsoft.SourceLink.Bitbucket.Git.props
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.DotNet.ApiSymbolExtensions.resources.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.DotNet.PackageValidation.resources.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.NET.Build.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.IO.Hashing.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.IO.Pipelines.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Text.Encodings.Web.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net/zh-Hans/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net/zh-Hant/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/cs/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/de/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/es/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/fr/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/it/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ja/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ko/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/Microsoft.SourceLink.Bitbucket.Git.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/Microsoft.SourceLink.Bitbucket.Git.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/pl/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/pt-BR/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/ru/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/tr/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/zh-Hans/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/netframework/zh-Hant/Microsoft.SourceLink.Bitbucket.Git.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/build/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/build/InitializeSourceControlInformation.targets
+@@ ------------ @@
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net/zh-Hans/Microsoft.SourceLink.Common.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net/zh-Hant/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/cs/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/de/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/es/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/fr/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/it/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ja/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ko/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/Microsoft.SourceLink.Common.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/Microsoft.SourceLink.Common.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/pl/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/pt-BR/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/ru/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/tr/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/zh-Hans/Microsoft.SourceLink.Common.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/netframework/zh-Hant/Microsoft.SourceLink.Common.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/build/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/build/Microsoft.SourceLink.GitHub.props
+@@ ------------ @@
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net/zh-Hans/Microsoft.SourceLink.GitHub.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net/zh-Hant/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/cs/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/de/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/es/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/fr/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/it/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ja/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ko/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/Microsoft.SourceLink.GitHub.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/Microsoft.SourceLink.GitHub.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/pl/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/pt-BR/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/ru/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/tr/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/zh-Hans/Microsoft.SourceLink.GitHub.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/netframework/zh-Hant/Microsoft.SourceLink.GitHub.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/build/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/build/Microsoft.SourceLink.GitLab.props
+@@ ------------ @@
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net/zh-Hans/Microsoft.SourceLink.GitLab.resources.dll
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net/zh-Hant/
+ ./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net/zh-Hant/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/cs/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/cs/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/de/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/de/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/es/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/es/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/fr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/fr/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/it/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/it/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ja/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ja/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ko/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ko/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/Microsoft.SourceLink.GitLab.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/Microsoft.SourceLink.GitLab.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/pl/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/pl/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/pt-BR/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ru/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/ru/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/tr/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/tr/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/zh-Hans/Microsoft.SourceLink.GitLab.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/netframework/zh-Hant/Microsoft.SourceLink.GitLab.resources.dll
+ ./sdk/x.y.z/System.CodeDom.dll
+ ./sdk/x.y.z/System.CommandLine.dll
+ ./sdk/x.y.z/System.ComponentModel.Composition.dll
