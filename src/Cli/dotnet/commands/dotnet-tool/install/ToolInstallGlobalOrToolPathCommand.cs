@@ -52,7 +52,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool? _verifySignatures;
 
         internal readonly RestoreActionConfig restoreActionConfig;
-        internal readonly INuGetPackageDownloader _nuGetPackageDownloader;
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -93,8 +92,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            _nuGetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
-            _shellShimTemplateFinder = new ShellShimTemplateFinder(_nuGetPackageDownloader, tempDir, packageSourceLocation);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+            _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
             _store = store;
 
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
