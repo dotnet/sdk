@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <target state="translated">ワークロードは、ワークロード バージョンを使用してインストールおよび更新するように構成されていますが、何も見つかりませんでした。"dotnet workload restore" を実行して、ワークロード バージョンをインストールします。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
-        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <target state="translated">{1} で指定されたワークロード バージョン {0} が見つかりませんでした。"dotnet workload restore" を実行して、このワークロード バージョンをインストールします。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">

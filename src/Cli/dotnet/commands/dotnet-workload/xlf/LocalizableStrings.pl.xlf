@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <target state="translated">Obciążenia są skonfigurowane do instalowania i aktualizowania przy użyciu wersji obciążeń, ale żadnych nie znaleziono. Uruchom polecenie „dotnet workload restore”, aby zainstalować wersję obciążenia.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
-        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <target state="translated">Nie znaleziono wersji obciążenia {0} określonej w kontenerze {1}. Uruchom polecenie „dotnet workload restore”, aby zainstalować tę wersję obciążenia.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">

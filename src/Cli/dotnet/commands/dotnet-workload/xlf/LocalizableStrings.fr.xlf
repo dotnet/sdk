@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="new">Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</target>
+        <target state="translated">Les charges de travail sont configurées pour installer et mettre à jour à l’aide des versions de charge de travail, mais aucune n’a été trouvée. Exécutez « dotnet workload restore » pour installer une version de charge de travail.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
-        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
+        <target state="translated">La version de charge de travail {0}, qui a été spécifiée dans {1}, est introuvable. Exécutez « dotnet workload restore » pour installer cette version de charge de travail.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
