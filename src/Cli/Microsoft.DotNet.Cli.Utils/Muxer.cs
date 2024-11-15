@@ -35,7 +35,18 @@ namespace Microsoft.DotNet.Cli.Utils
         public Muxer()
         {
 #if NET6_0_OR_GREATER
-            _muxerPath = Environment.ProcessPath;
+            string processPath = Environment.ProcessPath;
+            string hostName = "dotnet" + Constants.ExeSuffix;
+
+            if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
+            {
+                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
+                if (!string.IsNullOrEmpty(dotnetHostPath))
+                {
+                    processPath = dotnetHostPath + Path.DirectorySeparatorChar + hostName;
+                }
+            }
+            _muxerPath = processPath;
 #else
             _muxerPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
