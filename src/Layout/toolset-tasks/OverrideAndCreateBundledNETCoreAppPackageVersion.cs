@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// <summary>
     /// Use the runtime in dotnet/sdk instead of in the stage 0 to avoid circular dependency.
     /// If there is a change depended on the latest runtime. Without override the runtime version in BundledNETCoreAppPackageVersion
-    /// we would need to somehow get this change in without the test, and then insertion dotnet/installer
+    /// we would need to somehow get this change in without the test, and then insertion dotnet/sdk
     /// and then update the stage 0 back.
     ///
     /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Build.Tasks
     {
         private static string _messageWhenMismatch =
             "{0} version {1} does not match BundledNETCoreAppPackageVersion {2}. " +
-            "The schema of https://github.com/dotnet/installer/blob/main/src/redist/targets/GenerateBundledVersions.targets might change. " +
+            "The schema of https://github.com/dotnet/sdk/blob/main/src/Installer/redist-installer/targets/GenerateBundledVersions.targets might change. " +
             "We need to ensure we can swap the runtime version from what's in stage0 to what dotnet/sdk used successfully";
 
         [Required] public string Stage0MicrosoftNETCoreAppRefPackageVersionPath { get; set; }
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var ns = projectXml.Root.Name.Namespace;
 
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
+            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
 
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
 
@@ -118,17 +118,28 @@ namespace Microsoft.DotNet.Build.Tasks
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownFrameworkReference").First().Attribute("LatestRuntimeFrameworkVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownAppHostPack").First().Attribute("AppHostPackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
 
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
+            (string Name, string VersionAttribute)[] knownPacksAndVersionAttribute = {
+                ("KnownAppHostPack", "AppHostPackVersion"),
+                ("KnownCrossgen2Pack", "Crossgen2PackVersion"),
+                ("KnownILCompilerPack", "ILCompilerPackVersion"),
+                ("KnownILLinkPack", "ILLinkPackVersion"),
+                ("KnownWebAssemblySdkPack", "WebAssemblySdkPackVersion"),
+                ("KnownRuntimePack", "LatestRuntimeFrameworkVersion"),
+            };
+
+            // update all Known*Pack elements
+            foreach (var item in knownPacksAndVersionAttribute)
+            {
+                CheckAndReplaceAttribute(itemGroup.Elements(ns + item.Name).First().Attribute(item.VersionAttribute));
+            }
+
+            // check that we didn't miss any Known*Pack elements
+            foreach (var item in itemGroup.Elements().Where(i => i.Name.LocalName.StartsWith("Known") && i.Name.LocalName.EndsWith("Pack")))
+            {
+                if (!knownPacksAndVersionAttribute.Any(p => p.Name == item.Name.LocalName))
+                    throw new InvalidOperationException($"Unexpected Known*Pack element: {item.Name.LocalName}");
+            }
 
             return projectXml.ToString();
         }
