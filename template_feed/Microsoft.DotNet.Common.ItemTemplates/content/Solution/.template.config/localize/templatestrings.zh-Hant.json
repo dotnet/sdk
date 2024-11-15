@@ -2,10 +2,10 @@
   "author": "Microsoft",
   "name": "方案檔",
   "description": "建立不含專案的空白方案",
-  "symbols/Format/description": "Choose the format for the solution file: sln or slnx.",
-  "symbols/Format/displayName": "Solution file format",
-  "symbols/Format/choices/sln/description": "Solution file",
-  "symbols/Format/choices/sln/displayName": ".sln format",
-  "symbols/Format/choices/slnx/description": "XML Solution file",
-  "symbols/Format/choices/slnx/displayName": ".slnx format"
+  "symbols/Format/description": "選擇解決方案檔案的格式: sln 或 slnx。",
+  "symbols/Format/displayName": "解決方案檔案格式",
+  "symbols/Format/choices/sln/description": "解決方案檔案",
+  "symbols/Format/choices/sln/displayName": ".sln 格式",
+  "symbols/Format/choices/slnx/description": "XML 解決方案檔案",
+  "symbols/Format/choices/slnx/displayName": ".slnx 格式"
 }
