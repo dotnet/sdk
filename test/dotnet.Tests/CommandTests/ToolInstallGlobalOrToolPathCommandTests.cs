@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .WithSource();
 
             var packageSourceLocation = new PackageSourceLocation(
-                nugetConfig: new FilePath(Path.Combine(testAsset.Path, "nuget.config")),
+                nugetConfig: new FilePath(Path.Combine(testAsset.Path, "NuGet.config")),
                 rootConfigDirectory: new DirectoryPath(testAsset.Path),
                 additionalSourceFeeds: ["https://api.nuget.org/v3/invalid.json"]);
 
