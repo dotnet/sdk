@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Watch;
-
 internal readonly struct UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, byte[] pdbDelta, int[] updatedTypes)
 {
     public Guid ModuleId { get; } = moduleId;
