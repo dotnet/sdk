@@ -14,7 +14,6 @@
     <!-- Don't produce rzc.exe -->
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
-    <!--<Nullable>enable</Nullable>-->
   </PropertyGroup>
 
   <ItemGroup>

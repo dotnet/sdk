@@ -7,7 +7,6 @@
   <PropertyGroup>
     <PackageId>Microsoft.NET.Build.Extensions</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools</OutDirName>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

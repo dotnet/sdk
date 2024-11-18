@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
