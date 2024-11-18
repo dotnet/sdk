@@ -5,7 +5,7 @@
 
 using System.Reflection;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestConsole : IConsole
     {

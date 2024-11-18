@@ -4,11 +4,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watch;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// Used to collect a set of files to watch.

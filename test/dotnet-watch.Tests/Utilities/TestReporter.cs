@@ -5,10 +5,8 @@
 
 using System.Diagnostics;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher;
-using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestReporter(ITestOutputHelper output) : IReporter
     {

@@ -3,14 +3,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Watch;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class HotReloadDotNetWatcher : Watcher
     {

@@ -5,14 +5,10 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Channels;
+using Aspire.Tools.Service;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-using Microsoft.WebTools.AspireServer;
-using Microsoft.WebTools.AspireServer.Contracts;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 {
