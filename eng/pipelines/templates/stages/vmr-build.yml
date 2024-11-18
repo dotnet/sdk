@@ -144,6 +144,23 @@ stages:
       #     useMonoRuntime: false              # 🚫
       #     withPreviousSDK: true              # ✅
 
+      - template: ../jobs/vmr-build.yml
+        parameters:
+          # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
+          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+          vmrBranch: ${{ variables.VmrBranch }}
+          architecture: x64
+          pool: ${{ parameters.pool_Linux }}
+          container: ${{ variables.ubuntuContainer }}
+          buildFromArchive: false            # 🚫
+          buildSourceOnly: true              # ✅
+          enablePoison: false                # 🚫
+          excludeOmniSharpTests: false       # 🚫
+          runOnline: false                   # 🚫
+          useMonoRuntime: false              # 🚫
+          withPreviousSDK: false             # 🚫
+
       ### Additional jobs for full build ###
       - ${{ if in(parameters.scope, 'full') }}:
 
@@ -276,23 +293,6 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
-            pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.ubuntuContainer }}
-            buildFromArchive: false            # 🚫
-            buildSourceOnly: true              # ✅
-            enablePoison: false                # 🚫
-            excludeOmniSharpTests: false       # 🚫
-            runOnline: false                   # 🚫
-            useMonoRuntime: false              # 🚫
-            withPreviousSDK: false             # 🚫
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
             buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -381,6 +381,18 @@ stages:
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
+
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows_DevVersions
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        architecture: x64
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x64
+        useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
+        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -767,6 +779,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -861,6 +874,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1069,6 +1083,7 @@ stages:
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1081,6 +1096,7 @@ stages:
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1093,6 +1109,7 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
             runTests: false
+            sign: false
 
         # Build Pass 2 verticals
 

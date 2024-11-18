@@ -7,7 +7,7 @@ function InitializeCustomSDKToolset {
 
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them in source build.
-  if [[ $properties == *"ArcadeBuildFromSource=true"* || $product_build == true || $properties == *"DotNetBuildRepo=true"* ]]; then
+  if [[ $product_build == true || $properties == *"DotNetBuildRepo=true"* ]]; then
     return
   fi
 
@@ -20,10 +20,11 @@ function InitializeCustomSDKToolset {
   fi
 
   InitializeDotNetCli true
-  
+
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScript
 }
@@ -31,7 +32,7 @@ function InitializeCustomSDKToolset {
 # Installs additional shared frameworks for testing purposes
 function InstallDotNetSharedFramework {
   local version=$1
-  local dotnet_root=$DOTNET_INSTALL_DIR 
+  local dotnet_root=$DOTNET_INSTALL_DIR
   local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
 
   if [[ ! -d "$fx_dir" ]]; then

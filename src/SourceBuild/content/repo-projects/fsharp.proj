@@ -14,7 +14,7 @@
 
     <!--
       dotnet/fsharp has a custom eng/build.sh script that handles its own sourcebuild arg
-      differently from the ArcadeBuildFromSource MSBuild arg. Including both args is fine, but the
+      differently from the standard MSBuild arg set. Including both args is fine, but the
       custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
     -->
     <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)sourcebuild $(FlagParameterPrefix)tfm $(NetCurrent) /p:SourceBuildBootstrapTfm=$(NetCurrent)</BuildArgs>

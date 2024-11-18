@@ -110,13 +110,15 @@
     <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
 
     <!-- TargetFrameworkDefaults.props -->
-    <NetCurrent>net9.0</NetCurrent>
+    <NetCurrent>net10.0</NetCurrent>
   </PropertyGroup>
 
   <!-- Manually import the Versions.props file when the Arcade SDK isn't used. -->
   <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
 
   <PropertyGroup>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <!-- This repo's projects are entirely infrastructure and do not ship. -->
