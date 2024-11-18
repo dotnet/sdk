@@ -354,9 +354,17 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static void LogFantomasInstallationInstructions(ILogger logger)
         {
-            logger.LogInformation("Fantomas tool is not installed. To install it, run the following commands:");
-            logger.LogInformation("`dotnet new tool-manifest`");
-            logger.LogInformation("`dotnet tool install fantomas`");
+            var message =
+                """
+                Formatting F# code is not natively supported; however, there is a community project called Fantomas that can format F# code.
+                You can find more information about Fantomas at https://fsprojects.github.io/fantomas/docs/.
+                You can install Fantomas via dotnet tools:
+
+                > dotnet new tool-manifest [ only if no previous manifest is installed ]
+                > dotnet tool install fantomas
+
+                """;
+            logger.LogInformation(message);
         }
     }
 }
