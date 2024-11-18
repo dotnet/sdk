@@ -69,6 +69,21 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        [Fact]
+        public async Task ChangeFileInFSharpProject()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
