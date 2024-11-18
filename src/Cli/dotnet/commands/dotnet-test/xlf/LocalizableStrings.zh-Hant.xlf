@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">要傳遞的其他 msbuild 參數。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArchitectureDescription">
@@ -115,7 +115,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">可平行執行的測試模組數目上限。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -267,12 +267,12 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">沒有使用識別碼 '{0}' 註冊的序列化程式</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">沒有使用類型 '{0}' 註冊的序列化程式</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

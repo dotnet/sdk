@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsCrossTargetingTests))
     {
         // Build Standalone project
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ExecuteCommand(restore).Should().Pass();
 
             var publish = CreatePublishCommand(ProjectDirectory);
-            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net9.0").Should().Pass();
+            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net10.0").Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();

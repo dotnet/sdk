@@ -100,7 +100,8 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "InvalidSolution.sln", "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Contain(
+                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -119,7 +120,8 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFullPath, LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Contain(
+                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFullPath, "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 

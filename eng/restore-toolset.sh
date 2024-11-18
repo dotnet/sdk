@@ -24,6 +24,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScript
 }

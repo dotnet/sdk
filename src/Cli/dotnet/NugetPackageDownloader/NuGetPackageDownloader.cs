@@ -86,59 +86,29 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null,
-            bool isTool = false)
+            PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
                 packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
 
+            FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
 
-            // TODO: Fix this to use the PackageSearchResourceV3 once https://github.com/NuGet/NuGet.Client/pull/5991 is completed.
-            if (isTool && await repository.GetResourceAsync<ServiceIndexResourceV3>().ConfigureAwait(false) is ServiceIndexResourceV3 serviceIndex)
-            {
-                // See https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource#download-package-manifest-nuspec
-                var uri = serviceIndex.GetServiceEntries("PackageBaseAddress/3.0.0")[0].Uri;
-                var queryUri = uri + $"{packageId}/{packageVersion}/{packageId}.nuspec";
-
-                using HttpClient client = new(new HttpClientHandler() { CheckCertificateRevocationList = true });
-                using HttpResponseMessage response = await client.GetAsync(queryUri).ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string nuspec = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                    XDocument doc = XDocument.Parse(nuspec);
-
-                    if (!ToolPackageInstance.IsToolPackage(doc))
-                    {
-                        throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
-                    }
-                }
-                else
-                {
-                    throw new GracefulException(string.Format(LocalizableStrings.NotATool, packageId));
-                }
-            }
-
-            FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+            resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
                 .ConfigureAwait(false);
+
             if (resource == null)
             {
                 throw new NuGetPackageNotFoundException(
                     string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
             }
 
-            string nupkgPath = downloadFolder == null || !downloadFolder.HasValue
-                ? Path.Combine(_packageInstallDir.Value, packageId.ToString(),
-                    resolvedPackageVersion.ToNormalizedString(),
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg")
-                : Path.Combine(downloadFolder.Value.Value,
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg");
-
+            var pathResolver = new VersionFolderPathResolver(downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value);
+            string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
+
             using FileStream destinationStream = File.Create(nupkgPath);
             bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
                 packageId.ToString(),
@@ -218,7 +188,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
             {
-                return Path.Combine(repository.PackageSource.Source, $"{packageId}.{resolvedPackageVersion}.nupkg");
+                return Path.Combine(
+                    repository.PackageSource.Source,
+                    new VersionFolderPathResolver(repository.PackageSource.Source).GetPackageFileName(packageId.ToString(), resolvedPackageVersion)
+                );
             }
 
             ServiceIndexResourceV3 serviceIndexResource = repository.GetResourceAsync<ServiceIndexResourceV3>().Result;
@@ -307,9 +280,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return (source, packageVersion);
         }
 
-        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) =>
-            baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
-            "." + version.ToNormalizedString() + ".nupkg";
+        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
+            "." + version.ToNormalizedString().ToLowerInvariant() + ".nupkg";
 
         internal IEnumerable<FilePath> FindAllFilesNeedExecutablePermission(IEnumerable<string> files,
             string targetPath)
@@ -431,6 +403,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
+                    if (defaultSources.Any(defaultSource => defaultSource.SourceUri == packageSource.SourceUri))
+                    {
+                        continue;
+                    }
+
                     defaultSources.Add(packageSource);
                 }
             }
@@ -438,7 +415,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return defaultSources;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
                 LoadOverrideSources(packageSourceLocation) :

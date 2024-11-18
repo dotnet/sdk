@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmPwaManifestTests(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
             // Arrange
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                assetsManifestPath: "service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_HostedAppWithServiceWorker_Works()
         {
             // Arrange
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishWithPWA_ProducesAssets()
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_UpdatesServiceWorkerVersionHash_WhenSourcesChange()
         {
             // Arrange
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             updatedCapture.Should().NotBe(capture);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_DeterministicAcrossBuilds_WhenNoSourcesChange()
         {
             // Arrange

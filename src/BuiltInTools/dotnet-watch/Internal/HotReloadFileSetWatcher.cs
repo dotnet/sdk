@@ -8,7 +8,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter) : IDisposable
+    internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter, TestFlags testFlags) : IDisposable
     {
         private static readonly TimeSpan s_debounceInterval = TimeSpan.FromMilliseconds(50);
         private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
@@ -48,7 +48,13 @@ namespace Microsoft.DotNet.Watcher.Internal
             _fileWatcher.StartWatching();
             _fileWatcher.OnFileChange += FileChangedCallback;
 
-            reporter.Report(MessageDescriptor.WaitingForChanges);
+            var waitingForChanges = MessageDescriptor.WaitingForChanges;
+            if (testFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
+            {
+                waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
+            }
+
+            reporter.Report(waitingForChanges);
 
             Task.Factory.StartNew(async () =>
             {
