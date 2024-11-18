@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.24560.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.24568.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>dcbc031627671b433927ed0e650dbdebc8e7ccc7</Sha>
+      <Sha>6b3817430ddd6466a3b07f44a0c6cc59b6f7fb39</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.24560.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.24568.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>dcbc031627671b433927ed0e650dbdebc8e7ccc7</Sha>
+      <Sha>6b3817430ddd6466a3b07f44a0c6cc59b6f7fb39</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.24560.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.24568.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>dcbc031627671b433927ed0e650dbdebc8e7ccc7</Sha>
+      <Sha>6b3817430ddd6466a3b07f44a0c6cc59b6f7fb39</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.24565.3">
@@ -627,13 +627,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>55eee324653e01cf28809d02b25a5b0894b58d22</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24562.2">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24563.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>d067af5551057eb396fd99d747ccb70d16996732</Sha>
+      <Sha>0227c768dd7b3bfe6cb22711c2a5ea86b16b7646</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24562.2">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24563.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>d067af5551057eb396fd99d747ccb70d16996732</Sha>
+      <Sha>0227c768dd7b3bfe6cb22711c2a5ea86b16b7646</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24517.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
