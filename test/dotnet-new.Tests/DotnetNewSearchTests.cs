@@ -876,9 +876,9 @@ For more information, run:
             return tableOutput.Any(row => !string.IsNullOrWhiteSpace(row[columnIndex]));
         }
 
-        private static List<List<string>> ParseTableOutput(string stdOut, string[] expectedColumns)
+        private static List<List<string>> ParseTableOutput(string? stdOut, string[] expectedColumns)
         {
-            string[] lines = stdOut.Split(Environment.NewLine);
+            string[] lines = stdOut?.Split(Environment.NewLine) ?? Array.Empty<string>();
 
             int headerLineIndex = Array.FindIndex(lines, line => expectedColumns.All(column => line.Contains(column)));
             string headerLine = lines[headerLineIndex];

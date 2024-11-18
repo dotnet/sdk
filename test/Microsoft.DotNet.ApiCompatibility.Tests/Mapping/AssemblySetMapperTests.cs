@@ -124,7 +124,7 @@ namespace NamespaceInAssemblyD
             Assert.Equal(4, assemblySetMapper.AssemblyCount);
 
             Assert.Equal(4, assemblyMappers.Count());
-            Assert.Equal(new string?[] {
+            Assert.Equal(new string[] {
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-0",
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-1",
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-2",

@@ -19,5 +19,5 @@ internal interface IDeploymentStatusService<T>
     /// <param name="userAgent">'UserAgent' header value</param>
     /// <param name="cancellation">cancellation token</param>
     /// <returns>the resulting deployment response</returns>
-    Task<T> PollDeploymentAsync(IHttpClient httpClient, string url, string user, string password, string userAgent, CancellationToken cancellation);
+    Task<T?> PollDeploymentAsync(IHttpClient httpClient, string? url, string? user, string? password, string userAgent, CancellationToken cancellation);
 }

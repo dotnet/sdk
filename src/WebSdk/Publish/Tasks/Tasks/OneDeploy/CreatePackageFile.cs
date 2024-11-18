@@ -24,16 +24,16 @@ public class CreatePackageFile : Task
     }
 
     [Required]
-    public string ContentToPackage { get; set; }
+    public string? ContentToPackage { get; set; }
 
     [Required]
-    public string ProjectName { get; set; }
+    public string? ProjectName { get; set; }
 
     [Required]
-    public string IntermediateTempPath { get; set; }
+    public string? IntermediateTempPath { get; set; }
 
     [Output]
-    public string CreatedPackageFilePath { get; set; }
+    public string? CreatedPackageFilePath { get; set; }
 
     /// <inheritdoc/>
     public override bool Execute()
@@ -49,7 +49,7 @@ public class CreatePackageFile : Task
         var packageFilePath = Path.Combine(IntermediateTempPath, packageFileName);
 
         // package content
-        var packageFileTask = _filePackager.CreatePackageAsync(ContentToPackage, packageFilePath, CancellationToken.None);
+        var packageFileTask = _filePackager.CreatePackageAsync(ContentToPackage!, packageFilePath, CancellationToken.None);
         packageFileTask.Wait();
 
         CreatedPackageFilePath = packageFileTask.Result ? packageFilePath : string.Empty;

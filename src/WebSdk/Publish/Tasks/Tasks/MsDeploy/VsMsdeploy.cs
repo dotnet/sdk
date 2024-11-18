@@ -447,16 +447,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (obj != null)
             {
                 Type thisType = obj.GetType();
-                cbpEventArg.ExtendedMetadata["ArgumentType"] = thisType.ToString();
+                if (cbpEventArg.ExtendedMetadata is not null)
+                {
+                    cbpEventArg.ExtendedMetadata["ArgumentType"] = thisType.ToString();
+                }
                 System.Reflection.MemberInfo[] arrayMemberInfo = thisType.FindMembers(System.Reflection.MemberTypes.Property, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, null, null);
                 if (arrayMemberInfo != null)
                 {
                     foreach (System.Reflection.MemberInfo memberInfo in arrayMemberInfo)
                     {
                         object val = thisType.InvokeMember(memberInfo.Name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty, null, obj, null, System.Globalization.CultureInfo.InvariantCulture);
-                        if (val != null)
+                        if (val is not null && cbpEventArg.ExtendedMetadata is not null)
                         {
-                            cbpEventArg.ExtendedMetadata[memberinfo.Name] = val.ToString();
+                            cbpEventArg.ExtendedMetadata[memberInfo.Name] = val.ToString();
                         }
                     }
                 }
@@ -509,7 +512,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // additionally we fire the Custom event for the detail information
             var customBuildWithPropertiesEventArg = new ExtendedCustomBuildEventArgs(args.GetType().ToString(), args.Message, null, TaskName)
             {
-                ExtendedMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                ExtendedMetadata = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "TaskName", TaskName },
                     { "EventType", strEventType }

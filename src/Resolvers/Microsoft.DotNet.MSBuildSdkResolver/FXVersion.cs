@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0240
+#nullable enable
+#pragma warning restore IDE0240
+
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
     // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
@@ -57,7 +61,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             // First character of pre is '-' when it is not empty
 
-            // First idenitifier starts at position 1
+            // First identifier starts at position 1
             int idStart = 1;
             for (int i = idStart; true; ++i)
             {

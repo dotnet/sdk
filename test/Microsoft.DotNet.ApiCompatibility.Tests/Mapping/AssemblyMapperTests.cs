@@ -72,7 +72,7 @@ namespace AssemblyMapperTestNamespace3
             IEnumerable<INamespaceMapper> namespaceMappers = assemblyMapper.GetNamespaces();
 
             Assert.Equal(3, namespaceMappers.Count());
-            Assert.Equal(new string?[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", "AssemblyMapperTestNamespace3" }, namespaceMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }

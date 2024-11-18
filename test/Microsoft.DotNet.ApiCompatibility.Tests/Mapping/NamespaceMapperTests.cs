@@ -64,7 +64,7 @@ namespace NamespaceMapper
             IEnumerable<ITypeMapper> typeMappers = namespaceMappers.Single().GetTypes();
             Assert.Equal(2, typeMappers.Count());
 
-            Assert.Equal(new string?[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { "A", "B" }, typeMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }

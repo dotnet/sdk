@@ -91,12 +91,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             Uri uri = new($"{zipDeployPublishUrl}?isAsync=true", UriKind.Absolute);
             string userAgent = $"{UserAgentName}/{userAgentVersion}";
             FileStream stream = File.OpenRead(zipToPublishPath);
-            IHttpResponse response = await client.PostRequestAsync(uri, userName, password, "application/zip", userAgent, Encoding.UTF8, stream);
-            if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Accepted)
+            IHttpResponse? response = await client.PostRequestAsync(uri, userName, password, "application/zip", userAgent, Encoding.UTF8, stream);
+            if (response?.StatusCode != HttpStatusCode.OK && response?.StatusCode != HttpStatusCode.Accepted)
             {
                 if (logMessages)
                 {
-                    Log.LogError(string.Format(Resources.ZIPDEPLOY_FailedDeploy, zipDeployPublishUrl, response.StatusCode));
+                    Log.LogError(string.Format(Resources.ZIPDEPLOY_FailedDeploy, zipDeployPublishUrl, response?.StatusCode));
                 }
 
                 return false;

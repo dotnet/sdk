@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return this;
         }
 
-        public ICommand EnvironmentVariable(string name, string value)
+        public ICommand EnvironmentVariable(string name, string? value)
         {
             throw new NotImplementedException();
         }

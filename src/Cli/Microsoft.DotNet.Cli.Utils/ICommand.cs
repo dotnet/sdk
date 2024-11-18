@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         ICommand WorkingDirectory(string projectDirectory);
 
-        ICommand EnvironmentVariable(string name, string value);
+        ICommand EnvironmentVariable(string name, string? value);
 
         ICommand CaptureStdOut();
 

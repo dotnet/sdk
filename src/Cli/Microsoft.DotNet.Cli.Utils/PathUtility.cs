@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             int directoriesDeleted = 0;
 
-            while (!Directory.EnumerateFileSystemEntries(dir).Any() &&
+            while (dir is not null && !Directory.EnumerateFileSystemEntries(dir).Any() &&
                 directoriesDeleted < maxDirectoriesToDelete)
             {
                 Directory.Delete(dir);

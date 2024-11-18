@@ -79,7 +79,7 @@ public class A
             IEnumerable<ITypeMapper> nestedTypeMappers = typeMappers.Single().GetNestedTypes();
 
             Assert.Equal(3, nestedTypeMappers.Count());
-            Assert.Equal(new string?[] { "B", "C", null }, nestedTypeMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { "B", "C", null }, nestedTypeMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { "B", "C", "D" }, nestedTypeMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
 
@@ -120,7 +120,7 @@ public class A
             IEnumerable<IMemberMapper> memberMappers = typeMappers.Single().GetMembers();
 
             Assert.Equal(4, memberMappers.Count());
-            Assert.Equal(new string?[] { ".ctor", "B", "C", null }, memberMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { ".ctor", "B", "C", null }, memberMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { ".ctor", "B", "C", "D" }, memberMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
 

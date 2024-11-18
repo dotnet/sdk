@@ -83,14 +83,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             {
                 return default;
             }
-            else
+
+            using var stream = await response.GetResponseBodyAsync();
+            if (stream is null)
             {
-                using (var stream = await response.GetResponseBodyAsync())
-                {
-                    var reader = new StreamReader(stream, Encoding.UTF8);
-                    return FromJson<T>(reader.ReadToEnd());
-                }
+                return default;
             }
+            var reader = new StreamReader(stream, Encoding.UTF8);
+            return FromJson<T>(reader.ReadToEnd());
         }
 
         private async System.Threading.Tasks.Task RetryAsync(Func<System.Threading.Tasks.Task> func, int retryCount, TimeSpan retryDelay)

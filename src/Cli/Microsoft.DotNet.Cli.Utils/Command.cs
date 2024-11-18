@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private bool _trimTrailingNewlines = false;
 
-        public Command(Process process, bool trimtrailingNewlines = false)
+        public Command(Process? process, bool trimtrailingNewlines = false)
         {
             _trimTrailingNewlines = trimtrailingNewlines;
             _process = process ?? throw new ArgumentNullException(nameof(process));
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             return Execute(null);
         }
-        public CommandResult Execute(Action<Process> processStarted)
+        public CommandResult Execute(Action<Process>? processStarted)
         {
             Reporter.Verbose.WriteLine(string.Format(
                 LocalizableStrings.RunningFileNameArguments,
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return this;
         }
 
-        public ICommand EnvironmentVariable(string name, string value)
+        public ICommand EnvironmentVariable(string name, string? value)
         {
             _process.StartInfo.Environment[name] = value;
             return this;

@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Tools.Run
                 CommandSpec commandSpec = new(runProperties.RunCommand, runProperties.RunArguments);
 
                 var command = CommandFactoryUsingResolver.Create(commandSpec)
-                    .WorkingDirectory(runProperties.RunWorkingDirectory);
+                    .WorkingDirectory(runProperties.RunWorkingDirectory ?? string.Empty);
 
                 var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
                     project.GetPropertyValue("RuntimeIdentifier"),
