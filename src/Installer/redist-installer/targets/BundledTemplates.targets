@@ -27,25 +27,12 @@
     <Bundled100Templates Include="Microsoft.DotNet.Test.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates90PackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Label=".NET 9.0 templates">
-    <Bundled90Templates Include="Microsoft.DotNet.Web.ItemTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" />
-    <Bundled90Templates Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" UseVersionForTemplateInstallPath="true" />
-    <Bundled90Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <Bundled90Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <Bundled90Templates Include="Microsoft.DotNet.Test.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates90PackageVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="10.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PreviousVersionBundledTemplates Include="@(Bundled90Templates)" TemplateFrameworkVersion="9.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
-    <BundledTemplates Include="@(PreviousVersionBundledTemplates)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
