@@ -57,6 +57,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
                 }
 
+                formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
+
                 if (CodeFormatter.AnyFSharpFiles(Directory.GetCurrentDirectory()))
                 {
                     var isFantomas = await CodeFormatter.IsFantomasInstalled();
@@ -66,11 +68,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     }
                     else
                     {
-                        await CodeFormatter.FantomasFormatAsync();
+                        await CodeFormatter.FantomasFormatAsync(formatOptions, logger).ConfigureAwait(false);
                     }
                 }
-
-                formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
                 return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
             }

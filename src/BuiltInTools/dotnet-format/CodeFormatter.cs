@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
+using Microsoft.CodeAnalysis.Tools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -295,12 +296,17 @@ namespace Microsoft.CodeAnalysis.Tools
             return false; // No F# files found after recursive search
         }
 
+        // using Microsoft.DotNet.Tools.Tool.List; not possible at the moment,
+        // will replicate records privately with the only data needed atm
+        private record ToolListJsonContractInternal(string PackageId);
+        private record ToolListResponseInternal(ToolListJsonContractInternal[] Data);
+
         public static async Task<bool> IsFantomasInstalled()
         {
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "tool list",
+                Arguments = "tool list --local--format json",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -311,19 +317,25 @@ namespace Microsoft.CodeAnalysis.Tools
 
             process.Start();
 
-            var output = process.StandardOutput.ReadToEnd().ToLowerInvariant();
+            var outputString = process.StandardOutput.ReadToEnd();
+
+            var result =
+                System.Text.Json.JsonSerializer.Deserialize<ToolListResponseInternal>(
+                    outputString
+                );
 
             await process.WaitForExitAsync();
 
-            return output.Contains("fantomas");
+            return result is not null
+                && result.Data.Any(r => r.PackageId.Contains("fantomas", StringComparison.OrdinalIgnoreCase));
         }
 
-        public static Task FantomasFormatAsync()
+        public static Task FantomasFormatAsync(FormatOptions formatOptions, ILogger logger)
         {
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "fantomas .",
+                Arguments = $"fantomas {formatOptions.WorkspaceFilePath}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -333,6 +345,9 @@ namespace Microsoft.CodeAnalysis.Tools
             using var process = new Process { StartInfo = processStartInfo };
             process.Start();
             var output = process.StandardOutput.ReadToEnd();
+
+            // log fantomas output
+            logger.LogInformation(output);
 
             return process.WaitForExitAsync();
         }
