@@ -4,7 +4,6 @@
 #if NET
 
 using System.Diagnostics;
-using System.Collections;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -94,23 +93,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return this;
         }
 
-        private string GetHostExeName()
-        {
-            // Should instead make this a full path to dotnet
-            string processPath = Environment.ProcessPath;
-            string hostName = "dotnet" + Constants.ExeSuffix;
-
-            if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
-            {
-                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                if (!string.IsNullOrEmpty(dotnetHostPath))
-                {
-                    processPath = dotnetHostPath+ Path.DirectorySeparatorChar + hostName;
-                }
-            }
-
-            return processPath;
-        }
+        private string GetHostExeName() => new Muxer().MuxerPath;
     }
 }
 

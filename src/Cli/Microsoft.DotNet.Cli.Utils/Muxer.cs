@@ -34,10 +34,16 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public Muxer()
         {
+            // Best-effort search for muxer.
+            // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
 #if NET6_0_OR_GREATER
             string processPath = Environment.ProcessPath;
+#else
+            string processPath = Process.GetCurrentProcess().MainModule.FileName;
+#endif
             string hostName = "dotnet" + Constants.ExeSuffix;
 
+            // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost
             if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
             {
                 var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -46,10 +52,8 @@ namespace Microsoft.DotNet.Cli.Utils
                     processPath = dotnetHostPath + Path.DirectorySeparatorChar + hostName;
                 }
             }
+
             _muxerPath = processPath;
-#else
-            _muxerPath = Process.GetCurrentProcess().MainModule.FileName;
-#endif
         }
 
         public static string GetDataFromAppDomain(string propertyName)
