@@ -8,10 +8,23 @@ This happens e.g. in the VMR where OutputRID is set globally. We assumed in mono
 
 Instead use the preexisting MonoAotCrossDir property.
 ---
+ eng/DotNetBuild.props      |  1 +
  src/mono/mono.proj         | 16 ++++++++--------
  src/mono/monoaotcross.proj |  7 +++++--
- 2 files changed, 13 insertions(+), 10 deletions(-)
+ 3 files changed, 14 insertions(+), 10 deletions(-)
 
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 49f7bdaf9cf..fb0e235841f 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -33,6 +33,7 @@
+     <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
+     <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
+     <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
++    <ShortStack Condition="'$(DotNetBuildMonoCrossAOT)' == 'true'">true</ShortStack>
+   </PropertyGroup>
+ 
+   <Target Name="GetRuntimeSourceBuildCommandConfiguration"
 diff --git a/src/mono/mono.proj b/src/mono/mono.proj
 index 56eb36acbc7..a9bdbb62e0a 100644
 --- a/src/mono/mono.proj
