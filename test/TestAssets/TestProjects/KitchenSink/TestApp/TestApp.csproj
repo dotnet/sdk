@@ -10,7 +10,6 @@
        Keep this list in the same order as the configProperties in GivenThatWeWantToPublishAProjectWithAllFeatures. -->
   <PropertyGroup>
     <VerifyDependencyInjectionOpenGenericServiceTrimmability>true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
-    <_AggressiveAttributeTrimming>true</_AggressiveAttributeTrimming>
     <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
     <_DesignerHostSupport>true</_DesignerHostSupport>
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>

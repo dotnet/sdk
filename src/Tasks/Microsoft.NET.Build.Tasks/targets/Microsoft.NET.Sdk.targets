@@ -524,11 +524,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(VerifyDependencyInjectionOpenGenericServiceTrimmability)"
                                     Trim="true" />
 
-    <RuntimeHostConfigurationOption Include="System.AggressiveAttributeTrimming"
-                                    Condition="'$(_AggressiveAttributeTrimming)' != ''"
-                                    Value="$(_AggressiveAttributeTrimming)"
-                                    Trim="true" />
-
     <RuntimeHostConfigurationOption Include="System.ComponentModel.DefaultValueAttribute.IsSupported"
                                     Condition="'$(_DefaultValueAttributeSupport)' != ''"
                                     Value="$(_DefaultValueAttributeSupport)"

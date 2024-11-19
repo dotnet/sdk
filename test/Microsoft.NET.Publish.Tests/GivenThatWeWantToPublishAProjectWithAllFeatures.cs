@@ -57,7 +57,6 @@ namespace Microsoft.NET.Publish.Tests
     ""runtimeOptions"": {
         ""configProperties"": {
             ""Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability"": true,
-            ""System.AggressiveAttributeTrimming"": true,
             ""System.ComponentModel.DefaultValueAttribute.IsSupported"": true,
             ""System.ComponentModel.Design.IDesignerHost.IsSupported"": true,
             ""System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"": false,
