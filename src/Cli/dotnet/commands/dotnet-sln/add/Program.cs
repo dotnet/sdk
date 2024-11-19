@@ -134,6 +134,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 // https://stackoverflow.com/a/14714485
                 solution.RemoveProperties("HideSolutionNode");
             }
+            // TODO: Remove (https://github.com/microsoft/vs-solutionpersistence/pull/78/files)
             solution.DistillProjectConfigurations();
         }
 
@@ -173,11 +174,17 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }                
             }
-            // Generate configurations and platforms
+            // Add settings based on existing project instance
             ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
+            string projectInstanceId = projectInstance.GetProjectId();
+            if (!string.IsNullOrEmpty(projectInstanceId))
+            {
+                project.Id = new Guid(projectInstance.GetProjectId());
+            }
             foreach (var buildType in projectInstance.GetConfigurations())
             {
-                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, buildType, "*", buildType));
+                var buildTypeWithoutWhitespaces = buildType.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, buildTypeWithoutWhitespaces, "*", buildTypeWithoutWhitespaces));
             }
             foreach (var platform in projectInstance.GetPlatforms())
             {
