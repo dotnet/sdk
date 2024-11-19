@@ -4,6 +4,7 @@
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
@@ -688,7 +689,7 @@ public class EndToEndTests : IDisposable
     }
 
     [DockerSupportsArchFact("linux/arm64")]
-    public void EndToEndMultiArch_NoRegistry()
+    public void EndToEndMultiArch_LocalRegistry()
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
@@ -766,6 +767,79 @@ public class EndToEndTests : IDisposable
 
     private string GetPublishArtifactsPath(string projectDir, string rid)
         => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
+
+    [DockerSupportsArchFact("linux/arm64")]
+    public void EndToEndMultiArch_ArchivePublishing()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string archiveOutput = Path.Combine(TestSettings.TestArtifactsDirectory, "tarballs-output");
+        string imageX64Tarball = Path.Combine(archiveOutput, $"{imageName}-linux-x64.tar.gz");
+        string imageArm64Tarball = Path.Combine(archiveOutput, $"{imageName}-linux-arm64.tar.gz");
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        // Run PublishContainer for multi-arch with ContainerArchiveOutputPath
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "build",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerArchiveOutputPath={archiveOutput}",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local archive at '{imageX64Tarball}'")
+            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local archive at '{imageArm64Tarball}'")
+            .And.NotHaveStdOutContaining("Pushed image index");
+
+        // Check that tarballs were created    
+        File.Exists(imageX64Tarball).Should().BeTrue(); 
+        File.Exists(imageArm64Tarball).Should().BeTrue();
+
+        // Load the images from the tarballs
+        ContainerCli.LoadCommand(_testOutput, "--input", imageX64Tarball)
+           .Execute()
+           .Should().Pass();
+        ContainerCli.LoadCommand(_testOutput, "--input", imageArm64Tarball)
+           .Execute()
+           .Should().Pass();
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-x64",
+            imageX64)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-arm64",
+            imageArm64)
+        .Execute();
+        processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
 
     [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_Registry()
