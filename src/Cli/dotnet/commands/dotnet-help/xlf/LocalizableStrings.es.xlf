@@ -7,6 +7,11 @@
         <target state="translated">Aplicar preferencias de estilo a un proyecto o solución.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Provides additional package commands.</source>
+        <target state="new">Provides additional package commands.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Reenviar a la versión del marco (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>

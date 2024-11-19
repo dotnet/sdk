@@ -45,6 +45,7 @@ sdk-options:
   new               {LocalizableStrings.NewDefinition}
   nuget             {LocalizableStrings.NugetDefinition}
   pack              {LocalizableStrings.PackDefinition}
+  package           {LocalizableStrings.PackageDefinition}
   publish           {LocalizableStrings.PublishDefinition}
   remove            {LocalizableStrings.RemoveDefinition}
   restore           {LocalizableStrings.RestoreDefinition}
