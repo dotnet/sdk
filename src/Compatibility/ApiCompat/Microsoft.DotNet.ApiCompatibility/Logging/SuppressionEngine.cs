@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         {
             // If unnecessary suppressions should be preserved in the suppression file, union the
             // baseline suppressions with the set of actual suppressions. Duplicates are ignored.
-            HashSet<Suppression> suppressionsToSerialize = [.. _suppressions];
+            HashSet<Suppression> suppressionsToSerialize = new(_suppressions);
             if (preserveUnnecessarySuppressions)
             {
                 suppressionsToSerialize.UnionWith(_baselineSuppressions);
