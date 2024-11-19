@@ -101,6 +101,30 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
+
+
+        [Fact]
+        public void WhenDuplicateSourceIsPassedIgnore()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NuGetConfigRandomPackageSources", allowCopyIfPresent: true)
+                .WithSource();
+
+            var packageSourceLocation = new PackageSourceLocation(
+                nugetConfig: new FilePath(Path.Combine(testAsset.Path, "NuGet.config")),
+                rootConfigDirectory: new DirectoryPath(testAsset.Path),
+                additionalSourceFeeds: ["https://api.nuget.org/v3/invalid.json"]);
+            var nuGetPackageDownloader = new NuGetPackageDownloader(new DirectoryPath(testAsset.Path));
+
+            var sources = nuGetPackageDownloader.LoadNuGetSources(new ToolPackage.PackageId(PackageId), packageSourceLocation);
+            // There should only be one source
+            sources.Where(s => s.SourceUri == new Uri("https://api.nuget.org/v3/invalid.json"))
+                .Should().HaveCount(1);
+            // It should be the source from the NuGet.config file
+            sources.Where(s => s.SourceUri == new Uri("https://api.nuget.org/v3/invalid.json")).Single().Name
+                .Should().Be("invalid_source");
+        }
+
         [Fact]
         public void WhenRunWithPackageIdItShouldCreateValidShim()
         {
