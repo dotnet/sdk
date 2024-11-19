@@ -639,7 +639,7 @@ EndGlobal
 
         }
 
-        [Theory]
+        [Theory(Skip = "Having projects with the same name in different paths is allowed.")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)

@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
@@ -91,7 +92,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    ProjectRootElement.Open(projectPath); // Try to open the project to see if it is valid
                     AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
@@ -139,6 +139,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private SolutionProjectModel AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
+            // Open project instance
+            ProjectRootElement projectRootElement = ProjectRootElement.Open(relativePath);
             SolutionProjectModel project;
             try
             {
@@ -171,7 +173,18 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }                
             }
+            // Generate configurations and platforms
+            ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
+            foreach (var buildType in projectInstance.GetConfigurations())
+            {
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, buildType, "*", buildType));
+            }
+            foreach (var platform in projectInstance.GetPlatforms())
+            {
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", platform, platform));
+            }
             return project;
+
         }
     }
 }
