@@ -60,8 +60,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            IReadOnlyCollection<Suppression> writtenSuppressions = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
+            var (suppressionFileUpdated, writtenSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
 
+            Assert.True(suppressionFileUpdated);
             Assert.NotEmpty(writtenSuppressions);
 
             // Trimming away the comment as the serializer doesn't preserve them.
@@ -97,7 +98,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(filePath));
+            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(filePath).UpdatedSuppressions);
         }
 
         [Fact]
@@ -126,7 +127,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.AddSuppression(usedSuppression);
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            IReadOnlyCollection<Suppression> writtenSuppressions = suppressionEngine.WriteSuppressionsToFile(filePath);
+            IReadOnlyCollection<Suppression> writtenSuppressions = suppressionEngine.WriteSuppressionsToFile(filePath).UpdatedSuppressions;
 
             Assert.Equal(new Suppression[] { usedSuppression }, writtenSuppressions);
         }
@@ -137,7 +138,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             EmptyTestSuppressionEngine suppressionEngine = new();
 
             Assert.Empty(suppressionEngine.Suppressions);
-            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true));
+            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true).UpdatedSuppressions);
         }
 
         [Fact]
@@ -189,7 +190,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.AddSuppression(newSuppression);
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            Assert.NotEmpty(suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true));
+            Assert.NotEmpty(suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true).UpdatedSuppressions);
 
             XmlSerializer xmlSerializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
             Suppression[] deserializedSuppressions = xmlSerializer.Deserialize(stream) as Suppression[];
