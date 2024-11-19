@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: '{1}' 레지스트리의 '{0}' 리포지토리에 액세스할 수 없습니다. 자격 증명이 올바르고 이 리포지토리 및 레지스트리에 액세스할 수 있는지 확인하세요.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: 알 수 없는 AppCommandInstruction '{0}'. 올바른 지침은 {1}입니다.</target>
