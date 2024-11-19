@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: Auf das Repository "{0}" in der Registrierung "{1}" kann nicht zugegriffen werden. Vergewissern Sie sich, dass Ihre Anmeldeinformationen korrekt sind und dass Sie Zugriff auf dieses Repository und die Registrierung haben.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: Unbekannte AppCommandInstruction "{0}". Gültige Anweisungen sind {1}.</target>

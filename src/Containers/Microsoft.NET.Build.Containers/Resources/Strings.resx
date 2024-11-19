@@ -436,6 +436,10 @@
     <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</value>
     <comment>{StrBegins="CONTAINER1015: "}</comment>
   </data>
+  <data name="UnableToDownloadFromRepository" xml:space="preserve">
+    <value>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</value>
+    <comment>{StrBegins="CONTAINER1018:" }</comment>
+  </data>
   <data name="UnableToAccessRepository" xml:space="preserve">
     <value>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</value>
     <comment>{StrBegins="CONTAINER1016:" }</comment>
