@@ -842,7 +842,7 @@ public class EndToEndTests : IDisposable
     }
 
     [DockerSupportsArchFact("linux/arm64")]
-    public void EndToEndMultiArch_Registry()
+    public void EndToEndMultiArch_RemoteRegistry()
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
