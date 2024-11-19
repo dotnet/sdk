@@ -9,8 +9,8 @@ This happens e.g. in the VMR where OutputRID is set globally. We assumed in mono
 Instead use the preexisting MonoAotCrossDir property.
 ---
  src/mono/mono.proj         | 16 ++++++++--------
- src/mono/monoaotcross.proj |  9 ++++++---
- 2 files changed, 14 insertions(+), 11 deletions(-)
+ src/mono/monoaotcross.proj |  7 +++++--
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
 diff --git a/src/mono/mono.proj b/src/mono/mono.proj
 index 56eb36acbc7..a9bdbb62e0a 100644
@@ -64,7 +64,7 @@ index 56eb36acbc7..a9bdbb62e0a 100644
        <_MonoIncludeArtifacts Include="$(MonoObjDir)out\include\**" />
        <_MonoRuntimeArtifacts Condition="'$(MonoComponentsStatic)' != 'true' and Exists('$(MonoObjDir)out\lib\Mono.release.framework')" Include="@(_MonoRuntimeComponentsSharedFilePath)">
 diff --git a/src/mono/monoaotcross.proj b/src/mono/monoaotcross.proj
-index c747e87f763..87862dc3abb 100644
+index c747e87f763..d5969fb48fd 100644
 --- a/src/mono/monoaotcross.proj
 +++ b/src/mono/monoaotcross.proj
 @@ -43,20 +43,23 @@
@@ -85,8 +85,7 @@ index c747e87f763..87862dc3abb 100644
 +             Properties="AotHostOS=$(MonoAotHostOS);AotHostArchitecture=$(MonoAotHostArchitecture);BuildMonoAOTCrossCompilerOnly=true;TargetArchitecture=$(MonoAotTargetArchitecture);TargetOS=$(MonoAotTargetOS)" />
  
      <ItemGroup>
--      <_MonoAOTCrossFiles Include="$(ArtifactsBinDir)mono\$(MonoAotTargetOS).$(MonoAotTargetArchitecture).$(Configuration)\cross\$(MonoAotTargetRid.ToLower())\**" />
-+      <_MonoAOTCrossFiles Include="$(MonoAotCrossDir)**" />
+       <_MonoAOTCrossFiles Include="$(ArtifactsBinDir)mono\$(MonoAotTargetOS).$(MonoAotTargetArchitecture).$(Configuration)\cross\$(MonoAotTargetRid.ToLower())\**" />
      </ItemGroup>
  
 +    <Error Condition="'@(_MonoAOTCrossFiles)' == '' and '$(MonoGenerateOffsetsOSGroups)' == ''" Text="No AOT cross files found for $(MonoAotTargetRid)" />
