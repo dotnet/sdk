@@ -306,7 +306,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "tool list --local--format json",
+                Arguments = "tool list --local --format json",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
