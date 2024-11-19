@@ -46,11 +46,17 @@ namespace Microsoft.DotNet.Cli.Utils
             // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost
             if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
             {
-                var dotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                if (!string.IsNullOrEmpty(dotnetHostPath))
-                {
-                    processPath = dotnetHostPath + Path.DirectorySeparatorChar + hostName;
-                }
+	            // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
+	            processPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+	            if (processPath is null)
+	            {
+	                // fallback to DOTNET_ROOT which typically holds some dotnet executable
+	                var root = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+	                if (root is not null)
+	                {
+	                    processPath = Path.Combine(root, $"dotnet{Constants.ExeSuffix}");
+	                }
+	            }
             }
 
             _muxerPath = processPath;
