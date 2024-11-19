@@ -115,12 +115,12 @@ namespace Microsoft.DotNet.Watcher.Tests
             UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
-            App.AssertOutputContains("<Updated>");
+            await App.AssertOutputLineStartsWith("<Updated>");
 
             UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
-            App.AssertOutputContains("<Updated2>");
+            await App.AssertOutputLineStartsWith("<Updated2>");
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
