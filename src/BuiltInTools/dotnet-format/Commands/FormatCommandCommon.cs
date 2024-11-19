@@ -102,7 +102,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var runtimeVersion = GetRuntimeVersion();
                 logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
 
-                if (!TryGetDotNetCliVersion(out var dotnetVersion))
+                if (!TryGetDotNetCliVersion(logger, out var dotnetVersion))
                 {
                     logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
                     return UnableToLocateDotNetCliExitCode;
@@ -354,7 +354,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 ?.InformationalVersion;
         }
 
-        internal static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
+        internal static bool TryGetDotNetCliVersion(ILogger<Program> logger, [NotNullWhen(returnValue: true)] out string? dotnetVersion)
         {
             try
             {
@@ -364,8 +364,9 @@ namespace Microsoft.CodeAnalysis.Tools
                 dotnetVersion = versionResult.OutputLines[0].Trim();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogTrace($"Exception when creating dotnet process: {ex}");
                 dotnetVersion = null;
                 return false;
             }
