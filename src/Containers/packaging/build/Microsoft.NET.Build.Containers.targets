@@ -34,7 +34,7 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
-      <ContainerRuntimeIdentifiers Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
+      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
@@ -399,7 +399,7 @@
   Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
-      <_IsMultiRIDBuild Condition="('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == '')">true</_IsMultiRIDBuild>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == ''))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
