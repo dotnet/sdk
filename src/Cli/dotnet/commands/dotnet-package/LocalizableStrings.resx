@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AppFullName" xml:space="preserve">
+    <value>Provides additional package commands.</value>
+  </data>
   <data name="CommandDescription" xml:space="preserve">
     <value>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
   </data>

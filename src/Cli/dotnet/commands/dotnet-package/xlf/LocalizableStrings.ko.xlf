@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AppFullName">
+        <source>Provides additional package commands.</source>
+        <target state="new">Provides additional package commands.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
         <target state="translated">하나 이상의 패키지 원본에서 검색어와 일치하는 패키지를 검색합니다. 원본을 지정하지 않으면 NuGet.Config에 정의된 모든 원본이 사용됩니다.</target>

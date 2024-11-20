@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AppFullName">
+        <source>Provides additional package commands.</source>
+        <target state="new">Provides additional package commands.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
         <target state="translated">Vyhledá v jednom nebo více zdrojích balíčků balíčky, které odpovídají hledanému výrazu. Pokud nejsou zadány žádné zdroje, budou použity všechny zdroje definované v NuGet.Config.</target>
