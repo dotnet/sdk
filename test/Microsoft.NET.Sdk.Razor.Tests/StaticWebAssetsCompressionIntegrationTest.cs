@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.IO.Compression;
-using System.Reflection;
-using System.Runtime.Intrinsics.Arm;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -50,7 +47,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(manifest, expectedManifest);
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");
+            var finalPath = Path.Combine(outputPath, "AppWithP2PReference.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
 
             var manifest1 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
