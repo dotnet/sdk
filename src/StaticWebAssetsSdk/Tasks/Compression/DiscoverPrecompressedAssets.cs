@@ -31,8 +31,6 @@ public class DiscoverPrecompressedAssets : Task
 
         var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
 
-        // This is a loop inside of a loop (n^2), however, we hope the first condition is a good filter to
-        // avoid the inner loop in most cases.
         foreach (var candidate in candidates)
         {
             if (HasCompressionExtension(candidate.RelativePath) &&
