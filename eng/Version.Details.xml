@@ -320,9 +320,9 @@
       <Sha>903cf8c359aa4d468eb03f85b45702c5a24419f2</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-alpha.2.24570.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-alpha.2.24570.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>c6dab02a378fce674bcfca47f98a0a18ef5bbba2</Sha>
+      <Sha>f322211f11dfd729cbfe27b058b8ae993c0a87fb</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24569.4">
