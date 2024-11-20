@@ -9,10 +9,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.EditAndContinue;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class CompilationHandler : IDisposable
     {
@@ -74,7 +72,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Dispose();
         }
 
-        public ValueTask RestartSessionAsync(IReadOnlySet<ProjectId> projectsToBeRebuilt, CancellationToken cancellationToken)
+        public ValueTask RestartSessionAsync(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
         {
             // Remove previous updates to all modules that were affected by rude edits.
             // All running projects that statically reference these modules have been terminated.
@@ -84,7 +82,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             lock (_runningProjectsAndUpdatesGuard)
             {
-                _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.Contains(update.ProjectId));
+                _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.ContainsKey(update.ProjectId));
             }
 
             _hotReloadService.EndSession();
@@ -101,17 +99,18 @@ namespace Microsoft.DotNet.Watcher.Tools
             _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
         }
 
-        private DeltaApplier CreateDeltaApplier(ProjectGraphNode projectNode, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
-            => HotReloadProfileReader.InferHotReloadProfile(projectNode, _reporter) switch
+        private static DeltaApplier CreateDeltaApplier(HotReloadProfile profile, Version? targetFramework, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+            => profile switch
             {
-                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, projectNode.GetTargetFrameworkVersion()),
-                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, projectNode.GetTargetFrameworkVersion()),
+                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
+                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
                 _ => new DefaultDeltaApplier(processReporter),
             };
 
         public async Task<RunningProject?> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
+            HotReloadProfile profile,
             string namedPipeName,
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
@@ -122,7 +121,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = CreateDeltaApplier(projectNode, browserRefreshServer, processReporter);
+            var targetFramework = projectNode.GetTargetFrameworkVersion();
+            var deltaApplier = CreateDeltaApplier(profile, targetFramework, browserRefreshServer, processReporter);
             var processExitedSource = new CancellationTokenSource();
             var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(processExitedSource.Token, cancellationToken);
 
@@ -274,7 +274,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask<(IReadOnlySet<ProjectId> projectsToBeRebuilt, IEnumerable<RunningProject> terminatedProjects)> HandleFileChangesAsync(
+        public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleFileChangesAsync(
             Func<IEnumerable<Project>, CancellationToken, Task> restartPrompt,
             CancellationToken cancellationToken)
         {
@@ -290,14 +290,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 // If Hot Reload is blocked (due to compilation error) we ignore the current
                 // changes and await the next file change.
-                return (ImmutableHashSet<ProjectId>.Empty, []);
+                return (ImmutableDictionary<ProjectId, string>.Empty, []);
             }
 
             if (updates.Status == ModuleUpdateStatus.RestartRequired)
             {
                 if (!anyProcessNeedsRestart)
                 {
-                    return (ImmutableHashSet<ProjectId>.Empty, []);
+                    return (ImmutableDictionary<ProjectId, string>.Empty, []);
                 }
 
                 await restartPrompt.Invoke(updates.ProjectsToRestart, cancellationToken);
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // except for the root process, which will terminate later on.
                 var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(p => p.FilePath!), cancellationToken);
 
-                return (updates.ProjectsToRebuild.Select(p => p.Id).ToHashSet(), terminatedProjects);
+                return (updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: p => p.Id, elementSelector: p => p.FilePath!), terminatedProjects);
             }
 
             Debug.Assert(updates.Status == ModuleUpdateStatus.Ready);
@@ -346,7 +346,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }, cancellationToken);
 
-            return (ImmutableHashSet<ProjectId>.Empty, []);
+            return (ImmutableDictionary<ProjectId, string>.Empty, []);
         }
 
         private async ValueTask DisplayResultsAsync(WatchHotReloadService.Updates updates, CancellationToken cancellationToken)

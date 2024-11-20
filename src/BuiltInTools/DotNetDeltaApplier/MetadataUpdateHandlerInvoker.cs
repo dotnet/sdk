@@ -3,7 +3,7 @@
 
 using System.Reflection;
 
-namespace Microsoft.Extensions.HotReload;
+namespace Microsoft.DotNet.Watch;
 
 /// <summary>
 /// Finds and invokes metadata update handlers.

@@ -3,11 +3,8 @@
 
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 
@@ -31,7 +28,6 @@ internal sealed class ProjectLauncher(
         CancellationTokenSource processTerminationSource,
         Action<OutputLine>? onOutput,
         RestartOperation restartOperation,
-        bool build,
         CancellationToken cancellationToken)
     {
         var projectNode = projectMap.TryGetProjectNode(projectOptions.ProjectPath, projectOptions.TargetFramework);
@@ -47,24 +43,24 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
+        var profile = HotReloadProfileReader.InferHotReloadProfile(projectNode, Reporter);
+
+        // Blazor WASM does not need dotnet applier as all changes are applied in the browser,
+        // the process being launched is a dev server.
+        var injectDeltaApplier = profile != HotReloadProfile.BlazorWebAssembly;
+
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
-            Arguments = build || projectOptions.Command is not ("run" or "test")
-                ? [projectOptions.Command, .. projectOptions.CommandArguments]
-                : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
+            Arguments = [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
         var namedPipeName = Guid.NewGuid().ToString();
 
         // Directives:
-
-        environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
 
         // Variables:
 
@@ -84,19 +80,26 @@ internal sealed class ProjectLauncher(
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));
 
-        // Do not ask agent to log to stdout until https://github.com/dotnet/sdk/issues/40484 is fixed.
-        // For now we need to set the env variable explicitly when we need to diagnose issue with the agent.
-        // Build targets might launch a process and read it's stdout. If the agent is loaded into such process and starts logging
-        // to stdout it might interfere with the expected output.
-        //if (context.Options.Verbose)
-        //{
-        //    environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
-        //}
+        if (injectDeltaApplier)
+        {
+            environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
+            environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
+            environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
 
-        // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
-        var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath, targetPath);
-        Reporter.Verbose($"Target process is '{targetPath}'");
+            // Do not ask agent to log to stdout until https://github.com/dotnet/sdk/issues/40484 is fixed.
+            // For now we need to set the env variable explicitly when we need to diagnose issue with the agent.
+            // Build targets might launch a process and read it's stdout. If the agent is loaded into such process and starts logging
+            // to stdout it might interfere with the expected output.
+            //if (context.Options.Verbose)
+            //{
+            //    environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+            //}
+
+            // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
+            var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath, targetPath);
+            Reporter.Verbose($"Target process is '{targetPath}'");
+        }
 
         var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
         environmentBuilder.ConfigureProcess(processSpec);
@@ -106,6 +109,7 @@ internal sealed class ProjectLauncher(
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
+            profile,
             namedPipeName,
             browserRefreshServer,
             processSpec,

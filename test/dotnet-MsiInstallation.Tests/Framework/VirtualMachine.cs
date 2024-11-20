@@ -244,14 +244,14 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             };
         }
 
-        public RemoteFile GetRemoteFile(string path)
+        public RemoteFile GetRemoteFile(string path, bool mustExist = false)
         {
-            return new VMRemoteFile(this, path);
+            return new VMRemoteFile(this, path, mustExist);
         }
 
-        public RemoteDirectory GetRemoteDirectory(string path)
+        public RemoteDirectory GetRemoteDirectory(string path, bool mustExist = false)
         {
-            return new VMRemoteDirectory(this, path);
+            return new VMRemoteDirectory(this, path, mustExist);
         }
 
         public VMSnapshot CreateSnapshot()
@@ -400,6 +400,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 else
                 {
                     result.Exists = false;
+                    if (action.MustExist)
+                    {
+                        //  Sometimes a directory that exists on the VM seems not to be found, this lets us avoid caching a bad result
+                        throw new DirectoryNotFoundException($"Expected to find directory {action.TargetPath} on VM, but it was not found.");
+                    }
                 }
                 return result;
             }
@@ -415,6 +420,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 else
                 {
                     result.Exists = false;
+                    if (action.MustExist)
+                    {
+                        //  Sometimes a file that exists on the VM seems not to be found, this lets us avoid caching a bad result
+                        throw new DirectoryNotFoundException($"Expected to find directory {action.TargetPath} on VM, but it was not found.");
+                    }
                 }
                 return result;
             }
@@ -508,9 +518,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         class VMRemoteFile : RemoteFile
         {
             VirtualMachine _vm;
-            public VMRemoteFile(VirtualMachine vm, string path) : base(path)
+            bool _mustExist;
+            public VMRemoteFile(VirtualMachine vm, string path, bool mustExist) : base(path)
             {
                 _vm = vm;
+                _mustExist = mustExist;
             }
 
             VMActionResult GetResult()
@@ -519,7 +531,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 {
                     Type = VMActionType.GetRemoteFile,
                     TargetPath = Path,
-                    IsReadOnly = true
+                    IsReadOnly = true,
+                    MustExist = _mustExist
                 });
             }
 
@@ -539,9 +552,12 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         class VMRemoteDirectory : RemoteDirectory
         {
             VirtualMachine _vm;
-            public VMRemoteDirectory(VirtualMachine vm, string path) : base(path)
+            bool _mustExist;
+
+            public VMRemoteDirectory(VirtualMachine vm, string path, bool mustExist) : base(path)
             {
                 _vm = vm;
+                _mustExist = mustExist;
             }
 
             VMActionResult GetResult()
@@ -550,7 +566,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 {
                     Type = VMActionType.GetRemoteDirectory,
                     TargetPath = Path,
-                    IsReadOnly = true
+                    IsReadOnly = true,
+                    MustExist = _mustExist
                 });
             }
 
