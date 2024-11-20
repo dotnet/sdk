@@ -233,11 +233,5 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
             Assert.False(engine.IsErrorSuppressed(new Suppression("CP1232", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
         }
-
-        [Fact]
-        public void SuppressionEngine_X_Y()
-        {
-
-        }
     }
 }
