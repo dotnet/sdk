@@ -1,4 +1,4 @@
-From 790effb1c89d9b2b8e582018405c5272206a815c Mon Sep 17 00:00:00 2001
+From 4d0efc241bbcd7b64b38506857efa68ced3971a5 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Fri, 15 Nov 2024 15:45:27 +0000
 Subject: [PATCH] Build installers at the end of the repo build
@@ -15,11 +15,11 @@ Backport: https://github.com/dotnet/aspnetcore/pull/58987
 ---
  eng/Build.props                               | 71 +-----------------
  eng/Installers.proj                           | 72 +++++++++++++++++++
- eng/build.ps1                                 | 46 ++++--------
+ eng/build.ps1                                 | 42 ++++-------
  eng/targets/ResolveReferences.targets         |  4 --
  global.json                                   |  3 +-
  .../SharedFrameworkBundle.wixproj             |  8 ++-
- 6 files changed, 98 insertions(+), 106 deletions(-)
+ 6 files changed, 96 insertions(+), 104 deletions(-)
  create mode 100644 eng/Installers.proj
 
 diff --git a/eng/Build.props b/eng/Build.props
@@ -190,21 +190,14 @@ index 0000000000..aac8ea8742
 +
 +</Project>
 diff --git a/eng/build.ps1 b/eng/build.ps1
-index fabfda0f1a..cb713960ef 100644
+index 3696fe11e0..964fe28e2a 100644
 --- a/eng/build.ps1
 +++ b/eng/build.ps1
-@@ -286,19 +286,14 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
+@@ -288,14 +288,9 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
  }
  
  # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 -[string[]]$dotnetBuildArguments = $MSBuildArguments
- 
- # Don't pass Sign and Publish to desktop msbuild as that would result in double signing and publishing
--$dotnetBuildArguments += "/p:Sign=$Sign"
--$dotnetBuildArguments += "/p:Publish=$Publish"
-+$MSBuildArguments += "/p:Sign=$Sign"
-+$MSBuildArguments += "/p:Publish=$Publish"
- 
 -if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true' }
 +if ($All) { $MSBuildArguments += '/p:BuildAllProjects=true' }
  if ($Projects) {
@@ -217,7 +210,7 @@ index fabfda0f1a..cb713960ef 100644
  }
  
  if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
-@@ -310,12 +305,12 @@ $BuildNative = $true
+@@ -307,12 +302,12 @@ $BuildNative = $true
  if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false"; $BuildNative = $false }
  if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true"}
  
@@ -236,7 +229,7 @@ index fabfda0f1a..cb713960ef 100644
  
  # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
  # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
-@@ -416,8 +411,7 @@ function LocateJava {
+@@ -413,8 +408,7 @@ function LocateJava {
  if ($BinaryLog) {
      $bl = GetMSBuildBinaryLogCommandLineArgument($MSBuildArguments)
      if (-not $bl) {
@@ -246,7 +239,7 @@ index fabfda0f1a..cb713960ef 100644
          $ToolsetBuildArguments += "/bl:" + (Join-Path $LogDir "Build.repotasks.binlog")
      } else {
          # Use a different binary log path when running desktop msbuild if doing both builds.
-@@ -476,21 +470,11 @@ try {
+@@ -473,21 +467,11 @@ try {
      }
  
      if (-not $OnlyBuildRepoTasks) {
@@ -288,7 +281,7 @@ index e416d43f30..a4018289c9 100644
        Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
        Code="BUILD006"
 diff --git a/global.json b/global.json
-index a2d60794e4..82e5d4e054 100644
+index a553563dce..289c1c3594 100644
 --- a/global.json
 +++ b/global.json
 @@ -28,6 +28,7 @@
