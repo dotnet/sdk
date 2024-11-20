@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class EventBasedDirectoryWatcher : IDirectoryWatcher
     {

@@ -3,9 +3,8 @@
 
 
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal class BuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory rootProjectFileSetFactory)
     {
@@ -87,7 +86,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 await FileWatcher.WaitForFileChangeAsync(
                     rootProjectFileSetFactory.RootProjectFile,
                     context.Reporter,
-                    startedWatching: () => context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit."),
+                    startedWatching: () => context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
         }

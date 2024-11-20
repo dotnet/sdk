@@ -2,15 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Collections;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.CodeAnalysis.StackTraceExplorer;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class StaticFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
     {

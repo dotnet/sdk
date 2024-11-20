@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
@@ -67,6 +63,60 @@ namespace Microsoft.DotNet.Watcher.Tests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
+        }
+
+        [Fact]
+        public async Task ChangeFileInFSharpProject()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
+        [Fact]
+        public async Task ChangeFileInFSharpProjectWithLoop()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            var source = """
+            module ConsoleApplication.Program
+
+            open System
+            open System.Threading
+
+            [<EntryPoint>]
+            let main argv =
+                while true do
+                    printfn "Waiting"
+                    Thread.Sleep(200)
+                0
+            """;
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.fs");
+
+            File.WriteAllText(sourcePath, source);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated>");
+
+            UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated2>");
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
@@ -380,15 +430,10 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
                 .WithSource();
 
-            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "aspire", "--include-previews"])
-            {
-                WorkingDirectory = testAsset.Path,
-            };
-
-            var result = workloadInstallCommandSpec.Execute();
-            Assert.Equal(0, result.ExitCode);
-
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
+            var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
+            var originalSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+
             App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
             await App.AssertWaitingForChanges();
@@ -399,9 +444,10 @@ namespace Microsoft.DotNet.Watcher.Tests
             // wait until after DCP session started:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
 
-            var newSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
-            newSource = newSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)");
-            UpdateSourceFile(serviceSourcePath, newSource);
+            // valid code change:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
@@ -411,7 +457,60 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
             Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+            App.Process.ClearOutput();
 
+#if TODO // needs Roslyn update
+            // rude edit with build error:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("record WeatherForecast", "record WeatherForecast2"));
+
+            await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+
+            App.AssertOutputContains("dotnet watch ⌚ Unable to apply hot reload, restart is needed to apply the changes.");
+            App.AssertOutputContains("error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
+            App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
+            App.Process.ClearOutput();
+
+            App.SendKey('y');
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.FixBuildError, failure: _ => false);
+
+            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                App.AssertOutputContains("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+            }
+            else
+            {
+                App.AssertOutputContains("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Exited");
+            }
+
+            App.AssertOutputContains($"dotnet watch ⌚ Building '{serviceProjectPath}' ...");
+            App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
+            App.Process.ClearOutput();
+
+            // TODO: remove
+            Log("dotnet build-server shutdown");
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["build-server", "shutdown"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
+            // fix build error:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("WeatherForecast", "WeatherForecast2"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Capabilities");
+
+            App.AssertOutputContains("dotnet watch ⌚ Build succeeded.");
+            App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
+#endif
             App.SendControlC();
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");

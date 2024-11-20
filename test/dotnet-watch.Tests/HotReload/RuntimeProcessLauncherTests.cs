@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
@@ -37,14 +34,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         };
 
         RestartOperation? startOp = null;
-        startOp = new RestartOperation(async (build, cancellationToken) =>
+        startOp = new RestartOperation(async cancellationToken =>
         {
             var result = await service.ProjectLauncher.TryLaunchProcessAsync(
                 projectOptions,
                 new CancellationTokenSource(),
                 onOutput: null,
                 restartOperation: startOp!,
-                build,
                 cancellationToken);
 
             Assert.NotNull(result);
@@ -54,7 +50,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             return result;
         });
 
-        return await startOp(build: false, cancellationToken);
+        return await startOp(cancellationToken);
     }
 
     [Theory]
@@ -171,7 +167,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
         }
 
-        Assert.Equal(4, launchedProcessCount);
+        Assert.Equal(6, launchedProcessCount);
 
         // Hot Reload shared dependency - should update both service projects
         async Task MakeValidDependencyChange()
@@ -252,7 +248,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             Assert.True(hasUpdateSource.Task.IsCompletedSuccessfully);
 
-            Assert.Equal(4, launchedProcessCount);
+            Assert.Equal(6, launchedProcessCount);
         }
     }
 

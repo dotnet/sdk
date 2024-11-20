@@ -5,14 +5,10 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Channels;
+using Aspire.Tools.Service;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-using Microsoft.WebTools.AspireServer;
-using Microsoft.WebTools.AspireServer.Contracts;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 {
@@ -104,11 +100,11 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
             var projectOptions = GetProjectOptions(projectLaunchInfo);
             var sessionId = Interlocked.Increment(ref _sessionIdDispenser).ToString(CultureInfo.InvariantCulture);
-            await StartProjectAsync(dcpId, sessionId, projectOptions, build: false, isRestart: false, cancellationToken);
+            await StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: false, cancellationToken);
             return sessionId;
         }
 
-        public async ValueTask<RunningProject> StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool build, bool isRestart, CancellationToken cancellationToken)
+        public async ValueTask<RunningProject> StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool isRestart, CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
@@ -125,9 +121,8 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                     var writeResult = outputChannel.Writer.TryWrite(line);
                     Debug.Assert(writeResult);
                 },
-                restartOperation: (build, cancellationToken) =>
-                    StartProjectAsync(dcpId, sessionId, projectOptions, build, isRestart: true, cancellationToken),
-                build: build,
+                restartOperation: cancellationToken =>
+                    StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: true, cancellationToken),
                 cancellationToken);
 
             if (runningProject == null)
