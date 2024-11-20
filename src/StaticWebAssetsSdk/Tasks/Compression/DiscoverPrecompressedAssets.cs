@@ -1,21 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography;
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class DiscoverPrecompressedAssets : Task
 {
-    private static readonly char[] PatternSeparator = [';'];
-
     private const string GzipAssetTraitValue = "gzip";
     private const string BrotliAssetTraitValue = "br";
-
-    private const string GzipFormatName = "gzip";
-    private const string BrotliFormatName = "brotli";
 
     public ITaskItem[] CandidateAssets { get; set; }
 
