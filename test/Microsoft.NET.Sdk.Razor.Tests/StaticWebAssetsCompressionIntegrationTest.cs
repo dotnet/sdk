@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -53,6 +54,49 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var manifest1 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
             AssertManifest(manifest1, expectedManifest);
             AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
+
+            var manifest2 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+
+            var standardEndpoints = manifest2.Endpoints.Where(e => string.Equals(e.AssetFile, file, StringComparison.Ordinal)).ToArray();
+            var gzipEndpoints = manifest2.Endpoints.Where(e => string.Equals(e.AssetFile, gzipFile, StringComparison.Ordinal)).ToArray();
+            var brotliEndpoints = manifest2.Endpoints.Where(e => string.Equals(e.AssetFile, brotliFile, StringComparison.Ordinal)).ToArray();
+
+            var gzipAsset = manifest2.Assets.Single(a => string.Equals(a.Identity, gzipFile, StringComparison.Ordinal));
+            var brotliAsset = manifest2.Assets.Single(a => string.Equals(a.Identity, brotliFile, StringComparison.Ordinal));
+
+            standardEndpoints.Should().HaveCount(1);
+            gzipEndpoints.Should().HaveCount(2);
+            brotliEndpoints.Should().HaveCount(2);
+
+            var expectedWeakEndpointEtag = new EntityTagHeaderValue(
+                EntityTagHeaderValue.Parse(standardEndpoints.First().ResponseHeaders.Single(h => h.Name == "ETag").Value).Tag,
+                isWeak: true);
+
+            foreach (var endpoint in gzipEndpoints)
+            {
+                endpoint.ResponseHeaders.Where(e => e.Name == "Content-Encoding").Select(e => e.Value).Single().Should().Be("gzip");
+
+                var etags = endpoint.ResponseHeaders.Where(e => e.Name == "ETag").Select(e => EntityTagHeaderValue.Parse(e.Value));
+                etags.Where(e=> !e.IsWeak).Select(e => e.Tag).Single().Should().BeEquivalentTo($"\"{gzipAsset.Integrity}\"");
+                if (endpoint.Route.EndsWith(".gz"))
+                {
+                    continue;
+                }
+                etags.Should().Contain(expectedWeakEndpointEtag);
+            }
+
+            foreach (var endpoint in brotliEndpoints)
+            {
+                endpoint.ResponseHeaders.Where(e => e.Name == "Content-Encoding").Select(e => e.Value).Single().Should().Be("br");
+
+                var etags = endpoint.ResponseHeaders.Where(e => e.Name == "ETag").Select(e => EntityTagHeaderValue.Parse(e.Value));
+                etags.Where(e => !e.IsWeak).Select(e => e.Tag).Single().Should().BeEquivalentTo($"\"{brotliAsset.Integrity}\"");
+                if (endpoint.Route.EndsWith(".br"))
+                {
+                    continue;
+                }
+                etags.Should().Contain(expectedWeakEndpointEtag);
+            }
         }
     }
 }
