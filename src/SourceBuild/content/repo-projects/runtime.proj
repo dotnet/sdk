@@ -14,6 +14,7 @@
     <BuildArgs Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoEnableLLVM=$(DotNetBuildMonoEnableLLVM)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoAOTEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoAOTEnableLLVM=$(DotNetBuildMonoAOTEnableLLVM)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoBundleLLVMOptimizer)' != ''">$(BuildArgs) /p:DotNetBuildMonoBundleLLVMOptimizer=$(DotNetBuildMonoBundleLLVMOptimizer)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoCrossAOT)' != ''">$(BuildArgs) /p:DotNetBuildMonoCrossAOT=$(DotNetBuildMonoCrossAOT)</BuildArgs>
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
     <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
 
