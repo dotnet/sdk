@@ -293,15 +293,13 @@ extends:
               runTests: false
 
       ############### SOURCE BUILD ###############
-      # Temporarily removed until the SDK can target net10. The assets produced by upstream repos
-      # are net10, but this repo needs net9.
-      # - template: /eng/common/templates-official/job/source-build.yml@self
-      #   parameters:
-      #     platform:
-      #       name: Managed
-      #       container: centosStream9
-      #       jobProperties:
-      #         timeoutInMinutes: 30
+      - template: /eng/common/templates-official/job/source-build.yml@self
+        parameters:
+          platform:
+            name: Managed
+            container: centosStream9
+            jobProperties:
+              timeoutInMinutes: 30
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
