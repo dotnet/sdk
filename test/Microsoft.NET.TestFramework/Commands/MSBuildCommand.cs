@@ -152,7 +152,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
 
-            return TestContext.Current?.ToolsetUnderTest?.CreateCommandForTarget(Target, newArgs)!;
+            return TestContext.Current.ToolsetUnderTest?.CreateCommandForTarget(Target, newArgs)!;
         }
     }
 }

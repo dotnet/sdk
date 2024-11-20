@@ -90,7 +90,7 @@ namespace Microsoft.NET.TestFramework
                 var logger = new StringTestLogger();
                 var command = new DotnetCommand(logger, "--version")
                 {
-                    WorkingDirectory = TestContext.Current?.TestExecutionDirectory
+                    WorkingDirectory = TestContext.Current.TestExecutionDirectory
                 };
 
                 var result = command.Execute();
@@ -113,7 +113,7 @@ namespace Microsoft.NET.TestFramework
             var logger = new StringTestLogger();
             var command = new MSBuildVersionCommand(logger)
             {
-                WorkingDirectory = TestContext.Current?.TestExecutionDirectory
+                WorkingDirectory = TestContext.Current.TestExecutionDirectory
             };
 
             var result = command.Execute();
@@ -229,7 +229,7 @@ namespace Microsoft.NET.TestFramework
                 ret.Arguments = newArgs;
             }
 
-            TestContext.Current?.AddTestEnvironmentVariables(ret.Environment!);
+            TestContext.Current.AddTestEnvironmentVariables(ret.Environment!);
 
             return ret;
         }

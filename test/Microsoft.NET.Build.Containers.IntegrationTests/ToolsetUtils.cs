@@ -22,12 +22,12 @@ internal static class ToolsetUtils
     /// <returns></returns>
     internal static (string PackagePath, string PackageVersion) GetContainersPackagePath()
     {
-        string packageDir = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "Container", "package");
+        string packageDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
 
         //until the package is stabilized, the package version matches TestContext.Current.ToolsetUnderTest.SdkVersion
         //after the package is stabilized, the package version doesn't have -prefix (-dev, -ci) anymore
         //so one of those is expected
-        string[] expectedPackageVersions = new[] { TestContext.Current?.ToolsetUnderTest?.SdkVersion, TestContext.Current?.ToolsetUnderTest?.SdkVersion?.Split('-')[0] }!;
+        string[] expectedPackageVersions = new[] { TestContext.Current.ToolsetUnderTest?.SdkVersion, TestContext.Current.ToolsetUnderTest?.SdkVersion?.Split('-')[0] }!;
 
         foreach (string expectedVersion in expectedPackageVersions)
         {

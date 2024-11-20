@@ -16,7 +16,7 @@ namespace Microsoft.NET.TestFramework
 
         public TestAssetsManager(ITestOutputHelper log)
         {
-            var testAssetsDirectory = TestContext.Current?.TestAssetsDirectory!;
+            var testAssetsDirectory = TestContext.Current.TestAssetsDirectory;
             Log = log;
 
             if (!Directory.Exists(testAssetsDirectory))
@@ -42,7 +42,7 @@ namespace Microsoft.NET.TestFramework
             testDestinationDirectory ??= GetTestDestinationDirectoryPath(testProjectName, callingMethod + "_" + fileName, identifier, allowCopyIfPresent);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current?.SdkVersion, Log);
+            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current.SdkVersion, Log);
             return testAsset;
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.NET.TestFramework
             string testDestinationDirectory,
             string targetExtension = ".csproj")
         {
-            var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current?.SdkVersion, Log);
+            var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
 
             Stack<TestProject> projectStack = new(testProjects);
             HashSet<TestProject> createdProjects = new();
@@ -151,7 +151,7 @@ namespace Microsoft.NET.TestFramework
         public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null)
         {
             string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty);
-            return new TestDirectory(dir, TestContext.Current?.SdkVersion);
+            return new TestDirectory(dir, TestContext.Current.SdkVersion);
         }
 
         public string GetAndValidateTestProjectDirectory(string testProjectName, string testAssetSubdirectory = "")
@@ -176,7 +176,7 @@ namespace Microsoft.NET.TestFramework
             string? identifier,
             bool allowCopyIfPresent = false)
         {
-            string? baseDirectory = TestContext.Current?.TestExecutionDirectory;
+            string? baseDirectory = TestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)

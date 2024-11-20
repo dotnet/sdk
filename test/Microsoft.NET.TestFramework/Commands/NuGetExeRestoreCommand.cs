@@ -31,16 +31,16 @@ namespace Microsoft.NET.TestFramework.Commands
             newArgs.Add(FullPathProjectFile);
 
             newArgs.Add("-PackagesDirectory");
-            newArgs.Add(PackagesDirectory ?? TestContext.Current?.NuGetCachePath ?? string.Empty);
+            newArgs.Add(PackagesDirectory ?? TestContext.Current.NuGetCachePath ?? string.Empty);
 
             newArgs.AddRange(args);
 
-            if (string.IsNullOrEmpty(TestContext.Current?.NuGetExePath))
+            if (string.IsNullOrEmpty(TestContext.Current.NuGetExePath))
             {
                 throw new InvalidOperationException("Path to nuget.exe not set");
             }
 
-            var nugetExePath = TestContext.Current?.NuGetExePath;
+            var nugetExePath = TestContext.Current.NuGetExePath;
             if (!string.IsNullOrEmpty(NuGetExeVersion))
             {
                 nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath)!, NuGetExeVersion, "nuget.exe");
@@ -72,7 +72,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments = newArgs
             };
 
-            TestContext.Current?.AddTestEnvironmentVariables(ret.Environment!);
+            TestContext.Current.AddTestEnvironmentVariables(ret.Environment!);
 
             return ret;
         }

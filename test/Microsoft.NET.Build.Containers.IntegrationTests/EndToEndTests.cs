@@ -324,7 +324,7 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
-            File.Copy(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+            File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
             (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
@@ -495,7 +495,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        File.Copy(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
         (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 

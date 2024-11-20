@@ -66,7 +66,7 @@ partial class Program
     {
         var log = new StringTestLogger();
         var command = new DotnetCommand(log, "--info");
-        var testDirectory = TestDirectory.Create(Path.Combine(TestContext.Current?.TestExecutionDirectory!, "sdkinfo"));
+        var testDirectory = TestDirectory.Create(Path.Combine(TestContext.Current.TestExecutionDirectory, "sdkinfo"));
 
         command.WorkingDirectory = testDirectory.Path;
 

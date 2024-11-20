@@ -23,7 +23,7 @@ internal static class TestSettings
                 {
                     if (_testArtifactsDir == null)
                     {
-                        string tmpDir = Path.Combine(TestContext.Current?.TestExecutionDirectory!, "ContainersTests", DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture));
+                        string tmpDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "ContainersTests", DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture));
                         if (!Directory.Exists(tmpDir))
                         {
                             Directory.CreateDirectory(tmpDir);

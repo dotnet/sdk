@@ -9,9 +9,41 @@ namespace Microsoft.NET.TestFramework
     public class TestContext
     {
         //  Generally the folder the test DLL is in
-        public string? TestExecutionDirectory { get; set; }
+        private string? _testExecutionDirectory;
 
-        public string? TestAssetsDirectory { get; set; }
+        public string TestExecutionDirectory
+        {
+            get
+            {
+                if (_testExecutionDirectory == null)
+                {
+                    throw new InvalidOperationException("TestExecutionDirectory should never be null.");
+                }
+                return _testExecutionDirectory;
+            }
+            set
+            {
+                _testExecutionDirectory = value;
+            }
+        }
+
+        private string? _testAssetsDirectory;
+
+        public string TestAssetsDirectory
+        {
+            get
+            {
+                if (_testAssetsDirectory == null)
+                {
+                    throw new InvalidOperationException("TestAssetsDirectory should never be null.");
+                }
+                return _testAssetsDirectory;
+            }
+            set
+            {
+                _testAssetsDirectory = value;
+            }
+        }
 
         public string? TestPackages { get; set; }
 
@@ -31,7 +63,7 @@ namespace Microsoft.NET.TestFramework
 
         private static TestContext? _current;
 
-        public static TestContext? Current
+        public static TestContext Current
         {
             get
             {
@@ -41,7 +73,7 @@ namespace Microsoft.NET.TestFramework
                     //  (ie when using test explorer or another runner)
                     Initialize(TestCommandLine.Parse(Array.Empty<string>()));
                 }
-                return _current;
+                return _current ?? throw new InvalidOperationException("TestContext.Current should never be null.");
             }
             set
             {
@@ -53,7 +85,7 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetRuntimeGraphFilePath()
         {
-            string dotnetRoot = TestContext.Current?.ToolsetUnderTest?.DotNetRoot!;
+            string dotnetRoot = TestContext.Current.ToolsetUnderTest?.DotNetRoot!;
 
             DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
 
@@ -111,11 +143,11 @@ namespace Microsoft.NET.TestFramework
                 //  variable instead of packing the test, and installing it as a global tool.
                 runAsTool = true;
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
             {
-                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
+                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")!;
             }
 
             string? repoRoot = null;
@@ -136,11 +168,11 @@ namespace Microsoft.NET.TestFramework
 
             if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory))
             {
-                testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
+                testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory!;
             }
             else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
             {
-                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
+                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY")!;
             }
             else if (runAsTool)
             {
@@ -150,10 +182,10 @@ namespace Microsoft.NET.TestFramework
             {
                 testContext.TestExecutionDirectory = (Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory)!, "tmp", repoConfiguration));
 
-                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
+                testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
             }
 
-            Directory.CreateDirectory(testContext.TestExecutionDirectory!);
+            Directory.CreateDirectory(testContext.TestExecutionDirectory);
 
             string? artifactsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_ARTIFACTS_DIR");
             if (string.IsNullOrEmpty(artifactsDir) && !string.IsNullOrEmpty(repoRoot))
@@ -167,7 +199,7 @@ namespace Microsoft.NET.TestFramework
             }
             else
             {
-                testContext.TestGlobalPackagesFolder = Path.Combine(testContext.TestExecutionDirectory!, ".nuget", "packages");
+                testContext.TestGlobalPackagesFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
             }
 
             if (repoRoot != null)
@@ -180,11 +212,11 @@ namespace Microsoft.NET.TestFramework
             }
             else if (runAsTool)
             {
-                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory!, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory!, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory!, ".nuget", "packages");
+                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
+                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
+                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
 
-                var testPackages = Path.Combine(testContext.TestExecutionDirectory!, "Testpackages");
+                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
                 if (Directory.Exists(testPackages))
                 {
                     testContext.TestPackages = testPackages;
@@ -193,13 +225,13 @@ namespace Microsoft.NET.TestFramework
             else
             {
                 var nugetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false)
-                    ?? Path.Combine(testContext.TestExecutionDirectory!, ".nuget");
+                    ?? Path.Combine(testContext.TestExecutionDirectory, ".nuget");
 
                 testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
                 testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(nugetFolder, "packages");
 
-                var testPackages = Path.Combine(testContext.TestExecutionDirectory!, "Testpackages");
+                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
                 if (Directory.Exists(testPackages))
                 {
                     testContext.TestPackages = testPackages;

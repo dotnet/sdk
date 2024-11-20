@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Gets a path to the folder with dotnet new test assets.
         /// </summary>
-        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(TestContext.Current?.TestAssetsDirectory!, "TestPackages", "dotnet-new"));
+        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(TestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
 
         /// <summary>
         /// Gets a path to the folder with dotnet new test NuGet template packages.
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static string GetAndVerifyRepoRoot()
         {
-            string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current?.TestAssetsDirectory!, "..", ".."));
+            string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
             if (!Directory.Exists(repoRoot))
             {
                 Assert.Fail($"The repo root cannot be evaluated.");

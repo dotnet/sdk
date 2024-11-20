@@ -19,7 +19,7 @@ namespace Microsoft.NET.TestFramework
 
         public static TestDirectory Create(string path)
         {
-            return new TestDirectory(path, TestContext.Current?.SdkVersion);
+            return new TestDirectory(path, TestContext.Current.SdkVersion);
         }
 
         public string Path { get; private set; }
