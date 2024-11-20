@@ -623,23 +623,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b5750e65aea5d9e6246cdeb16a52608c454a4e40</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24563.1">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24570.3">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>0227c768dd7b3bfe6cb22711c2a5ea86b16b7646</Sha>
+      <Sha>78e9e24d183a590716f3ba1eb3fd318da668d1a5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24563.1">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24570.3">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>0227c768dd7b3bfe6cb22711c2a5ea86b16b7646</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24568.2">
-      <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>44c807fb89cb9eea8bdec164af363ce6b2ce5abe</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="10.0.0-preview.24568.2">
-      <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>44c807fb89cb9eea8bdec164af363ce6b2ce5abe</Sha>
-      <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
+      <Sha>78e9e24d183a590716f3ba1eb3fd318da668d1a5</Sha>
     </Dependency>
     <!--
       Aspire isn't really a toolset dependency. However, it only inserts a baseline manifest in sdk,
