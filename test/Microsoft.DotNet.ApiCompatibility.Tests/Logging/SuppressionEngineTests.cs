@@ -98,7 +98,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(filePath).UpdatedSuppressions);
+
+            var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath);
+
+            Assert.True(suppressionFileUpdated);
+            Assert.Empty(updatedSuppressions);
         }
 
         [Fact]
@@ -127,18 +131,21 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.AddSuppression(usedSuppression);
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            IReadOnlyCollection<Suppression> writtenSuppressions = suppressionEngine.WriteSuppressionsToFile(filePath).UpdatedSuppressions;
+            var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath);
 
-            Assert.Equal(new Suppression[] { usedSuppression }, writtenSuppressions);
+            Assert.True(suppressionFileUpdated);
+            Assert.Equal([usedSuppression], updatedSuppressions);
         }
 
         [Fact]
         public void SuppressionEngine_WriteSuppressionsToFile_ReturnsEmptyWithEmptyFilePath()
         {
             EmptyTestSuppressionEngine suppressionEngine = new();
-
             Assert.Empty(suppressionEngine.Suppressions);
-            Assert.Empty(suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true).UpdatedSuppressions);
+
+            var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true);
+            Assert.False(suppressionFileUpdated);
+            Assert.Empty(updatedSuppressions);
         }
 
         [Fact]
@@ -190,7 +197,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.AddSuppression(newSuppression);
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
-            Assert.NotEmpty(suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true).UpdatedSuppressions);
+
+            var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
+
+            Assert.True(suppressionFileUpdated);
+            Assert.NotEmpty(updatedSuppressions);
 
             XmlSerializer xmlSerializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
             Suppression[] deserializedSuppressions = xmlSerializer.Deserialize(stream) as Suppression[];
@@ -221,6 +232,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
             Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
             Assert.False(engine.IsErrorSuppressed(new Suppression("CP1232", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
+        }
+
+        [Fact]
+        public void SuppressionEngine_X_Y()
+        {
+
         }
     }
 }
