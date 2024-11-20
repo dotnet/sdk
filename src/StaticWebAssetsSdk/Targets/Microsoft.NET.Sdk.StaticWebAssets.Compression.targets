@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.BrotliCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GZipCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverPrecompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
