@@ -2,13 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Collections;
-using System.Diagnostics;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
     {
@@ -99,7 +95,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // referenced project.
             var cssFilePath = Path.GetFileNameWithoutExtension(containingProjectPath) + ".css";
             var message = new UpdateStaticFileMessage { Path = cssFilePath };
-            await browserRefreshServer.SendJsonSerlialized(message, cancellationToken);
+            await browserRefreshServer.SendJsonMessageAsync(message, cancellationToken);
         }
 
         private readonly struct UpdateStaticFileMessage

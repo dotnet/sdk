@@ -125,10 +125,6 @@
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
   <!-- Global usings -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
   <ItemGroup>

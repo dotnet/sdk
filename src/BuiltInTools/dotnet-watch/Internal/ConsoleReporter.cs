@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using Microsoft.Build.Tasks;
+using Microsoft.Build.Graph;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -18,10 +17,13 @@ namespace Microsoft.Extensions.Tools.Internal
 
         private readonly object _writeLock = new();
 
-        public bool ReportProcessOutput
+        public bool EnableProcessOutputReporting
             => false;
 
-        public void ProcessOutput(string projectPath, string data)
+        public void ReportProcessOutput(OutputLine line)
+            => throw new InvalidOperationException();
+
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
             => throw new InvalidOperationException();
 
         private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)

@@ -1,23 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Build.Definition;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DotNetWatcher(DotNetWatchContext context, MSBuildFileSetFactory fileSetFactory) : Watcher(context, fileSetFactory)
     {
-        public override async Task WatchAsync(CancellationToken cancellationToken)
+        public override async Task WatchAsync(CancellationToken shutdownCancellationToken)
         {
             var cancelledTaskSource = new TaskCompletionSource();
-            cancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
+            shutdownCancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
                 cancelledTaskSource);
 
             if (Context.EnvironmentOptions.SuppressMSBuildIncrementalism)
@@ -31,27 +26,27 @@ namespace Microsoft.DotNet.Watcher
             var buildEvaluator = new BuildEvaluator(Context, RootFileSetFactory);
             await using var browserConnector = new BrowserConnector(Context);
 
-            StaticFileHandler? staticFileHandler;
-            ProjectGraphNode? projectRootNode;
-            if (Context.ProjectGraph != null)
-            {
-                projectRootNode = Context.ProjectGraph.GraphRoots.Single();
-                var projectMap = new ProjectNodeMap(Context.ProjectGraph, Context.Reporter);
-                staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
-            }
-            else
-            {
-                Context.Reporter.Verbose("Unable to determine if this project is a webapp.");
-                projectRootNode = null;
-                staticFileHandler = null;
-            }
-
             for (var iteration = 0;;iteration++)
             {
-                if (await buildEvaluator.EvaluateAsync(changedFile, cancellationToken) is not { } evaluationResult)
+                if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
                 {
                     Context.Reporter.Error("Failed to find a list of files to watch");
                     return;
+                }
+
+                StaticFileHandler? staticFileHandler;
+                ProjectGraphNode? projectRootNode;
+                if (evaluationResult.ProjectGraph != null)
+                {
+                    projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
+                    staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
+                }
+                else
+                {
+                    Context.Reporter.Verbose("Unable to determine if this project is a webapp.");
+                    projectRootNode = null;
+                    staticFileHandler = null;
                 }
 
                 var processSpec = new ProcessSpec
@@ -67,7 +62,7 @@ namespace Microsoft.DotNet.Watcher
                 };
 
                 var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.LaunchOrRefreshBrowserAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, cancellationToken)
+                    ? await browserConnector.LaunchOrRefreshBrowserAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, shutdownCancellationToken)
                     : null;
 
                 environmentBuilder.ConfigureProcess(processSpec);
@@ -75,23 +70,25 @@ namespace Microsoft.DotNet.Watcher
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;
 
-                if (cancellationToken.IsCancellationRequested)
+                if (shutdownCancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
-                using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, currentRunCancellationSource.Token);
-                using var fileSetWatcher = new FileWatcher(evaluationResult.Files, Context.Reporter);
+                using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
+                using var fileSetWatcher = new FileWatcher(Context.Reporter);
 
-                var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, processExitedSource: null, combinedCancellationSource.Token);
+                fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+
+                var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
 
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
 
                 while (true)
                 {
-                    fileSetTask = fileSetWatcher.GetChangedFileAsync(startedWatching: null, combinedCancellationSource.Token);
+                    fileSetTask = fileSetWatcher.WaitForFileChangeAsync(evaluationResult.Files, startedWatching: null, combinedCancellationSource.Token);
                     finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
                     if (staticFileHandler != null && finishedTask == fileSetTask && fileSetTask.Result.HasValue)
@@ -112,7 +109,7 @@ namespace Microsoft.DotNet.Watcher
 
                 await Task.WhenAll(processTask, fileSetTask);
 
-                if (finishedTask == cancelledTaskSource.Task || cancellationToken.IsCancellationRequested)
+                if (finishedTask == cancelledTaskSource.Task || shutdownCancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -121,10 +118,12 @@ namespace Microsoft.DotNet.Watcher
                 {
                     // Process exited. Redo evalulation
                     buildEvaluator.RequiresRevaluation = true;
+
                     // Now wait for a file to change before restarting process
-                    changedFile = await fileSetWatcher.GetChangedFileAsync(
-                        () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
-                        cancellationToken);
+                    changedFile = await fileSetWatcher.WaitForFileChangeAsync(
+                        evaluationResult.Files,
+                        startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                        shutdownCancellationToken);
                 }
                 else
                 {

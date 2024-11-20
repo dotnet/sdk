@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal static partial class EnvironmentVariables
 {
@@ -36,6 +36,7 @@ internal static partial class EnvironmentVariables
     public static bool SuppressBrowserRefresh => ReadBool("DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH");
 
     public static TestFlags TestFlags => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None;
+    public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";  
 
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");

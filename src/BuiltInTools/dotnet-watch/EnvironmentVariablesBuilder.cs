@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class EnvironmentVariablesBuilder
     {
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Watcher
 
         public void ConfigureProcess(ProcessSpec processSpec)
         {
-            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments];
+            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments ?? []];
             AddToEnvironment(processSpec.EnvironmentVariables);
         }
 
