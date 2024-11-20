@@ -77,6 +77,11 @@
         <target state="translated">Visualizza la versione del carico di lavoro attualmente installata.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="translated">Scrittura dei record di installazione per carichi di lavoro Visual Studio: '{0}'</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
