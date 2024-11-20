@@ -8,11 +8,7 @@
 
     <!-- Restore and Build actions are already passed in by the root script. -->
     <BuildActions>$(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
-
-    <!--
-      'sign' is not a valid argument in fsharp's custom build script,
-      so we pass the msbuild property itself. -->
-    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(Sign)' == 'true'">$(BuildArgs) /p:Sign=true</BuildArgs>
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
     <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:GenerateResourceUsePreserializedResources=true</BuildArgs>
