@@ -104,6 +104,6 @@ public class DiscoverPrecompressedAssetsTest
         asset.GetMetadata("AssetMode").Should().Be("All");
         asset.GetMetadata("SourceId").Should().Be("Test");
         asset.GetMetadata("SourceType").Should().Be("Discovered");
-        asset.GetMetadata("ContentRoot").Should().Be(Path.Combine(Environment.CurrentDirectory, "wwwroot\\"));
+        asset.GetMetadata("ContentRoot").Should().Be(Path.Combine(Environment.CurrentDirectory, $"wwwroot{Path.DirectorySeparatorChar}"));
     }
 }
