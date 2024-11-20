@@ -1,14 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
@@ -16,17 +12,18 @@ using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class HotReloadDotNetWatcher : IAsyncDisposable
+    internal sealed class HotReloadDotNetWatcher : IAsyncDisposable
     {
         private readonly IReporter _reporter;
         private readonly IConsole _console;
         private readonly ProcessRunner _processRunner;
         private readonly DotNetWatchOptions _dotNetWatchOptions;
         private readonly IWatchFilter[] _filters;
-        private readonly RudeEditDialog _rudeEditDialog;
+        private readonly RudeEditDialog? _rudeEditDialog;
         private readonly string _workingDirectory;
+        private readonly string _muxerPath;
 
-        public HotReloadDotNetWatcher(IReporter reporter, IRequester requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory)
+        public HotReloadDotNetWatcher(IReporter reporter, IRequester requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory, string muxerPath)
         {
             Ensure.NotNull(reporter, nameof(reporter));
             Ensure.NotNull(requester, nameof(requester));
@@ -37,35 +34,48 @@ namespace Microsoft.DotNet.Watcher
             _dotNetWatchOptions = dotNetWatchOptions;
             _console = console;
             _workingDirectory = workingDirectory;
+            _muxerPath = muxerPath;
 
             _filters = new IWatchFilter[]
             {
-                new DotNetBuildFilter(fileSetFactory, _processRunner, _reporter),
+                new DotNetBuildFilter(fileSetFactory, _processRunner, _reporter, muxerPath),
                 new LaunchBrowserFilter(dotNetWatchOptions),
-                new BrowserRefreshFilter(dotNetWatchOptions, _reporter),
+                new BrowserRefreshFilter(dotNetWatchOptions, _reporter, muxerPath),
             };
-            _rudeEditDialog = new(reporter, requester, _console);
+
+            if (!dotNetWatchOptions.NonInteractive)
+            {
+                _rudeEditDialog = new(reporter, requester, _console);
+            }
         }
 
         public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
+            Debug.Assert(context.ProcessSpec != null);
+
             var processSpec = context.ProcessSpec;
 
-            _reporter.Output("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload. " +
-                Environment.NewLine +
-                $"  {(_dotNetWatchOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
-
             var forceReload = new CancellationTokenSource();
+            var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
-            _console.KeyPressed += (key) =>
+            if (!_dotNetWatchOptions.NonInteractive)
             {
-                var modifiers = ConsoleModifiers.Control;
-                if ((key.Modifiers & modifiers) == modifiers && key.Key == ConsoleKey.R)
+                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_dotNetWatchOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+
+                _console.KeyPressed += (key) =>
                 {
-                    var cancellationTokenSource = Interlocked.Exchange(ref forceReload, new CancellationTokenSource());
-                    cancellationTokenSource.Cancel();
-                }
-            };
+                    var modifiers = ConsoleModifiers.Control;
+                    if ((key.Modifiers & modifiers) == modifiers && key.Key == ConsoleKey.R)
+                    {
+                        var cancellationTokenSource = Interlocked.Exchange(ref forceReload, new CancellationTokenSource());
+                        cancellationTokenSource.Cancel();
+                    }
+                };
+            }
+            else
+            {
+                _reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
+            }
 
             while (true)
             {
@@ -77,6 +87,7 @@ namespace Microsoft.DotNet.Watcher
                 }
 
                 processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile?.LaunchProfileName ?? string.Empty;
 
                 var fileSet = context.FileSet;
                 if (fileSet == null)
@@ -84,6 +95,8 @@ namespace Microsoft.DotNet.Watcher
                     _reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
+
+                Debug.Assert(fileSet.Project != null);
 
                 if (!fileSet.Project.IsNetCoreApp60OrNewer())
                 {
@@ -110,16 +123,18 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
-                    using var hotReload = new HotReload(_processRunner, _reporter);
+                    using var hotReload = new HotReload(_reporter);
+
+                    // Solution must be initialized before we start watching for file changes to avoid race condition
+                    // when the solution captures state of the file after the changes has already been made.
                     await hotReload.InitializeAsync(context, cancellationToken);
 
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
-                    var args = string.Join(" ", processSpec.Arguments);
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
 
                     _reporter.Output("Started", emoji: "🚀");
 
-                    Task<FileItem[]> fileSetTask;
+                    Task<FileItem[]?> fileSetTask;
                     Task finishedTask;
 
                     while (true)
@@ -133,7 +148,7 @@ namespace Microsoft.DotNet.Watcher
                             {
                                 // Only show this error message if the process exited non-zero due to a normal process exit.
                                 // Don't show this if dotnet-watch killed the inner process due to file change or CTRL+C by the user
-                                _reporter.Error($"Application failed to start: {processTask.Exception.InnerException.Message}");
+                                _reporter.Error($"Application failed to start: {processTask.Exception?.InnerException?.Message}");
                             }
                             break;
                         }
@@ -173,8 +188,14 @@ namespace Microsoft.DotNet.Watcher
                             }
                             else
                             {
-                                await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token);
-
+                                if (_rudeEditDialog is not null)
+                                {
+                                    await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token);
+                                }
+                                else
+                                {
+                                    _reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+                                }
                                 break;
                             }
                         }
@@ -210,7 +231,11 @@ namespace Microsoft.DotNet.Watcher
                 }
                 catch (Exception e)
                 {
-                    _reporter.Verbose($"Caught top-level exception from hot reload: {e}");
+                    if (e is not OperationCanceledException)
+                    {
+                        _reporter.Verbose($"Caught top-level exception from hot reload: {e}");
+                    }
+
                     if (!currentRunCancellationSource.IsCancellationRequested)
                     {
                         currentRunCancellationSource.Cancel();
@@ -250,7 +275,7 @@ namespace Microsoft.DotNet.Watcher
                 }
 
                 if (filePath.EndsWith(".cshtml", StringComparison.Ordinal) &&
-                    context.ProjectGraph.GraphRoots.FirstOrDefault() is { } project &&
+                    context.ProjectGraph!.GraphRoots.FirstOrDefault() is { } project &&
                     project.ProjectInstance.GetPropertyValue("AddCshtmlFilesToDotNetWatchList") is not "false")
                 {
                     // For cshtml files, runtime compilation can opt out of watching cshtml files.
@@ -268,13 +293,33 @@ namespace Microsoft.DotNet.Watcher
             return default;
         }
 
-        private static void ConfigureExecutable(DotNetWatchContext context, ProcessSpec processSpec)
+        private void ConfigureExecutable(DotNetWatchContext context, ProcessSpec processSpec)
         {
-            var project = context.FileSet.Project;
+            var project = context.FileSet?.Project;
+            Debug.Assert(project != null);
+
+            // RunCommand property specifies the host to use to run the project.
+            // RunArguments then specifies the arguments to the host.
+            // Arguments to the executable should follow the host arguments.
+
             processSpec.Executable = project.RunCommand;
+
             if (!string.IsNullOrEmpty(project.RunArguments))
             {
-                processSpec.EscapedArguments = project.RunArguments;
+                var escapedArguments = project.RunArguments;
+
+                if (processSpec.EscapedArguments != null)
+                {
+                    escapedArguments += " " + processSpec.EscapedArguments;
+                }
+
+                if (processSpec.Arguments != null)
+                {
+                    escapedArguments += " " + CommandLineUtilities.JoinArguments(processSpec.Arguments);
+                }
+
+                processSpec.EscapedArguments = escapedArguments;
+                processSpec.Arguments = null;
             }
 
             if (!string.IsNullOrEmpty(project.RunWorkingDirectory))
@@ -282,18 +327,22 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.WorkingDirectory = project.RunWorkingDirectory;
             }
 
-            if (!string.IsNullOrEmpty(context.DefaultLaunchSettingsProfile.ApplicationUrl))
+            if (!string.IsNullOrEmpty(context.LaunchSettingsProfile.ApplicationUrl))
             {
-                processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = context.DefaultLaunchSettingsProfile.ApplicationUrl;
+                processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = context.LaunchSettingsProfile.ApplicationUrl;
             }
 
-            var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
+            var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
+                project.RuntimeIdentifier ?? "",
+                project.DefaultAppHostRuntimeIdentifier ?? "",
+                project.TargetFrameworkVersion);
+
+            if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
             {
-                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(DotnetMuxer.MuxerPath);
+                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_muxerPath)!;
             }
 
-            if (context.DefaultLaunchSettingsProfile.EnvironmentVariables is IDictionary<string, string> envVariables)
+            if (context.LaunchSettingsProfile.EnvironmentVariables is { } envVariables)
             {
                 foreach (var entry in envVariables)
                 {

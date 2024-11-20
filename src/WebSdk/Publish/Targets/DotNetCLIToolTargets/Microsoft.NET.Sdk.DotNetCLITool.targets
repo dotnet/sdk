@@ -60,6 +60,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <_DotNetCLIPostPublishDependsOn>
       _InitProjectCapabilityProperties;
       _AspNetCoreProjectSystemPostPublish;
+      _OtherNetProjectPostPublish;
       AfterPublish;
     </_DotNetCLIPostPublishDependsOn>
   </PropertyGroup>
@@ -82,6 +83,26 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <Target Name="_AspNetCoreProjectSystemPostPublish"
           Condition="'$(_IsAspNetCoreProject)' == 'true'"
           DependsOnTargets="$(_AspNetCoreProjectSystemPostPublishDependsOn)">
+  </Target>
+
+  <PropertyGroup>
+    <!-- These targets are the same as _AspNetCoreProjectSystemPostPublishDependsOn minus the
+         ASP.NET-specific transforms stuff that's part of $(_DotNetPublishTransformFiles).
+         _InitPublishIntermediateOutputPath sets up the 'absolute' publish directory,
+         _PublishFiles is the extensibility point for Publish Profiles -->
+    <_OtherNetProjectPostPublishDependsOn>
+      _InitPublishIntermediateOutputPath;
+      _PublishFiles;
+    </_OtherNetProjectPostPublishDependsOn>
+  </PropertyGroup>
+
+  <!-- For safety, we're limiting this target to Worker SDK projects only. After 8.0.100 GA we should consider
+    * opening this up to all project types
+    * consolidation with the ASP.NET version of this target
+    * pushing the Publish SDK down to the base .NET SDK. -->
+  <Target Name="_OtherNetProjectPostPublish"
+    DependsOnTargets="$(_OtherNetProjectPostPublishDependsOn)"
+    Condition="'$(UsingMicrosoftNETSdkWorker)' == 'true'">
   </Target>
 
   <Target Name="_InitPublishIntermediateOutputPath">

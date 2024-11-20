@@ -1,17 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -22,24 +12,6 @@ namespace Microsoft.NET.Publish.Tests
 
         public GivenThatWeWantToPublishASelfContainedApp(ITestOutputHelper log) : base(log)
         {
-        }
-
-        [Fact]
-        public void It_errors_when_publishing_self_contained_app_without_rid()
-        {
-             var testAsset = _testAssetsManager
-                .CopyTestAsset(TestProjectName)
-                .WithSource();
-
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand
-                .Execute(
-                    "/p:SelfContained=true",
-                    $"/p:TargetFramework={TargetFramework}")
-                .Should()
-                .Fail()
-                .And
-                .HaveStdOutContaining(Strings.CannotHaveSelfContainedWithoutRuntimeIdentifier);
         }
 
         [Fact]
@@ -129,7 +101,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Be(2);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.4.0.41702")]
         public void It_publishes_an_app_with_a_netcoreapp_lib_reference()
         {
             var testAsset = _testAssetsManager
@@ -172,7 +144,7 @@ namespace Microsoft.NET.Publish.Tests
             var command = new PublishCommand(testProjectInstance);
 
             command
-                .Execute($"/p:RuntimeIdentifier={rid}")
+                .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                 .Should()
                 .Pass();
 
@@ -217,7 +189,7 @@ namespace Microsoft.NET.Publish.Tests
             var command = new PublishCommand(testProjectInstance);
 
             command
-                .Execute($"/p:RuntimeIdentifier={rid}")
+                .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                 .Should()
                 .Pass();
 
@@ -248,9 +220,9 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void NoStaticLibs()
         {
-             var testAsset = _testAssetsManager
-                .CopyTestAsset(TestProjectName)
-                .WithSource();
+            var testAsset = _testAssetsManager
+               .CopyTestAsset(TestProjectName)
+               .WithSource();
 
             var publishCommand = new PublishCommand(testAsset);
             var tfm = ToolsetInfo.CurrentTargetFramework;

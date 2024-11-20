@@ -1,17 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -112,8 +100,8 @@ namespace Microsoft.NET.Build.Tests
             managedWinRTComponent.AdditionalProperties.Add("CsWinRTComponent", "true");
             managedWinRTComponent.AdditionalProperties.Add("PlatformTarget", "x64");
 
-            //  TODO: Update to latest (currently 1.2.5) once it shows up on dotnet-public feed
-            managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "1.2.3"));
+            //  TODO: Update to latest (currently 2.1.1) once it shows up on dotnet-public feed
+            managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "2.1.1"));
 
             managedWinRTComponent.SourceFiles["Coords.cs"] = @"using System;
 
@@ -204,7 +192,7 @@ class Program
                 .HaveStdOut("(0, 0)");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/24326")]
+        [FullMSBuildOnlyFact]
         public void WinMDInteropProjectCanBeReferenced()
         {
 
@@ -241,7 +229,6 @@ class Program
             };
 
             consoleApp.ReferencedProjects.Add(projectionProject);
-            consoleApp.PackageReferences.Add(new TestPackageReference("Microsoft.VCRTForwarders.140", "1.0.7"));
 
             //  Workaround for PrivateAssets
             consoleApp.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "1.2.3"));

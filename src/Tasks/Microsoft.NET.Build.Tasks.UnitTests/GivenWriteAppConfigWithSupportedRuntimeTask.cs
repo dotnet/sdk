@@ -1,10 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using NuGet.Frameworks;
-using System.Linq;
-using System.Xml.Linq;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -55,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                     new XAttribute("version", "v4.0"),
                                     new XAttribute("sku", ".NETFramework,Version=v4.7.2")))));
 
-            WriteAppConfigWithSupportedRuntime.AddSupportedRuntimeToAppconfig(doc, ".NETFramework", "v4.6.1");
+            WriteAppConfigWithSupportedRuntime.AddSupportedRuntimeToAppconfig(doc, ".NETFramework", "v4.6.2");
 
             XElement supportedRuntime = doc.Element("configuration")
                 .Elements("startup")

@@ -1,21 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
 using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
 using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
 
@@ -395,10 +382,15 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(new[] { "11.11", "12.12", "13.13" }, "android", "12.12", new[] { "ANDROID", "ANDROID12_12", "ANDROID11_11_OR_GREATER", "ANDROID12_12_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_platform(string[] sdkSupportedTargetPlatformVersion, string targetPlatformIdentifier, string targetPlatformVersion, string[] expectedDefines)
         {
-            // Skip Test if SDK is < 7.0.200
-            var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
-            if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
-                return; // Fixed by https://github.com/dotnet/sdk/pull/29009
+            if (targetPlatformIdentifier.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            {
+                var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
+                {
+                    //  Fixed in 7.0.200: https://github.com/dotnet/sdk/pull/29009
+                    return;
+                }
+            }
 
             var targetFramework = "net5.0";
             var testAsset = _testAssetsManager
@@ -495,8 +487,8 @@ namespace Microsoft.NET.Build.Tests
                 testProj.AdditionalProperties["TargetPlatformIdentifier"] = targetPlatformIdentifier;
                 testProj.AdditionalProperties["TargetPlatformVersion"] = targetPlatformVersion;
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProj, targetFramework);
-            File.WriteAllText(Path.Combine(testAsset.Path, testProj.Name, $"{testProj.Name}.cs"), @"
+
+            testProj.SourceFiles[$"{testProj.Name}.cs"] = @"
 using System;
 class Program
 {
@@ -536,7 +528,8 @@ class Program
             Console.WriteLine(""IOS"");
         #endif
     }
-}");
+}";
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, targetFramework);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProj.Name));
             buildCommand
@@ -574,7 +567,7 @@ class Program
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_should_be_targetframeworks(bool useSolution)
         {
-            string targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net461";
+            string targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net462";
             TestInvalidTargetFramework("InvalidTargetFramework", targetFramework, useSolution,
                 $"The TargetFramework value '{targetFramework}' is not valid. To multi-target, use the 'TargetFrameworks' property instead");
         }
@@ -635,7 +628,7 @@ class Program
                 .Should()
                 .Pass();
 
-            getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { "7.0" });
+            getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "7.0" });
         }
 
         private void TestInvalidTargetFramework(string testName, string targetFramework, bool useSolution, string expectedOutput)
@@ -669,17 +662,17 @@ class Program
 
             if (useSolution)
             {
-                var dotnetCommand = new DotnetCommand(Log)
-                {
-                    WorkingDirectory = testAsset.TestRoot
-                };
-
-                dotnetCommand.Execute("new", "sln", "--debug:ephemeral-hive")
+                new DotnetNewCommand(Log)
+                    .WithVirtualHive()
+                    .WithWorkingDirectory(testAsset.TestRoot)
+                    .Execute("sln")
                     .Should()
                     .Pass();
 
                 var relativePathToProject = Path.Combine(testProject.Name, testProject.Name + ".csproj");
-                dotnetCommand.Execute($"sln", "add", relativePathToProject)
+                new DotnetCommand(Log)
+                    .WithWorkingDirectory(testAsset.TestRoot)
+                    .Execute($"sln", "add", relativePathToProject)
                     .Should()
                     .Pass();
 
@@ -712,7 +705,7 @@ class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp6.1")]
+        [InlineData("netcoreapp9.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {
@@ -812,7 +805,7 @@ class Program
                 Name = "Library",
                 TargetFrameworks = "netstandard2.0",
                 // references from packages go through a different code path to be marked externally resolved.
-                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "13.0.1") }
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) }
             };
 
             var asset = _testAssetsManager.CreateTestProject(
@@ -904,6 +897,50 @@ class Program
         }
 
         [Theory]
+        [InlineData("True")]
+        [InlineData("False")]
+        [InlineData(null)]
+        public void It_can_evaluate_metrics_support(string value)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "CheckMetricsSupport",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            if (value is not null)
+            {
+                testProj.AdditionalProperties["MetricsSupport"] = value;
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: value);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string runtimeConfigName = $"{testProj.Name}.runtimeconfig.json";
+            var outputDirectory = buildCommand.GetOutputDirectory(testProj.TargetFrameworks);
+            outputDirectory.Should().HaveFile(runtimeConfigName);
+
+            string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
+            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            JToken metricsSupport = runtimeConfig["runtimeOptions"]["configProperties"]["System.Diagnostics.Metrics.Meter.IsSupported"];
+
+            if (value is null)
+            {
+                metricsSupport.Should().BeNull();
+            }
+            else
+            {
+                metricsSupport.Value<string>().Should().Be(value);
+            }
+        }
+
+        [Theory]
         [InlineData("netcoreapp2.2", null, false, null, false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, null, true)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, null, true)]
@@ -923,7 +960,7 @@ class Program
                 testProject.AdditionalProperties["RollForward"] = rollForwardValue;
             }
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             if (copyLocal.HasValue)
             {
                 testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = copyLocal.ToString().ToLower();
