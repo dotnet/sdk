@@ -36,6 +36,8 @@ public class DiscoverPrecompressedAssets : Task
         var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
         var assetsToUpdate = new List<ITaskItem>();
 
+        var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
+
         // This is a loop inside of a loop (n^2), however, we hope the first condition is a good filter to
         // avoid the inner loop in most cases.
         foreach (var candidate in candidates)
@@ -50,7 +52,7 @@ public class DiscoverPrecompressedAssets : Task
                     MessageImportance.Low,
                     "The asset '{0}' was detected as compressed but it didn't specify a related asset.",
                     candidate.Identity);
-                var relatedAsset = FindRelatedAsset(candidate, candidates);
+                var relatedAsset = FindRelatedAsset(candidate, candidatesByIdentity);
                 if (relatedAsset is null)
                 {
                     Log.LogMessage(
@@ -75,22 +77,13 @@ public class DiscoverPrecompressedAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private StaticWebAsset FindRelatedAsset(StaticWebAsset candidate, StaticWebAsset[] candidates)
+    private StaticWebAsset FindRelatedAsset(StaticWebAsset candidate, IDictionary<string, StaticWebAsset> candidates)
     {
         // The only pattern that we support is a related asset that lives in the same directory, with the same name,
         // but without the compression extension. In any other case we are not going to consider the assets related
         // and an error will occur.
         var identityWithoutExtension = candidate.Identity.Substring(0, candidate.Identity.Length - 3); // We take advantage we know the extension is .br or .gz.
-        for (int i = 0; i < candidates.Length; i++)
-        {
-            var asset = candidates[i];
-            if (string.Equals(asset.Identity, identityWithoutExtension, OSPath.PathComparison))
-            {
-                return asset;
-            }
-        }
-
-        return null;
+        return candidates.TryGetValue(identityWithoutExtension, out var relatedAsset) ? relatedAsset : null;
     }
 
     private bool HasCompressionExtension(string relativePath)
