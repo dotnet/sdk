@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence;
@@ -31,12 +29,9 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-
             _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []);
-
             _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
             _solutionFolderPath = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
-
             SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         }
 
@@ -95,10 +90,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 solution.AddBuildType(buildType);
             }
-            // Get solution folder
+
             SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
                 : null;
+
             foreach (var projectPath in projectPaths)
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
@@ -120,8 +116,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 // https://stackoverflow.com/a/14714485
                 solution.RemoveProperties("HideSolutionNode");
             }
-            // TODO: Remove (https://github.com/microsoft/vs-solutionpersistence/pull/78/files)
-            solution.DistillProjectConfigurations();
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
@@ -136,6 +130,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             }
             catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
             {
+                // If guid is not identified by vs-solutionpersistence, check in project element itself
                 var guid = projectRootElement.GetProjectTypeGuid();
                 if (string.IsNullOrEmpty(guid))
                 {
@@ -148,7 +143,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             if (solutionFolder is null && !_inRoot)
             {
                 var relativePathDirectory = Path.GetDirectoryName(relativePath);
-                if (relativePathDirectory != null)
+                if (!string.IsNullOrEmpty(relativePathDirectory))
                 {
                     SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
                     project.MoveToFolder(relativeSolutionFolder);
@@ -182,7 +177,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     x => x.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault("Debug"));
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
-            //
+            
             Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
         }
     }
