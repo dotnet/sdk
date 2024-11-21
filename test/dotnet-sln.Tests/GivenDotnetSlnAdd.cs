@@ -1098,7 +1098,7 @@ EndGlobal
             nonSolutionFolderProjects.Single().TypeGuid.Should().Be(expectedTypeGuid);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/pull/44570#issuecomment-2472029173")]
+        [Theory]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenPassedAProjectWithoutATypeGuidItErrors(string solutionCommand)

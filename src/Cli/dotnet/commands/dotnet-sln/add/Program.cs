@@ -62,13 +62,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not GracefulException)
             {
-                if (ex is SolutionException || ex.InnerException is SolutionException)
                 {
-                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                    if (ex is SolutionException || ex.InnerException is SolutionException)
+                    {
+                        throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                    }
+                    throw new GracefulException(ex.Message, ex);
                 }
-                throw new GracefulException(ex.Message, ex);
             }
         }
 
@@ -82,11 +84,18 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-                }); 
+                });
             }
-
-            AddDefaultProjectConfigurations(solution);
-
+            // Set default configurations and platforms for sln file
+            foreach (var platform in new List<string>{ "Any CPU", "x64", "x86" })
+            {
+                solution.AddPlatform(platform);
+            }
+            foreach (var buildType in new List<string> { "Debug", "Release" })
+            {
+                solution.AddBuildType(buildType);
+            }
+            // Get solution folder
             SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
                 : null;
@@ -96,24 +105,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 try
                 {
                     AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
-                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
                 }
                 catch (InvalidProjectFileException ex)
                 {
                     Reporter.Error.WriteLine(string.Format(CommonLocalizableStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
                 }
-                catch (ArgumentException ex)
+                catch (SolutionArgumentException ex) when (solution.FindProject(relativePath) != null || ex.Type == SolutionErrorType.DuplicateProjectName)
                 {
-                    // TODO: There are some cases where the project is not found but it already exists on the solution. So it is useful to check the error message. Will remove on future commit.
-                    // TODO: Update with error codes from vs-solutionpersistence
-                    if (solution.FindProject(relativePath) != null || Regex.Match(ex.Message, @"Project name '.*' already exists in the solution folder.").Success)
-                    {
-                        Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                 }
             }
             if (solution.SolutionProjects.Count > 1)
@@ -126,41 +125,24 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
-        private void AddDefaultProjectConfigurations(SolutionModel solution)
+        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
         {
-            string[] defaultConfigurationPlatforms = { "Any CPU", "x64", "x86" };
-            foreach (var platform in defaultConfigurationPlatforms)
-            {
-                solution.AddPlatform(platform);
-            }
-            string[] defaultConfigurationBuildTypes = { "Debug", "Release" };
-            foreach (var buildType in defaultConfigurationBuildTypes)
-            {
-                solution.AddBuildType(buildType);
-            }
-            
-        }
-
-        private SolutionProjectModel AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
-        {
-            // Open project instance
+            // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(relativePath);
             SolutionProjectModel project;
             try
             {
                 project = solution.AddProject(relativePath, null, solutionFolder);
             }
-            catch (ArgumentException ex)
+            catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
             {
-                // TODO: Update with error codes from vs-solutionpersistence
-                if (ex.Message == "ProjectType '' not found. (Parameter 'projectTypeName')")
+                var guid = projectRootElement.GetProjectTypeGuid();
+                if (string.IsNullOrEmpty(guid))
                 {
-                    project = solution.AddProject(relativePath, "130159A9-F047-44B3-88CF-0CF7F02ED50F", solutionFolder);
+                    Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, Path.GetFullPath(relativePath));
+                    return;
                 }
-                else
-                {
-                    throw;
-                }
+                project = solution.AddProject(relativePath, guid, solutionFolder);
             }
             // Generate intermediate solution folders
             if (solutionFolder is null && !_inRoot)
@@ -182,28 +164,26 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             string projectInstanceId = projectInstance.GetProjectId();
             if (!string.IsNullOrEmpty(projectInstanceId))
             {
-                project.Id = new Guid(projectInstance.GetProjectId());
+                project.Id = new Guid(projectInstanceId);
             }
-
-            var projectInstanceConfigurations = projectInstance.GetConfigurations();
+            var projectInstanceBuildTypes = projectInstance.GetConfigurations();
             var projectInstancePlatforms = projectInstance.GetPlatforms();
 
-            foreach (var platform in projectInstancePlatforms)
+            foreach (var solutionPlatform in solution.Platforms)
             {
-                var solutionPlatform = solution.Platforms.FirstOrDefault(
-                    x => x.Replace(" ", string.Empty) == platform.Replace(" ", string.Empty), "Any CPU");
-                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", platform, solutionPlatform));
+                var projectPlatform = projectInstancePlatforms.FirstOrDefault(
+                    x => x.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault("Any CPU"));
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, projectPlatform));
             }
 
-            foreach (var buildType in projectInstanceConfigurations)
+            foreach (var solutionBuildType in solution.BuildTypes)
             {
-                var solutionBuildType = solution.BuildTypes.FirstOrDefault(
-                    x => x.Replace(" ", string.Empty) == buildType.Replace(" ", string.Empty), solution.BuildTypes.FirstOrDefault("Debug"));
-                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, buildType, "*", solutionBuildType));
+                var projectBuildType = projectInstanceBuildTypes.FirstOrDefault(
+                    x => x.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault("Debug"));
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
-
-            return project;
-
+            //
+            Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
         }
     }
 }
