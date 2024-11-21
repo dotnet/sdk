@@ -41,7 +41,6 @@ namespace Microsoft.DotNet.Cli.Utils
 #else
             string processPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
-            string hostName = "dotnet" + Constants.ExeSuffix;
 
             // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost
             if (!Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
