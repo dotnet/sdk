@@ -84,6 +84,9 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
                 }); 
             }
+
+            AddDefaultProjectConfigurations(solution);
+
             SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
                 : null;
@@ -113,7 +116,13 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     }
                 }
             }
-            AddDefaultProjectConfigurations(solution);
+            if (solution.SolutionProjects.Count > 1)
+            {
+                // https://stackoverflow.com/a/14714485
+                solution.RemoveProperties("HideSolutionNode");
+            }
+            // TODO: Remove (https://github.com/microsoft/vs-solutionpersistence/pull/78/files)
+            solution.DistillProjectConfigurations();
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
@@ -129,13 +138,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 solution.AddBuildType(buildType);
             }
-            if (solution.SolutionProjects.Count > 1)
-            {
-                // https://stackoverflow.com/a/14714485
-                solution.RemoveProperties("HideSolutionNode");
-            }
-            // TODO: Remove (https://github.com/microsoft/vs-solutionpersistence/pull/78/files)
-            solution.DistillProjectConfigurations();
+            
         }
 
         private SolutionProjectModel AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
@@ -181,15 +184,24 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 project.Id = new Guid(projectInstance.GetProjectId());
             }
-            foreach (var buildType in projectInstance.GetConfigurations())
+
+            var projectInstanceConfigurations = projectInstance.GetConfigurations();
+            var projectInstancePlatforms = projectInstance.GetPlatforms();
+
+            foreach (var platform in projectInstancePlatforms)
             {
-                var buildTypeWithoutWhitespaces = buildType.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
-                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, buildTypeWithoutWhitespaces, "*", buildTypeWithoutWhitespaces));
+                var solutionPlatform = solution.Platforms.FirstOrDefault(
+                    x => x.Replace(" ", string.Empty) == platform.Replace(" ", string.Empty), "Any CPU");
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, platform));
             }
-            foreach (var platform in projectInstance.GetPlatforms())
+
+            foreach (var buildType in projectInstanceConfigurations)
             {
-                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", platform, platform));
+                var solutionBuildType = solution.BuildTypes.FirstOrDefault(
+                    x => x.Replace(" ", string.Empty) == buildType.Replace(" ", string.Empty), solution.BuildTypes.FirstOrDefault("Debug"));
+                project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", buildType));
             }
+
             return project;
 
         }

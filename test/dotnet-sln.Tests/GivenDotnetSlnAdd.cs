@@ -234,9 +234,6 @@ Global
 		Foo Bar|x64 = Foo Bar|x64
 		Foo Bar|x86 = Foo Bar|x86
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C9601CA2-DB64-4FB6-B463-368C7764BF0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9601CA2-DB64-4FB6-B463-368C7764BF0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -256,6 +253,9 @@ Global
 		{C9601CA2-DB64-4FB6-B463-368C7764BF0D}.Foo Bar|x64.Build.0 = FooBar|x64
 		{C9601CA2-DB64-4FB6-B463-368C7764BF0D}.Foo Bar|x86.ActiveCfg = FooBar|x86
 		{C9601CA2-DB64-4FB6-B463-368C7764BF0D}.Foo Bar|x86.Build.0 = FooBar|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
 ";
