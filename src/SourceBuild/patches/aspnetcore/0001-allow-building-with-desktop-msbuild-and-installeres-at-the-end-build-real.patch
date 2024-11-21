@@ -1,4 +1,4 @@
-From e631b7f66ec62ae4cc538ab111990b93fedfb421 Mon Sep 17 00:00:00 2001
+From 3d0e09e274eda405fb20b6351e42200fccd7584f Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Fri, 15 Nov 2024 15:45:27 +0000
 Subject: [PATCH] Build installers at the end of the repo build
@@ -8,21 +8,42 @@ got built by adding a new Traversal project that
 builds all P2Ps in it in parallel.
 
 Fixes https://github.com/dotnet/aspnetcore/issues/58984
-Fixes https://github.com/dotnet/source-build/issues/4747
 Unblocks https://github.com/dotnet/sdk/pull/44828
 
 Backport: https://github.com/dotnet/aspnetcore/pull/58987
 
 ---
+ eng/AfterSolutionBuild.targets                |  4 +-
  eng/Build.props                               | 71 +-----------------
  eng/Installers.proj                           | 72 +++++++++++++++++++
+ eng/Tools.props                               |  5 +-
  eng/build.ps1                                 | 54 ++++++++------
  eng/targets/ResolveReferences.targets         |  4 --
+ eng/tools/GenerateFiles/GenerateFiles.csproj  |  8 ++-
  global.json                                   |  3 +-
  .../SharedFrameworkBundle.wixproj             |  8 ++-
- 6 files changed, 114 insertions(+), 98 deletions(-)
+ 9 files changed, 125 insertions(+), 104 deletions(-)
  create mode 100644 eng/Installers.proj
 
+diff --git a/eng/AfterSolutionBuild.targets b/eng/AfterSolutionBuild.targets
+index de108aec27..c629174994 100644
+--- a/eng/AfterSolutionBuild.targets
++++ b/eng/AfterSolutionBuild.targets
+@@ -1,12 +1,12 @@
+ <Project>
+ 
++  <Import Project="Common.props" />
+   <Import Project="tools\RepoTasks\RepoTasks.tasks" />
+   <Import Project="SharedFramework.External.props" />
+   <Import Project="SharedFramework.Local.props" />
+ 
+   <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
+-  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack"
+-      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
++  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack" Condition="'$(BuildManaged)' == 'true'">
+     <ItemGroup>
+       <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
+                     Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
 diff --git a/eng/Build.props b/eng/Build.props
 index 196de0632d..02a79cdd41 100644
 --- a/eng/Build.props
@@ -190,6 +211,21 @@ index 0000000000..aac8ea8742
 +  </ItemGroup>
 +
 +</Project>
+diff --git a/eng/Tools.props b/eng/Tools.props
+index e00d1d215c..c71ff43686 100644
+--- a/eng/Tools.props
++++ b/eng/Tools.props
+@@ -1,8 +1,7 @@
+ <Project>
+-  <!-- Update the generated files when we restore projects. Skip in desktop msbuild due to VS 16.8 requirements. -->
++  <!-- Update the generated files when we restore projects. -->
+   <Target Name="GenerateDirectoryBuildFiles"
+-      AfterTargets="Restore"
+-      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
++      AfterTargets="Restore">
+     <!-- Separate invocations and use different properties to ensure second can load the restored package info. -->
+     <MSBuild Projects="$(RepoRoot)eng\tools\GenerateFiles\GenerateFiles.csproj"
+         RemoveProperties="BaseIntermediateOutputPath"
 diff --git a/eng/build.ps1 b/eng/build.ps1
 index 3696fe11e0..86f4a4f67f 100644
 --- a/eng/build.ps1
@@ -325,6 +361,25 @@ index e416d43f30..a4018289c9 100644
      <Warning
        Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
        Code="BUILD006"
+diff --git a/eng/tools/GenerateFiles/GenerateFiles.csproj b/eng/tools/GenerateFiles/GenerateFiles.csproj
+index 8a1be59353..2c3765d7a4 100644
+--- a/eng/tools/GenerateFiles/GenerateFiles.csproj
++++ b/eng/tools/GenerateFiles/GenerateFiles.csproj
+@@ -12,7 +12,13 @@
+   </ItemGroup>
+ 
+   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
+-  <Target Name="GenerateDirectoryBuildFiles">
++  <Target Name="GenerateDirectoryBuildFiles"
++          Inputs="$(MSBuildThisFileDirectory)Directory.Build.props.in;
++                  $(MSBuildThisFileDirectory)Directory.Build.targets.in;
++                  $(ConfigDirectory)dotnet-tools.json"
++          Outputs="$(BaseOutputPath)Directory.Build.props;
++                   $(BaseOutputPath)Directory.Build.targets;
++                   $(ConfigDirectory)dotnet-tools.json">
+     <PropertyGroup>
+       <_TemplateProperties>
+         AspNetCorePatchVersion=$(AspNetCorePatchVersion);
 diff --git a/global.json b/global.json
 index a553563dce..289c1c3594 100644
 --- a/global.json
