@@ -100,7 +100,8 @@
         },
         {
             "name": "roslyn",
-            "defaultRemote": "https://github.com/dotnet/roslyn"
+            "defaultRemote": "https://github.com/dotnet/roslyn",
+            "disableSynchronization": true
         },
         {
             "name": "roslyn-analyzers",
