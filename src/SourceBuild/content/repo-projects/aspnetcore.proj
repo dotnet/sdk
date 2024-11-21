@@ -13,6 +13,10 @@
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
     <!-- <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions> -->
 
+    <!-- aspnetcore must be built with desktop msbuild but defaults to dotnet build. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
+
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
@@ -20,8 +24,6 @@
 
     <!-- PackageValidation fails with desktop msbuild: https://github.com/dotnet/sdk/issues/45004. -->
     <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
-
-    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
