@@ -72,6 +72,11 @@
         <target state="needs-review-translation">NETSDK1079: o pacote Microsoft.AspNetCore.All não tem suporte quando direcionado ao .NET Core 3.0 ou superior. Um FrameworkReference para Microsoft.AspNetCore.App deve ser usado e será incluído implicitamente pelo Microsoft.NET.Sdk.Web.</target>
         <note>{StrBegins="NETSDK1079: "}</note>
       </trans-unit>
+      <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
+        <source>NETSDK1222: ASP.NET Core framework assets are not supported for the target framework.</source>
+        <target state="new">NETSDK1222: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <note>{StrBegins="NETSDK1222: "}</note>
+      </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
         <source>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</source>
         <target state="needs-review-translation">NETSDK1080: um PackageReference para Microsoft.AspNetCore.App não é necessário quando direcionado ao .NET Core 3.0 ou superior. Se o Microsoft.NET.Sdk.Web for usado, a estrutura compartilhada será referenciada automaticamente. Caso contrário, o PackageReference deverá ser substituído por um FrameworkReference.</target>
