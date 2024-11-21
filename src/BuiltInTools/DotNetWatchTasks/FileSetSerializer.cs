@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.Serialization.Json;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.DotNet.Watch;
 using Task = Microsoft.Build.Utilities.Task;
 
 namespace DotNetWatchTasks

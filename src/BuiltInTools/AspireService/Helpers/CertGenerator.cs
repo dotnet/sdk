@@ -4,7 +4,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.WebTools.AspireServer;
+namespace Aspire.Tools.Service;
 
 internal static class CertGenerator
 {

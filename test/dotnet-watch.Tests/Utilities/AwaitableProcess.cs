@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class AwaitableProcess(DotnetCommand spec, ITestOutputHelper logger) : IDisposable
     {

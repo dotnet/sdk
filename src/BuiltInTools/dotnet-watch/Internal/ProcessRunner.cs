@@ -3,9 +3,8 @@
 
 
 using System.Diagnostics;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class ProcessRunner
     {
