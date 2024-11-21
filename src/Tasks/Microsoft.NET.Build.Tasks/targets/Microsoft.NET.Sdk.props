@@ -81,6 +81,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'arm64' ">
     <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">arm64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'loongarch64' ">
+    <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">loongarch64</PlatformTarget>
+  </PropertyGroup>
 
   <!-- Default settings for all projects built with this Sdk package -->
 

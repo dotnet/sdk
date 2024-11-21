@@ -149,6 +149,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       </PropertyGroup>
     </When>
 
+    <When Condition="$(RuntimeIdentifier.EndsWith('-loongarch64')) or $(RuntimeIdentifier.Contains('-loongarch64-'))">
+      <PropertyGroup>
+        <PlatformTarget>loongarch64</PlatformTarget>
+      </PropertyGroup>
+    </When>
+
     <Otherwise>
       <PropertyGroup>
         <PlatformTarget>AnyCPU</PlatformTarget>
