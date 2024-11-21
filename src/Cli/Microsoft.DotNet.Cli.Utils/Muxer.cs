@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Utils
             string hostName = "dotnet" + Constants.ExeSuffix;
 
             // The current process should be dotnet in most normal scenarios except when dotnet.dll is loaded in a custom host like the testhost
-            if (!processPath.EndsWith(hostName, StringComparison.OrdinalIgnoreCase))
+            if (!Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
             {
 	            // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
 	            processPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
