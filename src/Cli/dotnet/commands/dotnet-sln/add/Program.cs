@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private static string GetSolutionFolderPathWithForwardSlashes(string path)
         {
-            // SolutionModel::AddFolder expects path to have leading, trailing and inner forward slashes
+            // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
             return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(path).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
         public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
