@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": ["Test", "xUnit"],
+  "classifications": ["Test", "xUnit", "Desktop", "Web"],
   "name": "xUnit Test Project",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS",
@@ -19,6 +19,7 @@
     "TargetFrameworkOverride": {
       "type": "parameter",
       "description": "Overrides the target framework",
+      "displayName": "Target framework override",
       "replaces": "TargetFrameworkOverride",
       "datatype": "string",
       "defaultValue": ""
@@ -26,6 +27,7 @@
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
+      "displayName": "Framework",
       "datatype": "choice",
       "choices": [
         {
@@ -40,7 +42,8 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether or not to enable packaging (via \"dotnet pack\") for the project."
+      "description": "Whether or not to enable packaging (via \"dotnet pack\") for the project.",
+      "displayName": "Enable pack"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -50,6 +53,7 @@
       "type": "parameter",
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
+      "displayName": "Skip restore",
       "defaultValue": "false"
     }
   },

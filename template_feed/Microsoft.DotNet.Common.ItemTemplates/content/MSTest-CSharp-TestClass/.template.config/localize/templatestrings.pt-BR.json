@@ -3,6 +3,7 @@
   "name": "Classe de teste MSTest",
   "description": "Cria uma nova classe de teste do MSTest",
   "symbols/Fixture/description": "Selecione os tipos de acessório a serem incluídos no projeto.",
+  "symbols/Fixture/displayName": "Acessório",
   "symbols/Fixture/choices/None/description": "Nenhum método de acessório",
   "symbols/Fixture/choices/None/displayName": "Nenhum",
   "symbols/Fixture/choices/AssemblyInitialize/description": "Método acessório AssemblyInitialize",

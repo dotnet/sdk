@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": ["Test", "MSTest"],
+  "classifications": ["Test", "MSTest", "Desktop", "Web"],
   "name": "MSTest Test Project",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.",
@@ -19,6 +19,7 @@
     "TargetFrameworkOverride": {
       "type": "parameter",
       "description": "Overrides the target framework",
+      "displayName": "Target framework override",
       "replaces": "TargetFrameworkOverride",
       "datatype": "string",
       "defaultValue": ""
@@ -26,6 +27,7 @@
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
+      "displayName": "Framework",
       "datatype": "choice",
       "choices": [
         {
@@ -100,6 +102,7 @@
       "type": "parameter",
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
+      "displayName": "Skip restore",
       "defaultValue": "false"
     },
     "langVersion": {
@@ -173,7 +176,8 @@
         },
         {
           "choice": "AllMicrosoft",
-          "description": "Enable all extensions shipped by Microsoft (including extensions with a restrictive license)"
+          "description": "Enable all extensions shipped by Microsoft (including extensions with a restrictive license)",
+          "displayName": "AllMicrosoft"
         }
       ]
     },
@@ -181,6 +185,7 @@
       "type": "parameter",
       "datatype": "choice",
       "description": "Select the fixture kinds to include in the project.",
+      "displayName": "Fixture",
       "allowMultipleValues": true,
       "enableQuotelessLiterals": true,
       "defaultValue": "None",

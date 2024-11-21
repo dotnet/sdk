@@ -29,6 +29,7 @@
       "type": "parameter",
       "datatype": "choice",
       "description": "Select the fixture kinds to include in the project.",
+      "displayName": "Fixture",
       "allowMultipleValues": true,
       "enableQuotelessLiterals": true,
       "defaultValue": "None",

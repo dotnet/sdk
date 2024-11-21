@@ -3,6 +3,7 @@
   "name": "MSTest Test Sınıfı",
   "description": "Yeni bir MSTest test sınıfı oluşturur",
   "symbols/Fixture/description": "Projeye dahil edilecek düzen türlerini seçin.",
+  "symbols/Fixture/displayName": "Düzen",
   "symbols/Fixture/choices/None/description": "Düzen yöntemi yok",
   "symbols/Fixture/choices/None/displayName": "Hiçbiri",
   "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize düzen yöntemi",

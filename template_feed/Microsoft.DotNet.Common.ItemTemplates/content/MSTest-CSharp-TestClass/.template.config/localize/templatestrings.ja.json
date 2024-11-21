@@ -3,6 +3,7 @@
   "name": "MSTest テスト クラス",
   "description": "新しい MSTest テスト クラスを作成します",
   "symbols/Fixture/description": "プロジェクトに含めるフィクスチャの種類を選択します。",
+  "symbols/Fixture/displayName": "フィクスチャ",
   "symbols/Fixture/choices/None/description": "フィクスチャ メソッドがありません",
   "symbols/Fixture/choices/None/displayName": "なし",
   "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize フィクスチャ メソッド",

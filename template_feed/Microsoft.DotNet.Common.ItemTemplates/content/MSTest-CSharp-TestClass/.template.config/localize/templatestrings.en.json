@@ -3,6 +3,7 @@
   "name": "MSTest Test Class",
   "description": "Creates a new MSTest test class",
   "symbols/Fixture/description": "Select the fixture kinds to include in the project.",
+  "symbols/Fixture/displayName": "Fixture",
   "symbols/Fixture/choices/None/description": "No fixture methods",
   "symbols/Fixture/choices/None/displayName": "None",
   "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize fixture method",

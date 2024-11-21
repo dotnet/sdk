@@ -3,6 +3,7 @@
   "name": "Třída testu MSTest",
   "description": "Vytvoří novou testovací třídu MSTest.",
   "symbols/Fixture/description": "Vyberte typy testovacích součástí, které se mají zahrnout do projektu.",
+  "symbols/Fixture/displayName": "Testovací přípravek",
   "symbols/Fixture/choices/None/description": "Žádné metody testovacího přípravku",
   "symbols/Fixture/choices/None/displayName": "Žádné",
   "symbols/Fixture/choices/AssemblyInitialize/description": "Metoda testovacího přípravku AssemblyInitialize",

@@ -3,6 +3,7 @@
   "name": "MSTest 테스트 클래스",
   "description": "새 MSTest 테스트 클래스를 만듭니다.",
   "symbols/Fixture/description": "프로젝트에 포함할 픽스쳐 종류를 선택합니다.",
+  "symbols/Fixture/displayName": "픽스쳐",
   "symbols/Fixture/choices/None/description": "픽스쳐 메서드 없음",
   "symbols/Fixture/choices/None/displayName": "없음",
   "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize fixture 메서드",

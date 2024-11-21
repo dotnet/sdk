@@ -3,6 +3,7 @@
   "name": "Klasa testowa MSTest",
   "description": "Tworzy nową klasę testową MSTest",
   "symbols/Fixture/description": "Wybierz rodzaje warunków początkowych do uwzględnienia w projekcie.",
+  "symbols/Fixture/displayName": "Warunki początkowe",
   "symbols/Fixture/choices/None/description": "Brak metod początkowych",
   "symbols/Fixture/choices/None/displayName": "Brak",
   "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize — metoda początkowa",

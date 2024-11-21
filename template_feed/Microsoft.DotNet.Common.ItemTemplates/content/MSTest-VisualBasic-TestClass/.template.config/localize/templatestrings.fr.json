@@ -3,6 +3,7 @@
   "name": "Classe de test MSTest",
   "description": "Crée une classe de test MSTest",
   "symbols/Fixture/description": "Sélectionnez les types de fixtures à inclure dans le projet.",
+  "symbols/Fixture/displayName": "Appareil",
   "symbols/Fixture/choices/None/description": "Aucune méthode de fixture",
   "symbols/Fixture/choices/None/displayName": "Aucun",
   "symbols/Fixture/choices/AssemblyInitialize/description": "Méthode de fixture AssemblyInitialize",
