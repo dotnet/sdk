@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <!-- Use a prebuilt Arcade to build Arcade -->
+    <UseBootstrapArcade>true</UseBootstrapArcade>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BuiltSdkPackage Include="Microsoft.DotNet.Arcade.Sdk" />
+    <BuiltSdkPackage Include="Microsoft.DotNet.SharedFramework.Sdk" />
+    <BuiltSdkPackage Include="Microsoft.DotNet.CMake.Sdk" />
+  </ItemGroup>
+</Project>

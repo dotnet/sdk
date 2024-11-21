@@ -1,0 +1,41 @@
+<Project>
+  <!-- Repo Version Information -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha.1</PreReleaseVersionLabel>
+    <UseVSTestRunner>true</UseVSTestRunner>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!--
+      Building .NET from source depends on several archives, depending on the branch's current
+      source-buildability status.
+
+      PrivateSourceBuiltSdkVersion is the version number of a tar.gz of the source build .NET SDK
+      from the previous release for a particular OS. It is used by CI to validate that the current
+      release can be built with it.
+
+      PrivateSourceBuiltArtifactsVersion is the version number of a tar.gz of .NET build outputs
+      from a previous build needed to build the current version of .NET. This is always defined
+      because .NET needs to be bootstrappable at any point in time.
+
+      PrivateSourceBuiltPrebuiltsVersion is the version number of a tar.gz of assets downloaded
+      from the internet that are needed to build the current version of .NET. Early in the lifecycle
+      of a .NET major or minor release, prebuilts may be needed. When the release is mature, prebuilts
+      are not necessary, and this property is removed from the file.
+    -->
+    <PrivateSourceBuiltSdkVersion>9.0.100</PrivateSourceBuiltSdkVersion>
+    <PrivateSourceBuiltArtifactsVersion>9.0.100-rtm.24529.1</PrivateSourceBuiltArtifactsVersion>
+    <!-- command-line-api dependencies -->
+    <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
+    <!-- msbuild dependencies -->
+    <MicrosoftBuildVersion>17.8.3</MicrosoftBuildVersion>
+    <!-- runtime dependencies -->
+    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>8.0.0</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
+    <!-- external dependencies -->
+    <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
+    <NuGetProtocolVersion>6.9.1</NuGetProtocolVersion>
+    <OctokitVersion>10.0.0</OctokitVersion>
+  </PropertyGroup>
+</Project>
