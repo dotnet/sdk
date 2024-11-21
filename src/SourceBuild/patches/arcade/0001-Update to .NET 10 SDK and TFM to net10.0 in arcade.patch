@@ -5,13 +5,13 @@ Subject: [PATCH] Update to .NET 10 SDK and TFM to net10.0 in arcade
 
 Backport: https://github.com/dotnet/arcade/pull/15221
 ---
- Directory.Build.props                                |  5 +++++
- global.json                                          |  4 ++--
- .../src/build/Packaging.targets                      |  4 ++++
- .../Sdk/tools/dotnet-cli/DotNetCli.props             |  2 +-
- .../Sdk/tools/xunit-runner/XUnitRunner.targets       |  2 +-
- .../Microsoft.DotNet.XliffTasks.csproj               |  4 ----
- tests/UnitTests.proj                                 |  5 +++--
+ Directory.Build.props                                        | 5 +++++
+ global.json                                                  | 4 ++--
+ .../src/build/Packaging.targets                              | 4 ++++
+ .../Sdk/tools/dotnet-cli/DotNetCli.props                     | 2 +-
+ .../Sdk/tools/xunit-runner/XUnitRunner.targets               | 2 +-
+ .../Microsoft.DotNet.XliffTasks.csproj                       | 4 ----
+ tests/UnitTests.proj                                         | 5 +++--
  7 files changed, 16 insertions(+), 10 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
@@ -31,7 +31,7 @@ index 9d84f1dc6..b25de0091 100644
  
  </Project>
 diff --git a/global.json b/global.json
-index 771c1a2bc..bcc101ef1 100644
+index af88ae5bf..904f8d03d 100644
 --- a/global.json
 +++ b/global.json
 @@ -1,10 +1,10 @@
@@ -46,7 +46,7 @@ index 771c1a2bc..bcc101ef1 100644
 +    "dotnet": "10.0.100-alpha.1.24551.9"
    },
    "msbuild-sdks": {
-     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24562.15",
+     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24564.1",
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
 index b94b6736d..e0fadabb2 100644
 --- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
