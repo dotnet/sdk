@@ -659,7 +659,7 @@ index 0000000000..a606a2de6d
 +
 +  <ItemGroup>
 +    <ProjectReference
-+      Include="$(RepoRoot)eng\Npm.Workspace.f;
++      Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
 +               $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj"
 +      RestoreInParallel="false"
 +      BuildInParallel="false"
