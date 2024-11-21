@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.IO;
 using System.Linq;
@@ -13,50 +15,99 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /*
-     * This task adds a source to a well-formed NuGet.Config file. If a source with `SourceName` is already present, then
-     * the path of the source is changed. Otherwise, the source is added as the first source in the list, after any clear
+     * This task adds a package source entry to a well-formed NuGet.Config file. If a package source key is already present, then
+     * the value of the package source entry is changed. Otherwise, the package source is added as the first element in the list, after any clear
      * elements (if present).
      */
-    public class AddSourceToNuGetConfig : Task
+    public class AddPackageSourcesToNuGetConfig : Task
     {
-        [Required]
-        public string NuGetConfigFile { get; set; }
+        // NuGet.config constants
+        private const string PackageSourcesElement = "packageSources";
+        private const string AddSourcesElement = "add";
+        private const string ClearSourcesElement = "clear";
+        private const string KeySourcesAttribute = "key";
+        private const string ValueSourcesAttribute = "value";
 
-        [Required]
-        public string SourceName { get; set; }
+        // MSBuild item metadata
+        private const string PackageSourceItemValueMetadata = "Value";
 
+        /// <summary>
+        /// Path to the NuGet Config file to update.
+        /// </summary>
         [Required]
-        public string SourcePath { get; set; }
+        public required string NuGetConfigFile { get; set; }
+
+        /// <summary>
+        /// PackageSources items with identity as the package source key attribute
+        /// and the 'value' metadata as the package source value attribute. 
+        /// </summary>
+        [Required]
+        public required ITaskItem[] PackageSources { get; set; }
+
+        /// <summary>
+        /// Add the package source element only if an element with the same package source key doesn't exist. Otherwise
+        /// replace the package source value of the existing element.
+        /// </summary>
+        public bool SkipIfPackageSourceKeyAlreadyExists { get; set; } = false;
+
+        /// <summary>
+        /// Add the package source element only if an element with the same package source value doesn't exist.
+        /// </summary>
+        public bool SkipIfPackageSourceValueAlreadyExists { get; set; } = true;
 
         public override bool Execute()
         {
-            string xml = File.ReadAllText(NuGetConfigFile);
-            string newLineChars = FileUtilities.DetectNewLineChars(xml);
-            XDocument d = XDocument.Parse(xml);
-            XElement packageSourcesElement = d.Root.Descendants().First(e => e.Name == "packageSources");
-            XElement toAdd = new XElement("add", new XAttribute("key", SourceName), new XAttribute("value", SourcePath));
-            XElement clearTag = new XElement("clear");
+            string nuGetConfigContent = File.ReadAllText(NuGetConfigFile);
+            string newLineChars = FileUtilities.DetectNewLineChars(nuGetConfigContent);
+            XDocument xDocument = XDocument.Parse(nuGetConfigContent);
+            XElement? packageSourcesElement = xDocument.Root!.Descendants().SingleOrDefault(e => e.Name == nameof(PackageSourcesElement));
 
-            XElement exisitingSourceBuildElement = packageSourcesElement.Descendants().FirstOrDefault(e => e.Name == "add" && e.Attribute(XName.Get("key")).Value == SourceName);
-            XElement lastClearElement = packageSourcesElement.Descendants().LastOrDefault(e => e.Name == "clear");
-
-            if (exisitingSourceBuildElement != null)
+            if (packageSourcesElement is null)
             {
-                exisitingSourceBuildElement.ReplaceWith(toAdd);
-            }
-            else if (lastClearElement != null)
-            {
-                lastClearElement.AddAfterSelf(toAdd);
-            }
-            else
-            {
-                packageSourcesElement.AddFirst(toAdd);
-                packageSourcesElement.AddFirst(clearTag);
+                throw new Exception($"NuGet config file '{NuGetConfigFile}' is malformed as it doesn't have a '{PackageSourcesElement}' element.");
             }
 
-            using (var w = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
+            XElement? lastPackageSourceClearElement = packageSourcesElement.Descendants().LastOrDefault(e => e.Name == nameof(ClearSourcesElement));
+
+            foreach (ITaskItem packageSource in PackageSources)
             {
-                d.Save(w);
+                string packageSourceKey = packageSource.ItemSpec;
+                string packageSourceValue = packageSource.GetMetadata(nameof(PackageSourceItemValueMetadata));
+
+                // Check if the package source value already exists in the NuGet.Config file. If it does, skip adding it when SkipIfPackageSourceValueAlreadyExists is true.
+                bool hasExisitingPackageSourceValue = packageSourcesElement.Descendants().Any(e => e.Name == nameof(AddSourcesElement) && e.Attribute(XName.Get(nameof(ValueSourcesAttribute)))?.Value == packageSourceValue);
+                if (hasExisitingPackageSourceValue && SkipIfPackageSourceValueAlreadyExists)
+                {
+                    continue;
+                }
+
+                // Check if the package source key already exists in the NuGet.Config file. If it does, skip modifying it when SkipIfPackageSourceKeyAlreadyExists is true.
+                XElement? existingPackageSourceElement = packageSourcesElement.Descendants().SingleOrDefault(e => e.Name == nameof(AddSourcesElement) && e.Attribute(XName.Get(nameof(KeySourcesAttribute)))?.Value == packageSourceKey);
+                if (existingPackageSourceElement is not null && SkipIfPackageSourceKeyAlreadyExists)
+                {
+                    continue;
+                }
+
+                XElement newPackageSourceElement = new XElement(nameof(AddSourcesElement), new XAttribute(nameof(KeySourcesAttribute), packageSourceKey), new XAttribute(nameof(ValueSourcesAttribute), packageSourceValue));
+                if (existingPackageSourceElement is not null)
+                {
+                    existingPackageSourceElement.ReplaceWith(newPackageSourceElement);
+                }
+                else
+                {
+                    if (lastPackageSourceClearElement is null)
+                    {
+                        lastPackageSourceClearElement = new XElement(nameof(ClearSourcesElement));
+                        packageSourcesElement.AddFirst(lastPackageSourceClearElement);
+                    }
+
+                    lastPackageSourceClearElement.AddAfterSelf(newPackageSourceElement);
+                }
+            }
+
+            using (XmlWriter xmlWriter = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
+            {
+                xDocument.Save(xmlWriter);
             }
 
             return true;
