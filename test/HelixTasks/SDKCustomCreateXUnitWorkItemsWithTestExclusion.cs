@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 else
                 {
                     command = $"strace -f --trace=file {driver} exec {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml -method Microsoft.DotNet.Cli.Workload.Update.Tests.GivenDotnetWorkloadUpdate.GivenWorkloadUpdateAcrossFeatureBandsItUpdatesPacks {arguments}";
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml -class Microsoft.DotNet.Cli.Workload.Update.Tests.GivenDotnetWorkloadUpdate {arguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
