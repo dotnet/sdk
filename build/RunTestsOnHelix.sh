@@ -9,7 +9,7 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
-export TestExecutionDirectory=$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)
+export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
 
