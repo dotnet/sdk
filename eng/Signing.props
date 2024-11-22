@@ -6,6 +6,7 @@
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.pkg" />
   </ItemGroup>
 
   <PropertyGroup>
