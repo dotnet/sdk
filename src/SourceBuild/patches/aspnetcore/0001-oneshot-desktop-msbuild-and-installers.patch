@@ -1,4 +1,4 @@
-From c7fbffd16a95bdf623122a1b8a33f664564499f3 Mon Sep 17 00:00:00 2001
+From 349b105cac5ca3b216583f6334f75ce871ae4acf Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Fri, 15 Nov 2024 15:45:27 +0000
 Subject: [PATCH] Build installers at the end of the repo build
@@ -21,18 +21,18 @@ Backport: https://github.com/dotnet/aspnetcore/pull/58987
  eng/Build/Java.Traversal.proj                 |   7 +
  eng/Build/Managed.Traversal.proj              | 106 +++++++
  eng/Build/Native.Traversal.proj               |   9 +
- eng/Build/NodeJS.Traversal.proj               |  18 ++
+ eng/Build/NodeJS.Traversal.proj               |  12 +
  eng/CodeGen.proj                              |  11 +-
  eng/Installers.proj                           |  72 +++++
  eng/Npm.Workspace.FunctionalTests.nodeproj    |   2 +-
- eng/Npm.Workspace.nodeproj                    |   2 +-
+ eng/Npm.Workspace.nodeproj                    |   4 +-
  eng/Tools.props                               |   5 +-
  eng/build.ps1                                 |  54 ++--
  eng/targets/ResolveReferences.targets         |   4 -
  eng/tools/GenerateFiles/GenerateFiles.csproj  |   8 +-
  global.json                                   |   3 +-
  .../SharedFrameworkBundle.wixproj             |   8 +-
- 19 files changed, 428 insertions(+), 297 deletions(-)
+ 19 files changed, 423 insertions(+), 298 deletions(-)
  create mode 100644 eng/Build/Directory.Build.props
  create mode 100644 eng/Build/Directory.Build.targets
  create mode 100644 eng/Build/Installers.Traversal.proj
@@ -653,10 +653,10 @@ index 0000000000..e404f0125d
 +</Project>
 diff --git a/eng/Build/NodeJS.Traversal.proj b/eng/Build/NodeJS.Traversal.proj
 new file mode 100644
-index 0000000000..ca34385716
+index 0000000000..dd5614749f
 --- /dev/null
 +++ b/eng/Build/NodeJS.Traversal.proj
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,12 @@
 +<Project Sdk="Microsoft.Build.Traversal">
 +
 +  <ItemGroup>
@@ -667,12 +667,6 @@ index 0000000000..ca34385716
 +      BuildInParallel="false"
 +      Exclude="@(ProjectToExclude)" />
 +  </ItemGroup>
-+
-+  <!-- Explicitly call the restore target of the nodejs projects. -->
-+  <Target Name="RestoreNpmPackages" AfterTargets="Restore">
-+    <MSBuild Targets="Restore"
-+             Projects="@(ProjectReference)" />
-+  </Target>
 +
 +</Project>
 diff --git a/eng/CodeGen.proj b/eng/CodeGen.proj
@@ -797,7 +791,7 @@ index 16fb46697c..bab16d5190 100644
    <!-- Import Directory.Build.Props -->
    <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 diff --git a/eng/Npm.Workspace.nodeproj b/eng/Npm.Workspace.nodeproj
-index bca7304dd8..2c22c0dc82 100644
+index bca7304dd8..0947082297 100644
 --- a/eng/Npm.Workspace.nodeproj
 +++ b/eng/Npm.Workspace.nodeproj
 @@ -1,4 +1,4 @@
@@ -806,6 +800,15 @@ index bca7304dd8..2c22c0dc82 100644
  
    <!-- Import Directory.Build.Props -->
    <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+@@ -27,7 +27,7 @@
+       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+   </Target>
+ 
+-  <Target Name="Build">
++  <Target Name="Build" DependsOnTargets="Restore">
+     <PropertyGroup>
+       <PackageVersion>$(VersionPrefix)</PackageVersion>
+       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 diff --git a/eng/Tools.props b/eng/Tools.props
 index e00d1d215c..c71ff43686 100644
 --- a/eng/Tools.props
