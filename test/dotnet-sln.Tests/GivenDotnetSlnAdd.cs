@@ -32,252 +32,6 @@ Options:
         {
         }
 
-        private const string ExpectedSlnFileAfterAddingLibProj = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App\App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""Lib"", ""Lib\Lib.csproj"", ""__LIB_PROJECT_GUID__""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-		__LIB_PROJECT_GUID__.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|Any CPU.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnFileAfterAddingLibProjToEmptySln = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""Lib"", ""Lib\Lib.csproj"", ""__LIB_PROJECT_GUID__""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		__LIB_PROJECT_GUID__.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|Any CPU.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnFileAfterAddingNestedProj = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""Lib"", ""src\Lib\Lib.csproj"", ""__LIB_PROJECT_GUID__""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""src"", ""src"", ""__SRC_FOLDER_GUID__""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-		__LIB_PROJECT_GUID__.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|Any CPU.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		__LIB_PROJECT_GUID__ = __SRC_FOLDER_GUID__
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnFileAfterAddingProjectWithInRootOption = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""Lib"", ""src\Lib\Lib.csproj"", ""{84A45D44-B677-492D-A6DA-B3A71135AB8E}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.Build.0 = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.Build.0 = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.ActiveCfg = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.Build.0 = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.ActiveCfg = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""TestFolder"", ""TestFolder"", ""__SOLUTION_FOLDER_GUID__""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""Lib"", ""src\Lib\Lib.csproj"", ""__LIB_PROJECT_GUID__""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-		__LIB_PROJECT_GUID__.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|Any CPU.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x64.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.ActiveCfg = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Debug|x86.Build.0 = Debug|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|Any CPU.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x64.Build.0 = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.ActiveCfg = Release|Any CPU
-		__LIB_PROJECT_GUID__.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		__LIB_PROJECT_GUID__ = __SOLUTION_FOLDER_GUID__
-	EndGlobalSection
-EndGlobal
-";
-
         [Theory]
         [InlineData("sln", "--help")]
         [InlineData("sln", "-h")]
@@ -455,6 +209,10 @@ EndGlobal
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir")
                 .WithSource()
                 .Path;
+            var templateContentDirectory = _testAssetsManager
+                .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
 
             var projectToAdd = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
@@ -463,7 +221,10 @@ EndGlobal
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingNestedProj);
+            var expectedSlnContents = GetExpectedSlnContents(
+                slnPath,
+                File.ReadAllText(Path.Join(templateContentDirectory, "ExpectedSlnFileAfterAddingNestedProj.sln")));
+
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
 
@@ -552,6 +313,7 @@ EndGlobal
         }
 
         // TODO: Update to slnx
+        // TODO: Check test
         [Theory]
         [InlineData("sln", "TestAppWithSlnAndCsprojFiles")]
         [InlineData("sln", "TestAppWithSlnAnd472CsprojFiles")]
@@ -563,6 +325,10 @@ EndGlobal
                 .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
+            var templateContentDirectory = _testAssetsManager
+                .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}{testAsset}")
+                .WithSource()
+                .Path;
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
@@ -570,7 +336,8 @@ EndGlobal
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingLibProj);
+
+            var expectedSlnContents = GetExpectedSlnContents(slnPath, File.ReadAllText(Path.Join(templateContentDirectory, "ExpectedSlnFileAfterAddingLibProj.sln")));
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
@@ -725,12 +492,12 @@ EndGlobal
 
         // TODO: Update to slnx
         [Theory]
-        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ExpectedSlnFileAfterAddingLibProj, "")]
-        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", ExpectedSlnFileAfterAddingLibProj, "{84A45D44-B677-492D-A6DA-B3A71135AB8E}")]
-        [InlineData("sln", "TestAppWithEmptySln", ExpectedSlnFileAfterAddingLibProjToEmptySln, "")]
-        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", ExpectedSlnFileAfterAddingLibProj, "")]
-        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", ExpectedSlnFileAfterAddingLibProj, "{84A45D44-B677-492D-A6DA-B3A71135AB8E}")]
-        [InlineData("solution", "TestAppWithEmptySln", ExpectedSlnFileAfterAddingLibProjToEmptySln, "")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "{84A45D44-B677-492D-A6DA-B3A71135AB8E}")]
+        [InlineData("sln", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "{84A45D44-B677-492D-A6DA-B3A71135AB8E}")]
+        [InlineData("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "")]
         public void WhenValidProjectIsPassedBuildConfigsAreAdded(
             string solutionCommand,
             string testAsset,
@@ -739,6 +506,10 @@ EndGlobal
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, $"{solutionCommand}{testAsset}")
+                .WithSource()
+                .Path;
+            var templateContentDirectory = _testAssetsManager
+                .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}{testAsset}")
                 .WithSource()
                 .Path;
 
@@ -750,9 +521,10 @@ EndGlobal
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
 
+            var expectedSlnTemplate = File.ReadAllText(Path.Join(templateContentDirectory, $"{expectedSlnContentsTemplate}.sln"));
             var expectedSlnContents = GetExpectedSlnContents(
                 slnPath,
-                expectedSlnContentsTemplate,
+                expectedSlnTemplate,
                 expectedProjectGuid);
 
             File.ReadAllText(slnPath)
@@ -972,6 +744,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
+        // TODO: Update to slnx
         [Theory]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
@@ -1010,7 +783,6 @@ EndGlobal
             nonSolutionFolderProjects.Single().TypeGuid.Should().Be(expectedTypeGuid);
         }
 
-        // TODO: This should error even if guids do not exist on slnx as a concept?
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
@@ -1115,7 +887,6 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedResult);
         }
 
-        // TODO: Update to slnx
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
@@ -1212,6 +983,7 @@ EndGlobal
         }
 
         // TODO: Update to slnx
+        // TODO: Test
         [Theory]
         [InlineData("sln")]
         [InlineData("solution")]
@@ -1219,6 +991,10 @@ EndGlobal
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
+            var templateContentDirectory = _testAssetsManager
+                .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -1229,12 +1005,14 @@ EndGlobal
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
-            // var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingProjectWithInRootOption);
+
+            var expectedSlnTemplate = File.ReadAllText(Path.Join(templateContentDirectory, $"ExpectedSlnFileAfterAddingProjectWithInRootOption.sln"));
             File.ReadAllText(slnPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnFileAfterAddingProjectWithInRootOption);
+                .Should().BeVisuallyEquivalentTo(expectedSlnTemplate);
         }
 
         // TODO: Update to slnx
+        // TODO: Test
         [Theory]
         [InlineData("sln")]
         [InlineData("solution")]
@@ -1244,6 +1022,10 @@ EndGlobal
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
+            var templateContentDirectory = _testAssetsManager
+               .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}")
+               .WithSource()
+               .Path;
 
             var projectToAdd = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
@@ -1252,7 +1034,8 @@ EndGlobal
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption);
+            var expectedSlnTemplate = File.ReadAllText(Path.Join(templateContentDirectory, $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption.sln"));
+            var expectedSlnContents = GetExpectedSlnContents(slnPath, expectedSlnTemplate);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
@@ -1298,6 +1081,10 @@ EndGlobal
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: $"{solutionCommand}{testIdentifier}")
                 .WithSource()
                 .Path;
+            var templateContentDirectory = _testAssetsManager
+               .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}")
+               .WithSource()
+               .Path;
 
             var projectToAdd = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
@@ -1306,12 +1093,12 @@ EndGlobal
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, "App.sln");
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption);
+            var expectedSlnTemplate = File.ReadAllText(Path.Join(templateContentDirectory, $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption.sln"));
+            var expectedSlnContents = GetExpectedSlnContents(slnPath, expectedSlnTemplate);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        // TODO: Update to vs-solutionpersistence
         private string GetExpectedSlnContents(
             string slnPath,
             string slnTemplate,
@@ -1338,8 +1125,8 @@ EndGlobal
                     ? $"{{{expectedLibProjectGuid.ToUpper()}}}"
                     : expectedLibProjectGuid);
 
-            var matchingSrcFolder = solution.SolutionProjects
-                .Where(p => p.FilePath.Contains("src"))
+            var matchingSrcFolder = solution.SolutionFolders
+                .Where(p => p.Path.Contains("src"))
                 .ToList();
             if (matchingSrcFolder.Count == 1)
             {
@@ -1350,8 +1137,8 @@ EndGlobal
                         : matchingSrcFolder[0].Id.ToString());
             }
 
-            var matchingSolutionFolder = solution.SolutionProjects
-                .Where(p => p.FilePath.Contains("TestFolder"))
+            var matchingSolutionFolder = solution.SolutionFolders
+                .Where(p => p.Path.Contains("TestFolder"))
                 .ToList();
             if (matchingSolutionFolder.Count == 1)
             {
@@ -1368,8 +1155,6 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "", solutionExtension);
@@ -1378,8 +1163,6 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithInRootItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--in-root", solutionExtension);
@@ -1388,8 +1171,6 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithSolutionFolderItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);
