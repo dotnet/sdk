@@ -69,18 +69,18 @@
       <Sha>763d10a1a251be35337ee736832bfde3f9200672</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.13.0-preview-24568-05">
+    <Dependency Name="Microsoft.Build" Version="17.13.0-preview-24569-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>37fc8280dd8516257e7d04b9fc5e426de33091f2</Sha>
+      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.13.0-preview-24568-05">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.13.0-preview-24569-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>37fc8280dd8516257e7d04b9fc5e426de33091f2</Sha>
+      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.13.0-preview-24568-05">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.13.0-preview-24569-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>37fc8280dd8516257e7d04b9fc5e426de33091f2</Sha>
+      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.200-beta.24561.2">
@@ -321,22 +321,22 @@
       <Sha>af22effae4069a5dfb9b0735859de48820104f5b</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24569.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.24570.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>70303665960a0a97758b178c288e7c2f88905bcc</Sha>
+      <Sha>2916c403e69983b639ff71bd9d6eee324828c2e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24569.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.24570.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>70303665960a0a97758b178c288e7c2f88905bcc</Sha>
+      <Sha>2916c403e69983b639ff71bd9d6eee324828c2e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24569.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.24570.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>70303665960a0a97758b178c288e7c2f88905bcc</Sha>
+      <Sha>2916c403e69983b639ff71bd9d6eee324828c2e1</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24569.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.24570.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>70303665960a0a97758b178c288e7c2f88905bcc</Sha>
+      <Sha>2916c403e69983b639ff71bd9d6eee324828c2e1</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0">
@@ -375,14 +375,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24561.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24570.2">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>282a2113ba98fd9c9dc18021d5c79d446ef7d45d</Sha>
+      <Sha>2adf5822dc94d97d0f6e1584129fcf65ba837097</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24561.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24570.2">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>282a2113ba98fd9c9dc18021d5c79d446ef7d45d</Sha>
+      <Sha>2adf5822dc94d97d0f6e1584129fcf65ba837097</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->

@@ -36,7 +36,17 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
         var loader = new MSBuildProjectLoader(this);
         var projectMap = ProjectMap.Create();
-        var projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+
+        ImmutableArray<ProjectInfo> projectInfos;
+        try
+        {
+            projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            // TODO: workaround for https://github.com/dotnet/roslyn/issues/75956
+            projectInfos = [];
+        }
 
         var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => p.FilePath!, elementSelector: static p => p.Id);
 

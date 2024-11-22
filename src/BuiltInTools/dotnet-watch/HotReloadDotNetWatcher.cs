@@ -93,12 +93,13 @@ namespace Microsoft.DotNet.Watch
                     // use normalized MSBuild path so that we can index into the ProjectGraph
                     rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
 
-                    if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
+                    var rootProjectCapabilities = rootProject.GetCapabilities();
+                    if (rootProjectCapabilities.Contains(AspireServiceFactory.AppHostProjectCapability))
                     {
                         runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
                         Context.Reporter.Verbose("Using Aspire process launcher.");
                     }
-
+                    
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     compilationHandler = new CompilationHandler(Context.Reporter);
@@ -229,6 +230,16 @@ namespace Microsoft.DotNet.Watch
                         if (changedFiles is [])
                         {
                             continue;
+                        }
+
+                        if (!rootProjectCapabilities.Contains("SupportsHotReload"))
+                        {
+                            Context.Reporter.Warn($"Project '{rootProject.GetDisplayName()}' does not support Hot Reload and must be rebuilt.");
+
+                            // file change already detected
+                            waitForFileChangeBeforeRestarting = false;
+                            iterationCancellationSource.Cancel();
+                            break;
                         }
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.Main);
