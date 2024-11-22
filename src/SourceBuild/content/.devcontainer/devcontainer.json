@@ -1,7 +1,7 @@
 // Container contains checked-out source code only
 {
     "name": "Default",
-    "image": "mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39",
+    "image": "mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41",
     "hostRequirements": {
         // A completely source built .NET is >64 GB with all the repos/artifacts
         "storage": "128gb"
