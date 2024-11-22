@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     public class GenerateStaticWebAssetsDevelopmentManifest : Task
     {
         private static readonly char[] _separator = ['/'];
-        
+
         [Required]
         public string Source { get; set; }
 
@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return 0;
             });
 
-            var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
-            return manifest;
-        }
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+        return manifest;
+    }
 
         private IEnumerable<SegmentsAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets)
         {

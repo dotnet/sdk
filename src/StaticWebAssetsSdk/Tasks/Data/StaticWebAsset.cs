@@ -921,7 +921,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
             var resolver = StaticWebAssetTokenResolver.Instance;
             pattern.EmbedTokens(this, resolver);
-            return pattern.RawPattern;
+            return pattern.RawPattern.ToString();
         }
 
         internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
@@ -938,8 +938,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 return fileInfo;
             }
-
-            throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
         }
 
         [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
