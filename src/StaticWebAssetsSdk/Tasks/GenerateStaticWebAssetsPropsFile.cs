@@ -212,10 +212,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return true;
         }
 
-        private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
-        {
-            var value = item.GetMetadata(metadataName);
-            var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
+    private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
+    {
+        var value = item.GetMetadata(metadataName);
+        var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
 
             if (isInvalidValue)
             {
