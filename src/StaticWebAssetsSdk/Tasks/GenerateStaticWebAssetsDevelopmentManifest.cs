@@ -91,7 +91,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             return 0;
         });
 
-        var manifest = GenerateStaticWebAssetsDevelopmentManifest.CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
         return manifest;
     }
 
