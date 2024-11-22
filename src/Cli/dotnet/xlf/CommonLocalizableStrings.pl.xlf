@@ -175,6 +175,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Plik projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="new">Project `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Odwołanie</target>
@@ -802,11 +807,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       <trans-unit id="NoRestoreDescription">
         <source>Do not restore the project before building.</source>
         <target state="translated">Nie przywracaj projektu przed kompilowaniem.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectRemovedFromTheSolution">
-        <source>Project `{0}` removed from the solution.</source>
-        <target state="translated">Projekt „{0}” został skasowany z rozwiązania.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidXml">
