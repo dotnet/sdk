@@ -2,6 +2,61 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AddFileFullName">
+        <source>Add one or more solution items to a solution file.</source>
+        <target state="new">Add one or more solution items to a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFileInRootArgumentDescription">
+        <source>Place file in root of the solution, rather than creating a solution folder.</source>
+        <target state="new">Place file in root of the solution, rather than creating a solution folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFilePathArgumentDescription">
+        <source>The paths to the solution items to add to the solution.</source>
+        <target state="new">The paths to the solution items to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFilePathArgumentName">
+        <source>FILE_PATH</source>
+        <target state="new">FILE_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFileSolutionFolderArgumentDescription">
+        <source>The destination solution folder path to add the files to.</source>
+        <target state="new">The destination solution folder path to add the files to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFolderFullName">
+        <source>Add one or more solution folders to a solution file.</source>
+        <target state="new">Add one or more solution folders to a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFolderInRootArgumentDescription">
+        <source>Place folder in root of the solution, rather than creating a solution folder.</source>
+        <target state="new">Place folder in root of the solution, rather than creating a solution folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFolderPathArgumentDescription">
+        <source>The paths to the solution folders to add to the solution.</source>
+        <target state="new">The paths to the solution folders to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFolderPathArgumentName">
+        <source>FOLDER_PATH</source>
+        <target state="new">FOLDER_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddFolderSolutionFolderArgumentDescription">
+        <source>The destination solution folder path to add the folders to.</source>
+        <target state="new">The destination solution folder path to add the folders to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddProjectInRootArgumentDescription">
+        <source>Place project in root of the solution, rather than creating a solution folder.</source>
+        <target state="new">Place project in root of the solution, rather than creating a solution folder.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AddProjectSolutionFolderArgumentDescription">
         <source>The destination solution folder path to add the projects to.</source>
         <target state="translated">Ruta de acceso de la carpeta de la solución de destino a la que agregar los proyectos.</target>
@@ -32,9 +87,24 @@
         <target state="new">Only .sln files can be migrated to .slnx format.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InRoot">
-        <source>Place project in root of the solution, rather than creating a solution folder.</source>
-        <target state="translated">Coloque el proyecto en la raíz de la solución, en lugar de crear una carpeta de soluciones.</target>
+      <trans-unit id="CannotAddExistingProjectAsSolutionItem">
+        <source>An existing project cannot be added as a solution item.</source>
+        <target state="new">An existing project cannot be added as a solution item.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotAddExistingSolutionItem">
+        <source>An existing solution item cannot be added.</source>
+        <target state="new">An existing solution item cannot be added.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotAddTheSameSolutionToItself">
+        <source>Cannot add the same solution to itself.</source>
+        <target state="new">Cannot add the same solution to itself.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindFile">
+        <source>Could not find file `{0}`.</source>
+        <target state="new">Could not find file `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListSolutionFoldersArgumentDescription">
@@ -45,6 +115,16 @@
       <trans-unit id="MigrateAppFullName">
         <source>Generate a .slnx file from a .sln file.</source>
         <target state="new">Generate a .slnx file from a .sln file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectPathArgumentShouldNotBeProvidedForDotnetSlnAddFile">
+        <source>PROJECT_PATH should not be provided for `dotnet sln add file`</source>
+        <target state="new">PROJECT_PATH should not be provided for `dotnet sln add file`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectPathArgumentShouldNotBeProvidedForDotnetSlnAddFolder">
+        <source>PROJECT_PATH should not be provided for `dotnet sln add folder`</source>
+        <target state="new">PROJECT_PATH should not be provided for `dotnet sln add folder`</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -75,6 +155,16 @@
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
         <target state="new">.slnx file {0} generated.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsFile">
+        <source>The solution {0} already contains the solution item `{1}`</source>
+        <target state="new">The solution {0} already contains the solution item `{1}`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsFolder">
+        <source>The solution {0} already contains the solution folder `{1}`</source>
+        <target state="new">The solution {0} already contains the solution folder `{1}`</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">
@@ -112,6 +202,16 @@
         <target state="translated">Proyectos</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionElementType">
+        <source>The type of the solution element to add or remove. Allowed values are project, item, and folder.</source>
+        <target state="new">The type of the solution element to add or remove. Allowed values are project, item, and folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAddedToTheSolution">
+        <source>The solution folder `{0}` was added to the solution</source>
+        <target state="new">The solution folder `{0}` was added to the solution</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">Las opciones --in-root y --solution-folder no se pueden usar juntas. Utilice solo una de ellas.</target>
@@ -120,6 +220,41 @@
       <trans-unit id="SolutionFolderHeader">
         <source>Solution Folder(s)</source>
         <target state="translated">Carpeta(s) de solución(es)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderNameCannot">
+        <source>Solution Folder names cannot:
+- contain any of the following characters: / : ? \ * " &lt; &gt; |
+- contain Unicode control characters
+- contain surrogate characters
+- be system reserved names, including CON, AUX, PRN, COM1 or LPT2
+- be . or ..</source>
+        <target state="new">Solution Folder names cannot:
+- contain any of the following characters: / : ? \ * " &lt; &gt; |
+- contain Unicode control characters
+- contain surrogate characters
+- be system reserved names, including CON, AUX, PRN, COM1 or LPT2
+- be . or ..</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionItemAddedToTheSolution">
+        <source>The solution item `{0}` was added to the solution folder `{1}`</source>
+        <target state="new">The solution item `{0}` was added to the solution folder `{1}`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionItemWithTheSameNameExists">
+        <source>There is already an existing solution item '{0}' with the same name in the solution folder '{1}'.</source>
+        <target state="new">There is already an existing solution item '{0}' with the same name in the solution folder '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneFileToAdd">
+        <source>You must specify at least one file to add.</source>
+        <target state="new">You must specify at least one file to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneFolderToAdd">
+        <source>You must specify at least one folder to add.</source>
+        <target state="new">You must specify at least one folder to add.</target>
         <note />
       </trans-unit>
     </body>

@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
     internal class RemoveProjectFromSolutionCommand : CommandBase
     {
         private readonly string _fileOrDirectory;
-        private readonly IReadOnlyCollection<string> _arguments;
+        private readonly IReadOnlyList<string> _arguments;
 
         public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
             _arguments = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
 
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _arguments, SlnArgumentValidator.CommandType.Remove);
+            SlnArgumentValidator.ParseAndValidateArguments(_arguments, SlnArgumentValidator.CommandType.Remove);
         }
 
         public override int Execute()

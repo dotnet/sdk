@@ -175,6 +175,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Proje dosyası</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="new">Project `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Başvuru</target>
@@ -802,11 +807,6 @@ Varsayılan değer 'false' olur. Ancak çalışma zamanı tanımlayıcısı beli
       <trans-unit id="NoRestoreDescription">
         <source>Do not restore the project before building.</source>
         <target state="translated">Projeyi derlemeden önce geri yüklemeyin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectRemovedFromTheSolution">
-        <source>Project `{0}` removed from the solution.</source>
-        <target state="translated">`{0}` projesi çözümden kaldırıldı.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidXml">

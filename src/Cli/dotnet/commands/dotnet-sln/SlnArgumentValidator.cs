@@ -1,60 +1,96 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Sln
+namespace Microsoft.DotNet.Tools.Sln;
+
+internal static class SlnArgumentValidator
 {
-    internal static class SlnArgumentValidator
+    private static readonly SearchValues<char> s_invalidCharactersInSolutionFolderName = SearchValues.Create("/:?\\*\"<>|");
+    private static readonly string[] s_invalidSolutionFolderNames =
+    [
+        // system reserved names
+        "CON", "AUX", "PRN", "COM1", "COM2", "COM3", "COM4", "LPT1", "LPT2", "LPT3",
+        // relative path components
+        ".", "..",
+    ];
+
+    public enum CommandType
     {
-        public enum CommandType
+        Add,
+        Remove
+    }
+    public static void ParseAndValidateArguments(IReadOnlyList<string> _arguments, CommandType commandType, bool _inRoot = false, string relativeRoot = null, string subcommand = null)
+    {
+        if (_arguments.Count == 0)
         {
-            Add,
-            Remove
+            string message = commandType == CommandType.Add
+                ? CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd
+                : CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove;
+            throw new GracefulException(message);
         }
-        public static void ParseAndValidateArguments(string _fileOrDirectory, IReadOnlyCollection<string> _arguments, CommandType commandType, bool _inRoot = false, string relativeRoot = null)
+
+        bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
+
+        if (_inRoot && hasRelativeRoot)
         {
-            if (_arguments.Count == 0)
-            {
-                string message = commandType == CommandType.Add ? CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd : CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove;
-                throw new GracefulException(message);
-            }
-
-            bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
-
-            if (_inRoot && hasRelativeRoot)
-            {
-                // These two options are mutually exclusive
-                throw new GracefulException(LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
-            }
-
-            var slnFile = _arguments.FirstOrDefault(path => path.EndsWith(".sln"));
-            if (slnFile != null)
-            {
-                string args;
-                if (_inRoot)
-                {
-                    args = $"--{SlnAddParser.InRootOption.Name} ";
-                }
-                else if (hasRelativeRoot)
-                {
-                    args = $"--{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
-                }
-                else
-                {
-                    args = "";
-                }
-
-                var projectArgs = string.Join(" ", _arguments.Where(path => !path.EndsWith(".sln")));
-                string command = commandType == CommandType.Add ? "add" : "remove";
-                throw new GracefulException(new string[]
-                {
-                    string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
-                    CommonLocalizableStrings.DidYouMean,
-                    $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
-                });
-            }
+            // These two options are mutually exclusive
+            throw new GracefulException(LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
         }
+
+        // Something is wrong if there is a .sln file as an argument, so suggest that the arguments may have been misplaced.
+        // However, it is possible to add .sln file as a solution item, so don't suggest in the case of dotnet sln add file.
+        var slnFile = _arguments.FirstOrDefault(path => path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase));
+        if (slnFile == null || subcommand == "file")
+        {
+            return;
+        }
+
+        string args = _inRoot
+            ? $"{SlnAddParser.InRootOption.Name} "
+            : hasRelativeRoot ? $"{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} " : "";
+
+        var nonSolutionArguments = string.Join(
+            " ",
+            _arguments.Where(a => !a.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)));
+
+        string command = commandType switch
+        {
+            CommandType.Add => "add",
+            CommandType.Remove => "remove",
+            _ => throw new InvalidOperationException($"Unable to handle command type {commandType}"),
+        };
+        throw new GracefulException(
+        [
+            string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
+                CommonLocalizableStrings.DidYouMean,
+                subcommand == null
+                    ? $"  dotnet solution {slnFile} {command} {args}{nonSolutionArguments}"
+                    : $"  dotnet solution {slnFile} {command} {subcommand} {args}{nonSolutionArguments}"
+        ]);
+    }
+
+    public static bool IsValidSolutionFolderName(string folderName)
+    {
+        if (string.IsNullOrWhiteSpace(folderName))
+            return false;
+
+        if (folderName.AsSpan().IndexOfAny(s_invalidCharactersInSolutionFolderName) >= 0)
+            return false;
+
+        if (folderName.Any(char.IsControl))
+            return false;
+
+        if (folderName.Any(char.IsSurrogate))
+            return false;
+
+        if (s_invalidSolutionFolderNames.Contains(folderName, StringComparer.OrdinalIgnoreCase))
+            return false;
+
+        return true;
     }
 }
