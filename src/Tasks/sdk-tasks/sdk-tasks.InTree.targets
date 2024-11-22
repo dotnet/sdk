@@ -17,7 +17,6 @@
   <UsingTask TaskName="Chmod" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Crossgen" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
