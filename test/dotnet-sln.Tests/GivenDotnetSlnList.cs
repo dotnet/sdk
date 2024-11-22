@@ -106,16 +106,22 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenInvalidSolutionIsFoundListPrintsErrorAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenInvalidSolutionIsFoundListPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectRootDirectory = _testAssetsManager
                 .CopyTestAsset("InvalidSolution")
                 .WithSource()
                 .Path;
 
-            var solutionFullPath = Path.Combine(projectDirectory, "InvalidSolution.sln");
+            var projectDirectory = solutionExtension == ".sln"
+                ? Path.Join(projectRootDirectory, "Sln")
+                : Path.Join(projectRootDirectory, "Slnx");
+
+            var solutionFullPath = Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "list");
@@ -163,9 +169,11 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenNoProjectsArePresentInTheSolutionItPrintsANoProjectMessage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenNoProjectsArePresentInTheSolutionItPrintsANoProjectMessage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithEmptySln")
@@ -174,15 +182,17 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "list");
+                .Execute(solutionCommand, $"App{solutionExtension}", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(CommonLocalizableStrings.NoProjectsFound);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenProjectsPresentInTheSolutionItListsThem(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsPresentInTheSolutionItListsThem(string solutionCommand, string solutionExtension)
         {
             var expectedOutput = $@"{CommandLocalizableStrings.ProjectsHeader}
 {new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}
@@ -196,15 +206,17 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "list");
+                .Execute(solutionCommand, $"App{solutionExtension}", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenProjectsPresentInTheReadonlySolutionItListsThem(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsPresentInTheReadonlySolutionItListsThem(string solutionCommand, string solutionExtension)
         {
             var expectedOutput = $@"{CommandLocalizableStrings.ProjectsHeader}
 {new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}
@@ -216,13 +228,13 @@ Options:
                 .WithSource()
                 .Path;
 
-            var slnFileName = Path.Combine(projectDirectory, "App.sln");
+            var slnFileName = Path.Combine(projectDirectory, $"App{solutionExtension}");
             var attributes = File.GetAttributes(slnFileName);
             File.SetAttributes(slnFileName, attributes | FileAttributes.ReadOnly);
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "list");
+                .Execute(solutionCommand, $"App{solutionExtension}", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
         }
