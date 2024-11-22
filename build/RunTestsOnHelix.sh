@@ -36,3 +36,5 @@ dotnet nuget remove source dotnet-tools-transport --configfile $TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-eng --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
+
+env
