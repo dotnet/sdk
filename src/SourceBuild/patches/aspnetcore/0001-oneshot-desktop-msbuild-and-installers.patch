@@ -1,4 +1,4 @@
-From 0ce6c6e1fc217ba6d111aca0b93770ebfa9ed3b2 Mon Sep 17 00:00:00 2001
+From c7fbffd16a95bdf623122a1b8a33f664564499f3 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Fri, 15 Nov 2024 15:45:27 +0000
 Subject: [PATCH] Build installers at the end of the repo build
@@ -19,20 +19,20 @@ Backport: https://github.com/dotnet/aspnetcore/pull/58987
  eng/Build/Directory.Build.targets             |  13 +
  eng/Build/Installers.Traversal.proj           |  72 +++++
  eng/Build/Java.Traversal.proj                 |   7 +
- eng/Build/Managed.Traversal.proj              | 104 +++++++
+ eng/Build/Managed.Traversal.proj              | 106 +++++++
  eng/Build/Native.Traversal.proj               |   9 +
- eng/Build/NodeJS.Traversal.proj               |  12 +
+ eng/Build/NodeJS.Traversal.proj               |  18 ++
  eng/CodeGen.proj                              |  11 +-
  eng/Installers.proj                           |  72 +++++
+ eng/Npm.Workspace.FunctionalTests.nodeproj    |   2 +-
+ eng/Npm.Workspace.nodeproj                    |   2 +-
  eng/Tools.props                               |   5 +-
  eng/build.ps1                                 |  54 ++--
  eng/targets/ResolveReferences.targets         |   4 -
  eng/tools/GenerateFiles/GenerateFiles.csproj  |   8 +-
  global.json                                   |   3 +-
  .../SharedFrameworkBundle.wixproj             |   8 +-
- .../WindowsHostingBundle/Product.targets      |   5 +-
- .../WindowsHostingBundle.wixproj              |   2 +-
- 19 files changed, 421 insertions(+), 299 deletions(-)
+ 19 files changed, 428 insertions(+), 297 deletions(-)
  create mode 100644 eng/Build/Directory.Build.props
  create mode 100644 eng/Build/Directory.Build.targets
  create mode 100644 eng/Build/Installers.Traversal.proj
@@ -526,10 +526,10 @@ index 0000000000..af6c13ec70
 +</Project>
 diff --git a/eng/Build/Managed.Traversal.proj b/eng/Build/Managed.Traversal.proj
 new file mode 100644
-index 0000000000..a508034463
+index 0000000000..7219bc0c57
 --- /dev/null
 +++ b/eng/Build/Managed.Traversal.proj
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,106 @@
 +<Project Sdk="Microsoft.Build.Traversal">
 +
 +  <!--
@@ -542,6 +542,7 @@ index 0000000000..a508034463
 +                      $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
 +                      $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
 +                      $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
++                      $(RepoRoot)src\Assets\**\*.*proj;
 +                      $(RepoRoot)src\Caching\**\*.*proj;
 +                      $(RepoRoot)src\DefaultBuilder\**\*.*proj;
 +                      $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
@@ -590,6 +591,7 @@ index 0000000000..a508034463
 +                      $(RepoRoot)**\obj\**\*;"
 +                    Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
 +    <ProjectReference Include="
++                      $(RepoRoot)src\Assets\**\*.*proj;
 +                      $(RepoRoot)src\Caching\**\src\*.csproj;
 +                      $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
 +                      $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
@@ -651,10 +653,10 @@ index 0000000000..e404f0125d
 +</Project>
 diff --git a/eng/Build/NodeJS.Traversal.proj b/eng/Build/NodeJS.Traversal.proj
 new file mode 100644
-index 0000000000..a606a2de6d
+index 0000000000..ca34385716
 --- /dev/null
 +++ b/eng/Build/NodeJS.Traversal.proj
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,18 @@
 +<Project Sdk="Microsoft.Build.Traversal">
 +
 +  <ItemGroup>
@@ -666,9 +668,15 @@ index 0000000000..a606a2de6d
 +      Exclude="@(ProjectToExclude)" />
 +  </ItemGroup>
 +
++  <!-- Explicitly call the restore target of the nodejs projects. -->
++  <Target Name="RestoreNpmPackages" AfterTargets="Restore">
++    <MSBuild Targets="Restore"
++             Projects="@(ProjectReference)" />
++  </Target>
++
 +</Project>
 diff --git a/eng/CodeGen.proj b/eng/CodeGen.proj
-index 0516cefe3d..d635409e6e 100644
+index 0516cefe3d..6b44e1f02a 100644
 --- a/eng/CodeGen.proj
 +++ b/eng/CodeGen.proj
 @@ -1,21 +1,24 @@
@@ -696,7 +704,7 @@ index 0516cefe3d..d635409e6e 100644
               SkipNonexistentTargets="true"
 -             SkipNonexistentProjects="true">
 +             SkipNonexistentProjects="true"
-+             AdditionalProperties="BuildMainlyReferenceProviders=true">
++             Properties="BuildMainlyReferenceProviders=true">
        <Output TaskParameter="TargetOutputs" ItemName="_ProvidesReferenceOrRequiresDelay" />
      </MSBuild>
  
@@ -778,6 +786,26 @@ index 0000000000..aac8ea8742
 +  </ItemGroup>
 +
 +</Project>
+diff --git a/eng/Npm.Workspace.FunctionalTests.nodeproj b/eng/Npm.Workspace.FunctionalTests.nodeproj
+index 16fb46697c..bab16d5190 100644
+--- a/eng/Npm.Workspace.FunctionalTests.nodeproj
++++ b/eng/Npm.Workspace.FunctionalTests.nodeproj
+@@ -1,4 +1,4 @@
+-<Project>
++<Project DefaultTargets="Build">
+ 
+   <!-- Import Directory.Build.Props -->
+   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+diff --git a/eng/Npm.Workspace.nodeproj b/eng/Npm.Workspace.nodeproj
+index bca7304dd8..2c22c0dc82 100644
+--- a/eng/Npm.Workspace.nodeproj
++++ b/eng/Npm.Workspace.nodeproj
+@@ -1,4 +1,4 @@
+-<Project>
++<Project DefaultTargets="Build">
+ 
+   <!-- Import Directory.Build.Props -->
+   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 diff --git a/eng/Tools.props b/eng/Tools.props
 index e00d1d215c..c71ff43686 100644
 --- a/eng/Tools.props
@@ -984,39 +1012,3 @@ index 5f47072f1f..c308442b3f 100644
            <Name>SharedFrameworkLib</Name>
            <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
            <Private>True</Private>
-diff --git a/src/Installers/Windows/WindowsHostingBundle/Product.targets b/src/Installers/Windows/WindowsHostingBundle/Product.targets
-index 192e36b958..09e340755a 100644
---- a/src/Installers/Windows/WindowsHostingBundle/Product.targets
-+++ b/src/Installers/Windows/WindowsHostingBundle/Product.targets
-@@ -40,7 +40,7 @@
-     Runs before FetchDependencies but can't be depended up because this sets up the item group that target
-     uses for batching.
-   -->
--  <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
-+  <Target Name="CollectDependencies">
-     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
-     <ItemGroup>
-       <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-@@ -75,8 +75,7 @@
-     <MakeDir Directories="$(DepsPath)" />
-   </Target>
- 
--  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
--      Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-+  <Target Name="FetchDependencies" Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
-     <PropertyGroup>
-       <_CurrentRemoteAsset>%(RemoteAsset.Identity)</_CurrentRemoteAsset>
-     </PropertyGroup>
-diff --git a/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj b/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
-index 50f3607c55..09e7f92a76 100644
---- a/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
-+++ b/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
-@@ -133,7 +133,7 @@
-     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
-   </PropertyGroup>
- 
--  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
-+  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="CollectDependencies;FetchDependencies" AfterTargets="ResolveProjectReferences">
-     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
-              from inside the ExePackage authoring. -->
-     <CreateProperty Value="%(SharedFxInstallers.Filename)%(Extension)">
