@@ -5,6 +5,9 @@ using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -519,7 +522,6 @@ EndGlobal
 
         }
 
-        // TODO: Update to slnx
         [Theory(Skip = "Having projects with the same name in different paths is allowed.")]
         [InlineData("sln")]
         [InlineData("solution")]
@@ -1313,36 +1315,51 @@ EndGlobal
         private string GetExpectedSlnContents(
             string slnPath,
             string slnTemplate,
-            string expectedLibProjectGuid = null)
+            string expectedLibProjectGuid = null,
+            string solutionExtension = ".sln")
         {
-            var slnFile = SlnFile.Read(slnPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(slnPath);
+            SolutionModel solution = serializer.OpenAsync(slnPath, CancellationToken.None).Result;
 
             if (string.IsNullOrEmpty(expectedLibProjectGuid))
             {
-                var matchingProjects = slnFile.Projects
-                    .Where((p) => p.FilePath.EndsWith("Lib.csproj"))
+                var matchingProjects = solution.SolutionProjects
+                    .Where(p => p.FilePath.EndsWith("Lib.csproj"))
                     .ToList();
 
                 matchingProjects.Count.Should().Be(1);
                 var slnProject = matchingProjects[0];
-                expectedLibProjectGuid = slnProject.Id;
+                expectedLibProjectGuid = slnProject.Id.ToString();
             }
-            var slnContents = slnTemplate.Replace("__LIB_PROJECT_GUID__", expectedLibProjectGuid);
 
-            var matchingSrcFolder = slnFile.Projects
-                    .Where((p) => p.FilePath == "src")
-                    .ToList();
+            var slnContents = slnTemplate.Replace(
+                "__LIB_PROJECT_GUID__",
+                solutionExtension == ".sln"
+                    ? $"{{{expectedLibProjectGuid.ToUpper()}}}"
+                    : expectedLibProjectGuid);
+
+            var matchingSrcFolder = solution.SolutionProjects
+                .Where(p => p.FilePath.Contains("src"))
+                .ToList();
             if (matchingSrcFolder.Count == 1)
             {
-                slnContents = slnContents.Replace("__SRC_FOLDER_GUID__", matchingSrcFolder[0].Id);
+                slnContents = slnContents.Replace(
+                    "__SRC_FOLDER_GUID__",
+                    solutionExtension == ".sln"
+                        ? $"{{{matchingSrcFolder[0].Id.ToString().ToUpper()}}}"
+                        : matchingSrcFolder[0].Id.ToString());
             }
 
-            var matchingSolutionFolder = slnFile.Projects
-                    .Where((p) => p.FilePath == "TestFolder")
-                    .ToList();
+            var matchingSolutionFolder = solution.SolutionProjects
+                .Where(p => p.FilePath.Contains("TestFolder"))
+                .ToList();
             if (matchingSolutionFolder.Count == 1)
             {
-                slnContents = slnContents.Replace("__SOLUTION_FOLDER_GUID__", matchingSolutionFolder[0].Id);
+                slnContents = slnContents.Replace(
+                    "_SOLUTION_FOLDER_GUID__",
+                    solutionExtension == ".sln"
+                        ? $"{{{matchingSolutionFolder[0].Id.ToString().ToUpper()}}}"
+                        : matchingSolutionFolder[0].Id.ToString());
             }
 
             return slnContents;
@@ -1351,6 +1368,8 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "", solutionExtension);
@@ -1359,6 +1378,8 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithInRootItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--in-root", solutionExtension);
@@ -1367,6 +1388,8 @@ EndGlobal
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithSolutionFolderItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);
@@ -1374,7 +1397,7 @@ EndGlobal
         private void VerifySuggestionAndUsage(string solutionCommand, string arguments, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{arguments}")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{arguments}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -1385,7 +1408,7 @@ EndGlobal
             }
             else if (solutionExtension == ".slnx")
             {
-                File.Delete(Path.Join(projectDirectory, "App.slnx"));
+                File.Delete(Path.Join(projectDirectory, "App.sln"));
             }
 
             var projectArg = Path.Combine("Lib", "Lib.csproj");
