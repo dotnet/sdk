@@ -19,19 +19,23 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public override bool Execute()
         {
-            if (!File.Exists(ScriptFullPath))
+            if (ScriptFullPath is not null)
             {
-                File.Create(ScriptFullPath!);
+                if (!File.Exists(ScriptFullPath))
+                {
+                    File.Create(ScriptFullPath);
+                }
+                File.WriteAllLines(ScriptFullPath, GetReplacedFileContents(Resources.MsDeployBatchFile));
             }
 
-            File.WriteAllLines(ScriptFullPath!, GetReplacedFileContents(Resources.MsDeployBatchFile));
-
-            if (!File.Exists(ReadMeFullPath))
+            if (ReadMeFullPath is not null)
             {
-                File.Create(ReadMeFullPath!);
+                if (!File.Exists(ReadMeFullPath))
+                {
+                    File.Create(ReadMeFullPath);
+                }
+                File.WriteAllLines(ReadMeFullPath, GetReplacedFileContents(Resources.MsDeployReadMe));
             }
-
-            File.WriteAllLines(ReadMeFullPath!, GetReplacedFileContents(Resources.MsDeployReadMe));
 
             return true;
         }
@@ -41,7 +45,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             var lines = fileContents.Split(new string[] { Environment.NewLine, "\n" }, StringSplitOptions.None);
             for (int i = 0; i < lines.Length; i++)
             {
-                lines![i] = lines[i]!.Replace("$$ProjectName$$", ProjectName);
+                lines[i] = lines[i].Replace("$$ProjectName$$", ProjectName);
             }
 
             return lines;

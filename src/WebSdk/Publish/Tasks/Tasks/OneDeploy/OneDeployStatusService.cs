@@ -60,7 +60,10 @@ internal class OneDeployStatusService(ITaskLogger? taskLogger = null) : IDeploym
                     ? deploymentResponse.Status.Value
                     : DeploymentStatus.Unknown;
 
-                _taskLogger?.LogMessage(deploymentResponse!.ToString());
+                if (deploymentResponse is not null)
+                {
+                    _taskLogger?.LogMessage(deploymentResponse.ToString());
+                }
 
                 await System.Threading.Tasks.Task.Delay(s_refreshDelay, retryToken);
             }

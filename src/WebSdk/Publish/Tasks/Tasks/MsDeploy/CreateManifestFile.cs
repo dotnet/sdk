@@ -101,13 +101,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 try
                 {
-                    if (!string.IsNullOrEmpty(ManifestFile))
+                    if (ManifestFile is not null && ManifestFile.Length != 0)
                     {
                         if (!File.Exists(ManifestFile))
                         {
                             File.Create(ManifestFile);
                         }
-                        WriteManifestsToFile(Log, m_manifests, ManifestFile!);
+                        WriteManifestsToFile(Log, m_manifests, ManifestFile);
                     }
                 }
 #if NET472

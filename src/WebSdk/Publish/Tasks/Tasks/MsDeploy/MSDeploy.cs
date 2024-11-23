@@ -469,7 +469,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    _userAgent = Utility.GetFullUserAgentString(value!);
+                    _userAgent = Utility.GetFullUserAgentString(value);
                 }
             }
         }
@@ -913,9 +913,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="args"></param>
         private static void GenerateSwitchPerItem(Utilities.CommandLineBuilder commandLine, string strSwitch, string? args)
         {
-            if (!string.IsNullOrEmpty(args))
+            if (args is not null && args.Length != 0)
             {
-                foreach (string dl in args!.Split(new char[] { ';' }))
+                foreach (string dl in args.Split(new char[] { ';' }))
                 {
                     if (!string.IsNullOrEmpty(dl))
                     {
@@ -930,7 +930,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (hostObject != null)
             {
                 //retrieve user credentials
-                Framework.ITaskItem? credentialItem = hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentailItemSpecName);
+                Framework.ITaskItem? credentialItem = hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentialItemSpecName);
                 if (credentialItem != null && destProviderSetting != null && destProviderSetting[0] != null)
                 {
                     Framework.ITaskItem destSettings = destProviderSetting[0];
@@ -1036,7 +1036,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <returns>path to aspnet_merge.exe, null if not found</returns>
         protected override string GenerateFullPathToTool()
         {
-            string result = Path.Combine(ExePath!, ToolName);
+            string result = ExePath is null ? string.Empty : Path.Combine(ExePath, ToolName);
 
             if (string.Compare(ExePath, "%MSDeployPath%", StringComparison.OrdinalIgnoreCase) == 0)
             {

@@ -7,13 +7,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 {
     public static class WebConfigTransform
     {
-        public static XDocument Transform(XDocument? webConfig, string? appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModel, string? environmentName, string? projectFullPath)
+        public static XDocument Transform(XDocument? webConfig, string appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModel, string? environmentName, string? projectFullPath)
         {
             const string HandlersElementName = "handlers";
             const string aspNetCoreElementName = "aspNetCore";
             const string envVariablesElementName = "environmentVariables";
 
-            if (webConfig == null || webConfig.Root!.Name.LocalName != "configuration")
+            if (webConfig?.Root == null || webConfig.Root.Name.LocalName != "configuration")
             {
                 webConfig = XDocument.Parse(WebConfigTemplate.Template);
             }
@@ -21,14 +21,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             XElement? rootElement = null;
 
             // Find the first aspNetCore element. If it is null use the default logic. Else use the root containing the aspNetCore element.
-            var firstAspNetCoreElement = webConfig.Root!.Descendants(aspNetCoreElementName).FirstOrDefault();
+            var firstAspNetCoreElement = webConfig.Root?.Descendants(aspNetCoreElementName).FirstOrDefault();
             if (firstAspNetCoreElement == null)
             {
-                rootElement = webConfig.Root.Element("location") == null ? webConfig.Root : webConfig.Root.Element("location");
+                rootElement = webConfig.Root?.Element("location") == null ? webConfig.Root : webConfig.Root.Element("location");
             }
             else
             {
-                rootElement = firstAspNetCoreElement.Ancestors("location").FirstOrDefault() == null ? webConfig.Root : webConfig.Root.Element("location");
+                rootElement = firstAspNetCoreElement.Ancestors("location").FirstOrDefault() == null ? webConfig.Root : webConfig.Root?.Element("location");
             }
 
             var webServerSection = GetOrCreateChild(rootElement, "system.webServer");
@@ -86,11 +86,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             SetAttributeValueIfEmpty(aspNetCoreElement, "resourceType", "Unspecified");
         }
 
-        private static void TransformAspNetCore(XElement aspNetCoreElement, string? appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModelValue, string? projectFullPath)
+        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModelValue, string? projectFullPath)
         {
             // Forward slashes currently work neither in AspNetCoreModule nor in dotnet so they need to be
             // replaced with backwards slashes when the application is published on a non-Windows machine
-            var appPath = Path.Combine(".", appName!).Replace("/", "\\");
+            var appPath = Path.Combine(".", appName).Replace("/", "\\");
             RemoveLauncherArgs(aspNetCoreElement);
 
             if (useAppHost)
@@ -147,7 +147,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             if (!string.IsNullOrEmpty(projectFullPath))
             {
                 string? projectFolder = Path.GetDirectoryName(projectFullPath);
-                projectWebConfigPath = Path.Combine(projectFolder!, "web.config");
+                if (projectFolder is not null)
+                {
+                    projectWebConfigPath = Path.Combine(projectFolder, "web.config");
+                }
             }
 
             if (File.Exists(projectWebConfigPath))

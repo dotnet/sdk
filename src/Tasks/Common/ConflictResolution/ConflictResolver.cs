@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 TConflictItem? existingItem;
 
-                if (_winningItemsByKey.TryGetValue(itemKey!, out existingItem))
+                if (itemKey is not null && _winningItemsByKey.TryGetValue(itemKey, out existingItem))
                 {
                     // a conflict was found, determine the winner.
                     var winner = ResolveConflict(existingItem, conflictItem, logUnresolvedConflicts: false);
@@ -59,10 +59,10 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                         //  the corresponding list.
 
                         List<TConflictItem>? unresolvedConflictsForKey;
-                        if (!_unresolvedConflictItems.TryGetValue(itemKey!, out unresolvedConflictsForKey))
+                        if (!_unresolvedConflictItems.TryGetValue(itemKey, out unresolvedConflictsForKey))
                         {
                             unresolvedConflictsForKey = new List<TConflictItem>();
-                            _unresolvedConflictItems[itemKey!] = unresolvedConflictsForKey;
+                            _unresolvedConflictItems[itemKey] = unresolvedConflictsForKey;
 
                             //  This is the first time we hit an unresolved conflict for this key, so
                             //  add the existing item to the unresolved conflicts list
@@ -81,11 +81,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                         // replace existing item
                         if (commitWinner)
                         {
-                            _winningItemsByKey[itemKey!] = conflictItem;
+                            _winningItemsByKey[itemKey] = conflictItem;
                         }
                         else
                         {
-                            _winningItemsByKey.Remove(itemKey!);
+                            _winningItemsByKey.Remove(itemKey);
                         }
                         loser = existingItem;
                     }
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     //  if they lose against the new winner.  Otherwise, keep them in the unresolved conflict
                     //  list.
                     List<TConflictItem>? previouslyUnresolvedConflicts;
-                    if (_unresolvedConflictItems.TryGetValue(itemKey!, out previouslyUnresolvedConflicts) &&
+                    if (_unresolvedConflictItems.TryGetValue(itemKey, out previouslyUnresolvedConflicts) &&
                         previouslyUnresolvedConflicts.Contains(loser))
                     {
                         List<TConflictItem> newUnresolvedConflicts = new();
@@ -126,19 +126,17 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                                 }
                                 newUnresolvedConflicts.Add(previouslyUnresolvedItem);
                             }
-
-
                         }
-                        _unresolvedConflictItems.Remove(itemKey!);
+                        _unresolvedConflictItems.Remove(itemKey);
                         if (newUnresolvedConflicts.Count > 0)
                         {
-                            _unresolvedConflictItems[itemKey!] = newUnresolvedConflicts;
+                            _unresolvedConflictItems[itemKey] = newUnresolvedConflicts;
                         }
                     }
                 }
-                else if (commitWinner)
+                else if (itemKey is not null && commitWinner)
                 {
-                    _winningItemsByKey[itemKey!] = conflictItem;
+                    _winningItemsByKey[itemKey] = conflictItem;
                 }
             }
         }

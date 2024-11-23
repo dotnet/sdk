@@ -201,12 +201,12 @@ namespace Microsoft.DotNet.Cli.Utils
             if (lastVersionNumberSeparatorIndex != -1 && distroInfo.Id == "alpine")
             {
                 // For Alpine, the version reported has three components, so we need to find the second version separator
-                lastVersionNumberSeparatorIndex = distroInfo.VersionId!.IndexOf('.', lastVersionNumberSeparatorIndex + 1);
+                lastVersionNumberSeparatorIndex = distroInfo.VersionId?.IndexOf('.', lastVersionNumberSeparatorIndex + 1) ?? -1;
             }
 
             if (lastVersionNumberSeparatorIndex != -1 && (distroInfo.Id == "rhel" || distroInfo.Id == "alpine"))
             {
-                distroInfo.VersionId = distroInfo.VersionId!.Substring(0, lastVersionNumberSeparatorIndex);
+                distroInfo.VersionId = distroInfo.VersionId?.Substring(0, lastVersionNumberSeparatorIndex);
             }
 
             return distroInfo;

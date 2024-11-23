@@ -39,16 +39,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             string appSettingsJsonContent = File.ReadAllText(destinationAppSettingsFilePath);
             var appSettingsModel = FromJson<AppSettingsModel>(appSettingsJsonContent);
-            if (appSettingsModel?.ConnectionStrings == null)
+            if (appSettingsModel is not null && appSettingsModel.ConnectionStrings is null)
             {
-                appSettingsModel!.ConnectionStrings = new Dictionary<string, string>();
+                appSettingsModel.ConnectionStrings = new Dictionary<string, string>();
             }
 
             foreach (ITaskItem destinationConnectionString in destinationConnectionStrings)
             {
                 string key = destinationConnectionString.ItemSpec;
                 string Value = destinationConnectionString.GetMetadata("Value");
-                appSettingsModel!.ConnectionStrings[key] = Value;
+                if (appSettingsModel?.ConnectionStrings is not null)
+                {
+                    appSettingsModel.ConnectionStrings[key] = Value;
+                }
             }
 
             File.WriteAllText(destinationAppSettingsFilePath, ToJson(appSettingsModel));

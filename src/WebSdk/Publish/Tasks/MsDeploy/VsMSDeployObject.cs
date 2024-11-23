@@ -134,9 +134,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <returns></returns>
         internal static List<string> ConvertStringIntoList(string? linkExtensionsString)
         {
-            if (!string.IsNullOrEmpty(linkExtensionsString))
+            if (linkExtensionsString is not null && linkExtensionsString.Length != 0)
             {
-                string linkExtensionsInfo = linkExtensionsString!;
+                string linkExtensionsInfo = linkExtensionsString;
                 string[] linksArray = linkExtensionsInfo.Split(new char[] { ';' });
                 List<string> linksList = new(linksArray);
                 return linksList;
@@ -246,7 +246,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             Diagnostics.Debug.Assert(taskItem != null);
 
-            m_provider = taskItem!.ItemSpec;
+            if (taskItem is null)
+            {
+                // This constructor would spectacularly fail if taskItem is null. Just get out in this situation.
+                return;
+            }
+
+            m_provider = taskItem.ItemSpec;
             m_root = taskItem.GetMetadata("Path");
             if (string.IsNullOrEmpty(m_root))
                 m_root = string.Empty;
@@ -312,13 +318,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private void SetDictionaryValue(string name, string? value)
         {
             Diagnostics.Debug.Assert(m_NameValueDictionary != null);
-            if (m_NameValueDictionary!.ContainsKey(name))
+            if (m_NameValueDictionary is not null && m_NameValueDictionary.ContainsKey(name))
             {
                 m_NameValueDictionary[name] = value;
             }
             else
             {
-                m_NameValueDictionary.Add(name, value);
+                m_NameValueDictionary?.Add(name, value);
             }
         }
 
@@ -554,10 +560,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // set up the provider setting
             /*Deployment.DeploymentProviderOptions*/
             dynamic? srcProviderConfig = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{Provider.ToString()});
-            srcProviderConfig!.Path = Root;
+            if (srcProviderConfig is null)
+            {
+                return;
+            }
+            srcProviderConfig.Path = Root;
             Utility.AddProviderOptions(srcProviderConfig, ProviderOptions, _host);
 
-            using (/*Deployment.DeploymentObject*/ dynamic? srcObj =  MSWebDeploymentAssembly.DynamicAssembly?.CallStaticMethod("Microsoft.Web.Deployment.DeploymentManager", "CreateObject", new object[]{srcProviderConfig, BaseOptions!}))
+            if (BaseOptions is null)
+            {
+                return;
+            }
+            using (/*Deployment.DeploymentObject*/ dynamic? srcObj =  MSWebDeploymentAssembly.DynamicAssembly?.CallStaticMethod("Microsoft.Web.Deployment.DeploymentManager", "CreateObject", new object[]{srcProviderConfig, BaseOptions}))
             {
 
                 //$BUGBUG lmchen, there is only set to source provider?
@@ -567,7 +581,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 Utility.AddSetParametersToObject(srcObj, EntryParameters, _host);
                 
                 /*Deployment.DeploymentProviderOptions*/ dynamic? destProviderConfig = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{destObject.Provider.ToString()});
-                destProviderConfig!.Path = destObject.Root;
+                if (destProviderConfig is null)
+                {
+                    return;
+                }
+                destProviderConfig.Path = destObject.Root;
 
                 // Setup Destination Provider option
                 Utility.AddProviderOptions(destProviderConfig, destObject.ProviderOptions, _host);

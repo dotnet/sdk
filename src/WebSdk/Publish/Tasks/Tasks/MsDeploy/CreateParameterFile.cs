@@ -281,29 +281,29 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 try
                 {
-                    if (!File.Exists(DeclareSetParameterFile))
+                    if (DeclareSetParameterFile is not null && !File.Exists(DeclareSetParameterFile))
                     {
-                        File.Create(DeclareSetParameterFile!);
+                        File.Create(DeclareSetParameterFile);
                     }
 
-                    if (!string.IsNullOrEmpty(DeclareParameterFile))
+                    if (DeclareParameterFile is not null && DeclareParameterFile.Length != 0)
                     {
-                        WriteDeclareParametersToFile(Log, m_parameters, DeclareParameterFile!, OptimisticParameterDefaultValue);
+                        WriteDeclareParametersToFile(Log, m_parameters, DeclareParameterFile, OptimisticParameterDefaultValue);
                     }
-                    if (!string.IsNullOrEmpty(SetParameterFile))
+                    if (SetParameterFile is not null && SetParameterFile.Length != 0)
                     {
-                        WriteSetParametersToFile(Log, m_parameters, SetParameterFile!, OptimisticParameterDefaultValue);
+                        WriteSetParametersToFile(Log, m_parameters, SetParameterFile, OptimisticParameterDefaultValue);
                     }
 
-                    if (!string.IsNullOrEmpty(DeclareSetParameterFile))
+                    if (DeclareSetParameterFile is not null && DeclareSetParameterFile.Length != 0)
                     {
                         if (IncludeDefaultValue)
                         {
-                            WriteDeclareSetParametersToFile(Log, m_parameters, DeclareSetParameterFile!, true /*OptimisticParameterDefaultValue */);
+                            WriteDeclareSetParametersToFile(Log, m_parameters, DeclareSetParameterFile, true /*OptimisticParameterDefaultValue */);
                         }
                         else
                         {
-                            WriteDeclareSetParametersToFile(Log, m_parameters, DeclareSetParameterFile!, OptimisticParameterDefaultValue);
+                            WriteDeclareSetParametersToFile(Log, m_parameters, DeclareSetParameterFile, OptimisticParameterDefaultValue);
                         }
                     }
                 }

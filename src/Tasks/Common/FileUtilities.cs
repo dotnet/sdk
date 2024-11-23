@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         static readonly HashSet<string?> s_assemblyExtensions = new(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
-        public static Version? TryGetAssemblyVersion(string? sourcePath)
+        public static Version? TryGetAssemblyVersion(string sourcePath)
         {
             var extension = Path.GetExtension(sourcePath);
 

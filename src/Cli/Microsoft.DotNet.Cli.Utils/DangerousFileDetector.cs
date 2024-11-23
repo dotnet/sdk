@@ -38,8 +38,11 @@ namespace Microsoft.DotNet.Cli.Utils
                     // First check the zone, if they are not an untrusted zone, they aren't dangerous
                     if (internetSecurityManager == null)
                     {
-                        Type iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager))!;
-                        internetSecurityManager = Activator.CreateInstance(iismType!) as IInternetSecurityManager;
+                        Type? iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
+                        if (iismType is not null)
+                        {
+                            internetSecurityManager = Activator.CreateInstance(iismType) as IInternetSecurityManager;
+                        }
                     }
                     int zone = 0;
                     internetSecurityManager?.MapUrlToZone(Path.GetFullPath(filename), out zone, 0);

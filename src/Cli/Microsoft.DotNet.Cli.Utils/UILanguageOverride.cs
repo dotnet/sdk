@@ -127,9 +127,9 @@ namespace Microsoft.DotNet.Cli.Utils
             try
             {
                 using RegistryKey? windowsVersionRegistry = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-                var buildNumber = windowsVersionRegistry?.GetValue("CurrentBuildNumber")?.ToString();
-                const int buildNumberThatOfficialySupportsUTF8 = 18363;
-                return int.Parse(buildNumber!) >= buildNumberThatOfficialySupportsUTF8 || ForceUniversalEncodingOptInEnabled();
+                var buildNumber = windowsVersionRegistry?.GetValue("CurrentBuildNumber")?.ToString() ?? string.Empty;
+                const int buildNumberThatOfficiallySupportsUTF8 = 18363;
+                return int.Parse(buildNumber) >= buildNumberThatOfficiallySupportsUTF8 || ForceUniversalEncodingOptInEnabled();
             }
             catch (Exception ex) when (ex is SecurityException || ex is ObjectDisposedException)
             {

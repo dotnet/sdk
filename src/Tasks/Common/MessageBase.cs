@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            string? message;
+            string message = FormattedText ?? string.Empty;
             if (string.IsNullOrEmpty(FormattedText) && string.IsNullOrEmpty(ResourceName))
             {
                 throw new ArgumentException($"Either {nameof(FormattedText)} or {nameof(ResourceName)} must be specified.");
@@ -54,14 +54,13 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 string? format = Strings.ResourceManager.GetString(ResourceName, Strings.Culture);
-                message = string.Format(CultureInfo.CurrentCulture, format!, FormatArguments);
-            }
-            else
-            {
-                message = FormattedText;
+                if (format is not null)
+                {
+                    message = string.Format(CultureInfo.CurrentCulture, format, FormatArguments);
+                }
             }
 
-            LogMessage(message!);
+            LogMessage(message);
         }
 
         protected abstract void LogMessage(string message);

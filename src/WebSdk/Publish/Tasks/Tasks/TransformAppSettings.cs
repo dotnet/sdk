@@ -58,12 +58,21 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             InitializeProperties();
 
-            string sourceAppSettingsFilePath = Path.Combine(ProjectDirectory!, SourceAppSettingsName!);
+
+            string sourceAppSettingsFilePath = string.Empty;
+            if (ProjectDirectory is not null && SourceAppSettingsName is not null)
+            {
+                sourceAppSettingsFilePath = Path.Combine(ProjectDirectory, SourceAppSettingsName);
+            }
             if (string.IsNullOrEmpty(DestinationAppSettingsName))
             {
                 DestinationAppSettingsName = $"{Path.GetFileNameWithoutExtension(SourceAppSettingsName)}.{EnvironmentName}{Path.GetExtension(SourceAppSettingsName)}";
             }
-            string destinationAppSettingsFilePath = Path.Combine(PublishDirectory!, DestinationAppSettingsName!);
+            string destinationAppSettingsFilePath = string.Empty;
+            if (PublishDirectory is not null)
+            {
+                destinationAppSettingsFilePath = Path.Combine(PublishDirectory, DestinationAppSettingsName);
+            }
 
             // If the source appsettings is not present, generate one.
             if (!File.Exists(sourceAppSettingsFilePath))

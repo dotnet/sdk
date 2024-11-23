@@ -18,9 +18,9 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private bool _trimTrailingNewlines = false;
 
-        public Command(Process? process, bool trimtrailingNewlines = false)
+        public Command(Process? process, bool trimTrailingNewlines = false)
         {
-            _trimTrailingNewlines = trimtrailingNewlines;
+            _trimTrailingNewlines = trimTrailingNewlines;
             _process = process ?? throw new ArgumentNullException(nameof(process));
         }
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 _stdErr?.CapturedOutput);
         }
 
-        public ICommand WorkingDirectory(string projectDirectory)
+        public ICommand WorkingDirectory(string? projectDirectory)
         {
             _process.StartInfo.WorkingDirectory = projectDirectory;
             return this;

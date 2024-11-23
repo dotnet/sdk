@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
 
         public static string CliFallbackFolderPath =>
             Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
-            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent!.FullName, "NuGetFallbackFolder");
+            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent?.FullName ?? string.Empty, "NuGetFallbackFolder");
 
         public static string ToolsShimPath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName);
 

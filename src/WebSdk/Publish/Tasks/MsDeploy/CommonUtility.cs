@@ -641,9 +641,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     // otherwise we pick the smart one.
                     quote = AlternativeQuote(quote);
                 }
-                if (!string.IsNullOrEmpty(value))
+                if (value is not null && value.Length != 0)
                 {
-                    if (value!.Contains(quote))
+                    if (value.Contains(quote))
                     {
                         quote = AlternativeQuote(quote);
                     }
@@ -693,7 +693,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     //strip off the trailing slash, so IO.Path.GetDirectoryName/GetFileName will return values correctly
                     destRoot = StripOffTrailingSlashes(destRoot);
 
-                    string? dir = Path.GetDirectoryName(destRoot);
+                    string dir = Path.GetDirectoryName(destRoot) ?? string.Empty;
                     string dirUri = ConvertAbsPhysicalPathToAbsUriPath(dir);
 #if NET472
                     if (IsOneOf(destType, ArchiveDirOnly, StringComparison.InvariantCultureIgnoreCase))
@@ -753,7 +753,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 try
                 {
-                    wellKnownProvider = Enum.Parse(DeploymentWellKnownProviderType!, destType, true);
+                    if (DeploymentWellKnownProviderType is not null)
+                    {
+                        wellKnownProvider = Enum.Parse(DeploymentWellKnownProviderType, destType, true);
+                    }
                 }
                 catch
                 {
@@ -770,7 +773,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     //strip off the trailing slash, so IO.Path.GetDirectoryName/GetFileName will return values correctly
                     destRoot = StripOffTrailingSlashes(destRoot);
 
-                    string? dir = Path.GetDirectoryName(destRoot);
+                    string dir = Path.GetDirectoryName(destRoot) ?? string.Empty;
                     string dirUri = ConvertAbsPhysicalPathToAbsUriPath(dir);
                     if (wellKnownProvider?.Equals(MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.ArchiveDir)) ?? false)
                         strSucceedFailMsg = string.Format(CultureInfo.CurrentCulture, Resources.VSMSDEPLOY_SucceedArchiveDir, string.IsNullOrEmpty(dirUri) ? destRoot : dirUri);
@@ -803,12 +806,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-        public static string ConvertAbsPhysicalPathToAbsUriPath(string? physicalPath)
+        public static string ConvertAbsPhysicalPathToAbsUriPath(string physicalPath)
         {
             string absUriPath = string.Empty;
             try
             {
-                Uri uri = new(physicalPath!);
+                Uri uri = new(physicalPath);
                 if (uri.IsAbsoluteUri)
                     absUriPath = uri.AbsoluteUri;
             }
@@ -840,7 +843,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         new object[]{ruleName, objectName, scopeAttributeName,
                         scopeAttributeValue, targetAttributeName, matchRegularExpression, replaceWith});
 
-                    syncConfigRules!.Add(replaceRule);
+                    syncConfigRules.Add(replaceRule);
                 }
             }
         }
@@ -858,7 +861,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 foreach (string name in stringList)
                 {
-                    foreach (/*Deployment.DeploymentSkipDirective*/ dynamic skipDirective in baseOptions!.SkipDirectives)
+                    foreach (/*Deployment.DeploymentSkipDirective*/ dynamic skipDirective in baseOptions.SkipDirectives)
                     {
                         if (string.Compare(skipDirective.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
                         {
@@ -897,7 +900,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                         /*Deployment.DeploymentSkipDirective*/
                         dynamic? skipDirective = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSkipDirective", new object[] { name, string.Join(",", arguments.ToArray()), true });
-                        baseOptions!.SkipDirectives.Add(skipDirective);
+                        baseOptions.SkipDirectives.Add(skipDirective);
                     }
                 }
                 AdjustSkipDirectives(baseOptions, enableSkipDirectiveList, true, log);
@@ -971,18 +974,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         foreach (string strValidationKind in validationKinds)
                         {
                             dynamic? currentValidationKind;
-                            if (MSWebDeploymentAssembly.DynamicAssembly?.TryGetEnumValue("Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind", strValidationKind, out currentValidationKind) ?? false)
+                            if (validationKindType is not null && (MSWebDeploymentAssembly.DynamicAssembly?.TryGetEnumValue("Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind", strValidationKind, out currentValidationKind) ?? false))
                             {
-                                validationKind = Enum.ToObject(validationKindType!, ((int)(validationKind)) | ((int)(currentValidationKind)));
+                                validationKind = Enum.ToObject(validationKindType, ((int)(validationKind)) | ((int)(currentValidationKind)));
                             }
                         }
                         // dynamic doesn't compare, since this is enum, cast to int to compare
-                        if ((int)validationKind != (int)(validationKindNone ?? 0))
+                        if (validationKind is not null && (int)validationKind != (int)(validationKindNone ?? 0))
                         {
                             // due to the reflection the we can't
                             // $exception	{"Cannot implicitly convert type 'object' to 'Microsoft.Web.Deployment.DeploymentSyncParameterValidation'. An explicit conversion exists (are you missing a cast?)"}	System.Exception {Microsoft.CSharp.RuntimeBinder.RuntimeBinderException}
                             object? parameterValidation =
-                                MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncParameterValidation", new object[] { validationKind!, validationString });
+                                MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncParameterValidation", new object[] { validationKind, validationString });
                             SetDynamicProperty(deploymentSyncParameter, "Validation", parameterValidation);
                         }
                     }
@@ -1213,35 +1216,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                                     foreach (string strValidationKind in validationKinds)
                                     {
-                                        if (MSWebDeploymentAssembly.DynamicAssembly?.TryGetEnumValue("Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind", strValidationKind, out currentvalidationKind) ?? false)
+                                        if (validationKindType is not null && (MSWebDeploymentAssembly.DynamicAssembly?.TryGetEnumValue("Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind", strValidationKind, out currentvalidationKind) ?? false))
                                         {
-                                            validationKind = Enum.ToObject(validationKindType!, ((int)(validationKind)) | ((int)(currentvalidationKind)));
+                                            validationKind = Enum.ToObject(validationKindType, ((int)(validationKind)) | ((int)(currentvalidationKind)));
                                         }
                                     }
                                     // dynamic doesn't compare, since this is enum, cast to int to compare
-                                    if ((int)validationKind != (int)(validationKindNone ?? 0))
+                                    if (validationKind is not null && (int)validationKind != (int)(validationKindNone ?? 0))
                                     {
                                         parameterValidation =
-                                            MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncParameterValidation", new object[] { validationKind!, validationString });
+                                            MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncParameterValidation", new object[] { validationKind, validationString });
                                     }
-
-                                    //Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind validationKind = Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind.None;
-                                    //Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind currentValidationKind;
-                                    //string[] validationKinds = item.Kind.Split(new char[] { ',' });
-
-                                    //foreach (string strValidationKind in validationKinds)
-                                    //{
-                                    //    if (System.Enum.TryParse<Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind>(strValidationKind, out currentValidationKind))
-                                    //    {
-                                    //        validationKind |= currentValidationKind;
-                                    //    }
-                                    //}
-
-                                    //if (validationKind != Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind.None)
-                                    //{
-
-                                    //    parameterValidation = new Microsoft.Web.Deployment.DeploymentSyncParameterValidation(validationKind, item.ValidationString);
-                                    //}
                                 }
                                 entryIdentityDictionary.Add(identityString, null);
                             }
@@ -1252,7 +1237,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                             parameter = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncParameter",
                                 new object[] { item.Name, item.Description, item.DefaultValue, item.Tags });
                             deploymentObject.SyncParameters.Add(parameter);
-                            parameter!.Value = data;
+                            if (parameter is not null)
+                            {
+                                parameter.Value = data;
+                            }
                         }
                         if (parameterEntry != null)
                         {
@@ -1639,7 +1627,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                             {
                                 try
                                 {
-                                    wellKnownProvider = MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValueIgnoreCase(MSDeploy.TypeName.DeploymentWellKnownProvider, provider);
+                                    if (provider is not null)
+                                    {
+                                        wellKnownProvider = MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValueIgnoreCase(MSDeploy.TypeName.DeploymentWellKnownProvider, provider);
+                                    }
                                 }
                                 catch
                                 {
@@ -1704,10 +1695,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
             for (int i = 0; i < count; i++)
             {
-                Framework.ITaskItem iTaskItem = taskItems![i];
-                string priority = iTaskItem.GetMetadata("Priority");
-                int iPriority = string.IsNullOrEmpty(priority) ? 0 : Convert.ToInt32(priority, CultureInfo.InvariantCulture);
-                sortedList.Add(new KeyValuePair<int, int>(iPriority, i), iTaskItem);
+                if (taskItems is not null)
+                {
+                    Framework.ITaskItem iTaskItem = taskItems[i];
+                    string priority = iTaskItem.GetMetadata("Priority");
+                    int iPriority = string.IsNullOrEmpty(priority) ? 0 : Convert.ToInt32(priority, CultureInfo.InvariantCulture);
+                    sortedList.Add(new KeyValuePair<int, int>(iPriority, i), iTaskItem);
+                }
             }
             return sortedList.Values;
         }
@@ -1747,10 +1741,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public static string? GetFilePathResolution(string? source, string sourceRootPath)
         {
-            if (Path.IsPathRooted(source) || string.IsNullOrEmpty(sourceRootPath))
+            if (source is null || Path.IsPathRooted(source) || string.IsNullOrEmpty(sourceRootPath))
                 return source;
             else
-                return Path.Combine(sourceRootPath, source!);
+                return Path.Combine(sourceRootPath, source);
         }
 
         /// <summary>
@@ -1804,9 +1798,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // Mark the assembly version.
             // System.Version version1_1 = new System.Version("7.1");
             Dictionary<string, string> versionsList = new();
-            if (!string.IsNullOrEmpty(strVersionsToTry))
+            if (strVersionsToTry is not null && strVersionsToTry.Length != 0)
             {
-                foreach (string str in strVersionsToTry!.Split(';'))
+                foreach (string str in strVersionsToTry.Split(';'))
                 {
                     versionsList[str] = str;
                 }

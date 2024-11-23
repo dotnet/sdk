@@ -40,11 +40,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         public bool GenerateEFSQLScriptsInternal(bool isLoggingEnabled = true)
         {
             InitializeProperties();
-            EFSQLScripts = new ITaskItem[EFMigrations!.Length];
+            if (EFMigrations is null || EFPublishDirectory is null || EFSQLScriptsFolderName is null)
+            {
+                return false;
+            }
+            EFSQLScripts = new ITaskItem[EFMigrations.Length];
             int index = 0;
             foreach (ITaskItem dbContext in EFMigrations)
             {
-                string outputFileFullPath = Path.Combine(EFPublishDirectory!, EFSQLScriptsFolderName!, dbContext.ItemSpec + ".sql");
+                string outputFileFullPath = Path.Combine(EFPublishDirectory, EFSQLScriptsFolderName, dbContext.ItemSpec + ".sql");
                 bool isScriptGenerationSuccessful = GenerateSQLScript(outputFileFullPath, dbContext.ItemSpec, isLoggingEnabled);
                 if (!isScriptGenerationSuccessful)
                 {

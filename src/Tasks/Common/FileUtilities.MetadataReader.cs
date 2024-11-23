@@ -12,9 +12,6 @@
 //  versions of cross-gened assemblies.  See https://github.com/dotnet/sdk/issues/1502
 #if NETCOREAPP || !EXTENSIONS
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
@@ -24,13 +21,8 @@ namespace Microsoft.NET.Build.Tasks
     {
         private static Dictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
-        private static Version? GetAssemblyVersion(string? sourcePath)
+        private static Version? GetAssemblyVersion(string sourcePath)
         {
-            if (sourcePath == null)
-            {
-                return null;
-            }
-
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
             if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry)
@@ -52,9 +44,9 @@ namespace Microsoft.NET.Build.Tasks
 
             return version;
 
-            static Version? GetAssemblyVersionFromFile(string? sourcePath)
+            static Version? GetAssemblyVersionFromFile(string sourcePath)
             {
-                using (var assemblyStream = new FileStream(sourcePath!, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+                using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {
                     Version? result = null;
                     try

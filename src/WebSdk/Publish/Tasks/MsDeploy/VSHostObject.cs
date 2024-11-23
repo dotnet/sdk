@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             username = password = string.Empty;
             if (_hostObject != null)
             {
-                ITaskItem? credentialItem = _hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentailItemSpecName);
+                ITaskItem? credentialItem = _hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentialItemSpecName);
                 if (credentialItem != null)
                 {
                     retVal = true;

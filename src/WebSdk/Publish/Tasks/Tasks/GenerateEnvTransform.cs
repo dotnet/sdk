@@ -37,10 +37,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     string templateContent = File.ReadAllText(envTransformTemplatePath);
                     XDocument templateContentDocument = XDocument.Parse(templateContent);
 
-                    XDocument? envTransformDoc = GenerateEnvTransformDocument(templateContentDocument, WebConfigEnvironmentVariables!);
-                    if (envTransformDoc != null)
+                    XDocument? envTransformDoc = GenerateEnvTransformDocument(templateContentDocument, WebConfigEnvironmentVariables);
+                    if (envTransformDoc is not null && PublishTempDirectory is not null)
                     {
-                        string generatedTransformFileName = Path.Combine(PublishTempDirectory!, Path.GetFileName(envTransformTemplatePath));
+                        string generatedTransformFileName = Path.Combine(PublishTempDirectory, Path.GetFileName(envTransformTemplatePath));
                         envTransformDoc.Save(generatedTransformFileName, SaveOptions.None);
                         generatedFiles.Add(generatedTransformFileName);
                     }
@@ -51,9 +51,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             return isSuccess;
         }
 
-        public XDocument? GenerateEnvTransformDocument(XDocument templateContentDocument, string webConfigEnvironmentVariables)
+        public XDocument? GenerateEnvTransformDocument(XDocument templateContentDocument, string? webConfigEnvironmentVariables)
         {
-            if (string.IsNullOrEmpty(webConfigEnvironmentVariables))
+            if (webConfigEnvironmentVariables is null || webConfigEnvironmentVariables.Length == 0)
             {
                 return null;
             }

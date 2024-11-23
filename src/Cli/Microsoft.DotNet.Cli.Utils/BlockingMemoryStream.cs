@@ -37,16 +37,19 @@ namespace Microsoft.DotNet.Cli.Utils
                 _remaining = new ArraySegment<byte>(tmp, 0, tmp.Length);
             }
 
-            if (_remaining.Count <= count)
+            if (_remaining.Array is not null)
             {
-                count = _remaining.Count;
-                Buffer.BlockCopy(_remaining.Array!, _remaining.Offset, buffer, offset, count);
-                _remaining = default;
-            }
-            else
-            {
-                Buffer.BlockCopy(_remaining.Array!, _remaining.Offset, buffer, offset, count);
-                _remaining = new ArraySegment<byte>(_remaining.Array!, _remaining.Offset + count, _remaining.Count - count);
+                if (_remaining.Count <= count)
+                {
+                    count = _remaining.Count;
+                    Buffer.BlockCopy(_remaining.Array, _remaining.Offset, buffer, offset, count);
+                    _remaining = default;
+                }
+                else
+                {
+                    Buffer.BlockCopy(_remaining.Array, _remaining.Offset, buffer, offset, count);
+                    _remaining = new ArraySegment<byte>(_remaining.Array, _remaining.Offset + count, _remaining.Count - count);
+                }
             }
             return count;
         }

@@ -25,12 +25,12 @@ namespace Microsoft.DotNet.Cli.Utils
         internal static bool NeedCorrection(string? existingPath, out string correctedPath)
         {
             correctedPath = string.Empty;
-            if (string.IsNullOrWhiteSpace(existingPath))
+            if (existingPath is null || string.IsNullOrWhiteSpace(existingPath))
             {
                 return false;
             }
 
-            IEnumerable<string> paths = existingPath!.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            IEnumerable<string> paths = existingPath.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
             var inCorrectToolsPaths =
                 paths.Where(p => p.EndsWith(DotnetToolsSuffix, StringComparison.OrdinalIgnoreCase));

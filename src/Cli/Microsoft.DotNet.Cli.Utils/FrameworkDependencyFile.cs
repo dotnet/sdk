@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private DependencyContext CreateDependencyContext()
         {
-            using (Stream depsFileStream = File.OpenRead(_depsFilePath!))
+            using (Stream depsFileStream = File.OpenRead(_depsFilePath ?? string.Empty))
             using (DependencyContextJsonReader reader = new())
             {
                 return reader.Read(depsFileStream);

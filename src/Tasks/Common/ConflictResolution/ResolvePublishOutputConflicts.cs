@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 var conflictItems = conflicts.Select(i => i.OriginalItem);
                 RemovedItemGroup1 = ItemGroup1?.Intersect(conflictItems).ToArray();
-                RemovedItemGroup2 = ItemGroup2?.Intersect(conflictItems!).ToArray();
+                RemovedItemGroup2 = ItemGroup2?.Intersect(conflictItems).ToArray();
             }
         }
 

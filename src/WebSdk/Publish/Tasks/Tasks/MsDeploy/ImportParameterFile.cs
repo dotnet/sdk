@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tasks.MsDeploy
         private void ReadParametersElement(Xml.XmlElement element)
         {
             Debug.Assert(element != null);
-            if (string.Compare(element!.Name, "parameters", StringComparison.OrdinalIgnoreCase) == 0)
+            if (element is not null && string.Compare(element.Name, "parameters", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 foreach (Xml.XmlNode childNode in element.ChildNodes)
                 {
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tasks.MsDeploy
         private void ReadParameterElement(Xml.XmlElement element)
         {
             Debug.Assert(element != null);
-            if (string.Compare(element!.Name, "parameter", StringComparison.OrdinalIgnoreCase) == 0)
+            if (element is not null && string.Compare(element.Name, "parameter", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 Xml.XmlAttribute? nameAttribute = element.Attributes.GetNamedItem("name") as Xml.XmlAttribute;
                 if (nameAttribute != null)
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tasks.MsDeploy
         {
             Debug.Assert(element != null && parentItem != null);
             TaskItem? taskItem = null;
-            if (string.Compare(element!.Name, "parameterEntry", StringComparison.OrdinalIgnoreCase) == 0)
+            if (element is not null && string.Compare(element.Name, "parameterEntry", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 taskItem = new TaskItem(parentItem);
                 taskItem.RemoveMetadata("OriginalItemSpec");
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tasks.MsDeploy
                     }
                 }
             }
-            else if (string.Compare(element.Name, "parameterValidation", StringComparison.OrdinalIgnoreCase) == 0)
+            else if (element is not null && string.Compare(element.Name, "parameterValidation", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 taskItem = new TaskItem(parentItem);
                 taskItem.RemoveMetadata("OriginalItemSpec");
@@ -185,8 +185,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tasks.MsDeploy
                 }
                 catch (Xml.XmlException ex)
                 {
-                    Uri sourceUri = new(ex.SourceUri!);
-                    logger.LogError(sourceUri.LocalPath, ex.LineNumber, ex.LinePosition, ex.Message);
+                    if (ex.SourceUri is not null)
+                    {
+                        Uri sourceUri = new(ex.SourceUri);
+                        logger.LogError(sourceUri.LocalPath, ex.LineNumber, ex.LinePosition, ex.Message);
+                    }
                     succeeded = false;
                 }
                 catch (Exception ex)

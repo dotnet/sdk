@@ -62,7 +62,13 @@ namespace Microsoft.DotNet.Cli.Utils
             _timer = Stopwatch.StartNew();
         }
 
-        public void Dispose() => _data?.Add(_name!, _timer!.Elapsed.TotalMilliseconds);
+        public void Dispose()
+        {
+            if (_name is not null && _timer is not null)
+            {
+                _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
+            }
+        }
     }
 
     public class BlockFilter : ITelemetryFilter

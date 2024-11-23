@@ -77,13 +77,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             // publish folder to make sure we have a consistent web.config update experience.
             string defaultWebConfigPath = "web.config";
             string? projectWebConfigPath = null;
-            string publishWebConfigPath = Path.Combine(PublishDir!, defaultWebConfigPath);
+            string publishWebConfigPath = string.Empty;
+            if (PublishDir is not null)
+            {
+                publishWebConfigPath = Path.Combine(PublishDir, defaultWebConfigPath);
+            }
 
-            if (!string.IsNullOrEmpty(ProjectFullPath))
+            if (ProjectFullPath is not null && ProjectFullPath.Length != 0 && PublishDir is not null)
             {
                 //Ensure that we load the actual web.config name (case-sensitive on Unix-like systems)
-                projectWebConfigPath = GetWebConfigFileOrDefault(ProjectFullPath!, defaultWebConfigPath);
-                publishWebConfigPath = Path.Combine(PublishDir!, Path.GetFileName(projectWebConfigPath));
+                projectWebConfigPath = GetWebConfigFileOrDefault(ProjectFullPath, defaultWebConfigPath);
+                publishWebConfigPath = Path.Combine(PublishDir, Path.GetFileName(projectWebConfigPath));
             }
 
             publishWebConfigPath = Path.GetFullPath(publishWebConfigPath);
@@ -120,7 +124,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 Log.LogMessage("Configuring web.config for deployment to Azure");
             }
 
-            string? outputFile = Path.GetFileName(TargetPath);
+            string? outputFile = Path.GetFileName(TargetPath) ?? string.Empty;
             XDocument? transformedConfig = WebConfigTransform.Transform(
                 webConfigXml,
                 outputFile,
@@ -152,10 +156,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         public string GetWebConfigFileOrDefault(string projectPath, string defaultWebConfigName)
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
-            var currentWebConfigFileName = Directory.EnumerateFiles(projectDirectory!)
+            if (projectDirectory is null)
+            {
+                return string.Empty;
+            }
+            var currentWebConfigFileName = Directory.EnumerateFiles(projectDirectory)
                 .FirstOrDefault(file => string.Equals(Path.GetFileName(file), defaultWebConfigName, StringComparison.OrdinalIgnoreCase));
             var webConfigFileName = currentWebConfigFileName == null ? defaultWebConfigName : Path.GetFileName(currentWebConfigFileName);
-            var projectWebConfigPath = Path.Combine(projectDirectory!, webConfigFileName);
+            var projectWebConfigPath = Path.Combine(projectDirectory, webConfigFileName);
 
             return projectWebConfigPath;
         }

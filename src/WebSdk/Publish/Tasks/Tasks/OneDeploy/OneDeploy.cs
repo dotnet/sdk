@@ -187,15 +187,15 @@ public partial class OneDeploy : Task
     {
         publishUri = null;
 
-        if (string.IsNullOrEmpty(publishUrl) ||
+        if (publishUrl is null || publishUrl.Length == 0 ||
             !Uri.TryCreate(publishUrl, UriKind.Absolute, out var _))
         {
             return false;
         }
 
         return IsWebJobProject(webjobName, webjobType)
-            ? GetWebJobPublishUri(publishUrl!, webjobName, webjobType, out publishUri)
-            : GetDefaultPublishUri(publishUrl!, out publishUri);
+            ? GetWebJobPublishUri(publishUrl, webjobName, webjobType, out publishUri)
+            : GetDefaultPublishUri(publishUrl, out publishUri);
     }
 
     private async Task<IHttpResponse?> DefaultDeployAsync(

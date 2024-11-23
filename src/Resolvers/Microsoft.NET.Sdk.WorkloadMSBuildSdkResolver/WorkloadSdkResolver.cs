@@ -8,6 +8,8 @@
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Configurer;
+using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
+
 
 #if NET
 using Microsoft.DotNet.Cli;
@@ -66,7 +68,11 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
 
             string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var result = cachedState.WorkloadResolver?.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, userProfileDir, cachedState.GlobalJsonPath);
+            ResolutionResult? result = null;
+            if (cachedState.DotnetRootPath is not null && cachedState.SdkVersion is not null)
+            {
+                result = cachedState.WorkloadResolver?.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, userProfileDir, cachedState.GlobalJsonPath);
+            }
 
             return result?.ToSdkResult(sdkReference, factory);
         }
@@ -88,8 +94,13 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 
         private string? GetDotNetRoot(SdkResolverContext context)
         {
+            string? dotnetRoot = null;
             var sdkDirectory = GetSdkDirectory(context);
-            var dotnetRoot = Directory.GetParent(sdkDirectory!)?.Parent?.FullName;
+            if (sdkDirectory is not null)
+            {
+                dotnetRoot = Directory.GetParent(sdkDirectory)?.Parent?.FullName;
+            }
+
             return dotnetRoot;
         }
 

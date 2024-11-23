@@ -98,12 +98,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     if (match.Success)
                     {
                         string projectRelativePath = match.Groups["RELATIVEPATH"].Value.Trim();
-                        string projectFullPathConstructed = Path.Combine(Path.GetDirectoryName(solutionFileFullPath)!, projectRelativePath);
-                        projectFullPathConstructed = Path.GetFullPath((new Uri(projectFullPathConstructed)).LocalPath);
-                        if (string.Equals(projectFileFullPath, projectFullPathConstructed, StringComparison.OrdinalIgnoreCase))
+                        string? solutionFileDirectory = Path.GetDirectoryName(solutionFileFullPath);
+                        if (solutionFileDirectory is not null)
                         {
-                            string projectGuid = match.Groups["PROJECTGUID"].Value.Trim();
-                            return projectGuid;
+                            string projectFullPathConstructed = Path.Combine(solutionFileDirectory, projectRelativePath);
+                            projectFullPathConstructed = Path.GetFullPath((new Uri(projectFullPathConstructed)).LocalPath);
+                            if (string.Equals(projectFileFullPath, projectFullPathConstructed, StringComparison.OrdinalIgnoreCase))
+                            {
+                                string projectGuid = match.Groups["PROJECTGUID"].Value.Trim();
+                                return projectGuid;
+                            }
                         }
                     }
                 }

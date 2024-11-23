@@ -142,9 +142,9 @@ namespace Microsoft.NET.Build.Tasks
             //  Get subdirectory for satellite assemblies / runtime targets
             var destinationSubDirectory = item?.GetMetadata("DestinationSubDirectory");
 
-            if (!string.IsNullOrWhiteSpace(destinationSubDirectory))
+            if (!string.IsNullOrWhiteSpace(destinationSubDirectory) && fileName is not null)
             {
-                return Path.Combine(destinationSubDirectory, fileName!);
+                return Path.Combine(destinationSubDirectory, fileName);
             }
 
             return fileName;

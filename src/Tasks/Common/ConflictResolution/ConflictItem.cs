@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it

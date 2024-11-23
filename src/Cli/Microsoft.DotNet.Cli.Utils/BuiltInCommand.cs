@@ -55,9 +55,9 @@ namespace Microsoft.DotNet.Cli.Utils
                     // Reset the Reporters to the new Console Out and Error.
                     Reporter.Reset();
 
-                    if (!string.IsNullOrEmpty(_workingDirectory))
+                    if (_workingDirectory is not null && _workingDirectory.Length != 0)
                     {
-                        _environment.SetWorkingDirectory(_workingDirectory!);
+                        _environment.SetWorkingDirectory(_workingDirectory);
                     }
 
                     var taskOut = _stdOut.BeginRead(new StreamReader(outStream));

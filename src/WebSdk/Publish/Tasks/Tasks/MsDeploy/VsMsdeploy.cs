@@ -186,9 +186,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (_highImportanceEventTypes == null)
             {
                 _highImportanceEventTypes = new Dictionary<string, MessageImportance>(StringComparer.InvariantCultureIgnoreCase); ;
-                if (!string.IsNullOrEmpty(HighImportanceEventTypes))
+                if (HighImportanceEventTypes is not null && HighImportanceEventTypes.Length != 0)
                 {
-                    string[] typeNames = HighImportanceEventTypes!.Split(new char[] { ';' }); // follow msbuild convention
+                    string[] typeNames = HighImportanceEventTypes.Split(new char[] { ';' }); // follow msbuild convention
                     foreach (string typeName in typeNames)
                     {
                         _highImportanceEventTypes.Add(typeName, MessageImportance.High);
@@ -345,7 +345,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public void Add(object? key, object? value)
         {
-            m_hybridDictionary.Add(key!, value);
+            if (key is not null)
+            {
+                m_hybridDictionary.Add(key, value);
+            }
         }
 
         public void Clear()
@@ -820,7 +823,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             else
             {
                 dest = VSMSDeployObjectFactory.CreateVSMSDeployObject(Destination[0]);
-                VSHostObject hostObj = new((HostObject as IEnumerable<ITaskItem>)!);
+                VSHostObject hostObj = new(HostObject as IEnumerable<ITaskItem>);
                 string username, password;
                 if (hostObj.ExtractCredentials(out username, out password))
                 {
@@ -951,8 +954,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 Diagnostics.TraceLevel deploymentTraceEventLevel =
                     (Diagnostics.TraceLevel)Enum.Parse(typeof(Diagnostics.TraceLevel), DeploymentTraceLevel, true);
-                srcVsMsDeployobject.BaseOptions!.TraceLevel = deploymentTraceEventLevel;
-                destVsMsDeployobject.BaseOptions!.TraceLevel = deploymentTraceEventLevel;
+                if (srcVsMsDeployobject.BaseOptions is not null)
+                {
+                    srcVsMsDeployobject.BaseOptions.TraceLevel = deploymentTraceEventLevel;
+                }
+                if (destVsMsDeployobject.BaseOptions is not null)
+                {
+                    destVsMsDeployobject.BaseOptions.TraceLevel = deploymentTraceEventLevel;
+                }
             }
 
             Utility.AddSetParametersFilesVsMsDeployObject(srcVsMsDeployobject, ImportSetParametersItems);
@@ -1097,9 +1106,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (!ruleExists)
             {
                 dynamic? appOfflineRuleHandler = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject(handlerType, new object[] { });
-                dynamic? appOfflineRule = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentRule",
-                    new object[] { ruleName, appOfflineRuleHandler! });
-                option.Rules.Add(appOfflineRule);
+                if (appOfflineRuleHandler is not null)
+                {
+                    dynamic? appOfflineRule = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentRule",
+                        new object[] { ruleName, appOfflineRuleHandler });
+                    option.Rules.Add(appOfflineRule);
+                }
             }
         }
     }

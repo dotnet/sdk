@@ -175,12 +175,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 //  The Reference item we create in this case should be without the .dll extension
                 //  (which is added in FrameworkListReader in order to make the framework items
                 //  correctly conflict with DLLs from NuGet packages)
-                compilePlatformWinners.Select(c => Path.GetFileNameWithoutExtension(c.FileName))
+                compilePlatformWinners.Select(c => Path.GetFileNameWithoutExtension(c.FileName) ?? string.Empty)
                                       //  Don't add a reference if we already have one (especially in case the existing one has
                                       //  metadata we want to keep, such as aliases)
-                                      .Where(simpleName => !referenceItemSpecs.Contains(simpleName!))
+                                      .Where(simpleName => !referenceItemSpecs.Contains(simpleName))
                                       .Select(r => new TaskItem(r)));
-
         }
 
         //  Concatenate two things, either of which may be null.  Interpret null as empty,
@@ -272,12 +271,12 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// <returns></returns>
         private ITaskItem[]? RemoveConflicts(ITaskItem[]? original, ICollection<ITaskItem?> conflicts)
         {
-            if (conflicts.Count == 0)
+            if (original is null || conflicts.Count == 0)
             {
                 return original;
             }
 
-            var result = new ITaskItem[original!.Length - conflicts.Count];
+            var result = new ITaskItem[original.Length - conflicts.Count];
             int index = 0;
 
             foreach (var originalItem in original)

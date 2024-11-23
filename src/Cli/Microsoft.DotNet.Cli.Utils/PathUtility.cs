@@ -71,12 +71,12 @@ namespace Microsoft.DotNet.Tools.Common
         public static void EnsureParentDirectoryExists(string filePath)
         {
             string? directory = Path.GetDirectoryName(filePath);
-            EnsureDirectoryExists(directory!);
+            EnsureDirectoryExists(directory);
         }
 
-        public static void EnsureDirectoryExists(string directoryPath)
+        public static void EnsureDirectoryExists(string? directoryPath)
         {
-            if (!Directory.Exists(directoryPath))
+            if (directoryPath is not null && !Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
@@ -263,7 +263,7 @@ namespace Microsoft.DotNet.Tools.Common
         public static string GetDirectoryName(string path)
         {
             path = path.TrimEnd(Path.DirectorySeparatorChar);
-            return path.Substring(Path.GetDirectoryName(path)!.Length).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return path.Substring(Path.GetDirectoryName(path)?.Length ?? 0).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         public static string GetPathWithForwardSlashes(string path)

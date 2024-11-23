@@ -18,10 +18,10 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 var preferredPackageId = packageIds?[i].Trim();
 
-                if (preferredPackageId?.Length != 0)
+                if (preferredPackageId is not null && preferredPackageId.Length != 0)
                 {
                     // overwrite any duplicates, lowest rank will win.
-                    packageRanks[preferredPackageId!] = i;
+                    packageRanks[preferredPackageId] = i;
                 }
             }
         }

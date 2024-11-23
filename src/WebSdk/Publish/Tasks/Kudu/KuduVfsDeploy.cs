@@ -24,13 +24,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         {
             get
             {
-                return string.Format(ConnectionInfo.DestinationUrl!, ConnectionInfo.SiteName, "vfs/site/wwwroot/");
+                return ConnectionInfo.DestinationUrl is null
+                    ? string.Empty : string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "vfs/site/wwwroot/");
             }
         }
 
         public System.Threading.Tasks.Task? DeployAsync(string? sourcePath)
         {
-            if (!Directory.Exists(sourcePath))
+            if (sourcePath is null || !Directory.Exists(sourcePath))
             {
                 return null;
             }
@@ -46,12 +47,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return System.Threading.Tasks.Task.WhenAll(_postTasks);
         }
 
-        private System.Threading.Tasks.Task PostFilesAsync(string file, string? sourcePath)
+        private System.Threading.Tasks.Task PostFilesAsync(string file, string sourcePath)
         {
             return System.Threading.Tasks.Task.Run(
                 async () =>
                 {
-                    string relPath = file.Replace(sourcePath!, string.Empty);
+                    string relPath = file.Replace(sourcePath, string.Empty);
                     string relUrl = relPath.Replace(Path.DirectorySeparatorChar, '/');
                     string apiUrl = DestinationUrl + relUrl;
 
@@ -88,7 +89,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                             }
                         }
                     }
-                });
+                }
+            );
         }
     }
 }

@@ -21,7 +21,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         {
             get
             {
-                return string.Format(ConnectionInfo.DestinationUrl!, ConnectionInfo.SiteName, "zip/site/wwwroot/");
+                return ConnectionInfo.DestinationUrl is null
+                    ? string.Empty : string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "zip/site/wwwroot/");
             }
         }
 

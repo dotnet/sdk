@@ -182,9 +182,9 @@ namespace Microsoft.DotNet.Cli.Utils
             var baseKey = allUsers ? Registry.LocalMachine : Registry.CurrentUser;
             using RegistryKey? dependenciesKey = baseKey.OpenSubKey(DependenciesKeyRelativePath);
 
-            foreach (var providerKeyName in dependenciesKey!.GetSubKeyNames())
+            foreach (var providerKeyName in dependenciesKey?.GetSubKeyNames() ?? [])
             {
-                using RegistryKey? providerKey = dependenciesKey.OpenSubKey(providerKeyName);
+                using RegistryKey? providerKey = dependenciesKey?.OpenSubKey(providerKeyName);
                 var thisProductCode = providerKey?.GetValue(null) as string ?? null;
                 if (string.Equals(thisProductCode, productCode, StringComparison.OrdinalIgnoreCase))
                 {

@@ -50,11 +50,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         public Version? Version { get; set; }
         public Assembly? Assembly { get; set; }
 
-        public Type GetType(string? typeName)
+        public Type? GetType(string typeName)
         {
-            Type? type = Assembly?.GetType(typeName!);
+            Type? type = Assembly?.GetType(typeName);
             Debug.Assert(type != null);
-            return type!;
+            return type;
         }
 
         public virtual Type? TryGetType(string typeName)
@@ -72,10 +72,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return ret;
         }
 
-        public object? GetEnumValueIgnoreCase(string enumName, string? enumValue)
+        public object? GetEnumValueIgnoreCase(string enumName, string enumValue)
         {
             Type? enumType = Assembly?.GetType(enumName);
-            FieldInfo? enumItem = enumType?.GetField(enumValue!, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+            FieldInfo? enumItem = enumType?.GetField(enumValue, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
             object? ret = enumItem?.GetValue(enumType);
             Debug.Assert(ret != null);
             return ret;
@@ -84,7 +84,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         public bool TryGetEnumValue(string enumTypeName, string enumStrValue, out object? retValue)
         {
             bool fGetValue = false;
-            retValue = Enum.ToObject(GetType(enumTypeName), 0);
+            retValue = null;
+            var enumType = GetType(enumTypeName);
+            if (enumType is not null)
+            {
+                retValue = Enum.ToObject(enumType, 0);
+            }
             try
             {
                 retValue = GetEnumValueIgnoreCase(enumTypeName, enumStrValue);
@@ -149,7 +154,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             var eventParams = handlerType?.GetMethod("Invoke")?.GetParameters();
 
             ParameterExpression[] parameters = eventParams?.Select(p => Expression.Parameter(p.ParameterType, p.Name)).ToArray() ?? Array.Empty<ParameterExpression>();
-            MethodCallExpression body = Expression.Call(Expression.Constant(d), d?.GetType().GetMethod("Invoke")!, parameters);
+            MethodInfo? invokeMethod = d?.GetType().GetMethod("Invoke");
+            if (invokeMethod is null)
+            {
+                return null;
+            }
+
+            MethodCallExpression body = Expression.Call(Expression.Constant(d), invokeMethod, parameters);
             var lambda = Expression.Lambda(body, parameters);
             // Diagnostics.Debug.Assert(false, lambda.ToString());
 #if NET472

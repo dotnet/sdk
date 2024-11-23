@@ -23,8 +23,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
         public override bool Execute()
         {
             string zipFileName = ProjectName + "-" + DateTime.Now.ToString("yyyyMMddHHmmssFFF") + ".zip";
-            CreatedZipPath = Path.Combine(PublishIntermediateTempPath!, zipFileName);
-            ZipFile.CreateFromDirectory(FolderToZip!, CreatedZipPath);
+            if (PublishIntermediateTempPath is null || FolderToZip is null)
+            {
+                return false;
+            }
+            CreatedZipPath = Path.Combine(PublishIntermediateTempPath, zipFileName);
+            ZipFile.CreateFromDirectory(FolderToZip, CreatedZipPath);
             return true;
         }
     }

@@ -130,8 +130,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return success;
         }
 
-
-        #region Zip File Publish
         internal bool DeployZipFile(KuduConnectionInfo connectionInfo)
         {
             bool success;
@@ -167,7 +165,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 
             try
             {
-                System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath!, zipFileFullPath);
+                if (sourcePath is not null)
+                {
+                    System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
+                }
             }
             catch (Exception e)
             {
@@ -184,22 +185,21 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         internal System.Threading.Tasks.Task DeleteTempZipFile(string? tempFilePath)
         {
             return System.Threading.Tasks.Task.Factory.StartNew(
-               () =>
-               {
-                   if (File.Exists(tempFilePath))
-                   {
-                       try
-                       {
-                           File.Delete(tempFilePath);
-                       }
-                       catch
-                       {
-                           // We don't need to do any thing if we are unable to delete the temp file.
-                       }
-                   }
-               });
+                () =>
+                {
+                    if (File.Exists(tempFilePath))
+                    {
+                        try
+                        {
+                            File.Delete(tempFilePath);
+                        }
+                        catch
+                        {
+                            // We don't need to do any thing if we are unable to delete the temp file.
+                        }
+                    }
+                }
+            );
         }
-
-        #endregion
     }
 }

@@ -59,9 +59,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
             string? zipDeployPublishUrl = null;
 
-            if (!string.IsNullOrEmpty(publishUrl))
+            if (publishUrl is not null && publishUrl.Length != 0)
             {
-                if (!publishUrl!.EndsWith("/"))
+                if (!publishUrl.EndsWith("/"))
                 {
                     publishUrl += "/";
                 }

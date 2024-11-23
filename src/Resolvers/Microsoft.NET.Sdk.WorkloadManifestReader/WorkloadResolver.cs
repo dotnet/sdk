@@ -30,9 +30,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Func<string, bool>? _fileExistOverride;
         private Func<string, bool>? _directoryExistOverride;
 
-        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string? dotnetRootPath, string? sdkVersion, string? userProfileDir)
+        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir)
         {
-            string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath!, "sdk", sdkVersion!, "NETCoreSdkRuntimeIdentifierChain.txt");
+            string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
                 File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
                 new string[] { };
@@ -40,11 +40,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             WorkloadRootPath[] workloadRootPaths;
             if (userProfileDir != null && WorkloadFileBasedInstall.IsUserLocal(dotnetRootPath, sdkVersion) && Directory.Exists(userProfileDir))
             {
-                workloadRootPaths = [new(userProfileDir, true), new(dotnetRootPath, true)];
+                workloadRootPaths = [ new(userProfileDir, true), new(dotnetRootPath, true) ];
             }
             else
             {
-                workloadRootPaths = [new(dotnetRootPath, true)];
+                workloadRootPaths = [ new(dotnetRootPath, true) ];
             }
 
             var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 throw new ArgumentNullException(nameof(userProfileDir));
             }
-            WorkloadRootPath[] dotNetRootPaths = userLocal ? [new(userProfileDir!, true), new(dotNetRoot, true)] : [new(dotNetRoot, true)];
+            WorkloadRootPath[] dotNetRootPaths = userLocal ? [ new(userProfileDir, true), new(dotNetRoot, true)] : [new(dotNetRoot, true) ];
             return CreateForTests(manifestProvider, dotNetRootPaths, currentRuntimeIdentifiers);
         }
 
@@ -320,25 +320,30 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 string? installedPackPath = null;
                 foreach (var rootPath in _dotnetRootPaths)
                 {
+                    if (rootPath.Path is null)
+                    {
+                        continue;
+                    }
+
                     string packPath;
                     bool isFile;
                     switch (kind)
                     {
                         case WorkloadPackKind.Framework:
                         case WorkloadPackKind.Sdk:
-                            packPath = Path.Combine(rootPath.Path!, "packs", resolvedPackageId.ToString(), packageVersion);
+                            packPath = Path.Combine(rootPath.Path, "packs", resolvedPackageId.ToString(), packageVersion);
                             isFile = false;
                             break;
                         case WorkloadPackKind.Template:
-                            packPath = Path.Combine(rootPath.Path!, "template-packs", resolvedPackageId.GetNuGetCanonicalId() + "." + packageVersion.ToLowerInvariant() + ".nupkg");
+                            packPath = Path.Combine(rootPath.Path, "template-packs", resolvedPackageId.GetNuGetCanonicalId() + "." + packageVersion.ToLowerInvariant() + ".nupkg");
                             isFile = true;
                             break;
                         case WorkloadPackKind.Library:
-                            packPath = Path.Combine(rootPath.Path!, "library-packs", resolvedPackageId.GetNuGetCanonicalId() + "." + packageVersion.ToLowerInvariant() + ".nupkg");
+                            packPath = Path.Combine(rootPath.Path, "library-packs", resolvedPackageId.GetNuGetCanonicalId() + "." + packageVersion.ToLowerInvariant() + ".nupkg");
                             isFile = true;
                             break;
                         case WorkloadPackKind.Tool:
-                            packPath = Path.Combine(rootPath.Path!, "tool-packs", resolvedPackageId.ToString(), packageVersion);
+                            packPath = Path.Combine(rootPath.Path, "tool-packs", resolvedPackageId.ToString(), packageVersion);
                             isFile = false;
                             break;
                         default:

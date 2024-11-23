@@ -38,7 +38,7 @@ public class CreatePackageFile : Task
     /// <inheritdoc/>
     public override bool Execute()
     {
-        if (string.IsNullOrEmpty(ContentToPackage)
+        if (ContentToPackage is null || ContentToPackage.Length == 0
             || string.IsNullOrEmpty(ProjectName)
             || string.IsNullOrEmpty(IntermediateTempPath))
         {
@@ -49,7 +49,7 @@ public class CreatePackageFile : Task
         var packageFilePath = Path.Combine(IntermediateTempPath, packageFileName);
 
         // package content
-        var packageFileTask = _filePackager.CreatePackageAsync(ContentToPackage!, packageFilePath, CancellationToken.None);
+        var packageFileTask = _filePackager.CreatePackageAsync(ContentToPackage, packageFilePath, CancellationToken.None);
         packageFileTask.Wait();
 
         CreatedPackageFilePath = packageFileTask.Result ? packageFilePath : string.Empty;
