@@ -10,14 +10,14 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
     [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
+        var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMultiProc")
             .WithSource();
 
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
 
-        var reporter = new TestReporter(Logger);
+        var reporter = new TestReporter(Log);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
         var factory = new MSBuildFileSetFactory(
