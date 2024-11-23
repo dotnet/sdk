@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: usePollingWatcher.ToString())
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName, identifier: usePollingWatcher.ToString())
                .WithSource();
 
             App.UsePollingWatcher = usePollingWatcher;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteCompiledFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteSourceFolder()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RenameCompiledFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task ChangeExcludedFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ListsFiles()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                .WithSource();
 
             App.DotnetWatchArgs.Clear();
