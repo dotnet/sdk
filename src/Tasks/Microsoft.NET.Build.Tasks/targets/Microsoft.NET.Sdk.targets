@@ -792,9 +792,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        _GetAppHostPaths
-    Gets the path to apphost (restored via packages or in an apphost pack),
-    and computes the path for the destination apphost.
+                _GetAppHostCreationConfiguration
+    Computes the properties for configuration of apphost creation
+    during either build or publish
     ============================================================
      -->
   <Target Name="_GetAppHostCreationConfiguration"
@@ -983,7 +983,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths;_GetIjwHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration;_GetComHostPaths;_GetIjwHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 
