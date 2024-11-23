@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RestartProcessOnFileChange()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                 .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload", "--no-exit"]);
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                 .WithSource();
 
             App.Start(testAsset, []);

@@ -8,11 +8,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ConsoleCancelKey()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchKitchenSink")
                 .WithSource();
 
-            var console = new TestConsole(Logger);
-            var reporter = new TestReporter(Logger);
+            var console = new TestConsole(Log);
+            var reporter = new TestReporter(Log);
 
             var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
             var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "abc" }, "abc")]
         public async Task Arguments(string[] arguments, string expectedApplicationArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
                 .WithSource();
 
             App.Start(testAsset, arguments);
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "-lp", "P1" }, "Argument Specified in Props")]
         public async Task Arguments_HostArguments(string[] arguments, string expectedApplicationArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppCustomHost", identifier: string.Join(",", arguments))
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadAppCustomHost", identifier: string.Join(",", arguments))
                 .WithSource();
 
             App.Start(testAsset, arguments);
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task RunArguments_NoHotReload()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
             App.DotnetWatchArgs.Clear();
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task RunArguments_HotReload()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
             App.DotnetWatchArgs.Clear();
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
                 .WithSource();
 
             App.Start(testAsset, arguments: new[]
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
                 .WithSource();
 
             App.Start(testAsset, arguments: new[]
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task TestCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("XunitCore")
+            var testAsset = _testAssetsManager.CopyTestAsset("XunitCore")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task TestCommand_MultiTargeting()
         {
-            var testAsset = TestAssets.CopyTestAsset("XunitMulti")
+            var testAsset = _testAssetsManager.CopyTestAsset("XunitMulti")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task BuildCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
@@ -243,7 +243,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task MSBuildCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task PackCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "pack", "-c", "Release"]);
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task PublishCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task FormatCommand()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             App.DotnetWatchArgs.Clear();
@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ProjectGraphLoadFailure()
         {
-            var testAsset = TestAssets
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource()
                 .WithProjectChanges((path, proj) =>

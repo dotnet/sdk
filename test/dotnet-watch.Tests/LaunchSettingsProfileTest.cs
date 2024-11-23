@@ -3,21 +3,14 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class LaunchSettingsProfileTest
+public class LaunchSettingsProfileTest(ITestOutputHelper output) : SdkTest(output)
 {
-    private readonly IReporter _reporter;
-    private readonly TestAssetsManager _testAssets;
-
-    public LaunchSettingsProfileTest(ITestOutputHelper output)
-    {
-        _reporter = new TestReporter(output);
-        _testAssets = new TestAssetsManager(output);
-    }
+    private readonly IReporter _reporter = new TestReporter(output);
 
     [Fact]
     public void LoadsLaunchProfiles()
     {
-        var project = _testAssets.CreateTestProject(new TestProject("Project1")
+        var project = _testAssetsManager.CreateTestProject(new TestProject("Project1")
         {
             TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
         });
