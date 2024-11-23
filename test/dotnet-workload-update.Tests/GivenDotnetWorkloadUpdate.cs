@@ -228,12 +228,12 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             foreach (var pack in workloadPacks)
             {
                 Directory.CreateDirectory(Path.Combine(packRecordDir, pack.Id, pack.Version));
-                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand));
+                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand)).Close();
             }
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads"));
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads"));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload));
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload)).Close();
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload)).Close();
 
             // Update workload (without installing any workloads to this feature band)
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
