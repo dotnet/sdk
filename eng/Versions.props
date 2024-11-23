@@ -153,18 +153,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.12.1-rc.1</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.12.1-rc.1</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.12.1-rc.1</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.12.1-rc.1</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.12.1-rc.1</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.12.1-rc.1</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.1-rc.1</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.12.1-rc.1</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.12.1-rc.1</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.12.1-rc.1</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.12.1-rc.1</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.12.1-rc.1</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.12.2-rc.1</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.12.2-rc.1</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.12.2-rc.1</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.12.2-rc.1</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.12.2-rc.1</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.12.2-rc.1</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.2-rc.1</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.12.2-rc.1</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.12.2-rc.1</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.12.2-rc.1</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.12.2-rc.1</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.12.2-rc.1</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
