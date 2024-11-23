@@ -231,11 +231,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
-        public async Task BlazorWasm()
+        [Theory]
+        [CombinatorialData]
+        public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: projectSpecifiesCapabilities.ToString())
                 .WithSource();
+
+            if (projectSpecifiesCapabilities)
+            {
+                testAsset = testAsset.WithProjectChanges(proj =>
+                {
+                    proj.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse("""
+                            <WebAssemblyHotReloadCapabilities>Baseline;AddMethodToExistingType</WebAssemblyHotReloadCapabilities>
+                            """));
+                });
+            }
 
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
@@ -256,6 +269,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
             await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
+
+            // check project specified capapabilities:
+            if (projectSpecifiesCapabilities)
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+            }
+            else
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+            }
         }
 
         [Fact]
