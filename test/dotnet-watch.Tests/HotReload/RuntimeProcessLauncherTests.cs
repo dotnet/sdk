@@ -15,7 +15,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     }
 
     private TestAsset CopyTestAsset(string assetName, params object[] testParameters)
-        => TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: string.Join(";", testParameters)).WithSource();
+        => _testAssetsManager.CopyTestAsset("WatchAppMultiProc", identifier: string.Join(";", testParameters)).WithSource();
 
     private static async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, CancellationToken cancellationToken)
     {
@@ -72,8 +72,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
@@ -136,29 +136,29 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await launchCompletionB.Task;
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync();
 
-        Log("Waiting for session started...");
+        LogMessage("Waiting for session started...");
         await sessionStarted.WaitAsync();
 
         await MakeRudeEditChange();
 
-        Log("Waiting for changed handled ...");
+        LogMessage("Waiting for changed handled ...");
         await changeHandled.WaitAsync();
 
         // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
-        Log("Waiting for baselines updated...");
+        LogMessage("Waiting for baselines updated...");
         await projectBaselinesUpdated.WaitAsync();
 
         await MakeValidDependencyChange();
 
-        Log("Waiting for changed handled ...");
+        LogMessage("Waiting for changed handled ...");
         await changeHandled.WaitAsync();
 
         // clean up:
-        Log("Shutting down");
+        LogMessage("Shutting down");
         watchCancellationSource.Cancel();
         try
         {
@@ -215,10 +215,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
-            Log("Waiting for updated output from project A ...");
+            LogMessage("Waiting for updated output from project A ...");
             await hasUpdateSourceA.Task;
 
-            Log("Waiting for updated output from project B ...");
+            LogMessage("Waiting for updated output from project B ...");
             await hasUpdateSourceB.Task;
 
             Assert.True(hasUpdateSourceA.Task.IsCompletedSuccessfully);
@@ -244,7 +244,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
                 """);
 
-            Log("Waiting for updated output from project A ...");
+            LogMessage("Waiting for updated output from project A ...");
             await hasUpdateSource.Task;
 
             Assert.True(hasUpdateSource.Task.IsCompletedSuccessfully);
@@ -275,8 +275,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
@@ -325,7 +325,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         };
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync();
 
         // service should have been created before Hot Reload session started:
@@ -346,27 +346,27 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
-        Log("Waiting for updated output from A ...");
+        LogMessage("Waiting for updated output from A ...");
         await hasUpdateA.WaitAsync();
 
         // Host and ServiceA received updates:
-        Log("Waiting for updates applied 1/2 ...");
+        LogMessage("Waiting for updates applied 1/2 ...");
         await updatesApplied.WaitAsync();
 
-        Log("Waiting for updates applied 2/2 ...");
+        LogMessage("Waiting for updates applied 2/2 ...");
         await updatesApplied.WaitAsync();
 
         await Launch(serviceProjectB, service, workingDirectory, watchCancellationSource.Token);
 
         // ServiceB received updates:
-        Log("Waiting for updates applied ...");
+        LogMessage("Waiting for updates applied ...");
         await updatesApplied.WaitAsync();
 
-        Log("Waiting for updated output from B ...");
+        LogMessage("Waiting for updated output from B ...");
         await hasUpdateB.WaitAsync();
 
         // clean up:
-        Log("Shutting down");
+        LogMessage("Shutting down");
         watchCancellationSource.Cancel();
         try
         {
@@ -397,8 +397,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--project", hostProject]),
@@ -445,7 +445,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await Task.Delay(TimeSpan.FromSeconds(1));
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync();
 
         switch (updateLocation)
@@ -464,7 +464,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     """);
 
                 // Host received Hot Reload updates:
-                Log("Waiting for change handled ...");
+                LogMessage("Waiting for change handled ...");
                 await changeHandled.WaitAsync();
                 break;
 
@@ -473,7 +473,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Waiting", "<Updated>"));
 
                 // Host received Hot Reload updates:
-                Log("Waiting for change handled ...");
+                LogMessage("Waiting for change handled ...");
                 await changeHandled.WaitAsync();
                 break;
 
@@ -482,17 +482,17 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Started", "<Updated>"));
 
                 // ⚠ ENC0118: Changing 'top-level code' might not have any effect until the application is restarted. Press "Ctrl + R" to restart.
-                Log("Waiting for restart needed ...");
+                LogMessage("Waiting for restart needed ...");
                 await restartNeeded.WaitAsync();
 
                 console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
 
-                Log("Waiting for restart requested ...");
+                LogMessage("Waiting for restart requested ...");
                 await restartRequested.WaitAsync();
                 break;
         }
 
-        Log("Waiting updated output from Host ...");
+        LogMessage("Waiting updated output from Host ...");
         await hasUpdate.WaitAsync();
 
         // clean up:
@@ -518,8 +518,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
         var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
@@ -548,14 +548,14 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var sessionStarted = reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync();
 
         // service should have been created before Hot Reload session started:
         Assert.NotNull(service);
 
         var runningProject = await Launch(serviceProjectA, service, workingDirectory, watchCancellationSource.Token);
-        Log("Waiting for session started ...");
+        LogMessage("Waiting for session started ...");
         await sessionStarted.WaitAsync();
 
         // Terminate the process:
@@ -566,7 +566,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
             """);
 
-        Log("Waiting for change handled ...");
+        LogMessage("Waiting for change handled ...");
         await changeHandled.WaitAsync();
 
         reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
