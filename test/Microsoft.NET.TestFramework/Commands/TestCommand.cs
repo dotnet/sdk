@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -120,19 +120,30 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            var spec = CreateCommandSpec(args);
+
+            var command = spec
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            if (CommandOutputHandler != null)
+            command.OnOutputLine(line =>
             {
-                command.OnOutputLine(CommandOutputHandler);
-            }
+                Log.WriteLine($"》{line}");
+                CommandOutputHandler?.Invoke(line);
+            });
 
+            command.OnErrorLine(line =>
+            {
+                Log.WriteLine($"❌{line}");
+                CommandOutputHandler?.Invoke(line);
+            });
+
+            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+
+            Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
-
-            LogCommandResult(Log, result);
+            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
             return result;
         }
