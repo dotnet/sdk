@@ -1,18 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Microsoft.NET.TestFramework
 {
-    public class TestAssetsManager
+    public sealed class TestAssetsManager
     {
+        private static HashSet<string> s_testDestinationDirectories = [];
+
         public string TestAssetsRoot { get; private set; }
 
-        private List<string> TestDestinationDirectories { get; } = new List<string>();
-
-        protected ITestOutputHelper Log { get; }
+        public ITestOutputHelper Log { get; }
 
         [Obsolete($"Use instance provided by {nameof(SdkTest)}.")]
         public TestAssetsManager(ITestOutputHelper log)
@@ -28,6 +29,20 @@ namespace Microsoft.NET.TestFramework
             TestAssetsRoot = testAssetsDirectory;
         }
 
+        private void ValidateTestDirectory(string dir)
+        {
+            lock (s_testDestinationDirectories)
+            {
+                if (!s_testDestinationDirectories.Add(dir))
+                {
+                    throw new InvalidOperationException($"Test directory not unique: '{dir}'. Pass identifier to {nameof(CopyTestAsset)}.");
+                }
+            }
+        }
+
+        public TestAsset CopyTestAsset(string testProjectName, object[] testArguments)
+            => CopyTestAsset(testProjectName, string.Join("_", testArguments.Select(arg => arg?.ToString())));
+
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
@@ -41,7 +56,7 @@ namespace Microsoft.NET.TestFramework
 
             var fileName = Path.GetFileNameWithoutExtension(callerFilePath);
             testDestinationDirectory ??= GetTestDestinationDirectoryPath(testProjectName, callingMethod + "_" + fileName, identifier, allowCopyIfPresent);
-            TestDestinationDirectories.Add(testDestinationDirectory);
+            ValidateTestDirectory(testDestinationDirectory);
 
             var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current.SdkVersion, Log);
             return testAsset;
@@ -67,7 +82,7 @@ namespace Microsoft.NET.TestFramework
         {
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(testProject.Name, callingMethod, identifier);
-            TestDestinationDirectories.Add(testDestinationDirectory);
+            ValidateTestDirectory(testDestinationDirectory);
 
             var testAsset = CreateTestProjectsInDirectory(new List<TestProject>() { testProject }, testDestinationDirectory, targetExtension);
             testAsset.TestProject = testProject;
@@ -95,7 +110,7 @@ namespace Microsoft.NET.TestFramework
         {
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(callingMethod, callingMethod, identifier);
-            TestDestinationDirectories.Add(testDestinationDirectory);
+            ValidateTestDirectory(testDestinationDirectory);
 
             var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory, targetExtension);
 
