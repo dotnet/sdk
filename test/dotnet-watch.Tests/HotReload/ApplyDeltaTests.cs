@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
-        public async Task Razor_Component_ScopedCss()
+        public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
                 .WithSource();
@@ -312,6 +312,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"dotnet watch ⌚ [RazorApp (net9.0)] Refreshing browser.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
             App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
+            App.Process.ClearOutput();
+
+            var cssPath = Path.Combine(testAsset.Path, "RazorApp", "wwwroot", "app.css");
+            UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static file update request for asset 'app.css'.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp (net9.0)] Refreshing browser.");
+            App.AssertOutputContains($"dotnet watch 🔥 Hot Reload of static files succeeded.");
+            App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
+            App.Process.ClearOutput();
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
