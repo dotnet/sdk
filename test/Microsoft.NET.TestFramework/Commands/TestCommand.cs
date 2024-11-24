@@ -136,7 +136,6 @@ namespace Microsoft.NET.TestFramework.Commands
             command.OnErrorLine(line =>
             {
                 Log.WriteLine($"❌{line}");
-                CommandOutputHandler?.Invoke(line);
             });
 
             var display = $"dotnet {string.Join(" ", spec.Arguments)}";
