@@ -280,6 +280,40 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
+        [Fact]
+        public async Task Razor_Component_ScopedCss()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
+                .WithSource();
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
+            App.Process.ClearOutput();
+
+            var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");
+
+            var newCss = """
+                .example {
+                    color: blue;
+                }
+                """;
+
+            UpdateSourceFile(scopedCssPath, newCss);
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains($"dotnet watch ⌚ Handling file change event for scoped css file {scopedCssPath}.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorClassLibrary (net9.0)] No refresh server.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp (net9.0)] Refreshing browser.");
+            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
+            App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleMissingAssemblyFailure()
