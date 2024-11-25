@@ -12,6 +12,8 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings
 using Microsoft.DotNet.ShellShim;
 using System.CommandLine;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -29,14 +31,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string HigherPreviewPackageVersion = "1.0.5-preview3";
         private readonly string _shimsDirectory;
         private readonly string _toolsDirectory;
+        private readonly string _tempDirectory;
 
         public ToolUpdateGlobalOrToolPathCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            var tempDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-            _shimsDirectory = Path.Combine(tempDirectory, "shims");
-            _toolsDirectory = Path.Combine(tempDirectory, "tools");
+            _tempDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _shimsDirectory = Path.Combine(_tempDirectory, "shims");
+            _toolsDirectory = Path.Combine(_tempDirectory, "tools");
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, _shimsDirectory);
             _store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
             _mockFeeds = new List<MockFeed>
@@ -85,6 +88,25 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 }
             };
+        }
+
+        [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
+            var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_tempDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+
+            var command = CreateUpdateCommand($"-g {_packageId} --ignore-failed-sources");
+
+            command.Execute().Should().Be(0);
+            _fileSystem.File.Delete(Path.Combine(_tempDirectory, "nuget.config"));
         }
 
         [Fact]
@@ -456,6 +478,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
                     filePermissionSetter: new ToolInstallGlobalOrToolPathCommandTests.NoOpFilePermissionSetter());
         }
+
+        private string _nugetConfigWithInvalidSources = @"{
+<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""invalid_source"" value=""https://api.nuget.org/v3/invalid.json"" />
+  </packageSources>
+</configuration>
+}";
     }
 }
 
