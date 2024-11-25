@@ -14,6 +14,8 @@ internal struct ImageInfo
     internal string ManifestDigest { get; init; }
     internal string Manifest { get; init; }
     internal string ManifestMediaType { get; init; }
+
+    public override string ToString() => ManifestDigest;
 }
 
 internal static class ImageIndexGenerator
