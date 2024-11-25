@@ -105,9 +105,7 @@ internal static class ImageIndexGenerator
         };
 
         return (JsonSerializer.SerializeToNode(ociImageIndex)?.ToJsonString() ?? "", ociImageIndex.mediaType);
-    }
-
-    
+    } 
 
     private static PlatformInformation GetArchitectureAndOsFromConfig(ImageInfo image)
     {
