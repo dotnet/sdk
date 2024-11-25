@@ -11,8 +11,49 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
+    #region Parameters
+    /// <summary>
+    /// Manifests to include in the image index.
+    /// </summary>
+    [Required]
+    public ITaskItem[] GeneratedContainers { get; set; }
+
+    /// <summary>
+    /// The registry to push the image index to.
+    /// </summary>
+    [Required]
+    public string OutputRegistry { get; set; }
+
+    /// <summary>
+    /// The name of the output image index (manifest list) that will be pushed to the registry.
+    /// </summary>
+    [Required]
+    public string Repository { get; set; }
+
+    /// <summary>
+    /// The tag to associate with the new image index (manifest list).
+    /// </summary>
+    [Required]
+    public string[] ImageTags { get; set; }
+
+    /// <summary>
+    /// The generated image index (manifest list) in JSON format.
+    /// </summary>
+    [Output]
+    public string GeneratedImageIndex { get; set; }
+
+    public CreateImageIndex()
+    {
+        GeneratedContainers = Array.Empty<ITaskItem>();
+        OutputRegistry = string.Empty;
+        Repository = string.Empty;
+        ImageTags = Array.Empty<string>();
+        GeneratedImageIndex = string.Empty;
+    }
+    #endregion
+
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public void Cancel() => _cancellationTokenSource.Cancel();
