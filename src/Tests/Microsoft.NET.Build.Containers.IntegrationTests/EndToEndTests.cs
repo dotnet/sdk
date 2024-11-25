@@ -998,7 +998,7 @@ public class EndToEndTests : IDisposable
             _testOutput,
             "build",
             "/t:PublishContainer",
-            "/p:RuntimeIdentifiers=linux-x64",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
