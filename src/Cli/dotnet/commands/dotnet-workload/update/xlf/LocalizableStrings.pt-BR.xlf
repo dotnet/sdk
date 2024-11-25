@@ -22,6 +22,11 @@
         <target state="translated">Atualizar cargas de trabalho com base no arquivo de definição de reversão especificado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Nenhuma carga de trabalho instalada para esta faixa de recursos. Para atualizar cargas de trabalho instaladas com versões anteriores do SDK, inclua a opção --from-previous-sdk.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">Falha ao atualizar a carga de trabalho '{0}' devido ao seguinte motivo:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Atualizar em um arquivo de reversão não é compatível com os conjuntos de carga de trabalho. A instalação e a atualização agora usarão manifestos flexíveis. Para atualizar para uma versão de carga de trabalho específica, use --versão.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

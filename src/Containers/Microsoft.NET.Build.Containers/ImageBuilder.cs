@@ -14,6 +14,10 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed class ImageBuilder
 {
+    // a snapshot of the manifest that this builder is based on
+    private readonly ManifestV2 _baseImageManifest;
+
+    // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
@@ -33,7 +37,8 @@ internal sealed class ImageBuilder
 
     internal ImageBuilder(ManifestV2 manifest, ImageConfig baseImageConfig, ILogger logger)
     {
-        _manifest = manifest;
+        _baseImageManifest = manifest;
+        _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
         _baseImageConfig = baseImageConfig;
         _logger = logger;
     }
@@ -63,9 +68,12 @@ internal sealed class ImageBuilder
             size = imageSize
         };
 
-        ManifestV2 newManifest = _manifest with
+        ManifestV2 newManifest = new ManifestV2()
         {
-            Config = newManifestConfig
+            Config = newManifestConfig,
+            SchemaVersion = _manifest.SchemaVersion,
+            MediaType = _manifest.MediaType,
+            Layers = _manifest.Layers
         };
 
         return new BuiltImage()
@@ -85,6 +93,11 @@ internal sealed class ImageBuilder
     {
         _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
         _baseImageConfig.AddLayer(l);
+    }
+
+    internal void AddBaseImageDigestLabel()
+    {
+        AddLabel("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
     }
 
     /// <summary>
@@ -242,13 +255,32 @@ internal sealed class ImageBuilder
     /// </summary>
     internal void AssignPortsFromEnvironment()
     {
-        // asp.net images control port bindings via three environment variables. we should check for those variables and ensure that ports are created for them
+        // asp.net images control port bindings via three environment variables. we should check for those variables and ensure that ports are created for them.
+        // precendence is captured at https://github.com/dotnet/aspnetcore/blob/f49c1c7f7467c184ffb630086afac447772096c6/src/Hosting/Hosting/src/GenericHost/GenericWebHostService.cs#L68-L119
+        // ASPNETCORE_URLS is the most specific and is the only one used if present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
 
+        // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
+        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
+        {
+            foreach (var url in Split(urls))
+            {
+                _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
+                var match = aspnetPortRegex.Match(url);
+                if (match.Success && int.TryParse(match.Groups["port"].Value, out int port))
+                {
+                    _logger.LogTrace("Added port {port}", port);
+                    ExposePort(port, PortType.tcp);
+                }
+            }
+            return; // we're done here - ASPNETCORE_URLS is the most specific and overrides the other two
+        }
+
+        // port-specific
         // https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-8.0#specify-ports-only - new for .NET 8 - allows just changing port(s) easily
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_HTTP_PORTS, out string? httpPorts))
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTP_PORTS environment variable");
-            foreach(var port in Split(httpPorts))
+            foreach (var port in Split(httpPorts))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {
@@ -265,7 +297,7 @@ internal sealed class ImageBuilder
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_HTTPS_PORTS, out string? httpsPorts))
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTPS_PORTS environment variable");
-            foreach(var port in Split(httpsPorts))
+            foreach (var port in Split(httpsPorts))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {
@@ -275,21 +307,6 @@ internal sealed class ImageBuilder
                 else
                 {
                     _logger.LogTrace("Skipped port {port} because it could not be parsed as an integer", port);
-                }
-            }
-        }
-
-        // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
-        {
-            foreach(var url in Split(urls))
-            {
-                _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
-                var match = aspnetPortRegex.Match(url);
-                if (match.Success && int.TryParse(match.Groups["port"].Value, out int port))
-                {
-                    _logger.LogTrace("Added port {port}", port);
-                    ExposePort(port, PortType.tcp);
                 }
             }
         }

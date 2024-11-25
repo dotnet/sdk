@@ -61,6 +61,7 @@ namespace Microsoft.DotNet.Cli
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(SkipSignCheckOption);
+            command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
         }
     }
 }

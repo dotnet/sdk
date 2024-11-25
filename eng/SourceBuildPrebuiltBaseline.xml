@@ -32,5 +32,19 @@
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
+
+    <!-- (Don't include these for 9.0) Allow 8.0.2xx and higher to use any version of these packages since source build
+         is only applicable to 8.0.1xx. -->
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Abstractions/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core.Contracts/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Edge/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Orchestrator.RunnableProjects/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Utils/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.TemplateSearch.Common/8.0.*" />
+    <UsagePattern IdentityGlob="System.Drawing.Common/8.0.*" />
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />
+    <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
 </UsageData>

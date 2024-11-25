@@ -48,12 +48,22 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CreateManifestIfNeededOptionDescription
         };
 
+        public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
+        {
+            Description = LocalizableStrings.AllowPackageDowngradeOptionDescription
+        }; 
+
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         // Don't use the common options version as we don't want this to be a forwarded option
         public static readonly CliOption<string> ArchitectureOption = new("--arch", "-a")
         {
             Description = CommonLocalizableStrings.ArchitectureOptionDescription
+        };
+
+        public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+        {
+            Description = LocalizableStrings.RollForwardOptionDescription
         };
 
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
@@ -77,6 +87,20 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("install", LocalizableStrings.CommandDescription);
 
+            AddCommandOptions(command);
+
+            command.Options.Add(ArchitectureOption);
+            command.Options.Add(CreateManifestIfNeededOption);
+            command.Options.Add(AllowPackageDowngradeOption);
+            command.Options.Add(RollForwardOption);
+
+            command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
+
+            return command;
+        }
+
+        public static CliCommand AddCommandOptions(CliCommand command)
+        {
             command.Arguments.Add(PackageIdArgument);
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
@@ -92,12 +116,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
-            command.Options.Add(ArchitectureOption);
-            command.Options.Add(CreateManifestIfNeededOption);
-
-            command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
             return command;
-        }
+        } 
     }
 }

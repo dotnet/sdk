@@ -36,6 +36,11 @@ Per un elenco dei percorso di ricerca, specificare l'opzione "-d" prima del nome
         <target state="translated">Sono presenti più voci per i pacchetti: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="translated">Voce 'rollForward' mancante.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">È previsto un tipo {0} per la proprietà '{1}'.</target>
