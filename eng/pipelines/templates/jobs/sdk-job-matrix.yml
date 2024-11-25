@@ -12,10 +12,9 @@ parameters:
     runTestsAsTool: true
     # This job uses the build step for testing, so the extra test step is not necessary.
     runTests: false
-#  turn off template engine for windows because of agent images, VS versions and COM issues.
-#  - categoryName: TemplateEngine
-#    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-#    publishXunitResults: true
+  - categoryName: TemplateEngine
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    publishXunitResults: true
   - categoryName: AoT
     runAoTTests: true
   ### LINUX ###

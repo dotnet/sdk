@@ -19,7 +19,7 @@
     <HostOS Condition="'$(HostOS)' == ''">$(TargetOS)</HostOS>
   </PropertyGroup>
 
-  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/SourceBuild.props#L26 -->
+  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/DotNetBuild.props#L26 -->
   <PropertyGroup Label="ShortStacks">
     <ShortStack Condition="'$(TargetOS)' == 'wasi'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'browser'">true</ShortStack>
@@ -34,6 +34,8 @@
     <ShortStack Condition="'$(TargetOS)' == 'osx' and '$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
     <!-- Mono LLVM builds are short -->
     <ShortStack Condition="'$(MonoEnableLLVM)' == 'true' or '$(MonoAOTEnableLLVM)' == 'true'">true</ShortStack>
+    <!-- Mono AOT cross compiler builds are short -->
+    <ShortStack Condition="'$(DotNetBuildMonoCrossAOT)' == 'true'">true</ShortStack>
     <!-- Short stack builds stop at runtime, not the whole SDK -->
     <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
   </PropertyGroup>
