@@ -14,7 +14,7 @@ Backport: https://github.com/dotnet/arcade/pull/15277
  1 file changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
-index 0afae858aa8..6fe2d67cf8f 100644
+index 0afae858a..6fe2d67cf 100644
 --- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
 +++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
 @@ -44,6 +44,7 @@
