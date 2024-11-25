@@ -451,9 +451,13 @@ jobs:
       - script: |
           set -ex
 
-          dockerVolumeArgs="-v $(sourcesPath):/vmr"
+          customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
+
+          if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
+            customPreBuildArgs="$customPreBuildArgs sudo"
+          fi
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
@@ -485,7 +489,7 @@ jobs:
           fi
 
           cd $(sourcesPath)
-          ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+          $customPreBuildArgs ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
 
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
