@@ -8,7 +8,7 @@ using Microsoft.NET.Build.Containers.Tasks;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal struct ImageInfo
+internal readonly struct ImageInfo
 {
     internal string Config { get; init; }
     internal string ManifestDigest { get; init; }
@@ -36,7 +36,7 @@ internal static class ImageIndexGenerator
 
         string manifestMediaType = imageInfos[0].ManifestMediaType;
 
-        if (!imageInfos.All(image => image.ManifestMediaType == manifestMediaType))
+        if (!imageInfos.All(image => string.Equals(image.ManifestMediaType, manifestMediaType, StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(Strings.MixedMediaTypes);
         }

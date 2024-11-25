@@ -99,7 +99,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         TargetFrameworkVersion = "";
         ContainerFamily = "";
         FrameworkReferences = [];
-        TargetRuntimeIdentifiers = Array.Empty<string>();
+        TargetRuntimeIdentifiers = [];
         UserBaseImage = "";
     }
 

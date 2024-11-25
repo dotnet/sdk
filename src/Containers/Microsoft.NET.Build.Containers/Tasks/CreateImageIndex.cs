@@ -87,7 +87,7 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
         var images = ParseImages();
         if (Log.HasLoggedErrors)
         {
-            return !Log.HasLoggedErrors;
+            return false;
         }
 
         using MSBuildLoggerProvider loggerProvider = new(Log);
