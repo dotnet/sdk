@@ -130,7 +130,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
-
+        var projectBaselinesUpdated = reporter.RegisterSemaphore(MessageDescriptor.ProjectBaselinesUpdated);
+        
         await launchCompletionA.Task;
         await launchCompletionB.Task;
 
@@ -146,10 +147,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for changed handled ...");
         await changeHandled.WaitAsync();
 
-        // Wait for a new session to start, so that we capture the new solution snapshot
+        // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
-        Log("Waiting for session started...");
-        await sessionStarted.WaitAsync();
+        Log("Waiting for baselines updated...");
+        await projectBaselinesUpdated.WaitAsync();
 
         await MakeValidDependencyChange();
 
