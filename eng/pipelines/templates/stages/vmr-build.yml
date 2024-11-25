@@ -92,7 +92,9 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.centOSStreamContainer }}
+        container:
+          name: ${{ variables.centOSStreamContainerName }}
+          image: ${{ variables.centOSStreamContainerImage }}
         buildFromArchive: false            # 🚫
         buildSourceOnly: true              # ✅
         enablePoison: false                # 🚫
@@ -113,7 +115,9 @@ stages:
       #     vmrBranch: ${{ variables.VmrBranch }}
       #     architecture: x64
       #     pool: ${{ parameters.pool_Linux }}
-      #     container: ${{ variables.centOSStreamContainer }}
+      #     container:
+      #       name: ${{ variables.centOSStreamContainerName }}
+      #       image: ${{ variables.centOSStreamContainerImage }}
       #     buildFromArchive: false            # 🚫
       #     buildSourceOnly: true              # ✅
       #     enablePoison: false                # 🚫
@@ -134,7 +138,9 @@ stages:
       #     architecture: x64
       #     artifactsRid: ${{ variables.alpinePreviousX64Rid }}
       #     pool: ${{ parameters.pool_Linux }}
-      #     container: ${{ variables.alpinePreviousContainer }}
+      #     container:
+      #       name: ${{ variables.alpinePreviousContainerName }}
+      #       image: ${{ variables.alpinePreviousContainerImage }}
       #     targetRid: ${{ variables.alpinePreviousX64Rid }}
       #     buildFromArchive: false            # 🚫
       #     buildSourceOnly: true              # ✅
@@ -152,7 +158,9 @@ stages:
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
           pool: ${{ parameters.pool_Linux }}
-          container: ${{ variables.ubuntuContainer }}
+          container:
+            name: ${{ variables.ubuntuContainerName }}
+            image: ${{ variables.ubuntuContainerImage }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: false                # 🚫
@@ -173,7 +181,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.almaLinuxContainer }}
+            container:
+              name: ${{ variables.almaLinuxContainerName }}
+              image: ${{ variables.almaLinuxContainerImage }}
             targetRid: ${{ variables.almaLinuxX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
@@ -191,7 +201,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.alpineLatestContainer }}
+            container:
+              name: ${{ variables.alpineLatestContainerName }}
+              image: ${{ variables.alpineLatestContainerImage }}
             targetRid: ${{ variables.alpineLatestX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
@@ -209,7 +221,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStreamContainer }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -228,7 +242,9 @@ stages:
         #     architecture: x64
         #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
         #     pool: ${{ parameters.pool_Linux }}
-        #     container: ${{ variables.centOSStreamContainer }}
+        #     container:
+        #       name: ${{ variables.centOSStreamContainerName }}
+        #       image: ${{ variables.centOSStreamContainerImage }}
         #     buildFromArchive: false            # 🚫
         #     buildSourceOnly: true              # ✅
         #     enablePoison: false                # 🚫
@@ -247,7 +263,9 @@ stages:
         #     architecture: x64
         #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
         #     pool: ${{ parameters.pool_Linux }}
-        #     container: ${{ variables.centOSStreamContainer }}
+        #     container:
+        #       name: ${{ variables.centOSStreamContainerName }}
+        #       image: ${{ variables.centOSStreamContainerImage }}
         #     buildFromArchive: false            # 🚫
         #     buildSourceOnly: true              # ✅
         #     enablePoison: false                # 🚫
@@ -264,7 +282,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStreamContainer }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -281,7 +301,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.fedoraContainer }}
+            container:
+              name: ${{ variables.fedoraContainerName }}
+              image: ${{ variables.fedoraContainerImage }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -298,7 +320,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_LinuxArm64 }}
-            container: ${{ variables.ubuntuArmContainer }}
+            container:
+              name: ${{ variables.ubuntuArmContainerName }}
+              image: ${{ variables.ubuntuArmContainerImage }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -316,7 +340,9 @@ stages:
         #     vmrBranch: ${{ variables.VmrBranch }}
         #     architecture: x64
         #     pool: ${{ parameters.pool_Linux }}
-        #     container: ${{ variables.fedoraContainer }}
+        #     container:
+        #       name: ${{ variables.fedoraContainerName }}
+        #       image: ${{ variables.fedoraContainerImage }}
         #     buildFromArchive: false            # 🚫
         #     buildSourceOnly: true              # ✅
         #     enablePoison: false                # 🚫
@@ -336,7 +362,9 @@ stages:
         #     vmrBranch: ${{ variables.VmrBranch }}
         #     architecture: x64
         #     pool: ${{ parameters.pool_Linux }}
-        #     container: ${{ variables.centOSStreamContainer }}
+        #     container:
+        #       name: ${{ variables.centOSStreamContainerName }}
+        #       image: ${{ variables.centOSStreamContainerImage }}
         #     buildFromArchive: true             # ✅
         #     buildSourceOnly: true              # ✅
         #     enablePoison: false                # 🚫
@@ -365,7 +393,9 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntuContainer }}
+        container:
+          name: ${{ variables.ubuntuContainerName }}
+          image: ${{ variables.ubuntuContainerImage }}
         targetOS: linux
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
@@ -378,7 +408,9 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntuContainer }}
+        container:
+          name: ${{ variables.ubuntuContainerName }}
+          image: ${{ variables.ubuntuContainerImage }}
         targetOS: linux
         targetArchitecture: x64
 
@@ -411,7 +443,9 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: arm64
         pool: ${{ parameters.pool_Linux_Shortstack }}
-        container: ${{ variables.androidCrossContainer }}
+        container:
+          name: ${{ variables.androidCrossContainerName }}
+          image: ${{ variables.androidCrossContainerImage }}
         targetOS: android
         targetArchitecture: arm64
         runTests: false
@@ -423,7 +457,9 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: wasm
         pool: ${{ parameters.pool_Linux_Shortstack }}
-        container: ${{ variables.browserCrossContainer }}
+        container:
+          name: ${{ variables.browserCrossContainerName }}
+          image: ${{ variables.browserCrossContainerImage }}
         crossRootFs: '/crossrootfs/x64'
         targetOS: browser
         targetArchitecture: wasm
@@ -450,7 +486,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.androidCrossContainer }}
+            container:
+              name: ${{ variables.androidCrossContainerName }}
+              image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: arm
             runTests: false
@@ -462,7 +500,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.androidCrossContainer }}
+            container:
+              name: ${{ variables.androidCrossContainerName }}
+              image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x64
             runTests: false
@@ -474,7 +514,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x86
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.androidCrossContainer }}
+            container:
+              name: ${{ variables.androidCrossContainerName }}
+              image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x86
             runTests: false
@@ -486,7 +528,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.browserCrossContainer }}
+            container:
+              name: ${{ variables.browserCrossContainerName }}
+              image: ${{ variables.browserCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: browser
             targetArchitecture: wasm
@@ -500,7 +544,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.linuxBionicCrossContainer }}
+            container:
+              name: ${{ variables.linuxBionicCrossContainerName }}
+              image: ${{ variables.linuxBionicCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
@@ -513,7 +559,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.linuxBionicCrossContainer }}
+            container:
+              name: ${{ variables.linuxBionicCrossContainerName }}
+              image: ${{ variables.linuxBionicCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
@@ -527,7 +575,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.linuxBionicCrossContainer }}
+            container:
+              name: ${{ variables.linuxBionicCrossContainerName }}
+              image: ${{ variables.linuxBionicCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
@@ -540,7 +590,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.linuxBionicCrossContainer }}
+            container:
+              name: ${{ variables.linuxBionicCrossContainerName }}
+              image: ${{ variables.linuxBionicCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
@@ -727,7 +779,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.wasiCrossContainer }}
+            container:
+              name: ${{ variables.wasiCrossContainerName }}
+              image: ${{ variables.wasiCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: wasi
             targetArchitecture: wasm
@@ -761,7 +815,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux
             targetArchitecture: x64
@@ -773,7 +829,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux
             targetArchitecture: x64
@@ -788,7 +846,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
             targetOS: linux
@@ -801,7 +861,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
             targetOS: linux
@@ -816,7 +878,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
             targetOS: linux
@@ -831,7 +895,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArmCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmCrossContainerName }}
+              image: ${{ variables.azurelinuxArmCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux
             targetArchitecture: arm
@@ -843,7 +909,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArmCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmCrossContainerName }}
+              image: ${{ variables.azurelinuxArmCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm'
             useMonoRuntime: true
             targetOS: linux
@@ -856,7 +924,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmCrossContainerName }}
+              image: ${{ variables.azurelinuxArmCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux
             targetArchitecture: arm64
@@ -868,7 +938,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmCrossContainerName }}
+              image: ${{ variables.azurelinuxArmCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux
             targetArchitecture: arm64
@@ -883,7 +955,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmCrossContainerName }}
+              image: ${{ variables.azurelinuxArmCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
             targetOS: linux
@@ -896,7 +970,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
@@ -909,7 +985,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
             targetOS: linux-musl
@@ -923,7 +1001,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArmAlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArmAlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxArmAlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
@@ -936,7 +1016,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArm64AlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
@@ -949,7 +1031,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
@@ -964,7 +1048,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArm64AlpineCrossContainerName }}
+              image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
@@ -979,7 +1065,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxX64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxX64CrossContainerName }}
+              image: ${{ variables.azurelinuxX64CrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux
             targetArchitecture: x64
@@ -993,7 +1081,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArm64CrossContainerName }}
+              image: ${{ variables.azurelinuxArm64CrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux
             targetArchitecture: arm64
@@ -1007,7 +1097,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArm64CrossContainerName }}
+              image: ${{ variables.azurelinuxArm64CrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
             targetOS: linux
@@ -1022,7 +1114,9 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
-            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            container:
+              name: ${{ variables.azurelinuxArm64CrossContainerName }}
+              image: ${{ variables.azurelinuxArm64CrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
             targetOS: linux
