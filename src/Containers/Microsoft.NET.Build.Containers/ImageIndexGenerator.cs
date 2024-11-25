@@ -41,11 +41,11 @@ internal static class ImageIndexGenerator
 
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return GenerateDockerManifestList(imageInfos);
+            return GenerateImageIndex(imageInfos, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return GenerateOciImageIndex(imageInfos);
+            return GenerateImageIndex(imageInfos, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -53,8 +53,10 @@ internal static class ImageIndexGenerator
         }
     }
 
-    private static (string, string) GenerateDockerManifestList(ImageInfo[] images)
+    private static (string, string) GenerateImageIndex(ImageInfo[] images, string manifestMediaType, string imageIndexMediaType)
     {
+        // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
+        // We are filling the same fiels, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
         for (int i = 0; i < images.Length; i++)
         {
@@ -62,7 +64,7 @@ internal static class ImageIndexGenerator
 
             var manifest = new PlatformSpecificManifest
             {
-                mediaType = SchemaTypes.DockerManifestV2,
+                mediaType = manifestMediaType,
                 size = image.Manifest.Length,
                 digest = image.ManifestDigest,
                 platform = GetArchitectureAndOsFromConfig(image)
@@ -73,39 +75,12 @@ internal static class ImageIndexGenerator
         var dockerManifestList = new ManifestListV2
         {
             schemaVersion = 2,
-            mediaType = SchemaTypes.DockerManifestListV2,
+            mediaType = imageIndexMediaType,
             manifests = manifests
         };
 
         return (JsonSerializer.SerializeToNode(dockerManifestList)?.ToJsonString() ?? "", dockerManifestList.mediaType);
     }
-
-    private static (string, string) GenerateOciImageIndex(ImageInfo[] images)
-    {
-        var manifests = new PlatformSpecificOciManifest[images.Length];
-        for (int i = 0; i < images.Length; i++)
-        {
-            var image = images[i];
-
-            var manifest = new PlatformSpecificOciManifest
-            {
-                mediaType = SchemaTypes.OciManifestV1,
-                size = image.Manifest.Length,
-                digest = image.ManifestDigest,
-                platform = GetArchitectureAndOsFromConfig(image)
-            };
-            manifests[i] = manifest;
-        }
-
-        var ociImageIndex = new ImageIndexV1
-        {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifests
-        };
-
-        return (JsonSerializer.SerializeToNode(ociImageIndex)?.ToJsonString() ?? "", ociImageIndex.mediaType);
-    } 
 
     private static PlatformInformation GetArchitectureAndOsFromConfig(ImageInfo image)
     {
