@@ -147,7 +147,7 @@ public class CreateImageIndexTests
                 cancellationToken: default).ConfigureAwait(false);
             imageFromImageIndex.Should().NotBeNull();
 
-            imageFromImageIndex.GetManifestConfigDigest().Should().Be(individualImage.GetManifestConfigDigest());
+            imageFromImageIndex.ManifestConfigDigest.Should().Be(individualImage.ManifestConfigDigest);
         }
     }
 
