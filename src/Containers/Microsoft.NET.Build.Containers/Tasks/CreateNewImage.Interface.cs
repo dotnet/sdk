@@ -173,6 +173,9 @@ partial class CreateNewImage
     [Output]
     public string GeneratedArchiveOutputPath { get; set; }
 
+    [Output]
+    public ITaskItem[] GeneratedContainerNames { get; set; }
+
     public CreateNewImage()
     {
         ContainerizeDirectory = "";
@@ -205,6 +208,7 @@ partial class CreateNewImage
         GeneratedContainerManifest = "";
         GeneratedContainerDigest = "";
         GeneratedArchiveOutputPath = "";
+        GeneratedContainerNames = Array.Empty<ITaskItem>();
 
         GenerateLabels = false;
         GenerateDigestLabel = false;
