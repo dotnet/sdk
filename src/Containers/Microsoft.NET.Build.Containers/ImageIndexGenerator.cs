@@ -32,19 +32,24 @@ internal static class ImageIndexGenerator
             throw new ArgumentException(string.Format(Strings.ImagesEmpty));
         }
 
-        string firstManifestMediaType = imageInfos[0].ManifestMediaType;
+        string manifestMediaType = imageInfos[0].ManifestMediaType;
 
-        if (firstManifestMediaType == SchemaTypes.DockerManifestV2)
+        if (!imageInfos.All(image => image.ManifestMediaType == manifestMediaType))
         {
-            return GenerateDockerManifestList(imageInfos, firstManifestMediaType);
+            throw new ArgumentException(Strings.MixedMediaTypes);
         }
-        else if (firstManifestMediaType == SchemaTypes.OciManifestV1)
+
+        if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return GenerateOciImageIndex(imageInfos, firstManifestMediaType);
+            return GenerateDockerManifestList(imageInfos, manifestMediaType);
+        }
+        else if (manifestMediaType == SchemaTypes.OciManifestV1)
+        {
+            return GenerateOciImageIndex(imageInfos, manifestMediaType);
         }
         else
         {
-            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, firstManifestMediaType));
+            throw new NotSupportedException(string.Format(Strings.UnsupportedMediaType, manifestMediaType));
         }
     }
 
@@ -54,11 +59,6 @@ internal static class ImageIndexGenerator
         for (int i = 0; i < images.Length; i++)
         {
             var image = images[i];
-
-            if (i > 0 && image.ManifestMediaType != firstManifestMediaType)
-            {
-                throw new ArgumentException(Strings.MixedMediaTypes);
-            }
 
             var manifest = new PlatformSpecificManifest
             {
@@ -87,11 +87,6 @@ internal static class ImageIndexGenerator
         {
             var image = images[i];
 
-            if (i > 0 && image.ManifestMediaType != firstManifestMediaType)
-            {
-                throw new ArgumentException(Strings.MixedMediaTypes);
-            }
-
             var manifest = new PlatformSpecificOciManifest
             {
                 mediaType = firstManifestMediaType,
@@ -111,6 +106,8 @@ internal static class ImageIndexGenerator
 
         return (JsonSerializer.SerializeToNode(ociImageIndex)?.ToJsonString() ?? "", ociImageIndex.mediaType);
     }
+
+    
 
     private static PlatformInformation GetArchitectureAndOsFromConfig(ImageInfo image)
     {
