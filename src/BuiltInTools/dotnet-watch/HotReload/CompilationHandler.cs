@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Watch
             Dispose();
         }
 
-        public ValueTask RestartSessionAsync(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
+        public void DiscardProjectBaselines(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
         {
             // Remove previous updates to all modules that were affected by rude edits.
             // All running projects that statically reference these modules have been terminated.
@@ -85,9 +85,13 @@ namespace Microsoft.DotNet.Watch
                 _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.ContainsKey(update.ProjectId));
             }
 
-            _hotReloadService.EndSession();
-            _reporter.Report(MessageDescriptor.HotReloadSessionEnded);
-            return StartSessionAsync(cancellationToken);
+            _hotReloadService.UpdateBaselines(Workspace.CurrentSolution, projectsToBeRebuilt.Keys.ToImmutableArray());
+        }
+
+        public void UpdateProjectBaselines(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
+        {
+            _hotReloadService.UpdateBaselines(Workspace.CurrentSolution, projectsToBeRebuilt.Keys.ToImmutableArray());
+            _reporter.Report(MessageDescriptor.ProjectBaselinesUpdated);
         }
 
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
@@ -275,14 +279,19 @@ namespace Microsoft.DotNet.Watch
         }
 
         public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleFileChangesAsync(
-            Func<IEnumerable<Project>, CancellationToken, Task> restartPrompt,
+            Func<IEnumerable<string>, CancellationToken, Task> restartPrompt,
             CancellationToken cancellationToken)
         {
             var currentSolution = Workspace.CurrentSolution;
             var runningProjects = _runningProjects;
 
-            var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, isRunningProject: p => runningProjects.ContainsKey(p.FilePath!), cancellationToken);
-            var anyProcessNeedsRestart = updates.ProjectsToRestart.Count > 0;
+            var runningProjectIds = currentSolution.Projects
+                .Where(project => project.FilePath != null && runningProjects.ContainsKey(project.FilePath))
+                .Select(project => project.Id)
+                .ToImmutableHashSet();
+
+            var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectIds, cancellationToken);
+            var anyProcessNeedsRestart = !updates.ProjectIdsToRestart.IsEmpty;
 
             await DisplayResultsAsync(updates, cancellationToken);
 
@@ -300,13 +309,13 @@ namespace Microsoft.DotNet.Watch
                     return (ImmutableDictionary<ProjectId, string>.Empty, []);
                 }
 
-                await restartPrompt.Invoke(updates.ProjectsToRestart, cancellationToken);
+                await restartPrompt.Invoke(updates.ProjectIdsToRestart.Select(id => currentSolution.GetProject(id)!.Name), cancellationToken);
 
                 // Terminate all tracked processes that need to be restarted,
                 // except for the root process, which will terminate later on.
-                var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(p => p.FilePath!), cancellationToken);
+                var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectIdsToRestart.Select(id => currentSolution.GetProject(id)!.FilePath!), cancellationToken);
 
-                return (updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: p => p.Id, elementSelector: p => p.FilePath!), terminatedProjects);
+                return (updates.ProjectIdsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!), terminatedProjects);
             }
 
             Debug.Assert(updates.Status == ModuleUpdateStatus.Ready);
@@ -351,7 +360,7 @@ namespace Microsoft.DotNet.Watch
 
         private async ValueTask DisplayResultsAsync(WatchHotReloadService.Updates updates, CancellationToken cancellationToken)
         {
-            var anyProcessNeedsRestart = updates.ProjectsToRestart.Count > 0;
+            var anyProcessNeedsRestart = !updates.ProjectIdsToRestart.IsEmpty;
 
             switch (updates.Status)
             {
