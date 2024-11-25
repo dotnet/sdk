@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/9.0.0/THIRD-PARTY-NOTICES.TXT",
+      "detected_license_expression": "mit AND bsd-simplified AND apache-2.0 AND (mit AND bsd-new AND unknown) AND (bsd-new AND bzip2-libbzip-2010) AND bzip2-libbzip-2010 AND bsd-new"
+    }
+  ]
+}
