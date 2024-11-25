@@ -1,6 +1,6 @@
 ﻿These templates matched your input: 
 
-Template Name                                 Short Name                  Language    Tags                          
+Template Name                                 Short Name                  Language    Tags                              
 --------------------------------------------  --------------------------  ----------  ----------------------------------
 API Controller                                apicontroller               [C#]        Web/ASP.NET                       
 ASP.NET Core Empty                            web                         [C#],F#     Web/Empty                         
@@ -22,13 +22,13 @@ MSBuild Directory.Build.props file            buildprops                        
 MSBuild Directory.Build.targets file          buildtargets                            MSBuild/props                     
 MSBuild Directory.Packages.props file         packagesprops                           MSBuild/packages/props/CPM        
 MSTest Playwright Test Project                mstest-playwright           [C#]        Test/MSTest/Playwright/Desktop/Web
-MSTest Test Class                             mstest-class                [C#],F#,VB  Test/MSTest/Desktop/Web           
+MSTest Test Class                             mstest-class                [C#],F#,VB  Test/MSTest                       
 MSTest Test Project                           mstest                      [C#],F#,VB  Test/MSTest/Desktop/Web           
 MVC Controller                                mvccontroller               [C#]        Web/ASP.NET                       
 MVC ViewImports                               viewimports                 [C#]        Web/ASP.NET                       
 MVC ViewStart                                 viewstart                   [C#]        Web/ASP.NET                       
 NuGet Config                                  nugetconfig,nuget.config                Config                            
-NUnit 3 Test Item                             nunit-test                  [C#],F#,VB  Test/NUnit/Desktop/Web            
+NUnit 3 Test Item                             nunit-test                  [C#],F#,VB  Test/NUnit                        
 NUnit 3 Test Project                          nunit                       [C#],F#,VB  Test/NUnit/Desktop/Web            
 NUnit Playwright Test Project                 nunit-playwright            [C#]        Test/NUnit/Playwright/Desktop/Web 
 Protocol Buffer File                          proto                                   Web/gRPC                          
