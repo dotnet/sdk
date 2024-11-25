@@ -50,6 +50,9 @@ internal sealed class ImageBuilder
     /// </summary>
     public bool IsWindows => _baseImageConfig.IsWindows;
 
+    // For tests
+    internal string ManifestConfigDigest => _manifest.Config.digest;
+
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
     /// </summary>
@@ -318,12 +321,6 @@ internal sealed class ImageBuilder
         {
             return input.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
-    }
-
-    // For tests
-    internal string GetManifestConfigDigest()
-    {
-        return _manifest.Config.digest;
     }
 
     internal static class EnvironmentVariables
