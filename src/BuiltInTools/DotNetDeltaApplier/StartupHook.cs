@@ -1,11 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipes;
-using Microsoft.DotNet.Watcher;
-using Microsoft.Extensions.HotReload;
+using Microsoft.DotNet.Watch;
 
+/// <summary>
+/// The runtime startup hook looks for top-level type named "StartupHook".
+/// </summary>
 internal sealed class StartupHook
 {
     private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
@@ -51,10 +52,27 @@ internal sealed class StartupHook
                 return;
             }
 
-            using var agent = new HotReloadAgent(pipeClient, Log);
+            using var agent = new HotReloadAgent();
             try
             {
-                await agent.ReceiveDeltasAsync();
+                agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
+
+                var initPayload = new ClientInitializationPayload(agent.Capabilities);
+                initPayload.Write(pipeClient);
+
+                while (pipeClient.IsConnected)
+                {
+                    var update = await UpdatePayload.ReadAsync(pipeClient, CancellationToken.None);
+
+                    Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
+
+                    agent.ApplyDeltas(update.Deltas);
+                    var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
+
+                    // response:
+                    pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
+                    UpdatePayload.WriteLog(pipeClient, logEntries);
+                }
             }
             catch (Exception ex)
             {

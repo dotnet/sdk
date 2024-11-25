@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 {
                     versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
                         .GetAwaiter().GetResult()
-                        .Select(version => WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(featureBand, version.ToString()))
+                        .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
                         .ToList();
                 }
                 catch (NuGetPackageNotFoundException)

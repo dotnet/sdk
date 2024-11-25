@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
@@ -68,6 +65,60 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        [Fact]
+        public async Task ChangeFileInFSharpProject()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
+        [Fact]
+        public async Task ChangeFileInFSharpProjectWithLoop()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            var source = """
+            module ConsoleApplication.Program
+
+            open System
+            open System.Threading
+
+            [<EntryPoint>]
+            let main argv =
+                while true do
+                    printfn "Waiting"
+                    Thread.Sleep(200)
+                0
+            """;
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.fs");
+
+            File.WriteAllText(sourcePath, source);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated>");
+
+            UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated2>");
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
@@ -127,9 +178,8 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.",
-                App.Process.Output);
+            await App.WaitUntilOutputContains(
+                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
         [Theory]
@@ -168,18 +218,16 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            AssertEx.Contains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!",
-                App.Process.Output);
+            await App.WaitUntilOutputContains("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
 
             if (verbose)
             {
-                AssertEx.Contains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.", App.Process.Output);
+                App.AssertOutputContains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
             }
             else
             {
                 // shouldn't see any agent messages:
-                AssertEx.DoesNotContain("🕵️", App.Process.Output);
+                App.AssertOutputDoesNotContain("🕵️");
             }
         }
 
@@ -189,21 +237,25 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
                 .WithSource();
 
-            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: http://localhost:5000/");
             await App.AssertWaitingForChanges();
 
-            // TODO: enable once https://github.com/dotnet/razor/issues/10818 is fixed
-            //var newSource = """
-            //    @page "/"
-            //    <h1>Updated</h1>
-            //    """;
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
 
-            //UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
+            // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
+            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+
+            var newSource = """
+                @page "/"
+                <h1>Updated</h1>
+                """;
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
         }
 
         [Fact]
@@ -221,7 +273,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                             """));
                 });
 
-            App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
             await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
             await App.AssertWaitingForChanges();
@@ -369,6 +422,109 @@ namespace Microsoft.DotNet.Watcher.Tests
             Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
             await App.AssertOutputLineStartsWith("> NewSubdir");
+        }
+
+        [Fact]
+        public async Task Aspire()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+                .WithSource();
+
+            var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
+            var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
+            var originalSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+
+            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertWaitingForChanges();
+
+            // check that Aspire server output is logged via dotnet-watch reporter:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+
+            // wait until after DCP session started:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+
+            // valid code change:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains("Using Aspire process launcher.");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net9.0)");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net9.0)");
+
+            // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
+            Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+            App.Process.ClearOutput();
+
+            // rude edit with build error:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("record WeatherForecast", "record WeatherForecast2"));
+
+            await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+
+            App.AssertOutputContains("dotnet watch ⌚ Unable to apply hot reload, restart is needed to apply the changes.");
+            App.AssertOutputContains("error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
+            App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
+            App.Process.ClearOutput();
+
+            App.SendKey('y');
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.FixBuildError, failure: _ => false);
+
+            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                App.AssertOutputContains("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+            }
+            else
+            {
+                // Unix process may return exit code = 128 + SIGTERM
+                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
+                App.AssertOutputContains("[WatchAspire.ApiService (net9.0)] Exited");
+            }
+
+            App.AssertOutputContains($"dotnet watch ⌚ Building '{serviceProjectPath}' ...");
+            App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
+            App.Process.ClearOutput();
+
+            // fix build error:
+            UpdateSourceFile(
+                serviceSourcePath,
+                originalSource.Replace("WeatherForecast", "WeatherForecast2"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Capabilities");
+
+            App.AssertOutputContains("dotnet watch ⌚ Build succeeded.");
+            App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
+            App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
+
+            App.SendControlC();
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
+
+            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited with error code -1");
+            }
+            else
+            {
+                // Unix process may return exit code = 128 + SIGTERM
+                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
+                await App.AssertOutputLine(line => line.Contains("[WatchAspire.ApiService (net9.0)] Exited"), failure: _ => false);
+                await App.AssertOutputLine(line => line.Contains("[WatchAspire.AppHost (net9.0)] Exited"), failure: _ => false);
+            }
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
+
+            App.AssertOutputContains("dotnet watch ⭐ Stop session #1");
+            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
         }
     }
 }
