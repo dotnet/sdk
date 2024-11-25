@@ -1,46 +1,21 @@
-From 349b105cac5ca3b216583f6334f75ce871ae4acf Mon Sep 17 00:00:00 2001
+From 52bdf9bd5eeb174cb31cc44f1c7e8c41190f7946 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
-Date: Fri, 15 Nov 2024 15:45:27 +0000
-Subject: [PATCH] Build installers at the end of the repo build
+Date: Wed, 20 Nov 2024 20:10:42 +0100
+Subject: [PATCH] Condition SharedFrameworkBundle correctly and remove an incorrect warnings
 
-Build the Installer projects after everythign else
-got built by adding a new Traversal project that
-builds all P2Ps in it in parallel.
-
-Fixes https://github.com/dotnet/aspnetcore/issues/58984
-Unblocks https://github.com/dotnet/sdk/pull/44828
-
-Backport: https://github.com/dotnet/aspnetcore/pull/58987
+Backport: https://github.com/dotnet/arcade/pull/15277
 
 ---
  eng/AfterSolutionBuild.targets                |   4 +-
- eng/Build.props                               | 261 +-----------------
- eng/Build/Directory.Build.props               |  66 +++++
- eng/Build/Directory.Build.targets             |  13 +
- eng/Build/Installers.Traversal.proj           |  72 +++++
- eng/Build/Java.Traversal.proj                 |   7 +
- eng/Build/Managed.Traversal.proj              | 106 +++++++
- eng/Build/Native.Traversal.proj               |   9 +
- eng/Build/NodeJS.Traversal.proj               |  12 +
- eng/CodeGen.proj                              |  11 +-
- eng/Installers.proj                           |  72 +++++
+ eng/Build.props                               | 160 ++++++++++--------
  eng/Npm.Workspace.FunctionalTests.nodeproj    |   2 +-
- eng/Npm.Workspace.nodeproj                    |   4 +-
+ eng/Npm.Workspace.nodeproj                    |   2 +-
  eng/Tools.props                               |   5 +-
- eng/build.ps1                                 |  54 ++--
+ eng/build.ps1                                 |  54 +++---
  eng/targets/ResolveReferences.targets         |   4 -
- eng/tools/GenerateFiles/GenerateFiles.csproj  |   8 +-
- global.json                                   |   3 +-
+ eng/tools/GenerateFiles/GenerateFiles.csproj  |   7 +-
  .../SharedFrameworkBundle.wixproj             |   8 +-
- 19 files changed, 423 insertions(+), 298 deletions(-)
- create mode 100644 eng/Build/Directory.Build.props
- create mode 100644 eng/Build/Directory.Build.targets
- create mode 100644 eng/Build/Installers.Traversal.proj
- create mode 100644 eng/Build/Java.Traversal.proj
- create mode 100644 eng/Build/Managed.Traversal.proj
- create mode 100644 eng/Build/Native.Traversal.proj
- create mode 100644 eng/Build/NodeJS.Traversal.proj
- create mode 100644 eng/Installers.proj
+ 9 files changed, 137 insertions(+), 109 deletions(-)
 
 diff --git a/eng/AfterSolutionBuild.targets b/eng/AfterSolutionBuild.targets
 index de108aec27..c629174994 100644
@@ -62,73 +37,10 @@ index de108aec27..c629174994 100644
        <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
                      Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
 diff --git a/eng/Build.props b/eng/Build.props
-index 196de0632d..4eedee7432 100644
+index 196de0632d..4f95829ba3 100644
 --- a/eng/Build.props
 +++ b/eng/Build.props
-@@ -1,61 +1,6 @@
- <Project>
--  <Import Project="Common.props" />
- 
--  <!--
--    @(RequiresDelayedBuild) projects can be extended many ways but this isn't fully automated because the new
--    projects likely aren't referenced initially. To add new projects, edit RequiresDelayedBuildProjects.props
--    manually, update the $(BuildMainlyReferenceProviders)' == 'true' item group near the bottom of this file,
--    or edit BuildAfterTargetingPack.csproj. Then run GenerateProjectList.ps1 (even for the first option to ensure
--    the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
--    other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
--  -->
--  <Import Project="RequiresDelayedBuildProjects.props" />
--
--  <!-- These projects are always excluded, even when -projects is specified on command line. -->
--  <ItemGroup>
--    <!-- Explicitly excluded projects -->
--    <ProjectToExclude Include="$(ProjectToExclude)" />
--
--    <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
--    <ProjectToExclude Include="
--                      $(RepoRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
--                      $(RepoRoot)src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj;
--                      "
--                      Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
--
--    <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
--    <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
--
--    <!-- These projects are meant to be referenced only by tests or via BuildAfterTargetingPack.csproj. -->
--    <ProjectToExclude
--      Include="$(RepoRoot)src\**\testassets\**\*.*proj;
--               @(RequiresDelayedBuild);
--               "
--      Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
--               $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
--               $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
--               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
--               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
--               " />
--
--    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
--    <ProjectToExclude Include="
--                      $(RepoRoot)src\submodules\googletest\**\*.*proj;
--                      $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
--                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
--                      $(RepoRoot)src\Installers\**\*.*proj;
--                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
--                      $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
--                      " />
--
--    <!-- Exclude the benchmarks because they use <PackageReference>. -->
--    <ProjectToExclude Include="
--                      $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
--                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
--                      $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
--                      $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
--                      " />
--  </ItemGroup>
-+  <Import Project="$(MSBuildThisFileDirectory)Build\Directory.Build.props" />
- 
-   <Choose>
-     <!-- Project selection can be overridden on the command line by passing in -projects. -->
-@@ -71,206 +16,12 @@
+@@ -71,74 +71,7 @@
        </ItemGroup>
      </When>
      <Otherwise>
@@ -200,586 +112,133 @@ index 196de0632d..4eedee7432 100644
 -                        Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
 -      </ItemGroup>
 -
--      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
--        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
--        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
--        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
--      </ItemGroup>
--
++      <!-- BuildNative -->
+       <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
+         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
+         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
+@@ -146,9 +79,12 @@
+       </ItemGroup>
+ 
        <ItemGroup>
 -        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
--        <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
--
--        <NodeJsProjects
--          Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
--                   $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj;"
--                        AdditionalProperties="BuildInParallel=false"
--                        BuildInParallel="false"
--                        RestoreInParallel="false"
--                        Exclude="@(ProjectToExclude)" />
--
--        <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
--
++        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" BuildStep="native" />
+         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
++      </ItemGroup>
+ 
++      <!-- BuildNode -->
++      <ItemGroup>
+         <NodeJsProjects
+           Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
+                    $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj;"
+@@ -159,15 +95,21 @@
+ 
+         <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
+ 
 -        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
--        <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
--
--        <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
--                      Exclude="@(ProjectToExclude)" />
--
++        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" BuildStep="node" />
+         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
++      </ItemGroup>
+ 
++      <!-- BuildJava -->
++      <ItemGroup>
+         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
+                       Exclude="@(ProjectToExclude)" />
+ 
 -        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
--        <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
--
--        <!--
--          Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
--          the entire pattern will silently fail to evaluate correctly.
--        -->
--        <DotNetProjects Include="
--                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
--                          $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
--                          $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
--                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
--                          $(RepoRoot)src\Assets\**\*.*proj;
--                          $(RepoRoot)src\Caching\**\*.*proj;
--                          $(RepoRoot)src\DefaultBuilder\**\*.*proj;
--                          $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
--                          $(RepoRoot)src\DataProtection\**\*.*proj;
--                          $(RepoRoot)src\Antiforgery\**\*.*proj;
--                          $(RepoRoot)src\Hosting\**\*.*proj;
--                          $(RepoRoot)src\Http\**\*.*proj;
--                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
--                          $(RepoRoot)src\Html.Abstractions\**\*.*proj;
--                          $(RepoRoot)src\Identity\**\*.*proj;
--                          $(RepoRoot)src\Servers\**\*.csproj;
--                          $(RepoRoot)src\Security\**\*.*proj;
--                          $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
--                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
--                          $(RepoRoot)src\Shared\**\*.*proj;
--                          $(RepoRoot)src\Tools\**\*.*proj;
--                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
--                          $(RepoRoot)src\Middleware\**\*.csproj;
--                          $(RepoRoot)src\Razor\**\*.*proj;
--                          $(RepoRoot)src\Mvc\**\*.*proj;
--                          $(RepoRoot)src\Azure\**\*.*proj;
--                          $(RepoRoot)src\SignalR\**\*.csproj;
--                          $(RepoRoot)src\StaticAssets\**\*.csproj;
--                          $(RepoRoot)src\Components\**\*.csproj;
--                          $(RepoRoot)src\Analyzers\**\*.csproj;
--                          $(RepoRoot)src\FileProviders\**\*.csproj;
--                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
--                          $(RepoRoot)src\Localization\**\*.csproj;
--                          $(RepoRoot)src\ObjectPool\**\*.csproj;
--                          $(RepoRoot)src\JSInterop\**\*.csproj;
--                          $(RepoRoot)src\WebEncoders\**\*.csproj;
--                          $(RepoRoot)src\HealthChecks\**\*.csproj;
--                          $(RepoRoot)src\Testing\**\*.csproj;
--                          $(RepoRoot)src\Grpc\**\*.csproj;
--                          $(RepoRoot)src\ProjectTemplates\**\*.csproj;
--                          $(RepoRoot)src\Extensions\**\*.csproj;
--                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
--                          $(RepoRoot)src\OpenApi\**\*.csproj;
--                          $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
--                          "
--                        Exclude="
--                          @(ProjectToBuild);
--                          @(ProjectToExclude);
--                          $(RepoRoot)**\node_modules\**\*;
--                          $(RepoRoot)**\bin\**\*;
--                          $(RepoRoot)**\obj\**\*;"
--                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
--        <DotNetProjects Include="
--                          $(RepoRoot)src\Assets\**\*.*proj;
--                          $(RepoRoot)src\Caching\**\src\*.csproj;
--                          $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
--                          $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
--                          $(RepoRoot)src\DataProtection\**\src\*.csproj;
--                          $(RepoRoot)src\Antiforgery\**\src\*.csproj;
--                          $(RepoRoot)src\Hosting\**\src\*.csproj;
--                          $(RepoRoot)src\Http\**\src\*.csproj;
--                          $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
--                          $(RepoRoot)src\Html.Abstractions\src\*.csproj;
--                          $(RepoRoot)src\Identity\**\src\*.csproj;
--                          $(RepoRoot)src\Servers\**\src\*.csproj;
--                          $(RepoRoot)src\Security\**\src\*.csproj;
--                          $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
--                          $(RepoRoot)src\Tools\**\src\*.csproj;
--                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
--                          $(RepoRoot)src\Middleware\**\src\*.csproj;
--                          $(RepoRoot)src\Razor\**\src\*.csproj;
--                          $(RepoRoot)src\Mvc\**\src\*.csproj;
--                          $(RepoRoot)src\Azure\**\src\*.csproj;
--                          $(RepoRoot)src\SignalR\**\src\*.csproj;
--                          $(RepoRoot)src\StaticAssets\src\*.csproj;
--                          $(RepoRoot)src\Components\**\src\*.csproj;
--                          $(RepoRoot)src\FileProviders\**\src\*.csproj;
--                          $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;
--                          $(RepoRoot)src\Localization\**\src\*.csproj;
--                          $(RepoRoot)src\ObjectPool\**\src\*.csproj;
--                          $(RepoRoot)src\JSInterop\**\src\*.csproj;
--                          $(RepoRoot)src\WebEncoders\**\src\*.csproj;
--                          $(RepoRoot)src\HealthChecks\**\src\*.csproj;
--                          $(RepoRoot)src\Testing\**\src\*.csproj;
--                          $(RepoRoot)src\Extensions\**\src\*.csproj;
--                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
--                          $(RepoRoot)src\OpenApi\**\src\*.csproj;
--                          "
--                        Exclude="
--                          @(ProjectToBuild);
--                          @(ProjectToExclude);
--                          $(RepoRoot)**\node_modules\**\*;
--                          $(RepoRoot)**\bin\**\*;
--                          $(RepoRoot)**\obj\**\*;"
--                        Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
--
++        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
+         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
++      </ItemGroup>
+ 
++      <!-- BuildManaged (runs in parallel with BuildJava) -->
++      <ItemGroup>
+         <!--
+           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
+           the entire pattern will silently fail to evaluate correctly.
+@@ -269,9 +211,83 @@
+                           $(RepoRoot)**\obj\**\*;"
+                         Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
+ 
 -        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
--        <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
-+        <ProjectToBuild Include="$(MSBuildThisFileDirectory)Build\Native.Traversal.proj" Condition="'$(BuildNative)' == 'true'" BuildInParallel="false" />
-+        <ProjectToBuild Include="$(MSBuildThisFileDirectory)Build\NodeJS.Traversal.proj" Condition="'$(BuildNodeJS)' == 'true'" BuildInParallel="false" />
-+        <ProjectToBuild Include="$(MSBuildThisFileDirectory)Build\Java.Traversal.proj" Condition="'$(BuildJava)' == 'true'" BuildInParallel="false" />
-+        <ProjectToBuild Include="$(MSBuildThisFileDirectory)Build\Managed.Traversal.proj" Condition="'$(BuildManaged)' == 'true'" BuildInParallel="false" />
-+        <ProjectToBuild Include="$(MSBuildThisFileDirectory)Build\Installers.Traversal.proj" Condition="'$(BuildInstallers)' == 'true'" BuildInParallel="false" />
++        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
+         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
        </ItemGroup>
++
++      <!-- BuildInstallers -->
++      <PropertyGroup>
++        <_BuildWindowsInstallers Condition="'$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">true</_BuildWindowsInstallers>
++        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x86' ">Win32</_WixTargetPlatform>
++        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x64' ">x64</_WixTargetPlatform>
++        <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64' ">ARM64</_WixTargetPlatform>
++      </PropertyGroup>
++      <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
++        <!-- Build the ANCM custom action -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=ARM64" />
++
++        <!-- Build the ANCM msis -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=arm64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
++
++        <!-- Build the targeting pack installers -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
++        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
++        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
++        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
++
++        <!-- Build the SharedFramework installers -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
++
++        <!-- Build the SharedFramework wixlib -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
++
++        <!-- Windows hosting bundle -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
++      </ItemGroup>
++
++      <!-- In a vertical build, only build the MSIs for the current vertical in the first pass and build the hosting bundle in the second pass -->
++      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
++        <!-- Build the ANCM custom action -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++        <!-- Build the ANCM msis -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++        <!-- Build the targeting pack installers -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++        <!-- Build the SharedFramework installers -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++        <!-- Build the SharedFramework wixlib -->
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
++      </ItemGroup>
++
++      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' == '2' and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
++        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
++      </ItemGroup>
++
++      <ItemGroup Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64'">
++        <InstallerProject Condition=" '$(LinuxInstallerType)' == 'deb' "
++                        Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
++        <InstallerProject Condition=" '$(LinuxInstallerType)' == 'rpm' "
++                        Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
++      </ItemGroup>
++
++      <ItemGroup>
++        <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" Exclude="@(ProjectToExclude)" BuildStep="installer" />
++        <ProjectToExclude Condition=" '$(BuildInstallers)' != 'true'" Include="@(InstallerProject)" />
++      </ItemGroup>
      </Otherwise>
    </Choose>
-diff --git a/eng/Build/Directory.Build.props b/eng/Build/Directory.Build.props
-new file mode 100644
-index 0000000000..005a0d708c
---- /dev/null
-+++ b/eng/Build/Directory.Build.props
-@@ -0,0 +1,66 @@
-+<Project>
-+
-+  <!-- Don't import repo infrastructure -->
-+  <PropertyGroup>
-+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
-+  </PropertyGroup>
-+
-+  <Import Project="..\Common.props" />
-+
-+  <!--
-+    @(RequiresDelayedBuild) projects can be extended many ways but this isn't fully automated because the new
-+    projects likely aren't referenced initially. To add new projects, edit RequiresDelayedBuildProjects.props
-+    manually, update the $(BuildMainlyReferenceProviders)' == 'true' item group near the bottom of this file,
-+    or edit BuildAfterTargetingPack.csproj. Then run GenerateProjectList.ps1 (even for the first option to ensure
-+    the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
-+    other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
-+  -->
-+  <Import Project="..\RequiresDelayedBuildProjects.props" />
-+
-+  <!-- These projects are always excluded, even when -projects is specified on command line. -->
-+  <ItemGroup>
-+    <!-- Explicitly excluded projects -->
-+    <ProjectToExclude Include="$(ProjectToExclude)" />
-+
-+    <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
-+    <ProjectToExclude Include="
-+                      $(RepoRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
-+                      $(RepoRoot)src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj;
-+                      "
-+                      Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
-+
-+    <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
-+    <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
-+
-+    <!-- These projects are meant to be referenced only by tests or via BuildAfterTargetingPack.csproj. -->
-+    <ProjectToExclude
-+      Include="$(RepoRoot)src\**\testassets\**\*.*proj;
-+               @(RequiresDelayedBuild);
-+               "
-+      Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
-+               $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
-+               $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
-+               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
-+               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
-+               " />
-+
-+    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
-+    <ProjectToExclude Include="
-+                      $(RepoRoot)src\submodules\googletest\**\*.*proj;
-+                      $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
-+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-+                      $(RepoRoot)src\Installers\**\*.*proj;
-+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
-+                      $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-+                      " />
-+
-+    <!-- Exclude the benchmarks because they use <PackageReference>. -->
-+    <ProjectToExclude Include="
-+                      $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
-+                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
-+                      $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
-+                      $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
-+                      " />
-+  </ItemGroup>
-+
-+</Project>
-\ No newline at end of file
-diff --git a/eng/Build/Directory.Build.targets b/eng/Build/Directory.Build.targets
-new file mode 100644
-index 0000000000..46427550a9
---- /dev/null
-+++ b/eng/Build/Directory.Build.targets
-@@ -0,0 +1,13 @@
-+<Project>
-+
-+  <Target Name="GetReferencesProvided" Returns="ProvidesReferenceOrRequiresDelay">
-+    <MSBuild Projects="@(ProjectReference);@(ExplicitRequiresDelay)"
-+             Targets="GetReferencesProvided"
-+             BuildInParallel="true"
-+             SkipNonexistentTargets="true"
-+             SkipNonexistentProjects="true">
-+      <Output TaskParameter="TargetOutputs" ItemName="ProvidesReferenceOrRequiresDelay" />
-+    </MSBuild>
-+  </Target>
-+
-+</Project>
-\ No newline at end of file
-diff --git a/eng/Build/Installers.Traversal.proj b/eng/Build/Installers.Traversal.proj
-new file mode 100644
-index 0000000000..aac8ea8742
---- /dev/null
-+++ b/eng/Build/Installers.Traversal.proj
-@@ -0,0 +1,72 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <PropertyGroup>
-+    <_BuildWindowsInstallers Condition="'$(TargetOsName)' == 'win' and ('$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'arm64')">true</_BuildWindowsInstallers>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x86' ">Win32</_WixTargetPlatform>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x64' ">x64</_WixTargetPlatform>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64' ">ARM64</_WixTargetPlatform>
-+  </PropertyGroup>
-+
-+  <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true'">
-+    <!-- Build the ANCM custom action -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=ARM64" />
-+
-+    <!-- Build the ANCM msis -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=arm64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the targeting pack installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-+    <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
-+    harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
-+    getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the SharedFramework installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the SharedFramework wixlib -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Windows hosting bundle -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-+  </ItemGroup>
-+
-+  <!-- In a vertical build, only build the MSIs for the current vertical in the first pass and build the hosting bundle in the second pass -->
-+  <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
-+    <!-- Build the ANCM custom action -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the ANCM msis -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the targeting pack installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the SharedFramework installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the SharedFramework wixlib -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+  </ItemGroup>
-+
-+  <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-+  </ItemGroup>
-+
-+  <ItemGroup Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64' or '$(TargetRuntimeIdentifier)' == 'linux-arm64'">
-+    <ProjectReference Condition=" '$(LinuxInstallerType)' == 'deb' "
-+                    Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
-+    <ProjectReference Condition=" '$(LinuxInstallerType)' == 'rpm' "
-+                    Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
-+  </ItemGroup>
-+
-+</Project>
-diff --git a/eng/Build/Java.Traversal.proj b/eng/Build/Java.Traversal.proj
-new file mode 100644
-index 0000000000..af6c13ec70
---- /dev/null
-+++ b/eng/Build/Java.Traversal.proj
-@@ -0,0 +1,7 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <ItemGroup>
-+    <ProjectReference Include="$(RepoRoot)src\SignalR\**\*.javaproj" Exclude="@(ProjectToExclude)" />
-+  </ItemGroup>
-+
-+</Project>
-diff --git a/eng/Build/Managed.Traversal.proj b/eng/Build/Managed.Traversal.proj
-new file mode 100644
-index 0000000000..7219bc0c57
---- /dev/null
-+++ b/eng/Build/Managed.Traversal.proj
-@@ -0,0 +1,106 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <!--
-+    Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
-+    the entire pattern will silently fail to evaluate correctly.
-+  -->
-+  <ItemGroup>
-+    <ProjectReference Include="
-+                      $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
-+                      $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
-+                      $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
-+                      $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
-+                      $(RepoRoot)src\Assets\**\*.*proj;
-+                      $(RepoRoot)src\Caching\**\*.*proj;
-+                      $(RepoRoot)src\DefaultBuilder\**\*.*proj;
-+                      $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
-+                      $(RepoRoot)src\DataProtection\**\*.*proj;
-+                      $(RepoRoot)src\Antiforgery\**\*.*proj;
-+                      $(RepoRoot)src\Hosting\**\*.*proj;
-+                      $(RepoRoot)src\Http\**\*.*proj;
-+                      $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-+                      $(RepoRoot)src\Html.Abstractions\**\*.*proj;
-+                      $(RepoRoot)src\Identity\**\*.*proj;
-+                      $(RepoRoot)src\Servers\**\*.csproj;
-+                      $(RepoRoot)src\Security\**\*.*proj;
-+                      $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
-+                      $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
-+                      $(RepoRoot)src\Shared\**\*.*proj;
-+                      $(RepoRoot)src\Tools\**\*.*proj;
-+                      $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-+                      $(RepoRoot)src\Middleware\**\*.csproj;
-+                      $(RepoRoot)src\Razor\**\*.*proj;
-+                      $(RepoRoot)src\Mvc\**\*.*proj;
-+                      $(RepoRoot)src\Azure\**\*.*proj;
-+                      $(RepoRoot)src\SignalR\**\*.csproj;
-+                      $(RepoRoot)src\StaticAssets\**\*.csproj;
-+                      $(RepoRoot)src\Components\**\*.csproj;
-+                      $(RepoRoot)src\Analyzers\**\*.csproj;
-+                      $(RepoRoot)src\FileProviders\**\*.csproj;
-+                      $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
-+                      $(RepoRoot)src\Localization\**\*.csproj;
-+                      $(RepoRoot)src\ObjectPool\**\*.csproj;
-+                      $(RepoRoot)src\JSInterop\**\*.csproj;
-+                      $(RepoRoot)src\WebEncoders\**\*.csproj;
-+                      $(RepoRoot)src\HealthChecks\**\*.csproj;
-+                      $(RepoRoot)src\Testing\**\*.csproj;
-+                      $(RepoRoot)src\Grpc\**\*.csproj;
-+                      $(RepoRoot)src\ProjectTemplates\**\*.csproj;
-+                      $(RepoRoot)src\Extensions\**\*.csproj;
-+                      $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
-+                      $(RepoRoot)src\OpenApi\**\*.csproj;
-+                      $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
-+                      "
-+                    Exclude="
-+                      @(ProjectToExclude);
-+                      $(RepoRoot)**\*.vcxproj;
-+                      $(RepoRoot)**\node_modules\**\*;
-+                      $(RepoRoot)**\bin\**\*;
-+                      $(RepoRoot)**\obj\**\*;"
-+                    Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
-+    <ProjectReference Include="
-+                      $(RepoRoot)src\Assets\**\*.*proj;
-+                      $(RepoRoot)src\Caching\**\src\*.csproj;
-+                      $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
-+                      $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
-+                      $(RepoRoot)src\DataProtection\**\src\*.csproj;
-+                      $(RepoRoot)src\Antiforgery\**\src\*.csproj;
-+                      $(RepoRoot)src\Hosting\**\src\*.csproj;
-+                      $(RepoRoot)src\Http\**\src\*.csproj;
-+                      $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
-+                      $(RepoRoot)src\Html.Abstractions\src\*.csproj;
-+                      $(RepoRoot)src\Identity\**\src\*.csproj;
-+                      $(RepoRoot)src\Servers\**\src\*.csproj;
-+                      $(RepoRoot)src\Security\**\src\*.csproj;
-+                      $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
-+                      $(RepoRoot)src\Tools\**\src\*.csproj;
-+                      $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-+                      $(RepoRoot)src\Middleware\**\src\*.csproj;
-+                      $(RepoRoot)src\Razor\**\src\*.csproj;
-+                      $(RepoRoot)src\Mvc\**\src\*.csproj;
-+                      $(RepoRoot)src\Azure\**\src\*.csproj;
-+                      $(RepoRoot)src\SignalR\**\src\*.csproj;
-+                      $(RepoRoot)src\StaticAssets\src\*.csproj;
-+                      $(RepoRoot)src\Components\**\src\*.csproj;
-+                      $(RepoRoot)src\FileProviders\**\src\*.csproj;
-+                      $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;
-+                      $(RepoRoot)src\Localization\**\src\*.csproj;
-+                      $(RepoRoot)src\ObjectPool\**\src\*.csproj;
-+                      $(RepoRoot)src\JSInterop\**\src\*.csproj;
-+                      $(RepoRoot)src\WebEncoders\**\src\*.csproj;
-+                      $(RepoRoot)src\HealthChecks\**\src\*.csproj;
-+                      $(RepoRoot)src\Testing\**\src\*.csproj;
-+                      $(RepoRoot)src\Extensions\**\src\*.csproj;
-+                      $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
-+                      $(RepoRoot)src\OpenApi\**\src\*.csproj;
-+                      "
-+                    Exclude="
-+                      @(ProjectToExclude);
-+                      $(RepoRoot)**\*.vcxproj;
-+                      $(RepoRoot)**\node_modules\**\*;
-+                      $(RepoRoot)**\bin\**\*;
-+                      $(RepoRoot)**\obj\**\*;"
-+                    Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
-+  </ItemGroup>
-+
-+</Project>
-diff --git a/eng/Build/Native.Traversal.proj b/eng/Build/Native.Traversal.proj
-new file mode 100644
-index 0000000000..e404f0125d
---- /dev/null
-+++ b/eng/Build/Native.Traversal.proj
-@@ -0,0 +1,9 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
-+    <ProjectReference Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
-+    <ProjectReference Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
-+  </ItemGroup>
-+
-+</Project>
-diff --git a/eng/Build/NodeJS.Traversal.proj b/eng/Build/NodeJS.Traversal.proj
-new file mode 100644
-index 0000000000..dd5614749f
---- /dev/null
-+++ b/eng/Build/NodeJS.Traversal.proj
-@@ -0,0 +1,12 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <ItemGroup>
-+    <ProjectReference
-+      Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
-+               $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj"
-+      RestoreInParallel="false"
-+      BuildInParallel="false"
-+      Exclude="@(ProjectToExclude)" />
-+  </ItemGroup>
-+
-+</Project>
-diff --git a/eng/CodeGen.proj b/eng/CodeGen.proj
-index 0516cefe3d..6b44e1f02a 100644
---- a/eng/CodeGen.proj
-+++ b/eng/CodeGen.proj
-@@ -1,21 +1,24 @@
- <Project>
-   <PropertyGroup>
--    <BuildManaged>true</BuildManaged>
-     <RepoRoot
-         Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') ">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
--    <BuildMainlyReferenceProviders>true</BuildMainlyReferenceProviders>
-   </PropertyGroup>
  
-   <Import Project="Build.props" />
- 
-+  <ItemGroup>
-+    <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
-+  </ItemGroup>
-+
-   <Target Name="GenerateProjectList">
--    <Message Importance="High" Text="Analyzing @(ProjectToBuild->Count()) projects" />
-+    <Message Importance="High" Text="Analyzing projects..." />
- 
-     <MSBuild Projects="@(ProjectToBuild);@(ExplicitRequiresDelay)"
-              Targets="GetReferencesProvided"
-              BuildInParallel="true"
-              SkipNonexistentTargets="true"
--             SkipNonexistentProjects="true">
-+             SkipNonexistentProjects="true"
-+             Properties="BuildMainlyReferenceProviders=true">
-       <Output TaskParameter="TargetOutputs" ItemName="_ProvidesReferenceOrRequiresDelay" />
-     </MSBuild>
- 
-diff --git a/eng/Installers.proj b/eng/Installers.proj
-new file mode 100644
-index 0000000000..aac8ea8742
---- /dev/null
-+++ b/eng/Installers.proj
-@@ -0,0 +1,72 @@
-+<Project Sdk="Microsoft.Build.Traversal">
-+
-+  <PropertyGroup>
-+    <_BuildWindowsInstallers Condition="'$(TargetOsName)' == 'win' and ('$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'arm64')">true</_BuildWindowsInstallers>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x86' ">Win32</_WixTargetPlatform>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'x64' ">x64</_WixTargetPlatform>
-+    <_WixTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64' ">ARM64</_WixTargetPlatform>
-+  </PropertyGroup>
-+
-+  <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true'">
-+    <!-- Build the ANCM custom action -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=ARM64" />
-+
-+    <!-- Build the ANCM msis -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=arm64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the targeting pack installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-+    <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targeting pack installer logic
-+    harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
-+    getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the SharedFramework installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Build the SharedFramework wixlib -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
-+
-+    <!-- Windows hosting bundle -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-+  </ItemGroup>
-+
-+  <!-- In a vertical build, only build the MSIs for the current vertical in the first pass and build the hosting bundle in the second pass -->
-+  <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '$(_BuildWindowsInstallers)' == 'true'">
-+    <!-- Build the ANCM custom action -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the ANCM msis -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the targeting pack installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the SharedFramework installers -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+    <!-- Build the SharedFramework wixlib -->
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(_WixTargetPlatform)" />
-+  </ItemGroup>
-+
-+  <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
-+    <ProjectReference Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-+  </ItemGroup>
-+
-+  <ItemGroup Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64' or '$(TargetRuntimeIdentifier)' == 'linux-arm64'">
-+    <ProjectReference Condition=" '$(LinuxInstallerType)' == 'deb' "
-+                    Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
-+    <ProjectReference Condition=" '$(LinuxInstallerType)' == 'rpm' "
-+                    Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
-+  </ItemGroup>
-+
-+</Project>
 diff --git a/eng/Npm.Workspace.FunctionalTests.nodeproj b/eng/Npm.Workspace.FunctionalTests.nodeproj
 index 16fb46697c..bab16d5190 100644
 --- a/eng/Npm.Workspace.FunctionalTests.nodeproj
@@ -791,7 +250,7 @@ index 16fb46697c..bab16d5190 100644
    <!-- Import Directory.Build.Props -->
    <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 diff --git a/eng/Npm.Workspace.nodeproj b/eng/Npm.Workspace.nodeproj
-index bca7304dd8..0947082297 100644
+index bca7304dd8..2c22c0dc82 100644
 --- a/eng/Npm.Workspace.nodeproj
 +++ b/eng/Npm.Workspace.nodeproj
 @@ -1,4 +1,4 @@
@@ -800,15 +259,6 @@ index bca7304dd8..0947082297 100644
  
    <!-- Import Directory.Build.Props -->
    <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
-@@ -27,7 +27,7 @@
-       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
-   </Target>
- 
--  <Target Name="Build">
-+  <Target Name="Build" DependsOnTargets="Restore">
-     <PropertyGroup>
-       <PackageVersion>$(VersionPrefix)</PackageVersion>
-       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 diff --git a/eng/Tools.props b/eng/Tools.props
 index e00d1d215c..c71ff43686 100644
 --- a/eng/Tools.props
@@ -960,37 +410,23 @@ index e416d43f30..a4018289c9 100644
        Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
        Code="BUILD006"
 diff --git a/eng/tools/GenerateFiles/GenerateFiles.csproj b/eng/tools/GenerateFiles/GenerateFiles.csproj
-index 8a1be59353..2c3765d7a4 100644
+index 8a1be59353..147664c32b 100644
 --- a/eng/tools/GenerateFiles/GenerateFiles.csproj
 +++ b/eng/tools/GenerateFiles/GenerateFiles.csproj
-@@ -12,7 +12,13 @@
+@@ -12,7 +12,12 @@
    </ItemGroup>
  
    <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
 -  <Target Name="GenerateDirectoryBuildFiles">
 +  <Target Name="GenerateDirectoryBuildFiles"
 +          Inputs="$(MSBuildThisFileDirectory)Directory.Build.props.in;
-+                  $(MSBuildThisFileDirectory)Directory.Build.targets.in;
-+                  $(ConfigDirectory)dotnet-tools.json"
++                  $(MSBuildThisFileDirectory)Directory.Build.targets.in"
 +          Outputs="$(BaseOutputPath)Directory.Build.props;
 +                   $(BaseOutputPath)Directory.Build.targets;
 +                   $(ConfigDirectory)dotnet-tools.json">
      <PropertyGroup>
        <_TemplateProperties>
          AspNetCorePatchVersion=$(AspNetCorePatchVersion);
-diff --git a/global.json b/global.json
-index a553563dce..289c1c3594 100644
---- a/global.json
-+++ b/global.json
-@@ -28,6 +28,7 @@
-   },
-   "msbuild-sdks": {
-     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24564.1",
--    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24564.1"
-+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24564.1",
-+    "Microsoft.Build.Traversal": "3.4.0"
-   }
- }
 diff --git a/src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj b/src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj
 index 5f47072f1f..c308442b3f 100644
 --- a/src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj

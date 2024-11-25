@@ -1,0 +1,57 @@
+From 391a83f42648cd11b97f5f664f0000beeca1eba9 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 25 Nov 2024 16:43:46 +0100
+Subject: [PATCH] Allow build targets to be invoked in specific batches.
+
+Enables building the aspnetcore repo with a single eng\build.cmd invocation (when using desktop msbuild).
+
+Unblocks https://github.com/dotnet/sdk/pull/44828 & https://github.com/dotnet/aspnetcore/pull/58987
+
+Backport: https://github.com/dotnet/arcade/pull/15277
+
+---
+ .../tools/Build.proj                          | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
+index 0afae858aa8..6fe2d67cf8f 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
+@@ -44,6 +44,7 @@
+ 
+   <ItemDefinitionGroup>
+     <ProjectToBuild>
++      <BuildStep>1</BuildStep>
+       <RestoreInParallel>true</RestoreInParallel>
+       <BuildInParallel>true</BuildInParallel>
+       <DotNetBuildPass>1</DotNetBuildPass>
+@@ -277,15 +278,7 @@
+              BuildInParallel="%(_ProjectToRestore.RestoreInParallel)"
+              Condition="'$(Restore)' == 'true'"/>
+ 
+-    <!--
+-      Build solution.
+-    -->
+-    <MSBuild Projects="@(ProjectToBuild)"
+-             Properties="@(_SolutionBuildProps);__BuildPhase=SolutionBuild;_NETCORE_ENGINEERING_TELEMETRY=Build"
+-             RemoveProperties="$(_RemoveProps)"
+-             Targets="@(_SolutionBuildTargets)"
+-             BuildInParallel="%(ProjectToBuild.BuildInParallel)"
+-             Condition="'@(_SolutionBuildTargets)' != ''" />
++    <CallTarget Targets="ExecuteBuildTargets" Condition="'@(_SolutionBuildTargets)' != ''" />
+ 
+     <MSBuild Projects="AfterSolutionBuild.proj"
+              Properties="@(_CommonProps);_NETCORE_ENGINEERING_TELEMETRY=Build"
+@@ -340,4 +333,12 @@
+              Condition="'$(Publish)' == 'true' and '$(_ShouldRunPublish)' == 'true'"/>
+   </Target>
+ 
++  <Target Name="ExecuteBuildTargets" Inputs="%(ProjectToBuild.BuildStep)" Outputs="unused">
++    <MSBuild Projects="@(ProjectToBuild)"
++             Properties="@(_SolutionBuildProps);__BuildPhase=SolutionBuild;_NETCORE_ENGINEERING_TELEMETRY=Build"
++             RemoveProperties="$(_RemoveProps)"
++             Targets="@(_SolutionBuildTargets)"
++             BuildInParallel="%(ProjectToBuild.BuildInParallel)" />
++  </Target>
++
+ </Project>
