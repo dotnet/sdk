@@ -67,10 +67,10 @@ src/nuget-client/test/NuGet.Core.Tests/NuGet.Protocol.Tests/compiler/resources/*
 src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.nupkg
 src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.zip
 src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/compiler/resources/*.nupkg
-src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.crt
-src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/.signature.p7s
-src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.nupkg
-src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.zip
+src/nuget-client/test/TestUtilities/**/compiler/resources/*.crt
+src/nuget-client/test/TestUtilities/**/compiler/resources/.signature.p7s
+src/nuget-client/test/TestUtilities/**/compiler/resources/*.nupkg
+src/nuget-client/test/TestUtilities/**/compiler/resources/*.zip
 
 # razor
 src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/BlazorProject.zip
