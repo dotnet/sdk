@@ -3,9 +3,11 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using NuGet.Packaging;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
@@ -600,13 +602,14 @@ internal sealed class Registry
         // Tags can refer to an image manifest or an image manifest list.
         // In the first case, we push tags to the registry.
         // In the second case, we push the manifest digest so the manifest list can refer to it.
+        string manifestJson = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
         if (pushTags)
         {
             Debug.Assert(destination.Tags.Length > 0);
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
@@ -614,7 +617,7 @@ internal sealed class Registry
         {
             string manifestDigest = builtImage.Manifest.GetDigest();
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }

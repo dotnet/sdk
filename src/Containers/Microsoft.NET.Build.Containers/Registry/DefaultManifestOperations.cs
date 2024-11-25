@@ -38,13 +38,6 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, string mediaType, CancellationToken cancellationToken)
-    {
-        string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
-
-        await PutAsync(repositoryName, reference, jsonString, mediaType, cancellationToken).ConfigureAwait(false);
-    }
-
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
     {
         HttpContent manifestUploadContent = new StringContent(manifestJson);
