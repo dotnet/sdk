@@ -34,14 +34,23 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <Target Name="DispatchToInnerBuildsWithVSTestTarget" Returns="@(InnerOutput)">
+    <PropertyGroup>
+      <!-- 
+        Emulating technique found in Microsoft.Build.Traversal for deciding whether to run tests in parallel.
+        Setting either property will revert to previous behavior of running tests in parallel, but without their
+        different TFMs running in parallel.
+      -->
+      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
+    </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
+      <_ProjectToTestWithTFM Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true" />
     </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFile)"
+    <MSBuild Projects="@(_ProjectToTestWithTFM)"
              Condition="'$(TargetFrameworks)' != '' "
              Targets="$(InnerVSTestTargets)"
-             Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true"
-             ContinueOnError="ErrorAndContinue">
+             ContinueOnError="ErrorAndContinue"
+             BuildInParallel="$(_TestTfmsInParallel)">
       <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
     </MSBuild>
   </Target>
@@ -77,8 +86,76 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="SetVSTestInnerTarget" Returns="@(InnerOutput)">
-    <PropertyGroup  Condition="'$(InnerVSTestTargets)' == ''">
+    <PropertyGroup Condition="'$(InnerVSTestTargets)' == ''">
       <InnerVSTestTargets>VSTest</InnerVSTestTargets>
     </PropertyGroup>
   </Target>
+
+  <!--
+  ===================================================================================
+               DispatchToInnerBuildsWithTestProjectTarget
+
+     Builds this project with /t:$(GetTestsProjectTargets) /p:TargetFramework=X for each
+     value X in $(TargetFrameworks)
+
+     [IN]
+     $(TargetFrameworks) - Semicolon delimited list of target frameworks.
+     $(GetTestsProjectTargets) - The targets to build and get module name for each
+                               target framework
+
+     [OUT]
+     @(InnerOutput) - The combined output items of inner targets across
+                      all target frameworks..
+
+  ===================================================================================
+  -->
+
+  <Target Name="DispatchToInnerBuildsWithTestProjectTarget" Returns="@(InnerOutput)">
+    <PropertyGroup>
+      <!-- 
+        Emulating technique found in Microsoft.Build.Traversal for deciding whether to run tests in parallel.
+        Setting either property will revert to previous behavior of running tests in parallel, but without their
+        different TFMs running in parallel.
+      -->
+      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_ProjectToTestWithTFM Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity)" />
+    </ItemGroup>
+    <MSBuild Projects="@(_ProjectToTestWithTFM)"
+             Condition="'$(TargetFrameworks)' != '' "
+             Targets="$(GetTestsProjectTargets)"
+             ContinueOnError="ErrorAndContinue"
+             BuildInParallel="$(_TestTfmsInParallel)">
+      <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
+    </MSBuild>
+  </Target>
+
+  <!--
+  ==================================================================================
+                                   The New Testing Platform
+
+   Cross-targeting version of the new testing platform.
+
+   [IN]
+   $(TargetFrameworks) - Semicolon delimited list of target frameworks.
+   $(GetTestsProjectTargets) - The targets to build and get module name for each
+                             target framework.
+
+   [OUT]
+   @(InnerOutput) - The combined output items of the inner targets across
+                    all builds.
+  =================================================================================
+  -->
+
+  <PropertyGroup>
+    <GetTestsProjectTargets>_GetTestsProject</GetTestsProjectTargets>
+  </PropertyGroup>
+
+  <Target Name="_GetTestsProject" DependsOnTargets="_ComputeTargetFrameworkItems">
+    <CallTarget Condition="$(IsTestProject) == 'true' OR '$(IsTestingPlatformApplication)' == 'true'" Targets="Build" />
+    <CallTarget Targets="DispatchToInnerBuildsWithTestProjectTarget" />
+  </Target>
+
 </Project>
