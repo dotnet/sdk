@@ -4,14 +4,11 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/src/" />
+  <Folder Name="/src/">
+    <Project Path="src/Lib/Lib.csproj" Id="__LIB_PROJECT_GUID__" />
+  </Folder>
   <Project Path="App.csproj">
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="*|x86" Project="x86" />
-  </Project>
-  <Project Path="src/Lib/Lib.csproj">
-    <BuildType Project="?" />
-    <Platform Project="?" />
-    <Build Project="false" />
   </Project>
 </Solution>

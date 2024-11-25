@@ -201,7 +201,6 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        // TODO: Update to slnx
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
@@ -218,7 +217,7 @@ Options:
             var projectToAdd = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "App.sln", "add", projectToAdd);
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
 
             var slnPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
@@ -232,7 +231,7 @@ Options:
 
             cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"build", "App.sln");
+                .Execute($"build", $"App{solutionExtension}");
             cmd.Should().Pass();
         }
 
@@ -313,8 +312,6 @@ Options:
                 .And.HaveStdErrContaining("Base");
         }
 
-        // TODO: Update to slnx
-        // TODO: Check test
         [Theory]
         [InlineData("sln", "TestAppWithSlnAndCsprojFiles", ".sln")]
         [InlineData("sln", "TestAppWithSlnAnd472CsprojFiles", ".sln")]
@@ -327,10 +324,6 @@ Options:
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, identifier: $"{solutionCommand}{testAsset}{solutionExtension}")
-                .WithSource()
-                .Path;
-            var templateContentDirectory = _testAssetsManager
-                .CopyTestAsset("SolutionFilesTemplates", identifier: $"{solutionCommand}{testAsset}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -497,17 +490,16 @@ Options:
                 .Should().Be(newlyAddedSrcFolder.Id);
         }
 
-        // TODO: Update to slnx
         [Theory]
         [InlineData("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
-        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "{84A45D44-B677-492D-A6DA-B3A71135AB8E}", ".sln")]
+        [InlineData("sln", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
         [InlineData("sln", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
         [InlineData("solution", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".sln")]
-        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "{84A45D44-B677-492D-A6DA-B3A71135AB8E}", ".sln")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".sln")]
         [InlineData("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".sln")]
 
         [InlineData("sln", "TestAppWithSlnAndCsprojFiles", "ExpectedSlnFileAfterAddingLibProj", "", ".slnx")]
-        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "{84A45D44-B677-492D-A6DA-B3A71135AB8E}", ".slnx")]
+        [InlineData("solution", "TestAppWithSlnAndCsprojProjectGuidFiles", "ExpectedSlnFileAfterAddingLibProj", "84a45d44-b677-492d-a6da-b3a71135ab8e", ".slnx")]
         [InlineData("solution", "TestAppWithEmptySln", "ExpectedSlnFileAfterAddingLibProjToEmptySln", "", ".slnx")]
         public void WhenValidProjectIsPassedBuildConfigsAreAdded(
             string solutionCommand,
@@ -527,7 +519,7 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
 
-            var slnPath = Path.Combine(projectDirectory, "App.sln");
+            var slnPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
             var expectedSlnContents = GetExpectedSlnContents(
                 slnPath,
@@ -985,8 +977,6 @@ Options:
                 .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        // TODO: Update to slnx
-        // TODO: Test
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
@@ -1006,12 +996,14 @@ Options:
 
             var slnPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
+            var expectedSlnContents = GetExpectedSlnContents(
+                slnPath,
+                $"ExpectedSlnFileAfterAddingProjectWithInRootOption{solutionExtension}",
+                solutionExtension: solutionExtension);
             File.ReadAllText(slnPath)
-                .Should().BeVisuallyEquivalentTo(GetSolutionFileTemplateContents($"ExpectedSlnFileAfterAddingProjectWithInRootOption{solutionExtension}"));
+                .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        // TODO: Update to slnx
-        // TODO: Test
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
@@ -1032,7 +1024,10 @@ Options:
 
             var slnPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption{solutionExtension}");
+            var expectedSlnContents = GetExpectedSlnContents(
+                slnPath,
+                $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption{solutionExtension}",
+                solutionExtension: solutionExtension);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
@@ -1066,7 +1061,6 @@ Options:
                 .BeVisuallyEquivalentTo(contentBefore);
         }
 
-        // TODO: Update to slnx
         [Theory]
         [InlineData("sln", "/TestFolder//", "ForwardSlash", ".sln")]
         [InlineData("sln", "\\TestFolder\\\\", "BackwardSlash", ".sln")]
@@ -1090,7 +1084,10 @@ Options:
 
             var slnPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            var expectedSlnContents = GetExpectedSlnContents(slnPath, $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption{solutionExtension}");
+            var expectedSlnContents = GetExpectedSlnContents(
+                slnPath,
+                $"ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption{solutionExtension}",
+                solutionExtension: solutionExtension);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
