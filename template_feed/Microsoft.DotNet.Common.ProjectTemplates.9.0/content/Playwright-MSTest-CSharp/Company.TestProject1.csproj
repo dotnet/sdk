@@ -1,5 +1,5 @@
 <!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/3.6.1">
+<Project Sdk="MSTest.Sdk/3.6.3">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net9.0</TargetFramework>
@@ -55,15 +55,15 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.47.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
 <!--#if (TestRunner == "MSTest")-->
 <!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.0" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="3.6.1" />
+    <PackageReference Include="MSTest" Version="3.6.3" />
   </ItemGroup>
 
   <ItemGroup>
