@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -341,7 +339,6 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
-            //Debugger.Launch();
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
             (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
@@ -417,7 +414,6 @@ public class EndToEndTests : IDisposable
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
-        // Debugger.Launch();
         bool everSucceeded = false;
 
 
