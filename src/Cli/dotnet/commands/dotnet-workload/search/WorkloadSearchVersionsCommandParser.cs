@@ -53,6 +53,19 @@ namespace Microsoft.DotNet.Cli
                 }
             });
 
+            command.Validators.Add(result =>
+            {
+                var versionArgument = result.GetValue(WorkloadVersionArgument);
+                if (versionArgument is not null)
+                {
+                    var coreComponents = versionArgument.Split(['-', '+'], 2)[0].Split('.');
+                    if (coreComponents.Length != 3 && coreComponents.Length != 4)
+                    {
+                        result.AddError(string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, versionArgument));
+                    }
+                }
+            });
+
             command.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
 
             return command;
