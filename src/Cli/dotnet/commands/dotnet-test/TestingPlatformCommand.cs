@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -26,6 +27,7 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
+            Debugger.Launch();
             // User can decide what the degree of parallelism should be
             // If not specified, we will default to the number of processors
             if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
@@ -94,6 +96,7 @@ namespace Microsoft.DotNet.Cli
                 if (msbuildResult != 0)
                 {
                     VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
+                    CleanUp();
                     return ExitCodes.GenericFailure;
                 }
 
@@ -101,10 +104,10 @@ namespace Microsoft.DotNet.Cli
                 if (!_msBuildConnectionHandler.EnqueueTestApplications())
                 {
                     VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
+                    CleanUp();
                     return ExitCodes.GenericFailure;
                 }
             }
-
 
             _actionQueue.EnqueueCompleted();
             var hasFailed = _actionQueue.WaitAllActions();
@@ -121,10 +124,16 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildConnectionHandler.Dispose();
-            foreach (var testApplication in _testApplications)
+            try
             {
-                testApplication.Dispose();
+                _msBuildConnectionHandler.Dispose();
+                foreach (var testApplication in _testApplications)
+                {
+                    testApplication.Dispose();
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 

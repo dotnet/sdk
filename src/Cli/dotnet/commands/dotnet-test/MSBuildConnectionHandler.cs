@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli
 
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
-        private ConcurrentBag<TestApplication> _testApplications = new();
+        private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
 
         public MSBuildConnectionHandler(List<string> args, TestApplicationActionQueue actionQueue)
