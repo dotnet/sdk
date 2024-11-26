@@ -92,7 +92,7 @@ Options:
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList-InvalidSolutionPassed")
+                .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnList-InvalidSolutionPassed-{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -113,7 +113,7 @@ Options:
         public void WhenInvalidSolutionIsFoundListPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectRootDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList-InvalidSolutionFound")
+                .CopyTestAsset("InvalidSolution", identifier: $"GivenDotnetSlnList-InvalidSolutionFound-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -137,7 +137,7 @@ Options:
         public void WhenNoSolutionExistsInTheDirectoryListPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -156,7 +156,7 @@ Options:
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
 
@@ -176,7 +176,7 @@ Options:
         public void WhenNoProjectsArePresentInTheSolutionItPrintsANoProjectMessage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithEmptySln", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("TestAppWithEmptySln", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -200,7 +200,7 @@ Options:
 {Path.Combine("Lib", "Lib.csproj")}";
 
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -224,7 +224,7 @@ Options:
 {Path.Combine("Lib", "Lib.csproj")}";
 
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: "GivenDotnetSlnList-Readonly")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-Readonly-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
@@ -249,7 +249,7 @@ $"{new string('-', CommandLocalizableStrings.SolutionFolderHeader.Length)}",
 $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"GivenDotnetSlnList-{solutionCommand}")
                 .WithSource()
                 .Path;
 
