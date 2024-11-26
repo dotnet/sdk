@@ -7,7 +7,9 @@ using System.Formats.Tar;
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
+#if NET
 using Microsoft.DotNet.Cli.Utils;
+#endif
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -42,8 +44,8 @@ internal sealed class DockerCli
             throw new ArgumentException($"{command} is an unknown command.");
         }
 
-        this._command = command;
-        this._logger = loggerFactory.CreateLogger<DockerCli>();
+        _command = command;
+        _logger = loggerFactory.CreateLogger<DockerCli>();
     }
 
     public DockerCli(ILoggerFactory loggerFactory) : this(null, loggerFactory)
@@ -53,7 +55,7 @@ internal sealed class DockerCli
     {
         foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
         {
-            string fullPath = Path.Combine(directory, command + FileNameSuffixes.CurrentPlatform.Exe);
+            string fullPath = Path.Combine(directory, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"{command}.exe" : command);
             if (File.Exists(fullPath))
             {
                 return fullPath;
@@ -89,10 +91,12 @@ internal sealed class DockerCli
         string commandPath = await FindFullCommandPath(cancellationToken);
 
         // call `docker load` and get it ready to receive input
-        ProcessStartInfo loadInfo = new(commandPath, $"load");
-        loadInfo.RedirectStandardInput = true;
-        loadInfo.RedirectStandardOutput = true;
-        loadInfo.RedirectStandardError = true;
+        ProcessStartInfo loadInfo = new(commandPath, $"load")
+        {
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
 
         using Process? loadProcess = Process.Start(loadInfo);
 
@@ -121,7 +125,7 @@ internal sealed class DockerCli
 
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
-        bool commandPathWasUnknown = this._command is null; // avoid running the version command twice.
+        bool commandPathWasUnknown = _command is null; // avoid running the version command twice.
         string? command = await GetCommandAsync(cancellationToken);
         if (command is null)
         {
@@ -173,7 +177,6 @@ internal sealed class DockerCli
 
     public string? GetCommand()
         => GetCommandAsync(default).GetAwaiter().GetResult();
-#endif
 
     /// <summary>
     /// Gets docker configuration.
@@ -263,6 +266,7 @@ internal sealed class DockerCli
             return false;
         }
     }
+#endif
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
 
@@ -293,7 +297,9 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        JsonArray layerTarballPaths = new JsonArray();
+
+        // Feed each layer tarball into the stream
+        JsonArray layerTarballPaths = new();
         await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
@@ -346,8 +352,7 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
+        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config)))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -378,7 +383,7 @@ internal sealed class DockerCli
         });
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
+        using (MemoryStream manifestStream = new(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, "manifest.json")
             {
@@ -518,7 +523,6 @@ internal sealed class DockerCli
 
         return _command;
     }
-#endif
 
     private static bool IsPodmanAlias()
     {
@@ -540,7 +544,6 @@ internal sealed class DockerCli
         }
     }
 
-#if NET
     private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
     {
         try
