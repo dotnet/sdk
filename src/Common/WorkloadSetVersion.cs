@@ -8,9 +8,20 @@ namespace Microsoft.DotNet.Workloads.Workload
 {
     static class WorkloadSetVersion
     {
+        public static bool IsWorkloadSetPackageVersion(string workloadSetVersion)
+        {
+
+            string[] sections = workloadSetVersion.Split(['-', '+'], 2);
+            string versionCore = sections[0];
+            string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
+
+            string[] coreComponents = versionCore.Split('.');
+            return coreComponents.Length >= 3 && coreComponents.Length <= 4;
+        }
+
         public static string ToWorkloadSetPackageVersion(string workloadSetVersion, out SdkFeatureBand sdkFeatureBand)
         {
-            string[] sections = workloadSetVersion.Split(new char[] { '-', '+' }, 2);
+            string[] sections = workloadSetVersion.Split(['-', '+'], 2);
             string versionCore = sections[0];
             string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
 

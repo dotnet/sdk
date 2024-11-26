@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
@@ -58,8 +59,7 @@ namespace Microsoft.DotNet.Cli
                 var versionArgument = result.GetValue(WorkloadVersionArgument);
                 if (versionArgument is not null)
                 {
-                    var coreComponents = versionArgument.Split(['-', '+'], 2)[0].Split('.');
-                    if (coreComponents.Length != 3 && coreComponents.Length != 4)
+                    if (!WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument))
                     {
                         result.AddError(string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, versionArgument));
                     }
