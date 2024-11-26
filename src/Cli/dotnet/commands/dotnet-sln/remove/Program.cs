@@ -4,56 +4,64 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Tools.Sln.Remove
 {
     internal class RemoveProjectFromSolutionCommand : CommandBase
     {
         private readonly string _fileOrDirectory;
-        private readonly IReadOnlyCollection<string> _arguments;
+        private readonly IReadOnlyCollection<string> _projects;
 
         public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-            _arguments = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
+            _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
 
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _arguments, SlnArgumentValidator.CommandType.Remove);
+            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
         }
 
         public override int Execute()
         {
-            SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
-
-            var baseDirectory = PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory);
-            var relativeProjectPaths = _arguments.Select(p =>
+            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            if (_projects.Count == 0)
             {
-                var fullPath = Path.GetFullPath(p);
-                return Path.GetRelativePath(
-                    baseDirectory,
-                    Directory.Exists(fullPath) ?
-                        MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName :
-                        fullPath
-                );
+                throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
+            }
+
+            IEnumerable<string> fullProjectPaths = _projects.Select(project =>
+            {
+                var fullPath = Path.GetFullPath(project);
+                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
             });
 
-            bool slnChanged = false;
-            foreach (var path in relativeProjectPaths)
+            try
             {
-                slnChanged |= slnFile.RemoveProject(path);
+                RemoveProjectsAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(ex.Message, ex);
+            }
+        }
+
+        private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+        {
+            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
+            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+
+            foreach (var project in projectPaths)
+            {
+                SolutionProjectModel projectModel = solution.FindProject(project);
+                solution.RemoveProject(projectModel);
             }
 
-            slnFile.RemoveEmptyConfigurationSections();
-
-            slnFile.RemoveEmptySolutionFolders();
-
-            if (slnChanged)
-            {
-                slnFile.Write();
-            }
-
-            return 0;
+            await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
     }
 }
