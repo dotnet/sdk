@@ -3,7 +3,7 @@
     "dotnet-watch": {
       "commandName": "Project",
       "commandLineArgs": "--verbose /bl:DotnetRun.binlog",
-      "workingDirectory": "E:\\Temp\\dotnet-watch-regression\\net9.0\\CssIsolationIssue",
+      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
