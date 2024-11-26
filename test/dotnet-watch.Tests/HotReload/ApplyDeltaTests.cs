@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (verbose)
             {
-                App.AssertOutputContains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
+                await App.WaitUntilOutputContains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
             }
             else
             {
