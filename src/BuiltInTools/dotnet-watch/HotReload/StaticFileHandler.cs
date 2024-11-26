@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -18,6 +19,8 @@ namespace Microsoft.DotNet.Watch
         {
             var allFilesHandled = true;
             var refreshRequests = new Dictionary<BrowserRefreshServer, List<string>>();
+            var projectsWithoutRefreshServer = new HashSet<ProjectGraphNode>();
+
             for (int i = 0; i < files.Count; i++)
             {
                 var file = files[i].Item;
@@ -45,10 +48,15 @@ namespace Microsoft.DotNet.Watch
                         {
                             if (!refreshRequests.TryGetValue(refreshServer, out var filesPerServer))
                             {
+                                reporter.Verbose($"[{projectNode.GetDisplayName()}] Refreshing browser.");
                                 refreshRequests.Add(refreshServer, filesPerServer = []);
                             }
 
                             filesPerServer.Add(file.StaticWebAssetPath);
+                        }
+                        else if (projectsWithoutRefreshServer.Add(projectNode))
+                        {
+                            reporter.Verbose($"[{projectNode.GetDisplayName()}] No refresh server.");
                         }
                     }
                 }
@@ -64,7 +72,7 @@ namespace Microsoft.DotNet.Watch
                 // Serialize all requests sent to a single server:
                 foreach (var path in request.Value)
                 {
-                    reporter.Verbose($"Sending static file update request for asset '{path}'");
+                    reporter.Verbose($"Sending static file update request for asset '{path}'.");
                     var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = path }, s_jsonSerializerOptions);
                     await request.Key.SendAsync(message, cancellationToken);
                 }
