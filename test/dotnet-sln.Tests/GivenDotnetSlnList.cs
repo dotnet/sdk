@@ -92,7 +92,7 @@ Options:
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList-InvalidSolutionPassed")
                 .WithSource()
                 .Path;
 
@@ -113,7 +113,7 @@ Options:
         public void WhenInvalidSolutionIsFoundListPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectRootDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnList-InvalidSolutionFound")
                 .WithSource()
                 .Path;
 
@@ -224,7 +224,7 @@ Options:
 {Path.Combine("Lib", "Lib.csproj")}";
 
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: "GivenDotnetSlnList")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: "GivenDotnetSlnList-Readonly")
                 .WithSource()
                 .Path;
 
