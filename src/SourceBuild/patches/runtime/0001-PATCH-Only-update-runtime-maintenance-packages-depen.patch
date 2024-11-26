@@ -1,0 +1,78 @@
+From bdada66846ba8164466d0e5b00bb14d12f194bcd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
+ <1175054+carlossanlop@users.noreply.github.com>
+Date: Mon, 25 Nov 2024 16:56:39 -0800
+Subject: [PATCH] [PATCH] Only update runtime maintenance-packages dependencies
+ to latest when not in source-build.
+
+Without this workaround, the deps flow from runtime to sdk will get blocked by roslyn because that
+repo will downgrade the package version.
+
+Roslyn cannot immediately get these same dependencies updated because msbuild will fail to find them.
+
+MSBuild needs to get these package versions updated before all other repos.
+---
+ eng/Versions.props | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 944237c4bc5..514e7cffdeb 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -79,6 +79,28 @@
+   <PropertyGroup>
+     <MicrosoftCodeAnalysisCSharpCodeStyleVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisCSharpCodeStyleVersion>
+   </PropertyGroup>
++  <!--
++    Consume the latest dependencies from maintenance-packages only when not in source-build.
++    This temporary workaround can be removed after dotnet/msbuild updates its maintenance-packages dependencies and flows them to dotnet/sdk.
++    Without the msbuild updates, roslyn fails. See:
++    https://github.com/dotnet/msbuild/pull/11038
++    https://github.com/dotnet/sdk/pull/45042
++    https://github.com/dotnet/roslyn/pull/76076
++  -->
++  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++      <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
++      <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
++      <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
++      <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0</SystemRuntimeCompilerServicesUnsafeVersion>
++      <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
++      <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
++      <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
++      <SystemNumericsVectorsVersion>4.6.0</SystemNumericsVectorsVersion>
++      <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
++      <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
++  </PropertyGroup>
+   <PropertyGroup>
+     <StaticCsVersion>0.2.0</StaticCsVersion>
+     <!-- SDK dependencies (also used in wasm build tests -->
+@@ -114,14 +136,11 @@
+     <MicrosoftBclHashCodeVersion>6.0.0</MicrosoftBclHashCodeVersion>
+     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
+     <StyleCopAnalyzersVersion>1.2.0-beta.507</StyleCopAnalyzersVersion>
+-    <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
+     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
+     <SystemDataSqlClientVersion>4.9.0</SystemDataSqlClientVersion>
+     <SystemDrawingCommonVersion>8.0.0</SystemDrawingCommonVersion>
+     <SystemFormatsAsn1Version>8.0.1</SystemFormatsAsn1Version>
+     <SystemIOFileSystemAccessControlVersion>5.0.0</SystemIOFileSystemAccessControlVersion>
+-    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
+-    <SystemNumericsVectorsVersion>4.6.0</SystemNumericsVectorsVersion>
+     <SystemReflectionMetadataVersion>10.0.0-alpha.1.24565.3</SystemReflectionMetadataVersion>
+     <SystemReflectionMetadataLoadContextVersion>10.0.0-alpha.1.24565.3</SystemReflectionMetadataLoadContextVersion>
+     <SystemSecurityAccessControlVersion>6.0.0</SystemSecurityAccessControlVersion>
+@@ -130,9 +149,7 @@
+     <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
+     <SystemSecurityPermissionsVersion>7.0.0</SystemSecurityPermissionsVersion>
+     <SystemTextJsonVersion>10.0.0-alpha.1.24565.3</SystemTextJsonVersion>
+-    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
+     <SystemThreadingAccessControlVersion>7.0.0</SystemThreadingAccessControlVersion>
+-    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
+     <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
+     <runtimenativeSystemIOPortsVersion>10.0.0-alpha.1.24565.3</runtimenativeSystemIOPortsVersion>
+     <!-- Keep toolset versions in sync with dotnet/msbuild and dotnet/sdk -->
+-- 
+2.47.0.windows.2
+
