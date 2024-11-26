@@ -65,6 +65,11 @@
     <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
+<<<<<<< Updated upstream
+=======
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformPackageVersion)" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
+>>>>>>> Stashed changes
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.23" />

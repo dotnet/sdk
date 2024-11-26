@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsTestProject>true</IsTestProject>
+
+		<GenerateProgramFile>false</GenerateProgramFile>
+		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- <Reference Include="Microsoft.Testing.Platform"> -->
+			<!-- <HintPath>C:\code\testfx\artifacts\bin\Microsoft.Testing.Platform\Debug\net8.0\Microsoft.Testing.Platform.dll</HintPath> -->
+		<!-- </Reference> -->
+		
+		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformPackageVersion)" />
+
+	</ItemGroup>
+</Project>

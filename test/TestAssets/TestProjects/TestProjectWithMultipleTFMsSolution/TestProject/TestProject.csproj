@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFrameworks>net4.8;net8.0;net9.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateProgramFile>false</GenerateProgramFile>
+		<IsTestProject>true</IsTestProject>
+		<LangVersion>latest</LangVersion>
+		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+	</PropertyGroup>
+
+	<ItemGroup>
+		  <Reference Include="Microsoft.Testing.Platform">
+			 <HintPath>C:\Code\testfx\artifacts\bin\Microsoft.Testing.Platform\Debug\netstandard2.0\Microsoft.Testing.Platform.dll</HintPath> 
+		  </Reference>
+		
+		<!-- <PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformPackageVersion)" /> -->
+	</ItemGroup>
+
+</Project>
