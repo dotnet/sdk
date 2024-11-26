@@ -481,7 +481,7 @@ Options:
             var newlyAddedSrcFolder = solution.SolutionFolders.Single(p => p.Parent != null);
             newlyAddedSrcFolder.Parent.Id.Should().Be(solution.SolutionFolders.Single(p => p.Parent == null).Id);
 
-            var libProject = solution.SolutionProjects.Single(p => p.DisplayName.Contains("Lib"));
+            var libProject = solution.SolutionProjects.Single(p => p.ActualDisplayName.Contains("Lib"));
             libProject.Parent.Id.Should().Be(newlyAddedSrcFolder.Id);
         }
 
