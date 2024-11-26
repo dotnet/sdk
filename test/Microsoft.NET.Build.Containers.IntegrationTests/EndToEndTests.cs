@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -36,6 +38,19 @@ public class EndToEndTests : IDisposable
     public void Dispose()
     {
         _loggerFactory.Dispose();
+    }
+
+    // CLI will not let us to target net9.0 anymore but we still need it because images for net10.0 aren't ready yet.
+    // so we let it create net10.0 app, then change the target. Since we're building just small sample applications, it works.
+    public static void changeTargetFrameworkAfterAppCreation(string path)
+    {
+        DirectoryInfo d = new DirectoryInfo(path);
+        FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
+        string csprojFilename = Files[0].Name; // There is only one
+        string text = File.ReadAllText(Path.Combine(path, csprojFilename));
+        string oldFramework = "net9.0";
+        text = text.Replace("net10.0", oldFramework);
+        File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
     [DockerAvailableFact]
@@ -193,8 +208,11 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
+        changeTargetFrameworkAfterAppCreation(Path.Combine(TestSettings.TestArtifactsDirectory, testName, "MinimalTestApp"));
+
+
         var publishCommand =
-            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
+            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", "net9.0", "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
         if (tfm == ToolsetInfo.CurrentTargetFramework)
@@ -205,7 +223,7 @@ public class EndToEndTests : IDisposable
         publishCommand.Execute()
             .Should().Pass();
 
-        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", tfm, rid, "publish");
+        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", "net9.0", rid, "publish");
         return publishDirectory;
     }
 
@@ -262,7 +280,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = "net9.0";
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -275,7 +293,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = "net9.0";
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -291,7 +309,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
     }
 
-    [DockerAvailableTheory]
+    [DockerAvailableTheory(Skip = "aiting for the net10.0 container images.")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -313,7 +331,6 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
         privateNuGetAssets.Create();
-
         new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
@@ -324,6 +341,7 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
+            //Debugger.Launch();
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
             (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
@@ -335,7 +353,7 @@ public class EndToEndTests : IDisposable
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", "net9.0", "-v", packageVersion)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -399,7 +417,7 @@ public class EndToEndTests : IDisposable
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
-
+        // Debugger.Launch();
         bool everSucceeded = false;
 
 
@@ -494,6 +512,7 @@ public class EndToEndTests : IDisposable
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
+        changeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
@@ -506,7 +525,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", "net9.0" , "-v", packageVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()

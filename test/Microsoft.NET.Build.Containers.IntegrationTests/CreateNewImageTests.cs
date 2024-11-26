@@ -151,6 +151,16 @@ public class CreateNewImageTests
             .Execute()
             .Should().Pass();
 
+        // Here begins the hack to get the test to work until we get the nightly builds.
+        DirectoryInfo d = new DirectoryInfo(newProjectDir.FullName);
+        FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
+        string csprojFilename = Files[0].Name; // There is only one
+        string text = File.ReadAllText(Path.Combine(newProjectDir.FullName, csprojFilename));
+        string oldFramework = "net9.0";
+        text = text.Replace("net10.0", oldFramework);
+        File.WriteAllText(Path.Combine(newProjectDir.FullName, csprojFilename), text);
+        // End of hack.
+
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
         new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64", $"/p:RuntimeFrameworkVersion={DockerRegistryManager.RuntimeFrameworkVersion}")
@@ -191,7 +201,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework, "linux-x64");
+        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", oldFramework, "linux-x64");
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
