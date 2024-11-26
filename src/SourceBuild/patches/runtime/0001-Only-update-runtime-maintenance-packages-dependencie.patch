@@ -1,54 +1,45 @@
-From bdada66846ba8164466d0e5b00bb14d12f194bcd Mon Sep 17 00:00:00 2001
+From 058f172705500fb1b4b0447e5c37f076e1021d46 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
  <1175054+carlossanlop@users.noreply.github.com>
-Date: Mon, 25 Nov 2024 16:56:39 -0800
-Subject: [PATCH] [PATCH] Only update runtime maintenance-packages dependencies
- to latest when not in source-build.
+Date: Tue, 26 Nov 2024 11:06:14 -0800
+Subject: [PATCH] Only update runtime maintenance-packages dependencies to
+ latest when not in source-build. Tracking issue:
+ https://github.com/dotnet/sdk/issues/45155
 
-Without this workaround, the deps flow from runtime to sdk will get blocked by roslyn because that
-repo will downgrade the package version.
-
-Roslyn cannot immediately get these same dependencies updated because msbuild will fail to find them.
-
-MSBuild needs to get these package versions updated before all other repos.
 ---
- eng/Versions.props | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+ eng/Versions.props | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
 diff --git a/eng/Versions.props b/eng/Versions.props
-index 944237c4bc5..514e7cffdeb 100644
+index 944237c4bc5..dda1a8fd365 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
-@@ -79,6 +79,28 @@
+@@ -79,6 +79,24 @@
    <PropertyGroup>
      <MicrosoftCodeAnalysisCSharpCodeStyleVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisCSharpCodeStyleVersion>
    </PropertyGroup>
 +  <!--
-+    Consume the latest dependencies from maintenance-packages only when not in source-build.
-+    This temporary workaround can be removed after dotnet/msbuild updates its maintenance-packages dependencies and flows them to dotnet/sdk.
-+    Without the msbuild updates, roslyn fails. See:
-+    https://github.com/dotnet/msbuild/pull/11038
-+    https://github.com/dotnet/sdk/pull/45042
-+    https://github.com/dotnet/roslyn/pull/76076
++    Temporarily consume the latest dependencies from maintenance-packages only when not in source-build.
++    Tracking issue: https://github.com/dotnet/sdk/issues/45155
 +  -->
 +  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-+      <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
-+      <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
-+      <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
-+      <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0</SystemRuntimeCompilerServicesUnsafeVersion>
-+      <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
++    <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
++    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
++    <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
++    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
 +  </PropertyGroup>
 +  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-+      <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
-+      <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
-+      <SystemNumericsVectorsVersion>4.6.0</SystemNumericsVectorsVersion>
-+      <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
-+      <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
++    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
++    <SystemNumericsVectorsVersion>4.6.0</SystemNumericsVectorsVersion>
++    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
 +  </PropertyGroup>
    <PropertyGroup>
      <StaticCsVersion>0.2.0</StaticCsVersion>
      <!-- SDK dependencies (also used in wasm build tests -->
-@@ -114,14 +136,11 @@
+@@ -114,14 +132,11 @@
      <MicrosoftBclHashCodeVersion>6.0.0</MicrosoftBclHashCodeVersion>
      <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
      <StyleCopAnalyzersVersion>1.2.0-beta.507</StyleCopAnalyzersVersion>
@@ -63,7 +54,7 @@ index 944237c4bc5..514e7cffdeb 100644
      <SystemReflectionMetadataVersion>10.0.0-alpha.1.24565.3</SystemReflectionMetadataVersion>
      <SystemReflectionMetadataLoadContextVersion>10.0.0-alpha.1.24565.3</SystemReflectionMetadataLoadContextVersion>
      <SystemSecurityAccessControlVersion>6.0.0</SystemSecurityAccessControlVersion>
-@@ -130,9 +149,7 @@
+@@ -130,9 +145,7 @@
      <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
      <SystemSecurityPermissionsVersion>7.0.0</SystemSecurityPermissionsVersion>
      <SystemTextJsonVersion>10.0.0-alpha.1.24565.3</SystemTextJsonVersion>
