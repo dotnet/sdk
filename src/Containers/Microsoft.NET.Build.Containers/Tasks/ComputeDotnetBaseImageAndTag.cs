@@ -128,6 +128,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private bool TargetRuntimeIdentiriersAreValid()
     {
+        // For "linux-musl" RIDs we choose the alpine base image.
+        // And because we compute the base image only once, we need to ensure that all RIDs are "linux-musl" or none of them.
         var muslRidsCount = TargetRuntimeIdentifiers.Count(rid => rid.StartsWith("linux-musl", StringComparison.Ordinal));
         if (muslRidsCount > 0)
         {
