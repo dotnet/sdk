@@ -17,8 +17,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
-        public void RunSpecificCSProjWithFailingTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunSpecificCSProjWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -28,7 +30,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath);
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var testAppArgs = Regex.Matches(result.StdOut, TestApplicationArgsPattern);
             Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} \"{testInstance.TestRoot}\\{testProjectPath}\"", testAppArgs.FirstOrDefault().Value.Split(TestApplicationArgsSeparator)[0]);
@@ -36,8 +39,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void RunSpecificNonExistentCSProj_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunSpecificNonExistentCSProj_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -45,15 +50,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject\TestProject1.csproj");
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject\TestProject1.csproj",
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.ExitCode.Should().Be(1);
             result.StdOut.Contains("MSBUILD : error MSB1009: Project file does not exist.");
         }
 
 
-        [Fact]
-        public void RunTestProjectSolutionWithNoBuildOption_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithNoBuildOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -68,7 +76,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.NoBuildOption.Name);
+                                    .Execute(TestingPlatformOptions.NoBuildOption.Name,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory.LastWriteTime);
@@ -79,8 +88,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunTestProjectSolutionWithNoRestoreOption_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithNoRestoreOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -95,7 +106,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.NoRestoreOption.Name);
+                                    .Execute(TestingPlatformOptions.NoRestoreOption.Name,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory.LastWriteTime);
@@ -118,7 +130,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var testAppArgs = Regex.Matches(result.StdOut, TestApplicationArgsPattern);
             Assert.Contains($"{TestingPlatformOptions.ConfigurationOption.Name} {configuration}", testAppArgs.FirstOrDefault().Value.Split(TestApplicationArgsSeparator)[0]);
@@ -126,8 +139,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunTestProjectSolutionWithArchOption_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithArchOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -137,7 +152,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ArchitectureOption.Name, arch);
+                                    .Execute(TestingPlatformOptions.ArchitectureOption.Name, arch,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var testAppArgs = Regex.Matches(result.StdOut, TestApplicationArgsPattern);
             Assert.Contains($"{TestingPlatformOptions.ArchitectureOption.Name} {arch}", testAppArgs.FirstOrDefault().Value.Split(TestApplicationArgsSeparator)[0]);
@@ -145,8 +161,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunSpecificCSProjWithNoBuildAndNoRestoreOptions_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunSpecificCSProjWithNoBuildAndNoRestoreOptions_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -162,7 +180,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject.csproj",
-                                            TestingPlatformOptions.NoRestoreOption.Name, TestingPlatformOptions.NoBuildOption.Name);
+                                            TestingPlatformOptions.NoRestoreOption.Name, TestingPlatformOptions.NoBuildOption.Name,
+                                            TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory.LastWriteTime);
@@ -173,8 +192,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunTestProjectSolutionWithMSBuildExtraParamsOption_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithMSBuildExtraParamsOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -184,7 +205,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.AdditionalMSBuildParametersOption.Name, msBuildParams);
+                                    .Execute(TestingPlatformOptions.AdditionalMSBuildParametersOption.Name, msBuildParams,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var msbuildArgs = Regex.Matches(result.StdOut, MSBuildArgsPattern);
             Assert.Contains(msBuildParams, msbuildArgs.FirstOrDefault().Value);
@@ -192,8 +214,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunTestProjectSolutionWithBinLogOption_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithBinLogOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -202,7 +226,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute("-bl");
+                                    .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var msbuildArgs = Regex.Matches(result.StdOut, MSBuildArgsPattern);
             Assert.Contains("-bl", msbuildArgs.FirstOrDefault().Value);
