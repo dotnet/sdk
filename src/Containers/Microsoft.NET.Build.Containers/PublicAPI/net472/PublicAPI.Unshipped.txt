@@ -1,9 +1,9 @@
 ﻿Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 0 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber | Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 4 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = 8 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.Port
 Microsoft.NET.Build.Containers.Port.Deconstruct(out int Number, out Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Equals(Microsoft.NET.Build.Containers.Port other) -> bool
@@ -13,6 +13,9 @@ Microsoft.NET.Build.Containers.Port.Port() -> void
 Microsoft.NET.Build.Containers.Port.Port(int Number, Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Type.get -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Port.Type.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
 ~override Microsoft.NET.Build.Containers.Port.ToString() -> string
 static Microsoft.NET.Build.Containers.Port.operator !=(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
 static Microsoft.NET.Build.Containers.Port.operator ==(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
@@ -81,6 +84,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolName.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCommandLineCommands() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateFullPathToTool() -> string!
@@ -124,7 +129,6 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantG
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputeDotnetBaseImageAndTag() -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void

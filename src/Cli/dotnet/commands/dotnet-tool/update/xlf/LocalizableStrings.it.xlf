@@ -37,6 +37,11 @@
         <target state="translated">Specificare un ID pacchetto dello strumento da aggiornare.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">Aggiorna tutti gli strumenti.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">Lo strumento '{0}' è aggiornato (file manifesto {2} versione '{1}').</target>
@@ -65,6 +70,16 @@
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La versione richiesta {0} è inferiore a quella esistente {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">È necessario specificare l'ID pacchetto o usare l'opzione Aggiorna tutto (--all).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">Non è possibile utilizzare contemporaneamente l'opzione versione (--version) e l'opzione aggiorna tutto (--all). Specificare solo una delle opzioni:{0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">
