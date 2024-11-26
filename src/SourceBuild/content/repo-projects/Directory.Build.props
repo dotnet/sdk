@@ -126,7 +126,7 @@
   <ItemGroup>
     <!-- TODO: Remove once net10.0 migration is complete -->
     <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=True" />
-  
+
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />

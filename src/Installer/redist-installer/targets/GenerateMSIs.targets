@@ -305,10 +305,10 @@
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
       <!-- While we don't have 10.0 templates available (need SDK update, choose the 9.0 templates -->
-      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '9.0'"/>
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '9.0'"/> -->
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
