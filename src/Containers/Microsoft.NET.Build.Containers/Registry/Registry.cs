@@ -426,7 +426,7 @@ internal sealed class Registry
         }
         catch (Exception e)
         {
-            throw new UnableToDownloadFromRepositoryException(repository, e.ToString());
+            throw new UnableToDownloadFromRepositoryException(repository);
         }
         cancellationToken.ThrowIfCancellationRequested();
 
