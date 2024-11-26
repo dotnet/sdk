@@ -1,0 +1,10 @@
+<Project Sdk="MSTest.Sdk/3.7.0-dev">
+
+	<PropertyGroup>
+		<TargetFramework>net8</TargetFramework>
+		<EnableMicrosoftTestingExtensionsCodeCoverage>False</EnableMicrosoftTestingExtensionsCodeCoverage>
+	</PropertyGroup>
+
+	<!-- references to the code to test -->
+
+</Project>

@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
-        public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnOneAsExitCode()
+        public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnZeroAsExitCode()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -114,6 +114,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(0);
+        }
+
+        [Fact]
+        public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            //.WithTraceOutput() should be removed later on
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
+                                    .Execute("--list-tests");
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
+            }
+
+            result.ExitCode.Should().Be(1);
         }
     }
 }

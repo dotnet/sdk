@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
-        public void RunHelpOnTestProject_ShouldReturnOneAsExitCode()
+        public void RunHelpOnTestProject_ShouldReturnZeroAsExitCode()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
@@ -24,7 +24,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                //Assert.Matches(@"Extension options:\s+--.*\s", result.StdOut);
                 Assert.Matches(@"Extension options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
             }
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
-        public void RunHelpOnMultipleTestProjects_ShouldReturnOneAsExitCode()
+        public void RunHelpOnMultipleTestProjects_ShouldReturnZeroAsExitCode()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
@@ -56,6 +55,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(0);
+        }
+
+        [Fact]
+        public void RunHelpOnTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            //.WithTraceOutput() should be removed later
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
+                                    .Execute(CliConstants.HelpOptionKey);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
+            }
+
+            result.ExitCode.Should().Be(1);
         }
     }
 }

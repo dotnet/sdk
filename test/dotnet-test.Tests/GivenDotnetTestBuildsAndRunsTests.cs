@@ -11,8 +11,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
-        public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode()
+        [InlineData("Debug")]
+        [InlineData("Release")]
+        [Theory]
+        public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -20,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -131,6 +133,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("succeeded: 2")
                     .And.Contain("failed: 1")
                     .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [Fact]
+        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            //.WithTraceOutput() should be removed later
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
+                                    .Execute();
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
             }
 
             result.ExitCode.Should().Be(1);
