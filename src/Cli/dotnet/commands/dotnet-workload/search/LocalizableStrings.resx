@@ -163,5 +163,8 @@
   <data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
     <value>Manifest feature band</value>
   </data>
+  <data name="WorkloadVersionWithSpecifiedManifestNotFound" xml:space="preserve">
+    <value>No workload version containing {0} at version {1} was found.</value>
+  </data>
   
 </root>

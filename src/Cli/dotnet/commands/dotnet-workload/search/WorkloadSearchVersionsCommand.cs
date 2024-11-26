@@ -70,22 +70,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         {
             if (_workloadVersion is null)
             {
-                var featureBand = new SdkFeatureBand(_sdkVersion);
-                var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
-
-                List<string> versions;
-                try
+                var versions = GetVersions(_numberOfWorkloadSetsToTake);
+                if (versions is null)
                 {
-                    versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
-                        .GetAwaiter().GetResult()
-                        .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
-                        .ToList();
-                }
-                catch (NuGetPackageNotFoundException)
-                {
-                    Microsoft.DotNet.Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
                     return 0;
                 }
+
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
@@ -94,6 +84,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 {
                     Reporter.WriteLine(string.Join('\n', versions));
                 }
+            }
+            else if (_workloadVersion.Contains('@'))
+            {
+                var versions = GetVersions(0);
+                if (versions is null)
+                {
+                    return 0;
+                }
+
+                var splitVersion = _workloadVersion.Split('@');
+                var packageName = new ManifestId(splitVersion[0]);
+                var packageVersion = new ManifestVersion(splitVersion[1]);
+
+                // Since these are ordered by version (descending), the first is the highest version
+                var firstVersionWithPackage = versions.FirstOrDefault(version =>
+                {
+                    var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
+                    return manifestVersions.ContainsKey(packageName) && manifestVersions[packageName].Version.Equals(packageVersion);
+                }, defaultValue: null);
+
+                Reporter.WriteLine(firstVersionWithPackage is null ? string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, packageName, packageVersion) : firstVersionWithPackage);
             }
             else
             {
@@ -117,6 +128,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
 
             return 0;
+        }
+
+        private List<string> GetVersions(int numberOfWorkloadSetsToTake)
+        {
+            var featureBand = new SdkFeatureBand(_sdkVersion);
+            var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
+
+            try
+            {
+                return PackageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
+                    .GetAwaiter().GetResult()
+                    .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
+                    .ToList();
+            }
+            catch (NuGetPackageNotFoundException)
+            {
+                Microsoft.DotNet.Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
+                return null;
+            }
         }
     }
 }

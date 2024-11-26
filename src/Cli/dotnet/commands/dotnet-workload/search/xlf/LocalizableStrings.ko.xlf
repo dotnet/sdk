@@ -77,6 +77,11 @@
         <target state="translated">제공된 워크로드 버전과 연결된 워크로드 매니페스트 버전을 출력합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
+        <source>No workload version containing {0} at version {1} was found.</source>
+        <target state="new">No workload version containing {0} at version {1} was found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -77,6 +77,11 @@
         <target state="translated">输出与所提供的工作负载版本关联的工作负载清单版本。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
+        <source>No workload version containing {0} at version {1} was found.</source>
+        <target state="new">No workload version containing {0} at version {1} was found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -77,6 +77,11 @@
         <target state="translated">Wersje manifestu obciążenia wyjściowego skojarzone z udostępnioną wersją obciążenia.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
+        <source>No workload version containing {0} at version {1} was found.</source>
+        <target state="new">No workload version containing {0} at version {1} was found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
