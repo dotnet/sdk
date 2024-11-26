@@ -46,8 +46,7 @@ namespace Microsoft.NET.Build.Tasks
                         .Append(" = ");
                 }
 
-                lineBuilder.Append("global::")
-                    .Append(@using.Namespace)
+                lineBuilder.Append(@using.Namespace)
                     .Append(';');
 
                 lines[index++] = lineBuilder.ToString();
