@@ -96,7 +96,15 @@ namespace Microsoft.DotNet.Cli
                     VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
                     return ExitCodes.GenericFailure;
                 }
+
+                // If not all test projects have IsTestingPlatformApplication set to true, we will simply return
+                if (!_msBuildConnectionHandler.EnqueueTestApplications())
+                {
+                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
+                    return ExitCodes.GenericFailure;
+                }
             }
+
 
             _actionQueue.EnqueueCompleted();
             var hasFailed = _actionQueue.WaitAllActions();

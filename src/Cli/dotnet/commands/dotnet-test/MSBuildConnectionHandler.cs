@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.CommandLine;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
@@ -15,6 +16,8 @@ namespace Microsoft.DotNet.Cli
 
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly List<NamedPipeServer> _namedPipeConnections = new();
+        private ConcurrentBag<TestApplication> _testApplications = new();
+        private bool _areTestingPlatformApplications = true;
 
         public MSBuildConnectionHandler(List<string> args, TestApplicationActionQueue actionQueue)
         {
@@ -62,9 +65,16 @@ namespace Microsoft.DotNet.Cli
                     throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
                 }
 
-                var testApp = new TestApplication(new Module(module.DLLPath, module.ProjectPath, module.TargetFramework, module.RunSettingsFilePath), _args);
-                // Write the test application to the channel
-                _actionQueue.Enqueue(testApp);
+                // Check if the test app has IsTestingPlatformApplication property set to true
+                if (bool.TryParse(module.IsTestingPlatformApplication, out bool isTestingPlatformApplication) && isTestingPlatformApplication)
+                {
+                    var testApp = new TestApplication(new Module(module.DllOrExePath, module.ProjectPath, module.TargetFramework, module.RunSettingsFilePath), _args);
+                    _testApplications.Add(testApp);
+                }
+                else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
+                {
+                    _areTestingPlatformApplications = false;
+                }
             }
             catch (Exception ex)
             {
@@ -79,14 +89,29 @@ namespace Microsoft.DotNet.Cli
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
 
+        public bool EnqueueTestApplications()
+        {
+            if (!_areTestingPlatformApplications)
+            {
+                return false;
+            }
+
+            foreach (var testApp in _testApplications)
+            {
+                _actionQueue.Enqueue(testApp);
+            }
+            return true;
+        }
+
         public int RunWithMSBuild(ParseResult parseResult)
         {
             List<string> msbuildCommandLineArgs =
             [
                     parseResult.GetValue(TestingPlatformOptions.ProjectOption) ?? string.Empty,
-                    $"-t:_GetTestsProject",
+                    "-t:Restore;_GetTestsProject",
                     $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"
+                    "-verbosity:q",
+                    "-nologo",
             ];
 
             AddBinLogParameterIfExists(msbuildCommandLineArgs, _args);
@@ -136,6 +161,11 @@ namespace Microsoft.DotNet.Cli
             foreach (var namedPipeServer in _namedPipeConnections)
             {
                 namedPipeServer.Dispose();
+            }
+
+            foreach (var testApplication in _testApplications)
+            {
+                testApplication.Dispose();
             }
         }
     }
