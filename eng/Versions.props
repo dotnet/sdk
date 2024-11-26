@@ -179,6 +179,14 @@
     <MicrosoftTestPlatformBuildPackageVersion>17.13.0-preview-24569-02</MicrosoftTestPlatformBuildPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- Dependencies from https://github.com/Microsoft/testfx -->
+    <MicrosoftTestingPlatformPackageVersion>1.7.0-dev</MicrosoftTestingPlatformPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Dependencies from https://github.com/Microsoft/testfx -->
+    <MicrosoftTestingExtensionsTrxReportVersion>1.7.0-dev</MicrosoftTestingExtensionsTrxReportVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>10.0.0-preview.24574.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.12.0-beta1.24574.1</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
