@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using dotnet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -11,8 +12,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
-        public void RunHelpOnTestProject_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunHelpOnTestProject_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
@@ -20,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(CliConstants.HelpOptionKey);
+                                    .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -31,8 +34,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunHelpOnMultipleTestProjects_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunHelpOnMultipleTestProjects_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
@@ -41,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(CliConstants.HelpOptionKey);
+                                    .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -57,8 +62,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunHelpOnTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunHelpOnTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
@@ -68,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(CliConstants.HelpOptionKey);
+                                    .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {

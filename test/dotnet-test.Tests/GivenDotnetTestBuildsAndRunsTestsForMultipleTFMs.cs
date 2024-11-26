@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using dotnet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -12,8 +13,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
-        public void RunMultipleProjectWithDifferentTFMsWithFailingTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunMultipleProjectWithDifferentTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
@@ -21,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -50,8 +53,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void RunProjectWithMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunProjectWithMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -59,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -95,8 +100,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
-        [Fact]
-        public void RunProjectWithMSTestMetaPackageAndMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunProjectWithMSTestMetaPackageAndMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -104,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {

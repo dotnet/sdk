@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using dotnet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -11,8 +12,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [InlineData("Debug")]
-        [InlineData("Release")]
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
         [Theory]
         public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -37,8 +38,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void RunMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -46,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -61,8 +64,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void RunTestProjectWithTests_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -70,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -86,8 +91,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -95,7 +102,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -109,9 +116,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
-
-        [Fact]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
@@ -119,7 +127,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--minimum-expected-tests 2");
+                                    .Execute("--minimum-expected-tests 2",
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -138,8 +147,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
@@ -149,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute();
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {

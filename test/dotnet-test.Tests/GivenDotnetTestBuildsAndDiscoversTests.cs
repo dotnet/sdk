@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using dotnet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -11,8 +12,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
-        public void DiscoverTestProjectWithNoTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -20,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -33,8 +36,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -42,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -55,8 +60,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
-        public void DiscoverTestProjectWithTests_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -64,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -75,8 +82,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void DiscoverMultipleTestProjectsWithTests_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverMultipleTestProjectsWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -84,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -96,8 +105,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnZeroAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -105,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -116,8 +127,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
-        public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode()
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
@@ -127,7 +140,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute("--list-tests");
+                                    .Execute("--list-tests", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
