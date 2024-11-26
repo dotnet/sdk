@@ -116,6 +116,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]

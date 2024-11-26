@@ -192,7 +192,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-
         [Fact]
         public void RunTestProjectSolutionWithBinLogOption_ShouldReturnZeroAsExitCode()
         {
