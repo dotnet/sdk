@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class FileWatcherTests(ITestOutputHelper output) : SdkTest(output)
@@ -20,31 +22,43 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 dotnetWatcher.Logger = m => Log.WriteLine(m);
             }
 
+            var barrierDir = Path.Combine(dir, ".barrier");
+            var seenBarrier = false;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<(string path, ChangeKind kind)>();
 
-            EventHandler<(string path, ChangeKind kind)> handler = null;
+            EventHandler<(string path, ChangeKind kind)>? handler = null;
             handler = (_, f) =>
             {
-                if (filesChanged.Add(f))
+                if (!seenBarrier)
                 {
-                    Log.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                    seenBarrier = f.kind == ChangeKind.Add && f.path == barrierDir;
                 }
                 else
                 {
-                    Log.WriteLine($"Already seen {f.kind}: '{f.path}'");
-                }
+                    if (filesChanged.Add(f))
+                    {
+                        Log.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                    }
+                    else
+                    {
+                        Log.WriteLine($"Already seen {f.kind}: '{f.path}'");
+                    }
 
-                if (filesChanged.Count == expectedChanges.Length)
-                {
-                    watcher.EnableRaisingEvents = false;
-                    watcher.OnFileChange -= handler;
-                    changedEv.TrySetResult();
+                    if (filesChanged.Count == expectedChanges.Length)
+                    {
+                        watcher.EnableRaisingEvents = false;
+                        watcher.OnFileChange -= handler;
+                        changedEv.TrySetResult();
+                    }
                 }
             };
 
             watcher.OnFileChange += handler;
             watcher.EnableRaisingEvents = true;
+
+            // Create a barrier directory. Only start registering events once the barrier add event is received.
+            Directory.CreateDirectory(barrierDir);
 
             if (usePolling)
             {
@@ -348,30 +362,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: usePolling ?
+                expectedChanges: usePolling || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 [
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Delete),
-                ]
-                : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-                [
-                    (subdir, ChangeKind.Add),
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Update),
-                    (f1, ChangeKind.Add),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Update),
-                    (f2, ChangeKind.Add),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Update),
-                    (f3, ChangeKind.Add),
-                    (f3, ChangeKind.Delete),
-                ]
-                : RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                [
-                    (subdir, ChangeKind.Update),
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Delete),
                     (f2, ChangeKind.Delete),
@@ -379,6 +371,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 ]
                 :
                 [
+                    (subdir, ChangeKind.Update),
                     (subdir, ChangeKind.Delete),
                     (f1, ChangeKind.Delete),
                     (f2, ChangeKind.Delete),
