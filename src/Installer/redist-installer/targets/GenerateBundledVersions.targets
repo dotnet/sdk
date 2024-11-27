@@ -590,6 +590,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                              TargetFramework="net10.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net10.0"
+                             AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net10.0"
                       RuntimeFrameworkName="Microsoft.NETCore.App"
