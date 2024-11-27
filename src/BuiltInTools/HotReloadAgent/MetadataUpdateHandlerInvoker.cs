@@ -1,13 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// Finds and invokes metadata update handlers.
 /// </summary>
+#if NET
+[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
+[UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Hot reload is only expected to work when trimming is disabled.")]
+#endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
     internal sealed class RegisteredActions(IReadOnlyList<Action<Type[]?>> clearCache, IReadOnlyList<Action<Type[]?>> updateApplication)
@@ -163,7 +168,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         MethodInfo? GetUpdateMethod(Type handlerType, string name)
         {
-            if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, binder: null, new[] { typeof(Type[]) }, modifiers: null) is MethodInfo updateMethod &&
+            if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, binder: null, [typeof(Type[])], modifiers: null) is MethodInfo updateMethod &&
                 updateMethod.ReturnType == typeof(void))
             {
                 return updateMethod;
