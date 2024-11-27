@@ -649,7 +649,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1224: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1224: platforma docelowa .NET 9.0 lub nowsza w programie Visual Studio 2022 17.11 nie jest obsługiwana.</target>
-        <note>{StrBegin="NETSDK1224: "}</note>
+        <note>{StrBegins="NETSDK1224: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -769,7 +769,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
         <source>NETSDK1223: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
         <target state="translated">NETSDK1223: element PreferNativeArm64 ma zastosowanie tylko do elementów docelowych programu .NET Framework. Nie jest ona obsługiwana i nie ma żadnego efektu w przypadku określania wartości docelowej platformy .NET Core.</target>
-        <note>{StrBegin="NETSDK1223: "}</note>
+        <note>{StrBegins="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

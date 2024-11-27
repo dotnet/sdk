@@ -975,11 +975,11 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
     <value>NETSDK1223: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
-    <comment>{StrBegin="NETSDK1223: "}</comment>
+    <comment>{StrBegins="NETSDK1223: "}</comment>
   </data>
   <data name="Net9NotCompatibleWithDev1711" xml:space="preserve">
     <value>NETSDK1224: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
-    <comment>{StrBegin="NETSDK1224: "}</comment>
+    <comment>{StrBegins="NETSDK1224: "}</comment>
   </data>
   <!-- The latest message added is Net9NotCompatibleWithDev1711. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
