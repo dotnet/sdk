@@ -65,6 +65,32 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        /// <summary>
+        /// Unchanged project doesn't build. Wait for source change and rebuild.
+        /// </summary>
+        [Fact]
+        public async Task BaselineCompilationError()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            File.WriteAllText(programPath,
+                """
+                Console.Write
+                """);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+
+            UpdateSourceFile(programPath, """
+                System.Console.WriteLine("<Updated>");
+                """);
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
