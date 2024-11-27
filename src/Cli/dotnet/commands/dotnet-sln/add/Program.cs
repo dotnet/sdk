@@ -82,11 +82,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 });
             }
             // Set default configurations and platforms for sln file
-            foreach (var platform in new List<string>{ "Any CPU", "x64", "x86" })
+            foreach (var platform in new[]{ "Any CPU", "x64", "x86" })
             {
                 solution.AddPlatform(platform);
             }
-            foreach (var buildType in new List<string> { "Debug", "Release" })
+            foreach (var buildType in new []{ "Debug", "Release" })
             {
                 solution.AddBuildType(buildType);
             }
