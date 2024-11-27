@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
@@ -174,6 +175,148 @@ public class EndToEndTests : IDisposable
                 .Execute()
                 .Should().Pass();
         }
+    }
+
+    [DockerAvailableFact]
+    public async Task TarballsHaveCorrectStructure()
+    { 
+        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
+            nameof(TarballsHaveCorrectStructure), "app.tar.gz");
+
+        // 1. Create docker image and write it to a tarball
+        (BuiltImage dockerImage, SourceImageReference sourceReference, DestinationImageReference destinationReference) =
+            await BuildDockerImageWithArciveDestinationAsync(archiveFile, ["latest"], nameof(TarballsHaveCorrectStructure));
+
+        await destinationReference.LocalRegistry!.LoadAsync(dockerImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        
+        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+
+        CheckDockerTarballStructure(archiveFile);
+
+        // 2. Convert the docker image to an OCI image and write it to a tarball
+        BuiltImage ociImage = ConvertToOciImage(dockerImage);
+
+        await destinationReference.LocalRegistry!.LoadAsync(ociImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+
+        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+
+        CheckOciTarballStructure(archiveFile);
+    }
+
+    private async Task<(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference)> BuildDockerImageWithArciveDestinationAsync(string archiveFile, string[] tags, string testName)
+    {
+        ILogger logger = _loggerFactory.CreateLogger(testName);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
+
+        ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8ImageTag,
+            "linux-x64",
+            ToolsetUtils.RidGraphManifestPicker,
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Write the image to disk
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), tags);
+
+        return (builtImage, sourceReference, destinationReference);
+    }
+
+    private BuiltImage ConvertToOciImage(BuiltImage builtImage)
+    {
+        // Convert the image to an OCI image
+        var ociImage = new BuiltImage
+        {
+            Config = builtImage.Config,
+            ImageDigest = builtImage.ImageDigest,
+            ImageSha = builtImage.ImageSha,
+            ImageSize = builtImage.ImageSize,
+            Manifest = builtImage.Manifest,
+            ManifestMediaType = SchemaTypes.OciManifestV1,
+        };
+
+        return ociImage;
+    }
+
+    private void CheckDockerTarballStructure(string tarball)
+    {
+        var layersCount = 0;
+        int configJson = 0;
+        int manifestJsonCount = 0;
+
+        using (FileStream fs = new FileStream(tarball, FileMode.Open, FileAccess.Read))
+        using (var tarReader = new TarReader(fs))
+        {
+            var entry = tarReader.GetNextEntry();
+
+            while (entry is not null)
+            {
+                if (entry.Name == "manifest.json")
+                {
+                    manifestJsonCount++;
+                }
+                else if (entry.Name.EndsWith(".json"))
+                {
+                    configJson++;
+                }
+                else if (entry.Name.EndsWith("/layer.tar"))
+                {
+                    layersCount++;
+                }
+                else
+                {
+                    Assert.Fail($"Unexpected entry in tarball: {entry.Name}");
+                }
+
+                entry = tarReader.GetNextEntry();
+            }
+        }
+
+        Assert.Equal(1, manifestJsonCount);
+        Assert.Equal(1, configJson);
+        Assert.True(layersCount > 0);
+    }
+
+    private void CheckOciTarballStructure(string tarball)
+    {
+        int blobsCount = 0;
+        int ociLayoutCount = 0;
+        int indexJsonCount = 0;
+
+        using (FileStream fs = new FileStream(tarball, FileMode.Open, FileAccess.Read))
+        using (var tarReader = new TarReader(fs))
+        {
+            var entry = tarReader.GetNextEntry();
+
+            while (entry is not null)
+            {
+                if (entry.Name == "oci-layout")
+                {
+                    ociLayoutCount++;
+                }
+                else if (entry.Name == "index.json")
+                {
+                    indexJsonCount++;
+                }
+                else if (entry.Name.StartsWith("blobs/sha256/"))
+                {
+                    blobsCount++;
+                }
+                else
+                {
+                    Assert.Fail($"Unexpected entry in tarball: {entry.Name}");
+                }
+
+                entry = tarReader.GetNextEntry();
+            }
+        }
+
+        Assert.Equal(1, ociLayoutCount);
+        Assert.Equal(1, indexJsonCount);
+        Assert.True(blobsCount > 0);
     }
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
