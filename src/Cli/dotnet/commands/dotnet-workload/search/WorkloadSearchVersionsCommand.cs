@@ -93,18 +93,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                     return 0;
                 }
 
-                var splitVersion = _workloadVersion.Split('@');
-                var packageName = new ManifestId(splitVersion[0]);
-                var packageVersion = new ManifestVersion(splitVersion[1]);
+                var workloadVersions = _workloadVersion.Split(';');
+                var packageNamesAndVersions = workloadVersions.Select(version =>
+                    {
+                        var split = version.Split('@');
+                        return (new ManifestId(split[0]), new ManifestVersion(split[1]));
+                    });
 
                 // Since these are ordered by version (descending), the first is the highest version
                 var firstVersionWithPackage = versions.FirstOrDefault(version =>
                 {
                     var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
-                    return manifestVersions.ContainsKey(packageName) && manifestVersions[packageName].Version.Equals(packageVersion);
+                    return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
                 }, defaultValue: null);
 
-                Reporter.WriteLine(firstVersionWithPackage is null ? string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, packageName, packageVersion) : firstVersionWithPackage);
+                Reporter.WriteLine(firstVersionWithPackage is null ? string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, _workloadVersion) : firstVersionWithPackage);
             }
             else
             {

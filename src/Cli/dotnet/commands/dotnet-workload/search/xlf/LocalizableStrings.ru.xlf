@@ -78,8 +78,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
-        <source>No workload version containing {0} at version {1} was found.</source>
-        <target state="new">No workload version containing {0} at version {1} was found.</target>
+        <source>No workload version matching {0} was found.</source>
+        <target state="new">No workload version matching {0} was found.</target>
         <note />
       </trans-unit>
     </body>
