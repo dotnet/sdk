@@ -381,6 +381,7 @@ stages:
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
+        sign: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
