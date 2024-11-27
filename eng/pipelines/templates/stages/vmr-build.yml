@@ -996,7 +996,7 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
             extraProperties: /p:DotNetBuildMonoCrossAOT=true
             runTests: false
 
