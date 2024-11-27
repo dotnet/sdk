@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly FileBasedInstaller _installer;
         private readonly string _workloadVersion;
         private readonly bool _includePreviews;
+        private readonly IWorkloadResolver _resolver;
 
         public WorkloadSearchVersionsCommand(
             ParseResult result,
@@ -69,6 +70,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             _includePreviews = result.HasOption(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) ?
                 result.GetValue(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) :
                 new SdkFeatureBand(_sdkVersion).IsPrerelease;
+
+            _resolver = creationResult.WorkloadResolver;
         }
 
         public override int Execute()
@@ -102,7 +105,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 var packageNamesAndVersions = workloadVersions.Select(version =>
                     {
                         var split = version.Split('@');
-                        return (new ManifestId(split[0]), new ManifestVersion(split[1]));
+                        return (new ManifestId(_resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
                     });
 
                 // Since these are ordered by version (descending), the first is the highest version
