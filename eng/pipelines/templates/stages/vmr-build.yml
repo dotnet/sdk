@@ -1421,3 +1421,9 @@ stages:
           dotNetBuildPass: final
           primaryDependentJob: Windows_x64
           outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
+    - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+      parameters:
+        dependsOn: FinalJoin
+        publishUsingPipelines: true
+        publishAssetsImmediately: true
+        pool: ${{ parameters.pool_Windows }}
