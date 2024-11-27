@@ -196,6 +196,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
+                // Most checks are better with OriginalDefinition, but keep the ones passed in around.
+                ITypeSymbol castFromParam = castFrom;
+                ITypeSymbol castToParam = castTo;
+
                 castFrom = castFrom.OriginalDefinition;
                 castTo = castTo.OriginalDefinition;
 
@@ -269,8 +273,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return false;
 
                     case (TypeKind.Class, TypeKind.Class):
-                        return !castFrom.DerivesFrom(castTo)
-                            && !castTo.DerivesFrom(castFrom);
+                        return !castFromParam.DerivesFrom(castToParam)
+                            && !castToParam.DerivesFrom(castFromParam);
 
                     case (TypeKind.Interface, TypeKind.Class):
                         return castTo.IsSealed && !castTo.DerivesFrom(castFrom);
