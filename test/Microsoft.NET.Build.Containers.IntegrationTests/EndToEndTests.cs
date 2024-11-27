@@ -38,7 +38,7 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    internal static readonly string oldFramework = "net9.0";
+    internal static readonly string _oldFramework = "net9.0";
     // CLI will not let us to target net9.0 anymore but we still need it because images for net10.0 aren't ready yet.
     // so we let it create net10.0 app, then change the target. Since we're building just small sample applications, it works.
     internal static void ChangeTargetFrameworkAfterAppCreation(string path)
@@ -47,7 +47,7 @@ public class EndToEndTests : IDisposable
         FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
         string csprojFilename = Files[0].Name; // There is only one
         string text = File.ReadAllText(Path.Combine(path, csprojFilename));
-        text = text.Replace("net10.0", oldFramework);
+        text = text.Replace("net10.0", _oldFramework);
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
@@ -210,7 +210,7 @@ public class EndToEndTests : IDisposable
 
 
         var publishCommand =
-            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", oldFramework, "-c", "Debug")
+            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", _oldFramework, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
         if (tfm == ToolsetInfo.CurrentTargetFramework)
@@ -221,7 +221,7 @@ public class EndToEndTests : IDisposable
         publishCommand.Execute()
             .Should().Pass();
 
-        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", oldFramework, rid, "publish");
+        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", _oldFramework, rid, "publish");
         return publishDirectory;
     }
 
@@ -278,7 +278,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = oldFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -291,7 +291,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = oldFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -521,7 +521,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", oldFramework , "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
