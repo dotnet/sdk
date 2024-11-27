@@ -62,12 +62,6 @@ variables:
 
 - name: almaLinuxX64Rid
   value: almalinux.8-x64
-- name: linuxMuslX64Rid
-  value: linux-musl-x64
-- name: linuxMuslArmRid
-  value: linux-musl-arm
-- name: linuxMuslArm64Rid
-  value: linux-musl-arm64
 - name: alpineLatestX64Rid
   value: alpine.3.20-x64
 - name: alpinePreviousX64Rid

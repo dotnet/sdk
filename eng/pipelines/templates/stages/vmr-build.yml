@@ -928,7 +928,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.linuxMuslX64Rid}}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -942,7 +941,6 @@ stages:
             useMonoRuntime: true
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -955,7 +953,6 @@ stages:
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
-            targetRid: ${{ variables.linuxMuslArmRid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -968,7 +965,6 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslArm64Rid }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -981,7 +977,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
             extraProperties: /p:DotNetBuildMonoCrossAOT=true
             runTests: false
 
@@ -996,7 +991,6 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
             extraProperties: /p:DotNetBuildMonoCrossAOT=true
             runTests: false
 
@@ -1011,7 +1005,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
             extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
             runTests: false
 
@@ -1026,7 +1019,6 @@ stages:
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
-            targetRid: ${{ variables.linuxMuslArmRid }}
             extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
             runTests: false
 
@@ -1041,7 +1033,6 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslArm64Rid }}
             extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
             runTests: false
 
