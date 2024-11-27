@@ -30,7 +30,6 @@
     <MicrosoftIORedistPackageVersion>6.0.1</MicrosoftIORedistPackageVersion>
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <MicrosoftTestingPlatformVersion>1.5.0-preview.24576.8</MicrosoftTestingPlatformVersion>
-    <MicrosoftTestingExtensionsTrxReportVersion>1.5.0-preview.24576.8</MicrosoftTestingExtensionsTrxReportVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>

@@ -64,7 +64,7 @@
     <PackageVersion Include="Microsoft.TemplateEngine.TestHelper" Version="$(MicrosoftTemplateEngineTestHelperPackageVersion)" />
     <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
