@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 try
                 {
-                    AddProjectWithDefaultGuid(solution, relativePath, solutionFolder);
+                    AddProject(solution, relativePath, projectPath, solutionFolder);
                 }
                 catch (InvalidProjectFileException ex)
                 {
@@ -119,14 +119,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
-        private void AddProjectWithDefaultGuid(SolutionModel solution, string relativePath, SolutionFolderModel solutionFolder)
+        private void AddProject(SolutionModel solution, string pathRelativeToSolutionFile, string fullPath, SolutionFolderModel solutionFolder)
         {
             // Open project instance to see if it is a valid project
-            ProjectRootElement projectRootElement = ProjectRootElement.Open(relativePath);
+            ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
             SolutionProjectModel project;
             try
             {
-                project = solution.AddProject(relativePath, null, solutionFolder);
+                project = solution.AddProject(pathRelativeToSolutionFile, null, solutionFolder);
             }
             catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
             {
@@ -134,15 +134,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 var guid = projectRootElement.GetProjectTypeGuid();
                 if (string.IsNullOrEmpty(guid))
                 {
-                    Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, Path.GetFullPath(relativePath));
+                    Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
                     return;
                 }
-                project = solution.AddProject(relativePath, guid, solutionFolder);
+                project = solution.AddProject(pathRelativeToSolutionFile, guid, solutionFolder);
             }
             // Generate intermediate solution folders
             if (solutionFolder is null && !_inRoot)
             {
-                var relativePathDirectory = Path.GetDirectoryName(relativePath);
+                var relativePathDirectory = Path.GetDirectoryName(pathRelativeToSolutionFile);
                 if (!string.IsNullOrEmpty(relativePathDirectory))
                 {
                     SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
             
-            Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, relativePath);
+            Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, pathRelativeToSolutionFile);
         }
     }
 }
