@@ -245,7 +245,10 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             if (resolvedWorkloadSetVersion?.Contains('@') == true)
             {
-                var searchVersionsCommand = new WorkloadSearchVersionsCommand(Parser.Instance.Parse("dotnet workload search version " + resolvedWorkloadSetVersion));
+                var searchVersionsCommand = new WorkloadSearchVersionsCommand(
+                     Parser.Instance.Parse("dotnet workload search version " + resolvedWorkloadSetVersion),
+                    installer: _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+                    nugetPackageDownloader: PackageDownloader);
                 resolvedWorkloadSetVersion = searchVersionsCommand.FindBestWorkloadSetFromComponents();
                 if (resolvedWorkloadSetVersion is null)
                 {
