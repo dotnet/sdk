@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Wed, 6 Nov 2024 16:43:26 +0000
+Subject: [PATCH] Update to .NET 10 SDK and TFM to net10.0 in arcade
+
+Backport: https://github.com/dotnet/arcade/pull/15221
+---
+ Directory.Build.props                                        | 5 +++++
+ global.json                                                  | 4 ++--
+ .../src/build/Packaging.targets                              | 4 ++++
+ .../Sdk/tools/dotnet-cli/DotNetCli.props                     | 2 +-
+ .../Sdk/tools/xunit-runner/XUnitRunner.targets               | 2 +-
+ .../Microsoft.DotNet.XliffTasks.csproj                       | 4 ----
+ tests/UnitTests.proj                                         | 5 +++--
+ 7 files changed, 16 insertions(+), 10 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 9d84f1dc6..b25de0091 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -17,4 +17,9 @@
+     <!-- Only upgrade NuGetAudit warnings to errors for official builds. -->
+     <WarningsNotAsErrors Condition="'$(OfficialBuild)' != 'true'">$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
++    <!-- TODO: Remove when Arcade SDK updated TargetFrameworkDefaults.props for .NET 10. -->
++    <NetCurrent>net10.0</NetCurrent>
++    <NetPrevious>net9.0</NetPrevious>
++    <NetToolCurrent>$(NetCurrent)</NetToolCurrent>
++    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetToolCurrent)</NetToolMinimum>
+   </PropertyGroup>
+ 
+diff --git a/global.json b/global.json
+index af88ae5bf..904f8d03d 100644
+--- a/global.json
++++ b/global.json
+@@ -1,9 +1,9 @@
+ {
+   "sdk": {
+-    "version": "9.0.100",
++    "version": "10.0.100-alpha.1.24551.9",
+     "rollForward": "latestFeature"
+   },
+   "tools": {
+-    "dotnet": "9.0.100"
++    "dotnet": "10.0.100-alpha.1.24551.9"
+   },
+   "msbuild-sdks": {
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
+index b94b6736d..e0fadabb2 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
+@@ -955,4 +955,8 @@
+       <RuntimeIDs>@(NETCoreApp90RIDs)</RuntimeIDs>
+     </DefaultValidateFramework>
++    <NETCoreApp100RIDs Condition="'@(NETCoreApp100RIDs)' == ''" Include="@(NETCoreApp90RIDs)" />
++    <DefaultValidateFramework Include="net10.0">
++      <RuntimeIDs>@(NETCoreApp100RIDs)</RuntimeIDs>
++    </DefaultValidateFramework>
+ 
+     <NETCore50RIDs Condition="'@(NETCore50RIDs)' == ''" Include="win10-x86;win10-x86-aot;win10-x64;win10-x64-aot;win10-arm;win10-arm-aot" />
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props b/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
+index 63552b1ed..15d5a63aa 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/dotnet-cli/DotNetCli.props
+@@ -4,5 +4,5 @@
+   <PropertyGroup>
+     <IncludeDotNetCli Condition=" '$(IncludeDotNetCli)' != 'true' ">false</IncludeDotNetCli>
+-    <AspNetCoreRuntimeVersion>9.0.0</AspNetCoreRuntimeVersion>
++    <AspNetCoreRuntimeVersion>10.0.0-alpha.2.24531.4</AspNetCoreRuntimeVersion>
+     <DotNetCliPackageType Condition=" '$(DotNetCliPackageType)' == '' ">runtime</DotNetCliPackageType>
+     <DotNetCliVersion Condition=" '$(DotNetCliVersion)' == '' AND '$(DotNetCliPackageType)' == 'runtime' ">$(BundledNETCoreAppPackageVersion)</DotNetCliVersion>
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
+index 0ae8d1482..9312e2672 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
+@@ -3,5 +3,5 @@
+ 
+   <PropertyGroup>
+-    <XUnitPublishTargetFramework Condition="'$(XUnitPublishTargetFramework)' == ''">net9.0</XUnitPublishTargetFramework>
++    <XUnitPublishTargetFramework Condition="'$(XUnitPublishTargetFramework)' == ''">net10.0</XUnitPublishTargetFramework>
+     <XUnitRuntimeTargetFramework Condition="'$(XUnitRuntimeTargetFramework)' == ''">netcoreapp2.0</XUnitRuntimeTargetFramework>
+ 
+diff --git a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
+index 1059c3bc4..165a4a7d5 100644
+--- a/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
++++ b/src/Microsoft.DotNet.XliffTasks/Microsoft.DotNet.XliffTasks.csproj
+@@ -2,8 +2,4 @@
+ 
+   <PropertyGroup>
+-    <!--
+-       We need to target net8.0 while Arcade SDK 8 is being used.
+-       Xliff tasks were moved from dotnet/xliff-tasks to Arcade in V9, so they are not available in release/8.0 branch.
+-    -->
+     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+diff --git a/tests/UnitTests.proj b/tests/UnitTests.proj
+index 910ccf3b0..ad85e4bac 100644
+--- a/tests/UnitTests.proj
++++ b/tests/UnitTests.proj
+@@ -117,8 +117,9 @@
+ 
+   <ItemGroup>
+-    <HelixWorkItem Condition="$(HelixTargetQueue.StartsWith('Windows'))" Include="AspNetCoreTest">
++    <!-- TODO: Re-enable aspnetcore version branding test: https://github.com/dotnet/arcade/issues/15249 -->
++    <!-- <HelixWorkItem Condition="$(HelixTargetQueue.StartsWith('Windows'))" Include="AspNetCoreTest">
+       <Command>powershell %HELIX_WORKITEM_PAYLOAD%\aspnet-versioncheck.ps1 -aspNetCoreVersion $(AspNetCoreRuntimeVersion)</Command>
+       <PayloadDirectory>$(MSBuildThisFileDirectory)\AspNetVersionCheck</PayloadDirectory>
+-    </HelixWorkItem>
++    </HelixWorkItem> -->
+   </ItemGroup>
+ </Project>

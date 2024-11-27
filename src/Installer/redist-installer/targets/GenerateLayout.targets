@@ -623,7 +623,7 @@
 
   <Target Name="GenerateInternalLayout"
           DependsOnTargets="GenerateLayout"
-          BeforeTargets="AfterBuild">
+          BeforeTargets="AfterBuild" >
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
 

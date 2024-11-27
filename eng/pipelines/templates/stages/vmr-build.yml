@@ -522,6 +522,20 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: LinuxBionic_NativeAOT_Shortstack
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.linuxBionicCrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux-bionic
+            targetArchitecture: arm
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -851,6 +865,20 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxArmCrossContainer }}
+            crossRootFs: '/crossrootfs/arm'
+            targetOS: linux
+            targetArchitecture: arm
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -944,6 +972,123 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux-musl
+            targetArchitecture: x64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux-musl
+            targetArchitecture: arm64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux-musl
+            targetArchitecture: x64
+            targetRid: ${{ variables.linuxMuslX64Rid }}
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxArmAlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/arm'
+            targetOS: linux-musl
+            targetArchitecture: arm
+            targetRid: ${{ variables.linuxMuslArmRid }}
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux }}
+            container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux-musl
+            targetArchitecture: arm64
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxX64CrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxX64CrossContainer }}
+            crossRootFs: '/crossrootfs/x64'
+            targetOS: linux
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -974,6 +1119,20 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: AzureLinux_x64_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Linux_Shortstack }}
+            container: ${{ variables.azurelinuxArm64CrossContainer }}
+            crossRootFs: '/crossrootfs/arm64'
+            targetOS: linux
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -992,6 +1151,30 @@ stages:
             useMonoRuntime: true
             targetOS: osx
             targetArchitecture: arm64
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: OSX_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Mac }}
+            targetOS: osx
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: OSX_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Mac }}
+            targetOS: osx
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1042,6 +1225,18 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: Windows_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: Windows_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -1053,6 +1248,42 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: Windows_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_ShortStack_Mono_CrossAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: arm64
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: arm64
+            extraProperties: /p:DotNetBuildMonoCrossAOT=true
+            runTests: false
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -1060,6 +1291,18 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_ShortStack_NativeAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            architecture: x86
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x86
+            extraProperties: /p:DotNetBuildRuntimeNativeAOTRuntimePack=true
+            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -1128,3 +1371,37 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
+
+### FINAL JOIN ###
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
+  - stage: VMR_Final_Join
+    displayName: VMR Final Join
+    dependsOn: VMR_Vertical_Build
+    jobs:
+    - job: FinalJoin
+      displayName: Final Build Pass
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 240
+      templateContext:
+        outputs:
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
+          ArtifactName: AssetManifests
+          displayName: Publish Merged Manifest
+          sbomEnabled: false
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
+          ArtifactName: BlobArtifacts
+          displayName: Publish Blob Artifacts
+          sbomEnabled: false
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
+          ArtifactName: PackageArtifacts
+          displayName: Publish Package Artifacts
+          sbomEnabled: false
+      steps:
+      - template: ../steps/vmr-join-verticals.yml
+        parameters:
+          dotNetBuildPass: final
+          primaryDependentJob: Windows_x64
+          outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
