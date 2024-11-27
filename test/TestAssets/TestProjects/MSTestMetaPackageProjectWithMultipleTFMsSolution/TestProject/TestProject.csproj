@@ -25,11 +25,7 @@
           MSTest.Analyzers
     -->
 		 <PackageReference Include="MSTest" Version="$(MSTestVersion)" />
-
-		 <!-- <Reference Include="MSTest" > -->
-			<!-- <HintPath>"C:\Code\testfx\artifacts\bin\MSTest\Debug\netstandard2.0\MSTest.dll"</HintPath> -->
-		<!-- </Reference>  -->
-
+		 
 	</ItemGroup>
 
 	<ItemGroup>
