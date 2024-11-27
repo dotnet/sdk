@@ -42,12 +42,6 @@ steps:
   displayName: Set git author to dotnet-maestro[bot]
   workingDirectory: ${{ parameters.vmrPath }}
 
-- script: |
-    echo '**/*' > .artifactignore
-    echo '!./*.patch' >> .artifactignore
-  displayName: Prepare .artifactignore
-  workingDirectory: $(Agent.TempDirectory)
-
 - script: >
     ./eng/vmr-sync.sh
     --vmr ${{ parameters.vmrPath }}
@@ -93,7 +87,15 @@ steps:
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-  - publish: $(Agent.TempDirectory)
+  - task: CopyFiles@2
+    displayName: Collect failed patches
+    condition: failed()
+    inputs:
+      SourceFolder: '$(Agent.TempDirectory)'
+      Contents: '*.patch'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/FailedPatches'
+
+  - publish: '$(Build.ArtifactStagingDirectory)/FailedPatches'
     artifact: $(System.JobDisplayName)_FailedPatches
     displayName: Upload failed patches
     condition: failed()
