@@ -209,6 +209,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var sdkFeatureVersion = "6.0.100";
             var installingWorkload = "simple-workload";
 
+            //  Mock up a 5.0.1xx SDK install so that the installation records for that feature band won't be deleted
+            string dotnetDllPath = Path.Combine(dotnetRoot, "sdk", "5.0.110", "dotnet.dll");
+            Directory.CreateDirectory(Path.GetDirectoryName(dotnetDllPath));
+            File.Create(dotnetDllPath).Close();
+
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
             {
