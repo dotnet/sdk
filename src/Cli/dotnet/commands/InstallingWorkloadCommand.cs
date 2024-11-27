@@ -16,6 +16,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -240,6 +241,17 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
                 return;
+            }
+
+            if (resolvedWorkloadSetVersion?.Contains('@') == true)
+            {
+                var searchVersionsCommand = new WorkloadSearchVersionsCommand(Parser.Instance.Parse("dotnet workload search version " + resolvedWorkloadSetVersion));
+                resolvedWorkloadSetVersion = searchVersionsCommand.FindBestWorkloadSetFromComponents();
+                if (resolvedWorkloadSetVersion is null)
+                {
+                    Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                    return;
+                }
             }
 
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;

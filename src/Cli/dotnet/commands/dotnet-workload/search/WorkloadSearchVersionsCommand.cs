@@ -95,25 +95,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
             else if (_workloadVersion.Contains('@'))
             {
-                var versions = GetVersions(0);
-                if (versions is null)
+                var firstVersionWithPackage = FindBestWorkloadSetFromComponents();
+                if (firstVersionWithPackage is null)
                 {
                     return 0;
                 }
-
-                var workloadVersions = _workloadVersion.Split(';');
-                var packageNamesAndVersions = workloadVersions.Select(version =>
-                    {
-                        var split = version.Split('@');
-                        return (new ManifestId(_resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
-                    });
-
-                // Since these are ordered by version (descending), the first is the highest version
-                var firstVersionWithPackage = versions.FirstOrDefault(version =>
-                {
-                    var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
-                    return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
-                }, defaultValue: null);
 
                 Reporter.WriteLine(firstVersionWithPackage is null ? string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, _workloadVersion) : firstVersionWithPackage);
             }
@@ -158,6 +144,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 Microsoft.DotNet.Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
                 return null;
             }
+        }
+
+        public string FindBestWorkloadSetFromComponents()
+        {
+            var versions = GetVersions(0);
+            if (versions is null)
+            {
+                return null;
+            }
+
+            var workloadVersions = _workloadVersion.Split(';');
+            var packageNamesAndVersions = workloadVersions.Select(version =>
+            {
+                var split = version.Split('@');
+                return (new ManifestId(_resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
+            });
+
+            // Since these are ordered by version (descending), the first is the highest version
+            return versions.FirstOrDefault(version =>
+            {
+                var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
+                return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
+            }, defaultValue: null);
         }
     }
 }
