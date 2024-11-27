@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
