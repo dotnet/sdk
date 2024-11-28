@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Resources;
-using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Resources;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -309,6 +309,8 @@ internal sealed class Registry
             "arm64" => "arm64",
             "ppc64le" => "ppc64le",
             "s390x" => "s390x",
+            "riscv64" => "riscv64",
+            "loongarch64" => "loongarch64",
             _ => null
         };
 
@@ -580,7 +582,7 @@ internal sealed class Registry
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
+        using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
             var configDigest = builtImage.ImageDigest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
