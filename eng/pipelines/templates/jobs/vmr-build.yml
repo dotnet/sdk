@@ -153,17 +153,18 @@ jobs:
   # We either build the repo directly, or we extract them outside (which is what partners do)
   - ${{ if parameters.buildFromArchive }}:
     - name: sourcesPath
-      value: $(Build.StagingDirectory)/dotnet-sources/
+      value: $(Build.ArtifactStagingDirectory)/dotnet-sources/
   - ${{ else }}:
     - name: sourcesPath
       value: $(vmrPath)
 
   templateContext:
+    outputParentDirectory: $(Build.ArtifactStagingDirectory)
     outputs:
     - output: pipelineArtifact
       displayName: Publish BuildLogs
       condition: succeededOrFailed()
-      targetPath: $(Build.StagingDirectory)/BuildLogs
+      targetPath: $(Build.ArtifactStagingDirectory)/BuildLogs
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
       sbomEnabled: false
 
@@ -179,14 +180,6 @@ jobs:
       ArtifactName: VerticalManifests
       displayName: Publish Vertical Manifest
       sbomEnabled: false
-
-    - ${{ if not(parameters.isBuiltFromVmr) }}:
-      - output: pipelineArtifact
-        displayName: Upload failed patches
-        condition: failed()
-        targetPath: $(Agent.TempDirectory)
-        artifactName: $(System.JobDisplayName)_FailedPatches
-        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -211,7 +204,7 @@ jobs:
         cp -r "$(vmrPath)" "$(sourcesPath)"
         rm -rf "$(sourcesPath)/.git"
       displayName: Export VMR sources
-      workingDirectory: $(Build.StagingDirectory)
+      workingDirectory: $(Build.ArtifactStagingDirectory)
 
   - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
     - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
@@ -505,7 +498,7 @@ jobs:
           }
         }
 
-        $targetFolder = "$(Build.StagingDirectory)/BuildLogs/"
+        $targetFolder = "$(Build.ArtifactStagingDirectory)/BuildLogs/"
         New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
 
         cd "$(sourcesPath)"
@@ -533,7 +526,7 @@ jobs:
     - script: |
         set -ex
 
-        targetFolder=$(Build.StagingDirectory)/BuildLogs/
+        targetFolder=$(Build.ArtifactStagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
 
         # Download rsync if using mariner
@@ -566,7 +559,7 @@ jobs:
       condition: succeededOrFailed()
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    - publish: $(Build.StagingDirectory)/BuildLogs
+    - publish: $(Build.ArtifactStagingDirectory)/BuildLogs
       artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
       displayName: Publish BuildLogs
       continueOnError: true
