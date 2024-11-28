@@ -1387,6 +1387,7 @@ stages:
       pool: ${{ parameters.pool_Windows }}
       timeoutInMinutes: 240
       templateContext:
+        outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
         outputs:
         - output: buildArtifacts
           PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
