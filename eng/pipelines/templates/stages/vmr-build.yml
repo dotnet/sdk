@@ -996,7 +996,7 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
             extraProperties: /p:DotNetBuildMonoCrossAOT=true
             runTests: false
 
@@ -1371,3 +1371,41 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
+
+### FINAL JOIN ###
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
+  - stage: VMR_Final_Join
+    displayName: VMR Final Join
+    dependsOn: VMR_Vertical_Build
+    variables:
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
+    jobs:
+    - job: FinalJoin
+      displayName: Final Build Pass
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 240
+      templateContext:
+        outputs:
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
+          ArtifactName: AssetManifests
+          displayName: Publish Merged Manifest
+          sbomEnabled: false
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
+          ArtifactName: BlobArtifacts
+          displayName: Publish Blob Artifacts
+          sbomEnabled: false
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
+          ArtifactName: PackageArtifacts
+          displayName: Publish Package Artifacts
+          sbomEnabled: false
+      steps:
+      - template: ../steps/vmr-join-verticals.yml
+        parameters:
+          dotNetBuildPass: final
+          primaryDependentJob: Windows_x64
+          outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
