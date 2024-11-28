@@ -1377,6 +1377,10 @@ stages:
   - stage: VMR_Final_Join
     displayName: VMR Final Join
     dependsOn: VMR_Vertical_Build
+    variables:
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
     jobs:
     - job: FinalJoin
       displayName: Final Build Pass
