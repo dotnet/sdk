@@ -4,9 +4,8 @@
 
 using System.Buffers;
 using System.Net.WebSockets;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch;
 
 internal readonly struct BrowserConnection : IAsyncDisposable
 {

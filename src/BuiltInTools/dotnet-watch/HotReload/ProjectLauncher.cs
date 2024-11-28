@@ -3,11 +3,8 @@
 
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 
@@ -31,7 +28,6 @@ internal sealed class ProjectLauncher(
         CancellationTokenSource processTerminationSource,
         Action<OutputLine>? onOutput,
         RestartOperation restartOperation,
-        bool build,
         CancellationToken cancellationToken)
     {
         var projectNode = projectMap.TryGetProjectNode(projectOptions.ProjectPath, projectOptions.TargetFramework);
@@ -58,9 +54,7 @@ internal sealed class ProjectLauncher(
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
-            Arguments = build || !CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command)
-                ? [projectOptions.Command, .. projectOptions.CommandArguments]
-                : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
+            Arguments = [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();

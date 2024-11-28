@@ -9,11 +9,9 @@ using System.Data;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Run;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 using NuGet.Common;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal sealed class CommandLineOptions
 {

@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class DotNetWatcherTests : DotNetWatchTestBase
     {
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var value = await App.AssertOutputLineStartsWith(messagePrefix);
             Assert.Equal(1, int.Parse(value, CultureInfo.InvariantCulture));
 
-            await App.AssertWaitingForChanges();
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             UpdateSourceFile(source);
             await App.AssertStarted();

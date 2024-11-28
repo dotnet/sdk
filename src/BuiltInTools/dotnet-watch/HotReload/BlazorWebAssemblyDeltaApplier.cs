@@ -4,10 +4,9 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : SingleProcessDeltaApplier(reporter)
     {

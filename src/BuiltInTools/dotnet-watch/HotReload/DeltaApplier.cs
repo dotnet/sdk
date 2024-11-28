@@ -4,10 +4,9 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal abstract class DeltaApplier(IReporter reporter) : IDisposable
     {

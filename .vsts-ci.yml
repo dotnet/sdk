@@ -97,7 +97,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: 1es-windows-2022
+            image: windows.vs2022.amd64
             os: windows
           helixTargetQueue: windows.amd64.vs2022.pre
           oneESCompat:

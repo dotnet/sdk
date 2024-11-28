@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher;
-
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -62,7 +60,8 @@ namespace Microsoft.Extensions.Tools.Internal
                 {
                     CtrlC => new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true),
                     CtrlR => new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true),
-                    >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: false, alt: false, control: false),
+                    >= 'a' and <= 'z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'a'), shift: false, alt: false, control: false),
+                    >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: true, alt: false, control: false),
                     _ => default
                 };
 
