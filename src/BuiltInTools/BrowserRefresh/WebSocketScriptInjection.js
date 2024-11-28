@@ -174,6 +174,19 @@ setTimeout(async function () {
     }
   }
 
+  function sendDeltaApplied() {
+    connection.send(new Uint8Array([1]).buffer);
+  }
+
+  function sendDeltaNotApplied(error) {
+    if (error) {
+      let encoder = new TextEncoder()
+      connection.send(encoder.encode("\0" + error.message + "\0" + error.stack));
+    } else {
+      connection.send(new Uint8Array([0]).buffer);
+    }
+  }
+
   async function applyBlazorDeltas(serverSecret, updateId, deltas, responseLoggingLevel) {
     if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
       // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
