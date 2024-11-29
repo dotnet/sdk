@@ -199,8 +199,8 @@
          then use that in Directory.Packages.props.
 
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes. -->
-    <MicrosoftBuildVersion>17.13.0-preview-24578-01</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.13.0-preview-24578-01</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.13.0-preview-24579-02</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.13.0-preview-24579-02</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="Exists('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion') and '$(DotNetBuildSourceOnly)' != 'true'">$([System.IO.File]::ReadAllText('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion').Trim())</MicrosoftBuildMinimumVersion>
   </PropertyGroup>
   <PropertyGroup>
