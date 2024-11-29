@@ -348,7 +348,7 @@ stages:
         #     - ${{ format('{0}_Mono_Offline_MsftSdk_x64', variables.centOSStreamName) }}
 
 #### VERTICAL BUILD (Validation) ####
-- ${{ if and(not(parameters.isSourceOnlyBuild), not(parameters.isBuiltFromVmr) }}:
+- ${{ if and(not(parameters.isSourceOnlyBuild), not(parameters.isBuiltFromVmr)) }}:
   - stage: VMR_Vertical_Build_Validation
     displayName: VMR Vertical Build Validation
     dependsOn: []
