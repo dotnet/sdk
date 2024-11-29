@@ -8,6 +8,9 @@ indent_style = space
 [*.{xml,props,targets}]
 indent_size = 2
 
+[*.json]
+indent_size = 2
+
 # C# files
 [*.cs]
 
