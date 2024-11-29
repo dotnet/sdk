@@ -8,6 +8,10 @@ indent_style = space
 [*.xml]
 indent_size = 2
 
+# Xml project files
+[*.{csproj,fsproj,vbproj,proj}]
+indent_size = 2
+
 # Xml config files
 [*.{props,targets,config,nuspec}]
 indent_size = 2
