@@ -1,9 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
 using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Build.Graph;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
         string? targetFramework,
-        IReadOnlyList<(string, string)>? buildProperties,
+        IReadOnlyList<(string, string)> buildProperties,
         EnvironmentOptions environmentOptions,
         IReporter reporter,
         OutputSink? outputSink,
@@ -36,7 +37,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         public string RootProjectFile => rootProjectFile;
 
         // Virtual for testing.
-        public virtual async ValueTask<EvaluationResult?> TryCreateAsync(CancellationToken cancellationToken)
+
+        public virtual async ValueTask<EvaluationResult?> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
         {
             var watchList = Path.GetTempFileName();
             try
@@ -47,7 +49,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var arguments = new List<string>
                 {
                     "msbuild",
+                    "/restore",
                     "/nologo",
+                    "/v:m",
                     rootProjectFile,
                     $"/p:_DotNetWatchListFile={watchList}",
                 };
@@ -56,7 +60,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
 #endif
                 {
-                    arguments.Add("/bl");
+                    arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
                 }
 
                 if (environmentOptions.SuppressHandlingStaticContentFiles)
@@ -142,7 +146,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 Debug.Assert(fileItems.Values.All(f => Path.IsPathRooted(f.FilePath)), "All files should be rooted paths");
 #endif
 
-                return new EvaluationResult(fileItems);
+                // Load the project graph after the project has been restored:
+                ProjectGraph? projectGraph = null;
+                if (requireProjectGraph != null)
+                {
+                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value);
+                    if (projectGraph == null && requireProjectGraph == true)
+                    {
+                        return null;
+                    }
+                }
+
+                return new EvaluationResult(fileItems, projectGraph);
             }
             finally
             {
@@ -150,7 +165,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        private static IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)>? buildProperties, bool trace)
+        private static IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)> buildProperties, bool trace)
         {
             var args = new List<string>
             {
@@ -168,10 +183,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 args.Add("/p:TargetFramework=" + targetFramework);
             }
 
-            if (buildProperties != null)
-            {
-                args.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
-            }
+            args.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
 
             if (trace)
             {
@@ -197,6 +209,56 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).FirstOrDefault(File.Exists);
             return targetPath ?? throw new FileNotFoundException("Fatal error: could not find DotNetWatch.targets");
+        }
+
+        // internal for testing
+        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
+        {
+            var globalOptions = new Dictionary<string, string>();
+            if (targetFramework != null)
+            {
+                globalOptions.Add("TargetFramework", targetFramework);
+            }
+
+            foreach (var (name, value) in buildProperties)
+            {
+                globalOptions[name] = value;
+            }
+
+            try
+            {
+                return new ProjectGraph(rootProjectFile, globalOptions);
+            }
+            catch (Exception e)
+            {
+                reporter.Verbose("Failed to load project graph.");
+
+                if (e is AggregateException { InnerExceptions: var innerExceptions })
+                {
+                    foreach (var inner in innerExceptions)
+                    {
+                        Report(inner);
+                    }
+                }
+                else
+                {
+                    Report(e);
+                }
+
+                void Report(Exception e)
+                {
+                    if (projectGraphRequired)
+                    {
+                        reporter.Error(e.Message);
+                    }
+                    else
+                    {
+                        reporter.Warn(e.Message);
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
