@@ -73,10 +73,15 @@ namespace Microsoft.DotNet.Cli
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);
 
-            _cancellationToken.Cancel();
-            _testAppPipeConnectionLoop.Wait();
+            WaitOnTestApplicationPipeConnectionLoop();
 
             return result;
+        }
+
+        private void WaitOnTestApplicationPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
@@ -376,6 +381,8 @@ namespace Microsoft.DotNet.Cli
             {
                 namedPipeServer.Dispose();
             }
+
+            WaitOnTestApplicationPipeConnectionLoop();
         }
     }
 }
