@@ -349,6 +349,7 @@ namespace GenerateDocumentationAndConfigFiles
                         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDefaultValues" />
                         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
                         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="NoWarn" />
                       </ItemGroup>
 
                     """,
