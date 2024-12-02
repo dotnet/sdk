@@ -31,9 +31,6 @@ src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
 src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
 src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
 
-# Non-OSS license for Windows-only installer components
-src/aspnetcore/src/Installers/Windows/AspNetCoreModule-Setup/license/license.rtf
-
 # Windows installer files that have a reference to a URL for license
 src/aspnetcore/src/Installers/Windows/**/*.wxl|unknown-license-reference
 src/aspnetcore/src/Installers/Windows/**/*.wxs|unknown-license-reference
@@ -204,6 +201,7 @@ src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 
 # False positive
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/8.0.0/THIRD-PARTY-NOTICES.TXT|unknown
+src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/9.0.0/THIRD-PARTY-NOTICES.TXT|unknown
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
