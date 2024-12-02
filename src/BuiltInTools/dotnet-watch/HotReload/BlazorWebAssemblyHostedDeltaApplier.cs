@@ -3,13 +3,14 @@
 
 
 using System.Collections.Immutable;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : DeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : DeltaApplier(reporter)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, targetFrameworkVersion);
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, project);
         private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
         public override void Dispose()

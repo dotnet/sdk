@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
 
@@ -16,6 +17,9 @@ internal static class ProjectGraphNodeExtensions
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
         => EnvironmentVariableNames.TryParseTargetFrameworkVersion(projectNode.ProjectInstance.GetPropertyValue("TargetFrameworkVersion"));
+
+    public static ImmutableArray<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
+        => [.. projectNode.ProjectInstance.GetPropertyValue("WebAssemblyHotReloadCapabilities").Split(';').Select(static c => c.Trim()).Where(static c => c != "")];
 
     public static bool IsTargetFrameworkVersionOrNewer(this ProjectGraphNode projectNode, Version minVersion)
         => GetTargetFrameworkVersion(projectNode) is { } version && version >= minVersion;
