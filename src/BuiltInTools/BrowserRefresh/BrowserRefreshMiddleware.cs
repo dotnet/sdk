@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _next = next;
             _logger = logger;
 
-            logger.LogDebug("Middleware loaded");
+            logger.LogDebug("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}", _dotnetModifiableAssemblies, _aspnetcoreBrowserTools);
         }
 
         private static string? GetNonEmptyEnvironmentVariableValue(string name)

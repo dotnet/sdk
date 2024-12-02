@@ -254,6 +254,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js");
             App.AssertOutputContains("Middleware loaded. Script /_framework/blazor-hotreload.js");
             App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware");
+            App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
             AssertEx.DoesNotContain("🕵️", App.Process.Output);
