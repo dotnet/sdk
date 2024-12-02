@@ -58,12 +58,12 @@ public class ConcatenateCssFiles : Task
             // If we were to produce "/_content/library/bundle.bdl.scp.css" it would fail to accoutn for "subdir"
             // We could produce shorter paths if we detected common segments between the final bundle base path and the imported bundle
             // base paths, but its more work and it will not have a significant impact on the bundle size size.
-            var normalizedBasePath = ConcatenateCssFiles.NormalizePath(ScopedCssBundleBasePath);
+            var normalizedBasePath = NormalizePath(ScopedCssBundleBasePath);
             var currentBasePathSegments = normalizedBasePath.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
             var prefix = string.Join("/", Enumerable.Repeat("..", currentBasePathSegments.Length));
             for (var i = 0; i < ProjectBundles.Length; i++)
             {
-                var importPath = ConcatenateCssFiles.NormalizePath(Path.Combine(prefix, ProjectBundles[i].ItemSpec));
+                var importPath = NormalizePath(Path.Combine(prefix, ProjectBundles[i].ItemSpec));
 
 #if !NET9_0_OR_GREATER
                 builder.AppendLine($"@import '{importPath}';");
@@ -91,7 +91,7 @@ public class ConcatenateCssFiles : Task
 
         var content = builder.ToString();
 
-        if (!File.Exists(OutputFile) || !ConcatenateCssFiles.SameContent(content, OutputFile))
+        if (!File.Exists(OutputFile) || !SameContent(content, OutputFile))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
             File.WriteAllText(OutputFile, content);

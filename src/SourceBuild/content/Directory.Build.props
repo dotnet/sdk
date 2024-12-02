@@ -30,8 +30,8 @@
     <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
-    <!-- NativeAOT Mac builds are short -->
-    <ShortStack Condition="'$(TargetOS)' == 'osx' and '$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
+    <!-- NativeAOT builds are short -->
+    <ShortStack Condition="'$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
     <!-- Mono LLVM builds are short -->
     <ShortStack Condition="'$(MonoEnableLLVM)' == 'true' or '$(MonoAOTEnableLLVM)' == 'true'">true</ShortStack>
     <!-- Mono AOT cross compiler builds are short -->

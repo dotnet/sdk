@@ -113,6 +113,11 @@ Esempi:
         <target state="translated">NAME="VALORE"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidTestMessageStateException">
+        <source>Invalid test message state '{0}'</source>
+        <target state="new">Invalid test message state '{0}'</target>
+        <note>{0} - test message state</note>
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">Numero massimo di moduli di test che possono essere eseguiti in parallelo.</target>
@@ -243,6 +248,16 @@ Se non esiste, la directory specificata verrà creata.</target>
       <trans-unit id="CmdTestModulesRootDirectoryDescription">
         <source>The test modules have the specified root directory.</source>
         <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedMessageRequestTypeException">
+        <source>Message Request type '{0}' is unsupported.</source>
+        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
+        <source>Test application(s) that support VSTest are not supported.</source>
+        <target state="new">Test application(s) that support VSTest are not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
