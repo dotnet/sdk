@@ -107,6 +107,7 @@ verbosity=verbose
 component_template="$sdk_dir/src/VirtualMonoRepo/Component.template.md"
 tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
 azdev_pat=''
+ci=false
 
 # If sdk is a repo, we're in an sdk and not in the dotnet/dotnet repo
 if [[ -d "$sdk_dir/.git" ]]; then
@@ -150,6 +151,9 @@ while [[ $# -gt 0 ]]; do
     --azdev-pat)
       azdev_pat=$2
       shift
+      ;;
+    --ci)
+      ci=true
       ;;
     -d|--debug)
       verbosity=debug
@@ -259,6 +263,11 @@ if [[ -n "$azdev_pat" ]]; then
   azdev_pat="--azdev-pat $azdev_pat"
 fi
 
+ci_arg=''
+if [[ "$ci" == "true" ]]; then
+  ci_arg="--ci"
+fi
+
 # Synchronize the VMR
 
 "$dotnet" darc vmr update                    \
@@ -267,6 +276,7 @@ fi
   $azdev_pat                                 \
   --$verbosity                               \
   $recursive_arg                             \
+  $ci_arg                                    \
   $additional_remotes                        \
   --component-template "$component_template" \
   --tpn-template "$tpn_template"             \
