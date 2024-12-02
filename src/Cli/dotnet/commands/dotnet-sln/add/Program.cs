@@ -24,8 +24,10 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         private static string GetSolutionFolderPathWithForwardSlashes(string path)
         {
             // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
+            // https://github.com/microsoft/vs-solutionpersistence/blob/87ee8ea069662d55c336a9bd68fe4851d0384fa5/src/Microsoft.VisualStudio.SolutionPersistence/Model/SolutionModel.cs#L171C1-L172C1
             return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(path).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
+
         public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 solution.AddBuildType(buildType);
             }
 
-            SolutionFolderModel? solutionFolder = (!_inRoot && _solutionFolderPath != null)
+            SolutionFolderModel? solutionFolder = (!_inRoot && !string.IsNullOrEmpty(_solutionFolderPath))
                 ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
                 : null;
 
@@ -164,14 +166,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var solutionPlatform in solution.Platforms)
             {
                 var projectPlatform = projectInstancePlatforms.FirstOrDefault(
-                    platform => platform.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault("Any CPU"));
+                    platform => platform.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault());
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, projectPlatform));
             }
 
             foreach (var solutionBuildType in solution.BuildTypes)
             {
                 var projectBuildType = projectInstanceBuildTypes.FirstOrDefault(
-                    buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault("Debug"));
+                    buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
             
