@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Watcher.Tests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+    [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
