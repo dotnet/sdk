@@ -9,7 +9,6 @@ schedules:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
 
 pr: none
@@ -20,7 +19,6 @@ trigger:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
   paths:
     include:

@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -140,10 +141,11 @@ namespace Microsoft.DotNet.Watch
             var status = ArrayPool<byte>.Shared.Rent(1);
             try
             {
-                var statusBytesRead = await _pipe.ReadAsync(status, cancellationToken);
+                var statusBytesRead = await _pipe.ReadAsync(status, offset: 0, count: 1, cancellationToken);
                 if (statusBytesRead != 1 || status[0] != UpdatePayload.ApplySuccessValue)
                 {
-                    Reporter.Error($"Change failed to apply (error code: '{BitConverter.ToString(status, 0, statusBytesRead)}'). Further changes won't be applied to this process.");
+                    var message = (statusBytesRead == 0) ? "received no data" : $"received status 0x{status[0]:x2}";
+                    Reporter.Error($"Change failed to apply ({message}). Further changes won't be applied to this process.");
                     return false;
                 }
 
