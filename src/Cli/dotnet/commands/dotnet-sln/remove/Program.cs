@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -44,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 RemoveProjectsAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
                 return 0;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not GracefulException)
             {
                 throw new GracefulException(ex.Message, ex);
             }
@@ -55,9 +58,14 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
 
-            foreach (var project in projectPaths)
+            foreach (var projectPath in projectPaths)
             {
-                SolutionProjectModel projectModel = solution.FindProject(project);
+                // Open project instance to see if it is a valid project
+                ProjectRootElement projectRootElement = ProjectRootElement.Open(projectPath);
+                ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
+                string projectInstanceId = projectInstance.GetProjectId();
+
+                SolutionProjectModel? projectModel = (SolutionProjectModel?) solution.FindItemById(new Guid(projectInstanceId));
                 solution.RemoveProject(projectModel);
             }
 
