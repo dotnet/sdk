@@ -112,21 +112,28 @@ namespace Microsoft.DotNet.Cli
 
                 _actionQueue.EnqueueCompleted();
                 hasFailed = _actionQueue.WaitAllActions();
-
                 // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-                _cancellationToken.Cancel();
-                _namedPipeConnectionLoop.Wait();
+
+                WaitOnMSBuildHandlerPipeConnectionLoop();
 
                 // Clean up everything
                 CleanUp();
             }
             catch (Exception)
             {
+                WaitOnMSBuildHandlerPipeConnectionLoop();
                 CleanUp();
+
                 throw;
             }
 
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void WaitOnMSBuildHandlerPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _namedPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private void CleanUp()
