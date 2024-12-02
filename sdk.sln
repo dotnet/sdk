@@ -499,7 +499,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Inst
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.csproj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator\VSTemplateLocator.csproj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\VSTemplateLocator\VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
 EndProject
@@ -511,7 +511,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Sdk.Compilers
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireService.Tests", "test\Microsoft.WebTools.AspireService.Tests\Microsoft.WebTools.AspireService.Tests.csproj", "{1F0B4B3C-DC88-4740-B04F-1707102E9930}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSMSBuildExtensions", "src\Installer\redist-installer\projects\VSMSBuildExtensions\VSMSBuildExtensions.csproj", "{D9617F63-15F4-4CA2-8ECF-728A94B45D82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSMSBuildExtensions", "src\VSMSBuildExtensions\VSMSBuildExtensions.proj", "{D9617F63-15F4-4CA2-8ECF-728A94B45D82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
