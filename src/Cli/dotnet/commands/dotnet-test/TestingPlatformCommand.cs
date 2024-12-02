@@ -97,7 +97,6 @@ namespace Microsoft.DotNet.Cli
                     if (msbuildResult != 0)
                     {
                         VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
-                        CleanUp();
                         return ExitCodes.GenericFailure;
                     }
 
@@ -105,7 +104,6 @@ namespace Microsoft.DotNet.Cli
                     if (!_msBuildConnectionHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                        CleanUp();
                         return ExitCodes.GenericFailure;
                     }
                 }
@@ -115,19 +113,11 @@ namespace Microsoft.DotNet.Cli
                 // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
 
                 WaitOnMSBuildHandlerPipeConnectionLoop();
-
-                // Clean up everything
-                CleanUp();
-            }
-            catch (Exception)
-            {
-                CleanUp();
-
-                throw;
             }
             finally
             {
-                WaitOnMSBuildHandlerPipeConnectionLoop();
+                // Clean up everything
+                CleanUp();
             }
 
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
