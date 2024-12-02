@@ -480,8 +480,12 @@ namespace Microsoft.DotNet.Tools.Run
         static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
         {
             var msbuildVerbosity = ToLoggerVerbosity(verbosity);
-            var thing = Assembly.Load("MSBuild").GetType("Microsoft.Build.Logging.TerminalLogger.TerminalLogger")!.GetConstructor([typeof(LoggerVerbosity)])!.Invoke([msbuildVerbosity]) as ILogger;
-            return thing!;
+            var logger = Assembly.Load("MSBuild")
+                .GetType("Microsoft.Build.Logging.TerminalLogger.TerminalLogger")!
+                .GetMethod("CreateTerminalOrConsoleLogger")!
+                .Invoke(null, [msbuildVerbosity]) as ILogger;
+
+            return logger!;
         }
 
         static string ComputeRunArgumentsTarget = "ComputeRunArguments";
