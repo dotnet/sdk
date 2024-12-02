@@ -276,7 +276,7 @@ fi
   $azdev_pat                                 \
   --$verbosity                               \
   $recursive_arg                             \
-  $ci                                        \
+  $ci_arg                                    \
   $additional_remotes                        \
   --component-template "$component_template" \
   --tpn-template "$tpn_template"             \

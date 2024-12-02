@@ -200,7 +200,7 @@ if ($recursive) {
 }
 
 if ($ci) {
-  $darcArgs += ("ci")
+  $darcArgs += ("--ci")
 }
 
 if ($additionalRemotes) {
