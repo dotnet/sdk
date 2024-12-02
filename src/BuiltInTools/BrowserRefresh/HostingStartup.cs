@@ -44,11 +44,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                         app.Map(ApplicationPaths.BlazorHotReloadMiddleware, static app => app.UseMiddleware<BlazorWasmHotReloadMiddleware>());
 
                         app.Map(ApplicationPaths.BrowserRefreshJS,
-                            static app => app.UseMiddleware<BrowserScriptMiddleware>(BrowserScriptMiddleware.GetBrowserRefreshJS()));
+                            static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BrowserRefreshJS, BrowserScriptMiddleware.GetBrowserRefreshJS()));
 
                         // backwards compat only:
                         app.Map(ApplicationPaths.BlazorHotReloadJS,
-                            static app => app.UseMiddleware<BrowserScriptMiddleware>(BrowserScriptMiddleware.GetBlazorHotReloadJS()));
+                            static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BlazorHotReloadJS, BrowserScriptMiddleware.GetBlazorHotReloadJS()));
                     });
 
                 app.UseMiddleware<BrowserRefreshMiddleware>();

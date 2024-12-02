@@ -9,12 +9,22 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    public sealed class BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
+    public sealed class BrowserRefreshMiddleware
     {
         private static readonly MediaTypeHeaderValue s_textHtmlMediaType = new("text/html");
         private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
+        private readonly RequestDelegate _next;
+        private readonly ILogger<BrowserRefreshMiddleware> _logger;
         private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
         private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
+
+        public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+
+            logger.LogDebug("Middleware loaded");
+        }
 
         private static string? GetNonEmptyEnvironmentVariableValue(string name)
             => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
@@ -24,18 +34,18 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             if (IsWebAssemblyBootRequest(context))
             {
                 AttachWebAssemblyHeaders(context);
-                await next(context);
+                await _next(context);
             }
             else if (IsBrowserDocumentRequest(context))
             {
                 // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
-                using var responseStreamWrapper = new ResponseStreamWrapper(context, logger);
+                using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
                 var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
                 context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(responseStreamWrapper));
 
                 try
                 {
-                    await next(context);
+                    await _next(context);
                 }
                 finally
                 {
@@ -46,21 +56,21 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 {
                     if (responseStreamWrapper.ScriptInjectionPerformed)
                     {
-                        Log.BrowserConfiguredForRefreshes(logger);
+                        Log.BrowserConfiguredForRefreshes(_logger);
                     }
                     else if (context.Response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodings))
                     {
-                        Log.ResponseCompressionDetected(logger, contentEncodings);
+                        Log.ResponseCompressionDetected(_logger, contentEncodings);
                     }
                     else
                     {
-                        Log.FailedToConfiguredForRefreshes(logger);
+                        Log.FailedToConfiguredForRefreshes(_logger);
                     }
                 }
             }
             else
             {
-                await next(context);
+                await _next(context);
             }
         }
 
@@ -76,12 +86,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     }
                     else
                     {
-                        logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
+                        _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
                     }
                 }
                 else
                 {
-                    logger.LogDebug("DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
+                    _logger.LogDebug("DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
                 }
 
                 if (!context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"))
@@ -92,12 +102,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     }
                     else
                     {
-                        logger.LogDebug("__ASPNETCORE_BROWSER_TOOLS environment variable is not set. The browser refresh feature may not work as expected.");
+                        _logger.LogDebug("__ASPNETCORE_BROWSER_TOOLS environment variable is not set. The browser refresh feature may not work as expected.");
                     }
                 }
                 else
                 {
-                    logger.LogDebug("ASPNETCORE-BROWSER-TOOLS header is already set.");
+                    _logger.LogDebug("ASPNETCORE-BROWSER-TOOLS header is already set.");
                 }
 
                 return Task.CompletedTask;
