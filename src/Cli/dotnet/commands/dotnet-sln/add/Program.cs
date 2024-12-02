@@ -37,11 +37,12 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         public override int Execute()
         {
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
             if (_projects.Count == 0)
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
+            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+
             try
             {
                 PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
@@ -52,10 +53,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 });
                 AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
                 return 0;
-            }
-            catch (GracefulException)
-            {
-                throw;
             }
             catch (Exception ex) when (ex is not GracefulException)
             {
