@@ -121,10 +121,13 @@ namespace Microsoft.DotNet.Cli
             }
             catch (Exception)
             {
-                WaitOnMSBuildHandlerPipeConnectionLoop();
                 CleanUp();
 
                 throw;
+            }
+            finally
+            {
+                WaitOnMSBuildHandlerPipeConnectionLoop();
             }
 
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
