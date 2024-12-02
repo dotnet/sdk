@@ -24,10 +24,10 @@
     <ProjectReference Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- Shared infra to build and use the BuildCoreSdkTasks -->
-  <Import Project="..\..\targets\BuildCoreSdkTasks.targets" />
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
-  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="BuildCoreSdkTasks;ResolveProjectReferences">
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <MSBuildExtensionsOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MSBuildExtensionsOutputPath>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
