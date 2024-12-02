@@ -38,7 +38,10 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().Fail();
+            // Custom culture is allowed, but if set explicitly and overwritten - a warning is issued.
+            buildCommand.Execute().Should().Pass().And
+                // warning MSB3002: Explicitly set culture "test-1" for item "Resources.test-1.resx" was overwritten with inferred culture "", because 'RespectAlreadyAssignedItemCulture' property was not set.
+                .HaveStdOutContaining("warning MSB3002:");
         }
     }
 }
