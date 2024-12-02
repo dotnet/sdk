@@ -298,6 +298,7 @@
         @(Net70MonoRuntimePackRids);
         freebsd-x64;
         freebsd-arm64;
+        wasi-wasm;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
