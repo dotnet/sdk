@@ -83,6 +83,12 @@ namespace Microsoft.DotNet.Watch
 
             environmentBuilder.DotNetStartupHookDirective.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
             environmentBuilder.AspNetCoreHostingStartupAssembliesVariable.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+
+            if (_reporter.IsVerbose)
+            {
+                // enable debug logging from middleware:
+                environmentBuilder.SetVariable("Logging__LogLevel__Microsoft.AspNetCore.Watch", "Debug");
+            }
         }
 
         public string GetServerKey()
