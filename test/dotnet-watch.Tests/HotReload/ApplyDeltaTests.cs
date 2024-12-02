@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task AddSourceFile()
         {
-            Logger.WriteLine("AddSourceFile started");
+            LogMessage("AddSourceFile started");
 
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ChangeFileInDependency()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
-            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+            var testAsset = _testAssetsManager.CopyTestAsset("FSharpTestAppSimple")
                 .WithSource();
 
             App.Start(testAsset, []);
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
-            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+            var testAsset = _testAssetsManager.CopyTestAsset("FSharpTestAppSimple")
                 .WithSource();
 
             var source = """
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppTypeLoadFailure")
                 .WithSource();
 
             App.Start(testAsset, [], "App");
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task MetadataUpdateHandler_NoActions()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadApp")
                 .WithSource();
 
             var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CombinatorialData]
         public async Task MetadataUpdateHandler_Exception(bool verbose)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())
                 .WithSource();
 
             var sourcePath = Path.Combine(testAsset.Path, "Program.cs");
@@ -234,7 +234,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task BlazorWasm()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchBlazorWasm")
                 .WithSource();
 
             var port = TestOptions.GetTestPort();
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task BlazorWasm_MSBuildWarning()
         {
-            var testAsset = TestAssets
+            var testAsset = _testAssetsManager
                 .CopyTestAsset("WatchBlazorWasm")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [CoreMSBuildOnlyFact]
         public async Task HandleMissingAssemblyFailure()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMissingAssemblyFailure")
                 .WithSource();
 
             App.Start(testAsset, [], "App");
@@ -368,9 +368,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
         {
-            Logger.WriteLine("RenameSourceFile started");
+            LogMessage("RenameSourceFile started");
 
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
@@ -410,7 +410,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 File.WriteAllText(newFilePath, source);
             }
 
-            Logger.WriteLine($"Renamed '{oldFilePath}' to '{newFilePath}'.");
+            LogMessage($"Renamed '{oldFilePath}' to '{newFilePath}'.");
 
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
@@ -420,9 +420,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
         {
-            Logger.WriteLine("RenameSourceFile started");
+            LogMessage("RenameSourceFile started");
 
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
@@ -465,7 +465,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 File.WriteAllText(Path.Combine(newSubdir, "Foo.cs"), source);
             }
 
-            Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
+            LogMessage($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
@@ -473,7 +473,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task Aspire()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchAspire")
                 .WithSource();
 
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
