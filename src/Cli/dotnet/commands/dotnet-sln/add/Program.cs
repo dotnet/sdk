@@ -167,14 +167,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var solutionPlatform in solution.Platforms)
             {
                 var projectPlatform = projectInstancePlatforms.FirstOrDefault(
-                    x => x.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault("Any CPU"));
+                    platform => platform.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault("Any CPU"));
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, projectPlatform));
             }
 
             foreach (var solutionBuildType in solution.BuildTypes)
             {
                 var projectBuildType = projectInstanceBuildTypes.FirstOrDefault(
-                    x => x.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault("Debug"));
+                    buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault("Debug"));
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
             
