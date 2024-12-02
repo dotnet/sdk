@@ -48,6 +48,3 @@ stages:
       scope: lite
     ${{ else }}:
       scope: full
-
-- ${{ if ne(variables['isSourceOnlyBuild'], 'true') }}:
-  - template: /src/sdk/eng/pipelines/templates/stages/vmr-final-join.yml@self
