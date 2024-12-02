@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <!-- Shared infra to build and use the BuildCoreSdkTasks -->
-  <Import Project="..\..\targets\BuildCoreSdkTasks.targets" />
+  <Import Project="$(RepoRoot)src\Installer\redist-installer\targets\BuildCoreSdkTasks.targets" />
 
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="BuildCoreSdkTasks;ResolveProjectReferences">
     <PropertyGroup>
