@@ -166,7 +166,7 @@ This should print `Hello World!`.
 
 ## Locked files
 
-If you see error like ` error MSB3021: Unable to copy file "toolset-tasks.dll" to "toolset-tasks.dll". The process cannot access the file 'toolset-tasks.dll' because it is being used by another process.`
+If you see error like ` error MSB3021: Unable to copy file "sdk-tasks.dll" to "sdk-tasks.dll". The process cannot access the file 'sdk-tasks.dll' because it is being used by another process.`
 
 You could run the following to stop all dotnet related processes
 
