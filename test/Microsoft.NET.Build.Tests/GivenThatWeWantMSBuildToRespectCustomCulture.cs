@@ -27,7 +27,6 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(outputDirectory, "test-2", "MSBuildCultureResourceGeneration.resources.dll")).Should().Exist();
         }
 
-        [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
         [CoreMSBuildOnlyTheory]
@@ -45,7 +44,6 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("warning MSB3002:");
         }
 
-        [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
         [FullMSBuildOnlyTheory]
