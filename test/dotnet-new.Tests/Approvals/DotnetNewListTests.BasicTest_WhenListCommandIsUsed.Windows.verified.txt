@@ -12,13 +12,16 @@ ASP.NET Core Web App (Razor Pages)            webapp,razor                  [C#]
 Blazor Server App                             blazorserver                  [C#]        Web/Blazor                    
 Blazor Web App                                blazor                        [C#]        Web/Blazor/WebAssembly        
 Blazor WebAssembly Standalone App             blazorwasm                    [C#]        Web/Blazor/WebAssembly/PWA    
+Class                                         class                         [C#],VB     Common                        
 Class Library                                 classlib                      [C#],F#,VB  Common/Library                
 Console App                                   console                       [C#],F#,VB  Common/Console                
 dotnet gitattributes file                     gitattributes,.gitattributes              Config                        
 dotnet gitignore file                         gitignore,.gitignore                      Config                        
 Dotnet local tool manifest file               tool-manifest                             Config                        
 EditorConfig file                             editorconfig,.editorconfig                Config                        
+Enum                                          enum                          [C#],VB     Common                        
 global.json file                              globaljson,global.json                    Config                        
+Interface                                     interface                     [C#],VB     Common                        
 MSBuild Directory.Build.props file            buildprops                                MSBuild/props                 
 MSBuild Directory.Build.targets file          buildtargets                              MSBuild/props                 
 MSBuild Directory.Packages.props file         packagesprops                             MSBuild/packages/props/CPM    
@@ -37,7 +40,9 @@ Razor Class Library                           razorclasslib                 [C#]
 Razor Component                               razorcomponent                [C#]        Web/ASP.NET                   
 Razor Page                                    page                          [C#]        Web/ASP.NET                   
 Razor View                                    view                          [C#]        Web/ASP.NET                   
+Record                                        record                        [C#]        Common                        
 Solution File                                 sln,solution                              Solution                      
+Struct                                        struct,structure              [C#],VB     Common                        
 Web Config                                    webconfig                                 Config                        
 Windows Forms App                             winforms                      [C#],VB     Common/WinForms               
 Windows Forms Class Library                   winformslib                   [C#],VB     Common/WinForms               
