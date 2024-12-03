@@ -2,12 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8</TargetFramework>
-		<!--<EnableMicrosoftTestingExtensionsCodeCoverage>True</EnableMicrosoftTestingExtensionsCodeCoverage>-->
 		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
-		<RunSettingsFilePath>$(MSBuildProjectDirectory)\example.runsettings</RunSettingsFilePath>
 		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
-		<EnableMicrosoftTestingExtensionsCrashDump>True</EnableMicrosoftTestingExtensionsCrashDump>
-		<EnableMicrosoftTestingExtensionsHangDump>True</EnableMicrosoftTestingExtensionsHangDump>
 	</PropertyGroup>
 
 	<!-- references to the code to test -->
