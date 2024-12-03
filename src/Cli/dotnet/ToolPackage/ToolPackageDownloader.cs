@@ -72,6 +72,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
+            RestoreActionConfig restoreActionConfig = null,
             bool verifySignatures = true
             )
         {
@@ -96,7 +97,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
 
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, shouldUsePackageSourceMapping: true, verbosityOptions: verbosity, currentWorkingDirectory: _currentWorkingDirectory);
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, shouldUsePackageSourceMapping: true, restoreActionConfig: restoreActionConfig, verbosityOptions: verbosity, currentWorkingDirectory: _currentWorkingDirectory);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 

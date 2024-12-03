@@ -355,36 +355,6 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>af22effae4069a5dfb9b0735859de48820104f5b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.2.1" Version="1.0.2-beta4.22406.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>0385265f4d0b6413d64aea0223172366a9b9858c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.5.0" Version="1.1.0-rc.23558.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>307b8f538d83a955d8f6dd909eee41a5555f2f4d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.6.0" Version="1.1.0-rc.24069.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.7.0" Version="1.1.0-rc.24069.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.24202.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24602.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>7744cf50ba66bd64c44c6c7d7dc22000ae526618</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24602.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>7744cf50ba66bd64c44c6c7d7dc22000ae526618</Sha>
-      <SourceBuild RepoName="test-templates" ManagedOnly="true" />
-    </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-rtm.24529.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
@@ -456,32 +426,32 @@
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
       <Sha>7871ee378dce87b64d930d4f33dca9c888f4034d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceLink.Common" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceLink.AzureRepos.Git" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceLink.GitLab" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24602.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24602.2">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>bf9eea4cf019e8f86e7fae35380533eae25f487e</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
