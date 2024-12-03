@@ -110,11 +110,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
                 }
             }
-            if (solution.SolutionProjects.Count > 1)
-            {
-                // https://stackoverflow.com/a/14714485
-                solution.RemoveProperties("HideSolutionNode");
-            }
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
