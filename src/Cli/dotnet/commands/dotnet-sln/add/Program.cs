@@ -118,14 +118,14 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
-        private void AddProject(SolutionModel solution, string pathRelativeToSolutionFile, string fullPath, SolutionFolderModel solutionFolder)
+        private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel solutionFolder)
         {
             // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
             SolutionProjectModel project;
             try
             {
-                project = solution.AddProject(pathRelativeToSolutionFile, null, solutionFolder);
+                project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
             }
             catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
             {
@@ -136,17 +136,17 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
                     return;
                 }
-                project = solution.AddProject(pathRelativeToSolutionFile, guid, solutionFolder);
+                project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
             }
-            // Generate intermediate solution folders
-            if (solutionFolder is null && !_inRoot)
+            // Generate intermediate solution folders if nested project and solution folder not specified
+            if (!_inRoot && solutionFolder is null)
             {
-                var relativePathDirectory = Path.GetDirectoryName(pathRelativeToSolutionFile);
-                if (!string.IsNullOrEmpty(relativePathDirectory))
+                var relativeDirectoryPath = Path.GetDirectoryName(solutionRelativeProjectPath);
+                if (!string.IsNullOrEmpty(relativeDirectoryPath))
                 {
-                    SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativePathDirectory));
+                    SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeDirectoryPath));
                     project.MoveToFolder(relativeSolutionFolder);
-                    // Avoid duplicate folder/project names
+                    // Avoid duplicate folder/project names (eg, App/App.csproj)
                     if (project.Parent is not null && project.Parent.ActualDisplayName == project.ActualDisplayName)
                     {
                         solution.RemoveFolder(project.Parent);
@@ -160,6 +160,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 project.Id = new Guid(projectInstanceId);
             }
+
             var projectInstanceBuildTypes = projectInstance.GetConfigurations();
             var projectInstancePlatforms = projectInstance.GetPlatforms();
 
@@ -177,7 +178,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
             
-            Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, pathRelativeToSolutionFile);
+            Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
         }
     }
 }
