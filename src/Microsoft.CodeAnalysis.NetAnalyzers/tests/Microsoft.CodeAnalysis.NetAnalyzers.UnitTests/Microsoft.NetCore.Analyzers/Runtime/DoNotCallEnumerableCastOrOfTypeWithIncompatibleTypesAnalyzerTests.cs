@@ -866,6 +866,50 @@ public sealed record class DataNodeUpdate(DataNode Updated) : NodeUpdate<DataNod
             await test.RunAsync();
         }
 
+        [Fact, WorkItem(7357, "https://github.com/dotnet/roslyn-analyzers/issues/7357")]
+        public async Task GenericDerivedType()
+        {
+            var test = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                LanguageVersion = LanguageVersion.CSharp10,
+                TestCode = @"
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+public static class Program
+{
+    public static void Main()
+    {
+        // works as expected
+        new List<Base>() { new Derived() }.Cast<Derived>().ToList();
+
+        // same code but generic, fails
+        // CastTest\Program.cs(7,1,7,77): warning CA2021: Type 'GenericBase<int>' is incompatible with type 'GenericDerived' and cast attempts will throw InvalidCastException at runtime (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
+        new List<GenericBase<int>>() { new GenericDerived() }.Cast<GenericDerived>().ToList();
+    }
+}
+
+class Base
+{
+}
+
+class Derived : Base
+{
+}
+
+class GenericBase<T>
+{
+}
+
+class GenericDerived : GenericBase<int>
+{
+}"
+            };
+            await test.RunAsync();
+        }
+
         [Fact]
         public async Task NonGenericCasesVB()
         {
