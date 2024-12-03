@@ -19,7 +19,7 @@
       "test\\dotnet-new.Tests\\dotnet-new.IntegrationTests.csproj",
       "test\\dotnet.Tests\\dotnet.Tests.csproj",
       "template_feed\\Microsoft.DotNet.Common.ItemTemplates\\Microsoft.DotNet.Common.ItemTemplates.csproj",
-      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.9.0\\Microsoft.DotNet.Common.ProjectTemplates.9.0.csproj"
+      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.10.0\\Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj"
     ]
   }
 }

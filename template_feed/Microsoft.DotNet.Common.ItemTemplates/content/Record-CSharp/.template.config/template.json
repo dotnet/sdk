@@ -38,7 +38,7 @@
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^(net5.0|net6.0|net7.0|net8.0|net9.0)$*",
+        "pattern": "^net([5-9]|[1-9]\\d{1,})\\.0$*",
         "source": "TargetFramework"
       }
     },

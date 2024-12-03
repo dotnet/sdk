@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(targetFrameworkNet6, "6")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "1")]
         [InlineData(targetFrameworkNetFramework472, "4")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_WarningLevel_To_The_Current_TFM_When_Net(string tfm, string warningLevel)
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(1, "1")]
-        [InlineData(null, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData(null, "1")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_always_accepts_user_defined_WarningLevel(int? warningLevel, string expectedWarningLevel)
         {
@@ -156,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {

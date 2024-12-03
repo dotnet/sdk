@@ -18,7 +18,6 @@ resources:
       branches:
         include:
         - refs/heads/release/*.0.1xx-preview*
-        - refs/heads/release/9.0.1xx
         - refs/heads/internal/release/*.0.1xx*
 
   repositories:

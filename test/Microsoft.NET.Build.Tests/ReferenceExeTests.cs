@@ -320,7 +320,7 @@ public class ReferencedExeProgram
                 .Replace("Boolean", referenceExeInCode.ToString()));
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/42850")]
         [InlineData("xunit")]
         [InlineData("mstest")]
         public void TestProjectCanReferenceExe(string testTemplateName)

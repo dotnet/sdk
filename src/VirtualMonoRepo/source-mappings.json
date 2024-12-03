@@ -55,11 +55,7 @@
         },
         {
             "name": "aspnetcore",
-            "defaultRemote": "https://github.com/dotnet/aspnetcore",
-            "exclude": [
-                // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
-                "src/Installers/Windows/AspNetCoreModule-Setup/**/*"
-            ]
+            "defaultRemote": "https://github.com/dotnet/aspnetcore"
         },
         {
             "name": "cecil",
@@ -116,7 +112,8 @@
         },
         {
             "name": "scenario-tests",
-            "defaultRemote": "https://github.com/dotnet/scenario-tests"
+            "defaultRemote": "https://github.com/dotnet/scenario-tests",
+            "disableSynchronization": true
         },
         {
             "name": "sdk",
