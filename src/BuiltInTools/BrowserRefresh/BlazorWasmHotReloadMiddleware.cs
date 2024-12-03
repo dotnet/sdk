@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
@@ -35,8 +36,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        public BlazorWasmHotReloadMiddleware(RequestDelegate next)
+        public BlazorWasmHotReloadMiddleware(RequestDelegate next, ILogger<BlazorWasmHotReloadMiddleware> logger)
         {
+            logger.LogDebug("Middleware loaded");
         }
 
         internal List<Update> Updates { get; } = [];

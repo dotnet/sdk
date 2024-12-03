@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.BrotliCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GZipCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverPrecompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
@@ -225,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_CompressionBuildStaticWebAsset)"
+      CandidateAssets="@(_CompressionBuildStaticWebAsset);@(_PrecompressedStaticWebAssets)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
@@ -276,6 +277,27 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolveBuildCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolveStaticWebAssetsInputs;$(ResolveCompressedFilesDependsOn)">
+    <!-- There might be assets that are precompressed on packages or that are precompressed by other tools.
+         In this case, we need to detect those assets, remove them and their endpoints, adjust the asset definition
+         and recreate the endpoints for those assets as the original ones will not be correct.
+     -->
+    <DiscoverPrecompressedAssets CandidateAssets="@(StaticWebAsset)">
+      <Output TaskParameter="DiscoveredCompressedAssets" ItemName="_PrecompressedStaticWebAssets" />
+    </DiscoverPrecompressedAssets>
+
+    <FilterStaticWebAssetEndpoints Condition="'@(_PrecompressedStaticWebAssets)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_PrecompressedStaticWebAssets)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_PrecompressedEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
+
+    <ItemGroup Condition="'@(_PrecompressedStaticWebAssets)' != ''">
+      <StaticWebAssetEndpoint Remove="@(_PrecompressedEndpointsToRemove)" />
+      <StaticWebAsset Remove="@(_PrecompressedStaticWebAssets)" />
+      <StaticWebAsset Include="@(_PrecompressedStaticWebAssets)" />
+    </ItemGroup>
 
     <ResolveCompressedAssets
       CandidateAssets="@(StaticWebAsset)"
