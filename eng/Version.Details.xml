@@ -664,9 +664,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24602.2">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24602.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>3e7ac66744ee70c7e7f38ba47f9693bea566db15</Sha>
+      <Sha>d685c63f3d67714258f150ce0c8248f30cc3b1ab</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
