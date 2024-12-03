@@ -27,6 +27,11 @@
         <target state="translated">Utilisez le runtime actuel en tant que runtime cible.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoHttpCacheOptionDescription">
+        <source>Disable Http Caching for packages.</source>
+        <target state="translated">Désactiver la mise en cache HTTP pour les packages.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdSourceOption">
         <source>SOURCE</source>
         <target state="translated">SOURCE</target>
