@@ -28,8 +28,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                 return comparison;
             }
 
-            var modifiedFirst = new ReleaseVersion(1, 1, 1, firstDash == first.Length ? string.Empty : first.Substring(firstDash));
-            var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+            var modifiedFirst = new ReleaseVersion(1, 1, 1, firstDash == first.Length ? null : first.Substring(firstDash));
+            var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? null : second.Substring(secondDash));
 
             return modifiedFirst.CompareTo(modifiedSecond);
         }
