@@ -28,10 +28,10 @@ namespace Microsoft.DotNet.Workloads.Workload
                 return comparison;
             }
 
-            var modifiedFirst = "1.1.1" + (firstDash == first.Length ? string.Empty : first.Substring(firstDash));
-            var modifiedSecond = "1.1.1" + (secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+            var modifiedFirst = new ReleaseVersion(1, 1, 1, firstDash == first.Length ? string.Empty : first.Substring(firstDash));
+            var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? string.Empty : second.Substring(secondDash));
 
-            return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
+            return modifiedFirst.CompareTo(modifiedSecond);
         }
     }
 }
