@@ -3,6 +3,7 @@
 
 using System.IO.Pipes;
 using Microsoft.DotNet.Watch;
+using Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".

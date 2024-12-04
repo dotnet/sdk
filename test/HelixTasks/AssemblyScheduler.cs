@@ -69,20 +69,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             private readonly StringBuilder _builder = new();
             private readonly string _assemblyPath;
             private readonly int _methodLimit;
-            private readonly bool _netFramework;
             private int _currentId;
             private List<TypeInfo> _currentTypeInfoList = new();
 
-            private AssemblyInfoBuilder(string assemblyPath, int methodLimit, bool netFramework = false)
+            private AssemblyInfoBuilder(string assemblyPath, int methodLimit)
             {
                 _assemblyPath = assemblyPath;
                 _methodLimit = methodLimit;
-                _netFramework = netFramework;
             }
 
             internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList, bool netFramework = false)
             {
-                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit, netFramework);
+                var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit);
                 builder.Build(typeInfoList);
                 partitionList = builder._partitionList;
                 assemblyInfoList = builder._assemblyInfoList;
@@ -95,19 +93,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var typeInfo in typeInfoList)
                 {
                     _currentTypeInfoList.Add(typeInfo);
-                    if (_netFramework)
-                    {
-                        if (_builder.Length > 0)
-                        {
-                            _builder.Append("|");
-                        }
-                        _builder.Append($@"{typeInfo.FullName}");
 
-                    }
-                    else
+                    if (_builder.Length > 0)
                     {
-                        _builder.Append($@"-class ""{typeInfo.FullName}"" ");
+                        _builder.Append("|");
                     }
+                    _builder.Append($@"{typeInfo.FullName}");
+
                     CheckForPartitionLimit(done: false);
                 }
 

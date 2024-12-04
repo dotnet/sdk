@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.DotNet.HotReload;
 using Moq;
 
 namespace Microsoft.DotNet.Watch.UnitTests
