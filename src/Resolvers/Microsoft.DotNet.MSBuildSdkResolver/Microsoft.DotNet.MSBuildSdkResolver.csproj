@@ -36,6 +36,7 @@
     <ItemGroup>
       <ManifestLines Include="&lt;SdkResolver&gt;" />
       <ManifestLines Include="&lt;Path&gt;$(_TargetPathRelativePath)&lt;/Path&gt;" />
+      <ManifestLines Include="&lt;ResolvableSdkPattern&gt;FSharp\.NET\.Sdk|Microsoft\.Build\.Tasks\.Git|Microsoft\.Docker\.Sdk|Microsoft\.NET\.Sdk|Microsoft\.NET\.Sdk\.BlazorWebAssembly|Microsoft\.NET\.Sdk\.Publish|Microsoft\.NET\.Sdk\.Razor|Microsoft\.NET\.Sdk\.StaticWebAssets|Microsoft\.NET\.Sdk\.Web|Microsoft\.NET\.Sdk\.Web\.ProjectSystem|Microsoft\.NET\.Sdk\.WebAssembly|Microsoft\.NET\.Sdk\.WindowsDesktop|Microsoft\.NET\.Sdk\.Worker|Microsoft\.SourceLink\.AzureRepos\.Git|Microsoft\.SourceLink\.Bitbucket\.Git|Microsoft\.SourceLink\.Common|Microsoft\.SourceLink\.GitHub|Microsoft\.SourceLink\.GitLab|NuGet\.Build\.Tasks\.Pack&lt;/ResolvableSdkPattern&gt;" />
       <ManifestLines Include="&lt;/SdkResolver&gt;" />
     </ItemGroup>
 
