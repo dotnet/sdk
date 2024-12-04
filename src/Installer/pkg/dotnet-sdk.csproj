@@ -11,7 +11,6 @@
     <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>
     <InstallerName>dotnet-sdk</InstallerName>
     <PackageBrandNameSuffix>SDK</PackageBrandNameSuffix>
-    <PlatformPackageType>ToolPack</PlatformPackageType>
     <!--
       Installer infra requires MajorVersion and MinorVersion, which triggers reevaluation of Arcade's
       VersionPrefix property. This requires PatchVersion to be set in order to produce the correct SDK version.
@@ -79,7 +78,7 @@
       UseHardlinksIfPossible="False" />
   </Target>
 
-  <Target Name="SetCustomPackagingProperties" BeforeTargets="_GetCommonJsonProperties">
+  <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">
     <PropertyGroup>
       <PackageSummary>Microsoft .NET SDK $(PackageVersion)</PackageSummary>
       <!-- Clear PackageDescription to have it correctly set by Arcade. -->
