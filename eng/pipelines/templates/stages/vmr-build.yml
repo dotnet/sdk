@@ -347,10 +347,10 @@ stages:
         #     reuseBuildArtifactsFrom:
         #     - ${{ format('{0}_Mono_Offline_MsftSdk_x64', variables.centOSStreamName) }}
 
-#### VERTICAL BUILD ####
-- ${{ if not(parameters.isSourceOnlyBuild) }}:
-  - stage: VMR_Vertical_Build
-    displayName: VMR Vertical Build
+#### VERTICAL BUILD (Validation) ####
+- ${{ if and(not(parameters.isSourceOnlyBuild), or(eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.TeamProject'], 'internal'))) }}:
+  - stage: VMR_Vertical_Build_Validation
+    displayName: VMR Vertical Build Validation
     dependsOn: []
     variables:
     - template: ../variables/vmr-build.yml
@@ -368,7 +368,7 @@ stages:
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
         targetArchitecture: x64
-        useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
+        useDevVersions: true # Use dev versions for CI validation of the experience.
         runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
     - template: ../jobs/vmr-build.yml
@@ -391,8 +391,19 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
-        useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
+        useDevVersions: true # Use dev versions for CI validation of the experience.
         runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
+
+#### VERTICAL BUILD (Official) ####
+- ${{ if not(parameters.isSourceOnlyBuild) }}:
+  - stage: VMR_Vertical_Build
+    displayName: VMR Vertical Build
+    dependsOn: []
+    variables:
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
+    jobs:
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -996,7 +1007,7 @@ stages:
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
-            targetRid: ${{ variables.linuxMuslX64Rid }}
+            targetRid: ${{ variables.linuxMuslArm64Rid }}
             extraProperties: /p:DotNetBuildMonoCrossAOT=true
             runTests: false
 
@@ -1377,12 +1388,17 @@ stages:
   - stage: VMR_Final_Join
     displayName: VMR Final Join
     dependsOn: VMR_Vertical_Build
+    variables:
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
     jobs:
     - job: FinalJoin
       displayName: Final Build Pass
       pool: ${{ parameters.pool_Windows }}
       timeoutInMinutes: 240
       templateContext:
+        outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
         outputs:
         - output: buildArtifacts
           PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
