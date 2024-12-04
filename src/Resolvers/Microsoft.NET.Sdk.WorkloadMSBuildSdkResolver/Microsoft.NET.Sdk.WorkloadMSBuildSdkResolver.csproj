@@ -45,6 +45,7 @@
     <ItemGroup>
       <ManifestLines Include="&lt;SdkResolver&gt;" />
       <ManifestLines Include="&lt;Path&gt;$(_TargetPathRelativePath)&lt;/Path&gt;" />
+      <ManifestLines Include="&lt;ResolvableSdkPattern&gt;Microsoft\..*|Samsung\..*|GtkSharp\..*&lt;/ResolvableSdkPattern&gt;" />
       <ManifestLines Include="&lt;/SdkResolver&gt;" />
     </ItemGroup>
 
