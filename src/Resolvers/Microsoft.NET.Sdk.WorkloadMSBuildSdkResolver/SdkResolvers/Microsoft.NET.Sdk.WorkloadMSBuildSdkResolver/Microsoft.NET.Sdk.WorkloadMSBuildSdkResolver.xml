@@ -1,4 +1,4 @@
 <SdkResolver>
 <Path>..\..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.dll</Path>
-<ResolvableSdkPattern>Microsoft.NET.SDK.WorkloadAutoImportPropsLocator|Microsoft.NET.SDK.WorkloadManifestTargetsLocator</ResolvableSdkPattern>
+<ResolvableSdkPattern>Microsoft\.NET\.SDK\.WorkloadAutoImportPropsLocator|Microsoft\.NET\.SDK\.WorkloadManifestTargetsLocator|Microsoft\..*|Samsung\..*|GtkSharp\..*</ResolvableSdkPattern>
 </SdkResolver>
