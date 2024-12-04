@@ -829,18 +829,17 @@ namespace Microsoft.NET.Build.Tasks
             while (dependencyListToWalk.Count != 0)
             {
                 var dependencyName = dependencyListToWalk.Pop();
-                if (!includedDependencies.ContainsKey(dependencyName) && _excludeFromPublishPackageIds?.Contains(dependencyName) != true)
+                //  There may not be a library in the assets file if a referenced project has
+                //  PrivateAssets="all" for a package reference, and there is a package in the graph
+                //  that depends on the same package.
+                if (!includedDependencies.ContainsKey(dependencyName) &&
+                    _excludeFromPublishPackageIds?.Contains(dependencyName) != true &&
+                    _dependencyLibraries.TryGetValue(dependencyName, out var dependencyLibrary))
                 {
-                    //  There may not be a library in the assets file if a referenced project has
-                    //  PrivateAssets="all" for a package reference, and there is a package in the graph
-                    //  that depends on the same package.
-                    if (_dependencyLibraries.TryGetValue(dependencyName, out var dependencyLibrary))
+                    includedDependencies.Add(dependencyName, dependencyLibrary);
+                    foreach (var newDependency in _libraryDependencies[dependencyName])
                     {
-                        includedDependencies.Add(dependencyName, dependencyLibrary);
-                        foreach (var newDependency in _libraryDependencies[dependencyName])
-                        {
-                            dependencyListToWalk.Push(newDependency.Name);
-                        }
+                        dependencyListToWalk.Push(newDependency.Name);
                     }
                 }
             }
