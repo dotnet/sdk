@@ -533,9 +533,20 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)]
     [CombinatorialData]
-    public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
+    public Task IgnoredChange_Windows(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
+        => IgnoredChange(isExisting, isIncluded, directoryKind);
+
+    [PlatformSpecificTheory(TestPlatforms.AnyUnix)]
+    [CombinatorialData]
+    public Task IgnoredChange_Unix(
+        bool isExisting,
+        bool isIncluded,
+        [CombinatorialValues(DirectoryKind.Obj, DirectoryKind.Bin, DirectoryKind.Ordinary)] DirectoryKind directoryKind)
+        => IgnoredChange(isExisting, isIncluded, directoryKind);
+
+    private async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
         var testAsset = CopyTestAsset("WatchNoDepsApp", [isExisting, isIncluded, directoryKind]);
 
