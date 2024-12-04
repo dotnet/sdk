@@ -111,7 +111,8 @@
       InputFiles="$(DebianPostinstTemplateFile)"
       DestinationFiles="$(DebianPostinstFile)"
       ReplacementPatterns="%SDK_VERSION%"
-      ReplacementStrings="$(Version)" />
+      ReplacementStrings="$(Version)"
+      Condition="'$(BuildDebPackage)' == 'true'" />
 
     <ItemGroup>
       <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
@@ -120,7 +121,7 @@
       <LinuxPackageDependency Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
-      <LinuxPostInstallScript Include="$(DebianPostinstFile)" />
+      <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
     </ItemGroup>
   </Target>
 </Project>
