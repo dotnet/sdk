@@ -106,6 +106,7 @@ recursive=false
 verbosity=verbose
 component_template="$sdk_dir/src/VirtualMonoRepo/Component.template.md"
 tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
+enable_build_lookup=''
 azdev_pat=''
 ci=false
 
@@ -147,6 +148,9 @@ while [[ $# -gt 0 ]]; do
     --tpn-template)
       tpn_template=$2
       shift
+      ;;
+    --enable-build-lookup)
+      enable_build_lookup="--enable-build-lookup"
       ;;
     --azdev-pat)
       azdev_pat=$2
@@ -282,6 +286,7 @@ fi
   --tpn-template "$tpn_template"             \
   --discard-patches                          \
   --generate-credscansuppressions            \
+  $enable_build_lookup                       \
   "$repository"
 
 if [[ $? == 0 ]]; then
