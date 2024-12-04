@@ -357,7 +357,7 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "App.sln", "add", directoryToAdd);
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", directoryToAdd);
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(
@@ -386,7 +386,7 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "App.sln", "add", directoryToAdd);
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", directoryToAdd);
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(

@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 {
     internal class AddProjectToSolutionCommand : CommandBase
     {
+        private static string[] _defaultPlatforms = new[] { "Any CPU", "x64", "x86" };
+        private static string[] _defaultBuildTypes = new[] { "Debug", "Release" };
         private readonly string _fileOrDirectory;
         private readonly bool _inRoot;
         private readonly IReadOnlyCollection<string> _projects;
@@ -53,7 +55,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     var fullPath = Path.GetFullPath(project);
                     return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
                 });
-                AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
+                AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
                 return 0;
             }
             catch (Exception ex) when (ex is not GracefulException)
@@ -81,11 +83,11 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 });
             }
             // Set default configurations and platforms for sln file
-            foreach (var platform in new[]{ "Any CPU", "x64", "x86" })
+            foreach (var platform in _defaultPlatforms)
             {
                 solution.AddPlatform(platform);
             }
-            foreach (var buildType in new []{ "Debug", "Release" })
+            foreach (var buildType in _defaultBuildTypes)
             {
                 solution.AddBuildType(buildType);
             }
