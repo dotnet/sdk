@@ -3,17 +3,17 @@
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-public class DockerSupportsArchFactAttribute : FactAttribute
+public class DockerIsAvailableAndSupportsArchFactAttribute : FactAttribute
 {
-    private readonly string _arch;
-
-    public DockerSupportsArchFactAttribute(string arch)
+    public DockerIsAvailableAndSupportsArchFactAttribute(string arch)
     {
-        _arch = arch;
-
-        if (!DockerSupportsArchHelper.DaemonSupportsArch(_arch))
+        if (!DockerSupportsArchHelper.DaemonIsAvailable)
         {
-            base.Skip = $"Skipping test because Docker daemon does not support {_arch}.";
+            base.Skip = "Skipping test because Docker is not available on this host.";
+        }
+        else if (!DockerSupportsArchHelper.DaemonSupportsArch(arch))
+        {
+            base.Skip = $"Skipping test because Docker daemon does not support {arch}.";
         }
     }
 }

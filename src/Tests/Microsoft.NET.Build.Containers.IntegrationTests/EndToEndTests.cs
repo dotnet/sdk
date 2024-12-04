@@ -722,7 +722,7 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
     }
 
-    [DockerSupportsArchFact("linux/arm64")]
+    [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_LocalRegistry()
     {
         string imageName = NewImageName();
@@ -923,7 +923,7 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
         => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
-    [DockerSupportsArchFact("linux/arm64")]
+    [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_ArchivePublishing()
     {
         string imageName = NewImageName();
@@ -996,7 +996,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerSupportsArchFact("linux/arm64")]
+    [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_RemoteRegistry()
     {
         string imageName = NewImageName();
@@ -1125,7 +1125,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerSupportsArchFact("linux/arm64")]
+    [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_EnvVariables()
     {
         string imageName = NewImageName();
@@ -1192,7 +1192,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerSupportsArchFact("linux/arm64")]
+    [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_Ports()
     {
         string imageName = NewImageName();

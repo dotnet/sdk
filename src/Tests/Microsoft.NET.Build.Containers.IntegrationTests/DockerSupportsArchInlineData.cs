@@ -34,6 +34,8 @@ public class DockerSupportsArchInlineData : DataAttribute
 
 internal static class DockerSupportsArchHelper
 {
+    internal static bool DaemonIsAvailable => ContainerCli.IsAvailable;
+
     internal static bool DaemonSupportsArch(string arch)
     {
         // an optimization - this doesn't change over time so we can compute it once
