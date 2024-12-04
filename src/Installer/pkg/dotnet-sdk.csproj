@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
-  <Import Project="..\redist-installer\targets\BuildCoreSdkTasks.targets" />
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="..\redist-installer\targets\LinuxNativeInstallerDependencyVersions.targets" />
 
   <PropertyGroup>
