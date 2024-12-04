@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             _configFilePath = result.GetValue(ToolRestoreCommandParser.ConfigOption);
             _sources = result.GetValue(ToolRestoreCommandParser.AddSourceOption);
             _verbosity = result.GetValue(ToolRestoreCommandParser.VerbosityOption);
-            if (!result.HasOption(ToolRestoreCommandParser.VerbosityOption))
+            if (!result.HasOption(ToolRestoreCommandParser.VerbosityOption) && result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption))
             {
                 _verbosity = VerbosityOptions.minimal;
             }
