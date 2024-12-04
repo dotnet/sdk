@@ -8,34 +8,29 @@ namespace Microsoft.DotNet.Workloads.Workload
 {
     static class WorkloadSetVersion
     {
+        private static string[] SeparateCoreComponents(string workloadSetVersion, out string[] sections)
+        {
+            sections = workloadSetVersion.Split(['-', '+'], 2);
+            return sections[0].Split('.');
+        }
+
         public static bool IsWorkloadSetPackageVersion(string workloadSetVersion)
         {
-
-            string[] sections = workloadSetVersion.Split(['-', '+'], 2);
-            string versionCore = sections[0];
-            string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
-
-            string[] coreComponents = versionCore.Split('.');
-            return coreComponents.Length >= 3 && coreComponents.Length <= 4;
+            int coreComponentsLength = SeparateCoreComponents(workloadSetVersion, out _).Length;
+            return coreComponentsLength >= 3 && coreComponentsLength <= 4;
         }
 
         public static string ToWorkloadSetPackageVersion(string workloadSetVersion, out SdkFeatureBand sdkFeatureBand)
         {
-            string[] sections = workloadSetVersion.Split(['-', '+'], 2);
-            string versionCore = sections[0];
-            string? preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
-
-            string[] coreComponents = versionCore.Split('.');
+            string[] coreComponents = SeparateCoreComponents(workloadSetVersion, out string[] sections);
             string major = coreComponents[0];
             string minor = coreComponents[1];
             string patch = coreComponents[2];
-
             string packageVersion = $"{major}.{patch}.";
             if (coreComponents.Length == 3)
             {
                 //  No workload set patch version
                 packageVersion += "0";
-
                 //  Use preview specifier (if any) from workload set version as part of SDK feature band
                 sdkFeatureBand = new SdkFeatureBand(workloadSetVersion);
             }
@@ -43,18 +38,16 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 //  Workload set version has workload patch version (ie 4 components)
                 packageVersion += coreComponents[3];
-
                 //  Don't include any preview specifiers in SDK feature band
                 sdkFeatureBand = new SdkFeatureBand($"{major}.{minor}.{patch}");
             }
 
-            if (preReleaseOrBuild != null)
+            if (sections.Length > 1)
             {
                 //  Figure out if we split on a '-' or '+'
                 char separator = workloadSetVersion[sections[0].Length];
-                packageVersion += separator + preReleaseOrBuild;
+                packageVersion += separator + sections[1];
             }
-
             return packageVersion;
         }
 
