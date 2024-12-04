@@ -224,10 +224,6 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>7d34b30433259fb914aaaf276fde663a47b6ef2f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24516.3">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>bc9161306b23641b0364b8f93d546da4d48da1eb</Sha>
-    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.13.0-preview-24569-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
