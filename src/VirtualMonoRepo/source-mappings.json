@@ -112,8 +112,7 @@
         },
         {
             "name": "scenario-tests",
-            "defaultRemote": "https://github.com/dotnet/scenario-tests",
-            "disableSynchronization": true
+            "defaultRemote": "https://github.com/dotnet/scenario-tests"
         },
         {
             "name": "sdk",
