@@ -159,11 +159,10 @@ setTimeout(async function () {
       });
     }
 
-    let body = JSON.stringify({
-      "id": deltas[0].sequenceId,
-      "deltas": deltas
+    const body = JSON.stringify({
+      id: deltas[0].sequenceId,
+      deltas: deltas
     });
-
     try {
       await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: body });
     } catch (error) {
