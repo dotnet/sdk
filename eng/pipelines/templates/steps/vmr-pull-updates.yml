@@ -76,7 +76,7 @@ steps:
 
 - powershell: |
     $enableBuildLookup = ""
-    if ('$(Build.Reason)' -ne 'PullRequest' && '$(System.TeamProject)' -eq 'internal') {
+    if ('$(Build.Reason)' -ne 'PullRequest' -and '$(System.TeamProject)' -eq 'internal') {
       $enableBuildLookup = "--enable-build-lookup"
     }
 
