@@ -42,63 +42,42 @@ steps:
   displayName: Set git author to dotnet-maestro[bot]
   workingDirectory: ${{ parameters.vmrPath }}
 
-- script: |
-    enable_build_lookup=''
-    if [ "$(Build.Reason)" != 'PullRequest' ] && [ "$(System.TeamProject)" == 'internal' ]; then
-      enable_build_lookup='--enable-build-lookup'
-    fi
-
-    ./eng/vmr-sync.sh                                                                                 \
-      --vmr ${{ parameters.vmrPath }}                                                                 \
-      --tmp $(Agent.TempDirectory)                                                                    \
-      --azdev-pat '$(dn-bot-all-orgs-code-r)'                                                         \
-      --branch ${{ parameters.vmrBranch }}                                                            \
-      --repository "sdk:${{ parameters.targetRef }}"                                                  \
-      --recursive                                                                                     \
-      --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
-      --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md      \
-      --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
-      $enable_build_lookup                                                                            \
-      --ci                                                                                            \
-      --debug
-
-    if [ "$?" -ne 0 ]; then
-      echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
-      exit 1
-    fi
-  displayName: Synchronize dotnet/dotnet (Unix)
-  condition: ne(variables['Agent.OS'], 'Windows_NT')
-  workingDirectory: $(Agent.BuildDirectory)/sdk
-
 - script: git config --global diff.astextplain.textconv echo
   displayName: Disable astextplain in git diff (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
+- task: AzureCLI@2
+  displayName: Synchronize dotnet/dotnet
+  inputs:
+    azureSubscription: "Darc: Maestro Production"
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      $enableBuildLookup = ""
+      if ('$(Build.Reason)' -ne 'PullRequest' -and '$(System.TeamProject)' -eq 'internal') {
+        $enableBuildLookup = "--enable-build-lookup"
+      }
+
+      ./eng/vmr-sync.ps1 `
+        -vmr ${{ parameters.vmrPath }} `
+        -tmp $(Agent.TempDirectory) `
+        -azdevPat '$(dn-bot-all-orgs-code-r)' `
+        -branch ${{ parameters.vmrBranch }} `
+        -repository "sdk:${{ parameters.targetRef }}" `
+        -recursive `
+        -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
+        -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+        $enableBuildLookup `
+        -ci `
+        -debugOutput
+
+      if ($LASTEXITCODE -ne 0) {
+        echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+        exit 1
+      }
+
 - powershell: |
-    $enableBuildLookup = ""
-    if ('$(Build.Reason)' -ne 'PullRequest' -and '$(System.TeamProject)' -eq 'internal') {
-      $enableBuildLookup = "--enable-build-lookup"
-    }
-
-    ./eng/vmr-sync.ps1 `
-      -vmr ${{ parameters.vmrPath }} `
-      -tmp $(Agent.TempDirectory) `
-      -azdevPat '$(dn-bot-all-orgs-code-r)' `
-      -branch ${{ parameters.vmrBranch }} `
-      -repository "sdk:${{ parameters.targetRef }}" `
-      -recursive `
-      -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
-      -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
-      $enableBuildLookup `
-      -ci `
-      -debugOutput
-
-    if ($LASTEXITCODE -ne 0) {
-      echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
-      exit 1
-    }
-  displayName: Synchronize dotnet/dotnet (Windows)
-  condition: eq(variables['Agent.OS'], 'Windows_NT')
+  displayName: Synchronize dotnet/dotnet
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
