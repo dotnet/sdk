@@ -536,6 +536,7 @@
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'@(RepoAssetManifest)' == '' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
     <Error Text="No repository asset manifest files found at $(RepoAssetManifestsDir)*.xml. This often means the build failed but did not log an error." Condition="'@(RepoAssetManifest)' == ''" />
 
     <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">

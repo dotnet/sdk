@@ -18,8 +18,8 @@ namespace Microsoft.DotNet.Cli
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
 
-        private NamedPipeServer _pipeConnection;
-        private Task _namedPipeConnectionLoop;
+        private Task _testAppPipeConnectionLoop;
+        private readonly List<NamedPipeServer> _testAppPipeConnections = new();
         private ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeArgs> HandshakeReceived;
@@ -70,22 +70,32 @@ namespace Microsoft.DotNet.Cli
                 processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
             }
 
-            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
+            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);
 
-            _namedPipeConnectionLoop.Wait();
+            WaitOnTestApplicationPipeConnectionLoop();
 
             return result;
+        }
+
+        private void WaitOnTestApplicationPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
         {
             try
             {
-                _pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
-                _pipeConnection.RegisterAllSerializers();
+                while (!token.IsCancellationRequested)
+                {
+                    NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                    pipeConnection.RegisterAllSerializers();
 
-                await _pipeConnection.WaitConnectionAsync(token);
+                    await pipeConnection.WaitConnectionAsync(token);
+                    _testAppPipeConnections.Add(pipeConnection);
+                }
             }
             catch (OperationCanceledException ex) when (ex.CancellationToken == token)
             {
@@ -367,7 +377,12 @@ namespace Microsoft.DotNet.Cli
 
         public void Dispose()
         {
-            _pipeConnection?.Dispose();
+            foreach (var namedPipeServer in _testAppPipeConnections)
+            {
+                namedPipeServer.Dispose();
+            }
+
+            WaitOnTestApplicationPipeConnectionLoop();
         }
     }
 }
