@@ -57,6 +57,11 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 {
                     throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
                 }
+                // TODO: Check
+                if (ex.InnerException is GracefulException)
+                {
+                    throw ex.InnerException;
+                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -81,7 +86,6 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 if (project != null)
                 {
                     solution.RemoveProject(project);
-
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
                 }
                 else
@@ -91,6 +95,18 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             }
 
             // TODO: Remove empty solution folders
+            HashSet<SolutionFolderModel> emptySolutionFolders = solution.SolutionFolders.ToHashSet();
+            foreach (var item in solution.SolutionItems)
+            {
+                if (item.Parent != null)
+                {
+                    emptySolutionFolders.Remove(item.Parent);
+                }
+            }
+            foreach (var emptySolutionFolder in emptySolutionFolders)
+            {
+                solution.RemoveFolder(emptySolutionFolder);
+            }
 
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
