@@ -567,7 +567,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (stableVersions.Any())
                 {
-                    return stableVersions.OrderByDescending(r => r.package.Identity.Version).Take(numberOfResults);
+                    var results = stableVersions.OrderByDescending(r => r.package.Identity.Version);
+                    return numberOfResults > 0 ? results.Take(numberOfResults) : results;
                 }
             }
 

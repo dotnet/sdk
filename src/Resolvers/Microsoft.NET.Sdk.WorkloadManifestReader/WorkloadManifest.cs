@@ -10,6 +10,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public class WorkloadManifest
     {
+        public WorkloadManifest(string id) : this(id, new FXVersion(7, 3, 5), null, string.Empty, [], [], []) { }
+
         internal WorkloadManifest(string id, FXVersion version, string? description, string manifestPath, Dictionary<WorkloadId, BaseWorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
         {
             Id = id;
