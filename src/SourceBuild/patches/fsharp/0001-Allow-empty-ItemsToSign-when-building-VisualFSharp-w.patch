@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ella Hathaway <ellahathaway@microsoft.com>
+Date: Thu, 5 Dec 2024 22:22:05 +0000
+Subject: [PATCH] Allow empty ItemsToSign when building VisualFSharp with core
+ msbuild
+
+Backport: https://github.com/dotnet/fsharp/pull/18109
+
+---
+ eng/Signing.props | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 222ad3dc4..b3c572a47 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -1,5 +1,13 @@
+ <Project>
+ 
++  <!--
++    VisualFSharp.sln only produces artifacts files when built with full framework MSBuild,
++    so we need to allow empty sign list when building VisualFSharp.sln with Core MSBuild.
++   -->
++  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core' and $(Projects.Contains('VisualFSharp.sln'))">
++    <AllowEmptySignList>true</AllowEmptySignList>
++  </PropertyGroup>
++
+   <ItemGroup>
+     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="None" />
+     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="None" />
