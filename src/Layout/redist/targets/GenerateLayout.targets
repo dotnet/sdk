@@ -113,7 +113,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)//$(NetCurrent)/**/*.dll" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.dll" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.exe" />
       <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json" />
       <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
     </ItemGroup>
