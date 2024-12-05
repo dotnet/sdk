@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
@@ -99,6 +100,21 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var projectPath in projectPaths)
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
+                // Add fallback solution folder
+                // TODO: Refactor!!
+                string relativeSolutionFolder = Path.GetDirectoryName(relativePath);
+                if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
+                {
+                    if (relativeSolutionFolder.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativePath))
+                    {
+                        relativeSolutionFolder = Path.Combine(relativeSolutionFolder.Split(Path.DirectorySeparatorChar).SkipLast(1).ToArray());
+                    }
+                    if (!string.IsNullOrEmpty(relativeSolutionFolder))
+                    {
+                        solutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolder));
+                    }
+                }
+
                 try
                 {
                     AddProject(solution, relativePath, projectPath, solutionFolder);
@@ -115,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
-        private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel solutionFolder)
+        private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder)
         {
             // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
@@ -134,21 +150,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     return;
                 }
                 project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
-            }
-            // Generate intermediate solution folders if nested project and solution folder not specified
-            if (!_inRoot && solutionFolder is null)
-            {
-                var relativeDirectoryPath = Path.GetDirectoryName(solutionRelativeProjectPath);
-                if (!string.IsNullOrEmpty(relativeDirectoryPath))
-                {
-                    SolutionFolderModel relativeSolutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeDirectoryPath));
-                    project.MoveToFolder(relativeSolutionFolder);
-                    // Avoid duplicate folder/project names (eg, App/App.csproj)
-                    if (project.Parent is not null && project.Parent.ActualDisplayName == project.ActualDisplayName)
-                    {
-                        solution.RemoveFolder(project.Parent);
-                    }
-                }                
             }
             // Add settings based on existing project instance
             ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
@@ -174,7 +175,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                     buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
                 project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
             }
-            
             Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
         }
     }
