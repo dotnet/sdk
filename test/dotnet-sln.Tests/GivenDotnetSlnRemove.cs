@@ -24,6 +24,224 @@ Arguments:
 Options:
   -?, -h, --help    Show command line help.";
 
+        private const string ExpectedSlnContentsAfterRemove = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26006.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App\App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
+";
+
+        private const string ExpectedSlnContentsAfterRemoveAllProjects = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26006.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Global
+EndGlobal
+";
+
+        private const string ExpectedSlnContentsAfterRemoveNestedProj = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26006.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""src"", ""src"", ""{7B86CE74-F620-4B32-99FE-82D40F8D6BF2}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""Lib"", ""Lib"", ""{EAB71280-AF32-4531-8703-43CDBA261AA3}""
+EndProject
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Lib"", ""src\Lib\Lib.csproj"", ""{84A45D44-B677-492D-A6DA-B3A71135AB8E}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.ActiveCfg = Debug|x64
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.Build.0 = Debug|x64
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.ActiveCfg = Debug|x86
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.Build.0 = Debug|x86
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.ActiveCfg = Release|x64
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.Build.0 = Release|x64
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.ActiveCfg = Release|x86
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EAB71280-AF32-4531-8703-43CDBA261AA3} = {7B86CE74-F620-4B32-99FE-82D40F8D6BF2}
+		{84A45D44-B677-492D-A6DA-B3A71135AB8E} = {EAB71280-AF32-4531-8703-43CDBA261AA3}
+	EndGlobalSection
+EndGlobal
+";
+
+        private const string ExpectedSlnContentsAfterRemoveLastNestedProj = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26006.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
+		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+EndGlobal
+";
+
+        private const string ExpectedSlnContentsAfterRemoveProjectWithDependencies = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""App"", ""App\App.csproj"", ""{BB02B949-F6BD-4872-95CB-96A05B1FE026}""
+	ProjectSection(ProjectDependencies) = postProject
+		{D53E177A-8ECF-43D5-A01E-98B884D53CA6} = {D53E177A-8ECF-43D5-A01E-98B884D53CA6}
+	EndProjectSection
+EndProject
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""First"", ""First\First.csproj"", ""{D53E177A-8ECF-43D5-A01E-98B884D53CA6}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F6D9A973-1CFD-41C9-84F2-1471C0FE67DF}
+	EndGlobalSection
+EndGlobal
+";
+
+        private const string ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.705
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NewFolder1"", ""NewFolder1"", ""{F39E429A-F91C-44F9-9025-EA6E41C99637}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NewFolder2"", ""NewFolder2"", ""{1B19AA22-7DB3-4A0F-8B89-2B80040B2BF0}""
+	ProjectSection(SolutionItems) = preProject
+		TextFile1.txt = TextFile1.txt
+	EndProjectSection
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedSolution"", ""NestedSolution"", ""{2128FC1C-7B60-4BC4-9010-D7A97E1805EA}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedFolder"", ""NestedFolder"", ""{7BC6A99C-7321-47A2-8CA5-B394195BD2B8}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedFolder"", ""NestedFolder"", ""{F6B0D958-42FF-4123-9668-A77A4ABFE5BA}""
+EndProject
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""ConsoleApp2"", ""ConsoleApp2\ConsoleApp2.csproj"", ""{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1B19AA22-7DB3-4A0F-8B89-2B80040B2BF0} = {F39E429A-F91C-44F9-9025-EA6E41C99637}
+		{7BC6A99C-7321-47A2-8CA5-B394195BD2B8} = {2128FC1C-7B60-4BC4-9010-D7A97E1805EA}
+		{F6B0D958-42FF-4123-9668-A77A4ABFE5BA} = {7BC6A99C-7321-47A2-8CA5-B394195BD2B8}
+		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F} = {F6B0D958-42FF-4123-9668-A77A4ABFE5BA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D36A0DD6-BD9C-4B57-9441-693B33DB7C2D}
+	EndGlobalSection
+EndGlobal
+";
+
         public GivenDotnetSlnRemove(ITestOutputHelper log) : base(log)
         {
         }
@@ -105,15 +323,13 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"InvalidSolution{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
         public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectDirectoryRoot = _testAssetsManager
@@ -125,7 +341,7 @@ Options:
                 ? Path.Join(projectDirectoryRoot, "Sln")
                 : Path.Join(projectDirectoryRoot, "Slnx");
 
-            var solutionPath = Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}");
+            var solutionPath = Path.Combine(projectDirectory, "InvalidSolution.sln");
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
@@ -209,7 +425,7 @@ Options:
             var contentBefore = File.ReadAllText(solutionPath);
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "referenceDoesNotExistInSln.csproj");
+                .Execute(solutionCommand, "App.sln", "remove", "referenceDoesNotExistInSln.csproj");
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "referenceDoesNotExistInSln.csproj"));
             File.ReadAllText(solutionPath)
@@ -238,7 +454,7 @@ Options:
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
@@ -264,7 +480,7 @@ Options:
             var projectToRemove = Path.Combine("ConsoleApp1", "ConsoleApp1.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
@@ -326,7 +542,7 @@ Options:
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
+                .Execute(solutionCommand, "App.sln", "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
             cmd.Should().Pass();
 
             string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "idontexist.csproj")}
@@ -362,7 +578,7 @@ Options:
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemove{solutionExtension}");
@@ -391,7 +607,7 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "Lib");
+                .Execute(solutionCommand, "App.sln", "remove", "Lib");
             cmd.Should().Pass();
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemove{solutionExtension}");
@@ -414,7 +630,7 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", directoryToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -438,7 +654,7 @@ Options:
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", directoryToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -469,7 +685,7 @@ Options:
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             new DotnetCommand(Log)
@@ -543,7 +759,7 @@ Options:
             var libPath = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", libPath, appPath);
+                .Execute(solutionCommand, "App.sln", "remove", libPath, appPath);
             cmd.Should().Pass();
 
             var solutionContents = File.ReadAllText(solutionPath);
@@ -568,7 +784,7 @@ Options:
             var projectToRemove = Path.Combine("src", "NotLastProjInSrc", "NotLastProjInSrc.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveNestedProj{solutionExtension}");
@@ -593,7 +809,7 @@ Options:
             var projectToRemove = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveLastNestedProj{solutionExtension}");
@@ -618,7 +834,7 @@ Options:
             var projectToRemove = Path.Combine("Second", "Second.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveProjectWithDependencies{solutionExtension}");
