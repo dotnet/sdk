@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -8,7 +10,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class DiscoverStaticWebAssetsTest
+    public class DefineStaticWebAssetsTest
     {
         [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
@@ -539,6 +541,41 @@ for path 'candidate.js'");
             asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(expected);
         }
 
+        [Fact]
+        public void ComputesRelativePath_ForAssets()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem(Path.Combine(Environment.CurrentDirectory, "Debug", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                    new TaskItem(Path.Combine(Environment.CurrentDirectory, "Debug", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"})
+                ],
+                RelativePathPattern = "**",
+                SourceType = "Discovered",
+                SourceId = "Microsoft.AspNetCore.Components.CustomElements",
+                ContentRoot = Path.Combine(Environment.CurrentDirectory, "Debug"),
+                BasePath = "_content/Microsoft.AspNetCore.Components.CustomElements"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue();
+            task.Assets.Length.Should().Be(2);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+        }
 
         private static ITaskItem CreateCandidate(
             string itemSpec,

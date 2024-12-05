@@ -98,6 +98,17 @@ public class DefineStaticWebAssets : Task
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
                     var candidateMatchPath = GetDiscoveryCandidateMatchPath(candidate);
+                    if (candidateMatchPath == candidate.ItemSpec)
+                    {
+                        var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(ContentRoot);
+                        var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                        if (normalizedAssetPath.StartsWith(normalizedContentRoot))
+                        {
+                            var result = normalizedAssetPath.Substring(normalizedContentRoot.Length);
+                            Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedContentRoot, candidate.ItemSpec, result);
+                            candidateMatchPath = result;
+                        }
+                    }
                     relativePathCandidate = candidateMatchPath;
                     if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                     {
