@@ -11,6 +11,7 @@ using Microsoft.DotNet.Tools.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Tools.Sln.Remove
 {
@@ -36,19 +37,26 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
             }
 
-            IEnumerable<string> fullProjectPaths = _projects.Select(project =>
-            {
-                var fullPath = Path.GetFullPath(project);
-                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-            });
-
             try
             {
-                RemoveProjectsAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).Wait();
+                var relativeProjectPaths = _projects.Select(p =>
+                {
+                    var fullPath = Path.GetFullPath(p);
+                    return Path.GetRelativePath(
+                        Path.GetDirectoryName(solutionFileFullPath),
+                        Directory.Exists(fullPath)
+                            ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
+                            : fullPath);
+                });
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).Wait();
                 return 0;
             }
             catch (Exception ex) when (ex is not GracefulException)
             {
+                if (ex is SolutionException || ex.InnerException is SolutionException)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
@@ -58,16 +66,31 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
             SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
 
+            // set UTF8 BOM encoding for .sln
+            if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+            {
+                solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
+                {
+                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+                });
+            }
+
             foreach (var projectPath in projectPaths)
             {
-                // Open project instance to see if it is a valid project
-                ProjectRootElement projectRootElement = ProjectRootElement.Open(projectPath);
-                ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
-                string projectInstanceId = projectInstance.GetProjectId();
+                var project = solution.FindProject(projectPath);
+                if (project != null)
+                {
+                    solution.RemoveProject(project);
 
-                SolutionProjectModel? projectModel = (SolutionProjectModel?) solution.FindItemById(new Guid(projectInstanceId));
-                solution.RemoveProject(projectModel);
+                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
+                }
+                else
+                {
+                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
+                }
             }
+
+            // TODO: Remove empty solution folders
 
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
