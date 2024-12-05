@@ -5,7 +5,7 @@
     </PropertyGroup>
   
     <ItemGroup>
-      <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" BuildInParallel="true" />
+      <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     </ItemGroup>
 
     <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />

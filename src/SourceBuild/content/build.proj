@@ -23,10 +23,12 @@
 
     <!-- Post-build: Source-only validation, packaging and publishing -->
     <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)stage-artifacts.proj" Condition="'$(ArtifactsStagingDir)' != ''" />
     <ProjectReference Include="$(RepositoryEngineeringDir)finish-source-only.proj" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-  <Target Name="PrintInfo">
+  <!-- Don't print this during restore. -->
+  <Target Name="PrintInfo" Condition="'$(MSBuildRestoreSessionId)' == ''">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>

@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <Target Name="ExtractSdkArchive"
-          BeforeTargets="AfterBuild"
+          AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Inputs="$(SdkTarballPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete">

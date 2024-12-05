@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <!-- This project depends on the merged vertical manifest. -->
+  <ItemGroup>
+    <ProjectReference Include="merge-asset-manifests.proj" />
+  </ItemGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="StageArtifacts"
+          AfterTargets="Build">
+    <Error Condition="'$(ArtifactsStagingDir)' == ''" Text="ArtifactsStagingDir property is required." />
+    <Error Condition="!Exists('$(MergedAssetManifestOutputPath)')" Text="The merged asset manifest file is missing." />
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
+      <Output TaskParameter="KnownPackages" ItemName="KnownPackage" />
+      <Output TaskParameter="KnownBlobs" ItemName="KnownBlob" />
+    </GetKnownArtifactsFromAssetManifests>
+
+    <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <KnownPackage Update="@(KnownPackage)">
+        <ShippingFolder Condition="%(KnownPackage.NonShipping) == 'true'">NonShipping</ShippingFolder>
+        <ShippingFolder Condition="%(KnownPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
+      </KnownPackage>
+
+      <StagedArtifact Include="@(KnownPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')"
+                      Destination="$(ArtifactsStagingDir)/packages/$(Configuration)/%(KnownPackage.ShippingFolder)/%(KnownPackage.RepoOrigin)/%(KnownPackage.Identity).%(KnownPackage.Version).nupkg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <StagedArtifact Include="@(KnownBlob->'$(ArtifactsAssetsDir)%(Identity)')" Destination="$(ArtifactsStagingDir)/assets/$(Configuration)/%(KnownBlob.Identity)" />
+      <StagedArtifact Include="$(MergedAssetManifestOutputPath)" Destination="$(ArtifactsStagingDir)/manifests/$(Configuration)/$([System.IO.Path]::GetFileName('$(MergedAssetManifestOutputPath)'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(StagedArtifact)"
+          DestinationFiles="%(StagedArtifact.Destination)"
+          SkipUnchangedFiles="true" />
+
+    <Message Text="$(MSBuildProjectName) -> '$(ArtifactsStagingDir)'" Importance="high" />
+  </Target>
+
+</Project>
