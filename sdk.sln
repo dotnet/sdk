@@ -91,7 +91,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_nuget", "src\Layout\to
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist", "src\Layout\redist\redist.csproj", "{AA273ACB-56FE-4F0C-8CC9-C2C45D31491D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "toolset-tasks", "src\Layout\toolset-tasks\toolset-tasks.csproj", "{C687CA8D-9843-4045-BC20-917953F6C864}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks", "src\Tasks\sdk-tasks\sdk-tasks.csproj", "{C687CA8D-9843-4045-BC20-917953F6C864}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Msbuild.Tests.Utilities", "test\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj", "{64294C35-9001-4FF9-975F-43D283EE5FA9}"
 EndProject
@@ -493,15 +493,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{3FA6F1CB-295B-4414-B18F-93845917A8CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks", "src\Installer\core-sdk-tasks\core-sdk-tasks.csproj", "{5593C59B-442B-4783-8527-74F6E41668D9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Installer\finalizer\finalizer-build.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.csproj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\VSTemplateLocator\VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks.Tests", "test\sdk-tasks.Tests\sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WebTools.AspireService.Package", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.Package.csproj", "{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}"
 EndProject
@@ -935,10 +933,6 @@ Global
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -1139,7 +1133,6 @@ Global
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{D7495CE7-64E5-4715-9304-799A41EC1D71} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{3FA6F1CB-295B-4414-B18F-93845917A8CD} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
-		{5593C59B-442B-4783-8527-74F6E41668D9} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{32DA04FF-A951-43EA-B2FA-86A825009A97} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{FAADC193-BA41-449D-97CE-0EF82836046A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
