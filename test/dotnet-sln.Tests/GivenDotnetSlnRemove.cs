@@ -64,6 +64,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26006.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 EndGlobal
 ";
 
@@ -317,7 +328,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "InvalidSolution.sln", "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", "*"));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -474,7 +485,7 @@ EndGlobal
                 .BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems);
         }
 
-        [Theory]
+        [Theory(Skip = "vs-solutionpersistence does not allow duplicate references.")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
