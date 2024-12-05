@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/3.7.0-dev">
+<Project Sdk="MSTest.Sdk/$(MSTestVersion)">
 
 	<PropertyGroup>
 		<TargetFramework>net8</TargetFramework>
