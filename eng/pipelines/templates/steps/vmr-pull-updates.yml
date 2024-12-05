@@ -46,18 +46,34 @@ steps:
   displayName: Disable astextplain in git diff (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
-- task: AzureCLI@2
-  displayName: Synchronize dotnet/dotnet
-  inputs:
-    azureSubscription: "Darc: Maestro Production"
-    scriptType: ps
-    scriptLocation: inlineScript
-    inlineScript: |
-      $enableBuildLookup = ""
-      if ('$(Build.Reason)' -ne 'PullRequest' -and '$(System.TeamProject)' -eq 'internal') {
-        $enableBuildLookup = "--enable-build-lookup"
-      }
+- ${{ if and(not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
+  - task: AzureCLI@2
+    displayName: Synchronize dotnet/dotnet
+    inputs:
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: |
+        ./eng/vmr-sync.ps1 `
+          -vmr ${{ parameters.vmrPath }} `
+          -tmp $(Agent.TempDirectory) `
+          -azdevPat '$(dn-bot-all-orgs-code-r)' `
+          -branch ${{ parameters.vmrBranch }} `
+          -repository "sdk:${{ parameters.targetRef }}" `
+          -recursive `
+          -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
+          -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+          --enable-build-lookup `
+          -ci `
+          -debugOutput
 
+        if ($LASTEXITCODE -ne 0) {
+          echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+          exit 1
+        }
+
+- ${{ else }}:
+  - powershell: |
       ./eng/vmr-sync.ps1 `
         -vmr ${{ parameters.vmrPath }} `
         -tmp $(Agent.TempDirectory) `
@@ -67,14 +83,15 @@ steps:
         -recursive `
         -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
         -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
-        $enableBuildLookup `
         -ci `
         -debugOutput
-
+  
       if ($LASTEXITCODE -ne 0) {
         echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
         exit 1
       }
+    displayName: Synchronize dotnet/dotnet
+    workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - powershell: |
   displayName: Synchronize dotnet/dotnet
