@@ -9,11 +9,9 @@
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
     <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
-    <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)</AspNetCoreBlobVersion>
-    <AspNetCoreBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
 
-    <NetRuntimeBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)</NetRuntimeBlobVersion>
-    <NetRuntimeBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeBlobVersion>
+    <NetRuntimeBlobVersion>$(MicrosoftNETCorePlatformsPackageVersion)</NetRuntimeBlobVersion>
 
     <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion)</WindowsDesktopBlobVersion>
     <WindowsDesktopBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>

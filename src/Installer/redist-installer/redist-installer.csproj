@@ -10,6 +10,7 @@
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
     <!-- DotNetBuildOrchestrator is (currently) needed in order to obtain NuGet packages from the runtime build. -->
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

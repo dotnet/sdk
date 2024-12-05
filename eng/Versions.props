@@ -14,7 +14,6 @@
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
     <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
     <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
-    <WorkloadsFeatureBand>8.0.100</WorkloadsFeatureBand>
     <!-- Enable to remove prerelease label. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
@@ -193,7 +192,9 @@
 
          Some .NET Framework tasks and the resolver will need to run in a VS/MSBuild that is older
          than the very latest, based on what we want the SDK to support. So use a version that matches the version
-         in minimumMSBuildVersion. In these cases, we don't want to use MicrosoftBuildVersion and other
+         in minimumMSBuildVersion. Note that MSBuild has started versioning before release so the version we use as the Minimum should be .0 
+         to ensure we load in VS but the version we build against should be the version of MSBuild that ships in the .0 VS release. 
+         In these cases, we don't want to use MicrosoftBuildVersion and other
          associated properties that are updated by the VMR infrastructure. So, we read this version
          from the 'minimumMSBuildVersion' file in non-source-only cases into MicrosoftBuildMinimumVersion,
          then use that in Directory.Packages.props.
@@ -201,7 +202,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes. -->
     <MicrosoftBuildVersion>17.13.0-preview-24604-04</MicrosoftBuildVersion>
     <MicrosoftBuildLocalizationVersion>17.13.0-preview-24604-04</MicrosoftBuildLocalizationVersion>
-    <MicrosoftBuildMinimumVersion Condition="Exists('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion') and '$(DotNetBuildSourceOnly)' != 'true'">$([System.IO.File]::ReadAllText('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion').Trim())</MicrosoftBuildMinimumVersion>
+    <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
+    <MinimumVSVersion>17.12</MinimumVSVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
