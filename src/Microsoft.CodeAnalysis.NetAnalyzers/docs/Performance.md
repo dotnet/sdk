@@ -15,7 +15,7 @@ Now that analyzers are part of the build we need a mechanism to track their perf
   - [Compiler Performance](https://github.com/dotnet/roslyn/blob/main/docs/wiki/Measuring-Compiler-Performance.md)
     - compiler team has written scenarios in the dotnet/performance repo. The directions for these call for developers to clone the dotnet/performance repo and manually run the tests
     - dotnet/performance benchmarks for roslyn are [here]((https://github.com/dotnet/performance/tree/main/src/benchmarks/real-world/Roslyn))
-  - [Analyzer Performance](https://microsoft.sharepoint.com/teams/managedlanguages/_layouts/15/Doc.aspx?sourcedoc={79b652be-6aa1-4feb-8d23-fa9127483ce9}&action=edit&wd=target%28Productivity%2FHelpers.one%7Caf49b9ef-72a4-4dee-9cf1-460fe552857a%2FHow%20to%20use%20AnalyzerRunner%7Cf8d125f1-83d6-47eb-8bde-09070142ceee%2F%29)
+  - [Analyzer Performance](https://github.com/dotnet/roslyn/blob/main/docs/wiki/Analyzer-Runner.md)
     - There is an AnalyzerRunner commandline tool checked into dotnet/roslyn that can be used to run analyzers and validate their performance. It needs to be run in a manual fashion.
 - [ASP.NET](https://github.com/aspnet/Benchmarks/blob/main/scenarios/README.md)
   - Can be run on CI: **Yes**
