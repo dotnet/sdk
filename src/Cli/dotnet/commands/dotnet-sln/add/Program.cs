@@ -101,7 +101,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 // Add fallback solution folder
-                // TODO: Refactor!!
                 string relativeSolutionFolder = Path.GetDirectoryName(relativePath);
                 if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
                 {
