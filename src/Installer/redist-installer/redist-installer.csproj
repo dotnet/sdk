@@ -39,9 +39,6 @@
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />
-  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateDebs.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateRPMs.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GeneratePKG.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateInstallers.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\Badge.targets" />
