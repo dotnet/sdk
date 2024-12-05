@@ -28,5 +28,7 @@ namespace Microsoft.DotNet.Cli.Utils
         string CommandName { get; }
 
         string CommandArgs { get; }
+
+        string CommandWorkingDirectory { get; }
     }
 }
