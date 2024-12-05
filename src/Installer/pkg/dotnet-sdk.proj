@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.Build.NoTargets">
+
   <PropertyGroup>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(IsRPMBasedDistro)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -124,4 +125,5 @@
       <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
     </ItemGroup>
   </Target>
+
 </Project>
