@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
+
 namespace Microsoft.DotNet.CommandFactory
 {
     public class CompositeCommandResolver : ICommandResolver
@@ -33,6 +35,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                 if (commandSpec != null)
                 {
+                    TelemetryEventEntry.SendFiltered(Tuple.Create(commandResolverArguments.CommandName.GetHashCode(), commandResolver.GetType()));
                     return commandSpec;
                 }
             }
