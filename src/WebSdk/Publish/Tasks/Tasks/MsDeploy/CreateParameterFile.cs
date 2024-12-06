@@ -286,7 +286,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 {
                     if (!File.Exists(DeclareSetParameterFile))
                     {
-                        File.Create(DeclareSetParameterFile);
+                        File.Create(DeclareSetParameterFile).Close();
                     }
 
                     if (!string.IsNullOrEmpty(DeclareParameterFile))

@@ -35,8 +35,6 @@ namespace Microsoft.DotNet.Watcher
 
         public override async Task WatchAsync(CancellationToken shutdownCancellationToken)
         {
-            Debug.Assert(Context.ProjectGraph != null);
-
             CancellationTokenSource? forceRestartCancellationSource = null;
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
@@ -75,37 +73,61 @@ namespace Microsoft.DotNet.Watcher
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
                 Task<ChangedFile[]?>? fileSetWatcherTask = null;
+                IRuntimeProcessLauncher? runtimeProcessLauncher = null;
+                CompilationHandler? compilationHandler = null;
 
                 try
                 {
+                    var rootProjectOptions = Context.RootProjectOptions;
+                    var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
+
                     // Evaluate the target to find out the set of files to watch.
                     // In case the app fails to start due to build or other error we can wait for these files to change.
                     evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
+                    Debug.Assert(evaluationResult.ProjectGraph != null);
+
+                    var rootProject = evaluationResult.ProjectGraph.GraphRoots.Single();
+
+                    // use normalized MSBuild path so that we can index into the ProjectGraph
+                    rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
+
+                    if (rootProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability))
+                    {
+                        runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
+                        Context.Reporter.Verbose("Using Aspire process launcher.");
+                    }
 
                     await using var browserConnector = new BrowserConnector(Context);
-                    var projectMap = new ProjectNodeMap(Context.ProjectGraph, Context.Reporter);
-                    await using var compilationHandler = new CompilationHandler(Context.Reporter);
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
+                    compilationHandler = new CompilationHandler(Context.Reporter);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
 
-                    var rootProjectOptions = Context.RootProjectOptions;
-                    var rootProjectNode = Context.ProjectGraph.GraphRoots.Single();
+                    var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    await using var runtimeProcessLauncher = _runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildProperties);
                     if (runtimeProcessLauncher != null)
                     {
-                        var launcherEnvironment = await runtimeProcessLauncher.GetEnvironmentVariablesAsync(iterationCancellationToken);
+                        var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
                         rootProjectOptions = rootProjectOptions with
                         {
                             LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment]
                         };
                     }
 
-                    rootRunningProject = await projectLauncher.TryLaunchProcessAsync(rootProjectOptions, rootProcessTerminationSource, build: true, iterationCancellationToken);
+                    rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
+                        rootProjectOptions,
+                        rootProcessTerminationSource,
+                        onOutput: null,
+                        restartOperation: new RestartOperation((_, _) => throw new InvalidOperationException("Root project shouldn't be restarted")),
+                        build: true,
+                        iterationCancellationToken);
+
                     if (rootRunningProject == null)
                     {
                         // error has been reported:
+                        waitForFileChangeBeforeRestarting = false;
                         return;
                     }
 
@@ -257,6 +279,11 @@ namespace Microsoft.DotNet.Watcher
                             else
                             {
                                 Context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+
+                                foreach (var project in projects)
+                                {
+                                    Context.Reporter.Verbose($"  Project to restart: '{project.Name}'");
+                                }
                             }
                         }, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
@@ -280,7 +307,8 @@ namespace Microsoft.DotNet.Watcher
                             await Task.WhenAll(
                                 projectsToRestart.Select(async runningProject =>
                                 {
-                                    var newRunningProject = await projectLauncher.LaunchProcessAsync(runningProject.Options, runningProject.ProjectNode, new CancellationTokenSource(), build: true, shutdownCancellationToken);
+                                    var newRunningProject = await runningProject.RestartOperation(build: true, shutdownCancellationToken);
+                                    runningProject.Dispose();
                                     await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
@@ -304,10 +332,23 @@ namespace Microsoft.DotNet.Watcher
                         rootProcessTerminationSource.Cancel();
                     }
 
+                    if (runtimeProcessLauncher != null)
+                    {
+                        // Request cleanup of all processes created by the launcher before we terminate the root process.
+                        // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                        await runtimeProcessLauncher.TerminateLaunchedProcessesAsync(CancellationToken.None);
+                    }
+
+                    if (compilationHandler != null)
+                    {
+                        // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                        await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
+                    }
+
                     try
                     {
-                        // Wait for the root process to exit. Child processes will be terminated upon CompilationHandler disposal.
-                        await Task.WhenAll(new[] { rootRunningProject?.RunningProcess, fileSetWatcherTask }.Where(t => t != null)!);
+                        // Wait for the root process to exit.
+                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileSetWatcherTask }.Where(t => t != null)!);
                     }
                     catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -316,6 +357,12 @@ namespace Microsoft.DotNet.Watcher
                     finally
                     {
                         fileSetWatcherTask = null;
+
+                        if (runtimeProcessLauncher != null)
+                        {
+                            await runtimeProcessLauncher.DisposeAsync();
+                        }
+
                         rootRunningProject?.Dispose();
 
                         if (evaluationResult != null &&
@@ -381,9 +428,10 @@ namespace Microsoft.DotNet.Watcher
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await RootFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await RootFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
+                    Debug.Assert(result.ProjectGraph != null);
                     return result;
                 }
 
