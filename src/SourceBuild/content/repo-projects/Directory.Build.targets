@@ -547,6 +547,18 @@
       <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
     </GetKnownArtifactsFromAssetManifests>
 
+    <!-- Mark the artifacts so that they get binplaced. -->
+    <ItemGroup>
+      <ProducedPackage>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) == 'true'">NonShipping</ShippingFolder>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
+      </ProducedPackage>
+
+      <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
+    </ItemGroup>
+
     <!-- Add manifests from dependent verticals. -->
     <ItemGroup>
       <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />

@@ -23,7 +23,6 @@
 
     <!-- Post-build: Source-only validation, packaging and publishing -->
     <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
-    <ProjectReference Include="$(RepositoryEngineeringDir)stage-artifacts.proj" Condition="'$(ArtifactsStagingDir)' != ''" />
     <ProjectReference Include="$(RepositoryEngineeringDir)finish-source-only.proj" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 

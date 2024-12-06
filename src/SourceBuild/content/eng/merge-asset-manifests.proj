@@ -10,7 +10,7 @@
 
   <!-- Create a merge manifest from the individual repository manifest files. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <Target Name="MergeAssetManifests" AfterTargets="Build">
+  <Target Name="MergeAssetManifests" BeforeTargets="Build">
     <ItemGroup>
       <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)**\*.xml" />
     </ItemGroup>
@@ -23,6 +23,11 @@
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
       VmrBuildNumber="$(BUILD_BUILDNUMBER)"
       VerticalName="$(VerticalName)" />
+
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
   </Target>
 
 </Project>
