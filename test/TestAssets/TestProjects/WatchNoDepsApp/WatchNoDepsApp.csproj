@@ -21,4 +21,8 @@
     <Warning Text="The value of property is '$(TestProperty)'" />
   </Target>
 
+  <ItemGroup>
+    <!-- add item -->
+  </ItemGroup>
+
 </Project>

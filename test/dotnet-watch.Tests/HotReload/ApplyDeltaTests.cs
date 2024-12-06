@@ -65,6 +65,75 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        /// <summary>
+        /// Unchanged project doesn't build. Wait for source change and rebuild.
+        /// </summary>
+        [Fact]
+        public async Task BaselineCompilationError()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            File.WriteAllText(programPath,
+                """
+                Console.Write
+                """);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+
+            UpdateSourceFile(programPath, """
+                System.Console.WriteLine("<Updated>");
+                """);
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
+        /// <summary>
+        /// We currently do not support applying project changes.
+        /// The workaround is to restart via Ctrl+R.
+        /// </summary>
+        [Fact]
+        public async Task ProjectChangeAndRestart()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
+
+            App.Start(testAsset, ["--no-exit"], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            // missing System.Linq import:
+            UpdateSourceFile(programPath, content => content.Replace("""
+                Console.WriteLine("Started");
+                """,
+                """
+                Console.WriteLine($">>> {typeof(Enumerable)}");
+                """));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- add item -->
+                """,
+                """
+                <Using Include="System.Linq" />
+                """));
+
+            // project change not applied:
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            // Ctlr+R rebuilds and restarts:
+            App.SendControlR();
+
+            await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
+        }
+
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
