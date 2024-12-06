@@ -6,21 +6,21 @@ using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy;
 
-internal class OneDeployStatusService(ITaskLogger taskLogger = null) : IDeploymentStatusService<DeploymentResponse>
+internal class OneDeployStatusService(ITaskLogger? taskLogger = null) : IDeploymentStatusService<DeploymentResponse>
 {
     private static readonly TimeSpan s_maximumWaitForResult = TimeSpan.FromMinutes(3);
     private static readonly TimeSpan s_refreshDelay = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan s_retryDelay = TimeSpan.FromSeconds(1);
     private static readonly int s_retryCount = 3;
 
-    private readonly ITaskLogger _taskLogger = taskLogger;
+    private readonly ITaskLogger? _taskLogger = taskLogger;
 
     /// <inheritdoc/>
-    public async Task<DeploymentResponse> PollDeploymentAsync(
+    public async Task<DeploymentResponse?> PollDeploymentAsync(
         IHttpClient httpClient,
-        string url,
-        string user,
-        string password,
+        string? url,
+        string? user,
+        string? password,
         string userAgent,
         CancellationToken cancellationToken)
     {
@@ -41,7 +41,7 @@ internal class OneDeployStatusService(ITaskLogger taskLogger = null) : IDeployme
         var retryTokenSource = CancellationTokenSource.CreateLinkedTokenSource(maxWaitForResultTokenSource.Token, cancellationToken);
         var retryToken = retryTokenSource.Token;
 
-        DeploymentResponse deploymentResponse = null;
+        DeploymentResponse? deploymentResponse = null;
         DeploymentStatus deployStatus = DeploymentStatus.Pending;
 
         try
@@ -60,7 +60,10 @@ internal class OneDeployStatusService(ITaskLogger taskLogger = null) : IDeployme
                     ? deploymentResponse.Status.Value
                     : DeploymentStatus.Unknown;
 
-                _taskLogger?.LogMessage(deploymentResponse.ToString());
+                if (deploymentResponse is not null)
+                {
+                    _taskLogger?.LogMessage(deploymentResponse.ToString());
+                }
 
                 await System.Threading.Tasks.Task.Delay(s_refreshDelay, retryToken);
             }

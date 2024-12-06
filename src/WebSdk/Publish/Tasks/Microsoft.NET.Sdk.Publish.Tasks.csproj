@@ -7,6 +7,7 @@
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

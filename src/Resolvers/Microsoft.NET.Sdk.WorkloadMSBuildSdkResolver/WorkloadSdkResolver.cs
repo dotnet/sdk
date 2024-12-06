@@ -1,9 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0240
+#nullable enable
+#pragma warning restore IDE0240
+
 using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Configurer;
+using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
+
 
 #if NET
 using Microsoft.DotNet.Cli;
@@ -13,7 +19,6 @@ using Microsoft.DotNet.DotNetSdkResolver;
 
 namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 {
-
     //  This SdkResolver is used by the .NET SDK version of MSBuild.  Workload resolution logic which
     //  is shared with Full Framework / Visual Studio MSBuild is in CachingWorkloadResolver.
     public class WorkloadSdkResolver : SdkResolver
@@ -24,23 +29,22 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 
         private class CachedState
         {
-            public string DotnetRootPath { get; init; }
-            public string SdkVersion { get; init; }
+            public string? DotnetRootPath { get; init; }
+            public string? SdkVersion { get; init; }
 
-            public string GlobalJsonPath { get; init; }
+            public string? GlobalJsonPath { get; init; }
 
-            public CachingWorkloadResolver WorkloadResolver { get; init; }
+            public CachingWorkloadResolver? WorkloadResolver { get; init; }
         }
 
-        public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)
+        public override SdkResult? Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)
         {
-            CachedState cachedState = null;
+            CachedState? cachedState = null;
 
             if (resolverContext.State is CachedState resolverContextState)
             {
                 cachedState = resolverContextState;
             }
-
 
             if (cachedState == null)
             {
@@ -63,14 +67,17 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                 resolverContext.State = cachedState;
             }
 
-            string userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var result = cachedState.WorkloadResolver.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, userProfileDir, cachedState.GlobalJsonPath);
+            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+            ResolutionResult? result = null;
+            if (cachedState.DotnetRootPath is not null && cachedState.SdkVersion is not null)
+            {
+                result = cachedState.WorkloadResolver?.Resolve(sdkReference.Name, cachedState.DotnetRootPath, cachedState.SdkVersion, userProfileDir, cachedState.GlobalJsonPath);
+            }
 
-
-            return result.ToSdkResult(sdkReference, factory);
+            return result?.ToSdkResult(sdkReference, factory);
         }
 
-        private string GetSdkDirectory(SdkResolverContext context)
+        private string? GetSdkDirectory(SdkResolverContext context)
         {
 #if NET
             var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
@@ -83,20 +90,24 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 
             return sdkResolutionResult.ResolvedSdkDirectory;
 #endif
-
         }
 
-        private string GetDotNetRoot(SdkResolverContext context)
+        private string? GetDotNetRoot(SdkResolverContext context)
         {
+            string? dotnetRoot = null;
             var sdkDirectory = GetSdkDirectory(context);
-            var dotnetRoot = Directory.GetParent(sdkDirectory).Parent.FullName;
+            if (sdkDirectory is not null)
+            {
+                dotnetRoot = Directory.GetParent(sdkDirectory)?.Parent?.FullName;
+            }
+
             return dotnetRoot;
         }
 
         //  Duplicated logic from DotNetMSBuildSdkResolver
-        private static string GetGlobalJsonStartDir(SdkResolverContext context)
+        private static string? GetGlobalJsonStartDir(SdkResolverContext context)
         {
-            string startDir = Environment.CurrentDirectory;
+            string? startDir = Environment.CurrentDirectory;
 
             if (!string.IsNullOrWhiteSpace(context.SolutionFilePath))
             {
