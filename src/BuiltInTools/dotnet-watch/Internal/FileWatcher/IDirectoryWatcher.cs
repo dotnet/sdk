@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch
 {
     internal interface IDirectoryWatcher : IDisposable
     {
-        event EventHandler<(string filePath, ChangeKind kind)> OnFileChange;
+        event EventHandler<ChangedPath> OnFileChange;
 
         event EventHandler<Exception> OnError;
 

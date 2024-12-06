@@ -72,6 +72,10 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = new("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ConfiguredToLaunchBrowser = new("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = new("Configuring the app to use browser-refresh middleware", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", "⌚", MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor NoHotReloadChangesToApply = new ("No C# changes to apply.", "⌚", MessageSeverity.Output, s_id++);
     }
 
     internal interface IReporter
