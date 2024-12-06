@@ -298,6 +298,7 @@
         @(Net70MonoRuntimePackRids);
         freebsd-x64;
         freebsd-arm64;
+        wasi-wasm;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
@@ -589,6 +590,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net10.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net10.0"
+                             AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net10.0"

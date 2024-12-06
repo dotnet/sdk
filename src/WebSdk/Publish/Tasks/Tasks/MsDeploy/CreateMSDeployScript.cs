@@ -23,7 +23,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 if (!File.Exists(ScriptFullPath))
                 {
-                    File.Create(ScriptFullPath);
+                    File.Create(ScriptFullPath).Close();
                 }
                 File.WriteAllLines(ScriptFullPath, GetReplacedFileContents(Resources.MsDeployBatchFile));
             }
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 if (!File.Exists(ReadMeFullPath))
                 {
-                    File.Create(ReadMeFullPath);
+                    File.Create(ReadMeFullPath).Close();
                 }
                 File.WriteAllLines(ReadMeFullPath, GetReplacedFileContents(Resources.MsDeployReadMe));
             }

@@ -26,89 +26,107 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            // User can decide what the degree of parallelism should be
-            // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
-                degreeOfParallelism = Environment.ProcessorCount;
-
-            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-
-            if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
+            bool hasFailed = false;
+            try
             {
-                VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
-            }
+                // User can decide what the degree of parallelism should be
+                // If not specified, we will default to the number of processors
+                if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
+                    degreeOfParallelism = Environment.ProcessorCount;
 
-            BuiltInOptions builtInOptions = new(
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+                bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
 
-            if (ContainsHelpOption(parseResult.GetArguments()))
-            {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
                 {
-                    testApp.HelpRequested += OnHelpRequested;
-                    testApp.ErrorReceived += OnErrorReceived;
-                    testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Run += OnTestApplicationRun;
-                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                    return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
-                });
-            }
-            else
-            {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.HandshakeReceived += OnHandshakeReceived;
-                    testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
-                    testApp.TestResultsReceived += OnTestResultsReceived;
-                    testApp.FileArtifactsReceived += OnFileArtifactsReceived;
-                    testApp.SessionEventReceived += OnSessionEventReceived;
-                    testApp.ErrorReceived += OnErrorReceived;
-                    testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Run += OnTestApplicationRun;
-                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                    return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
-                });
-            }
-
-            _args = new List<string>(parseResult.UnmatchedTokens);
-            _msBuildConnectionHandler = new(_args, _actionQueue);
-            _testModulesFilterHandler = new(_args, _actionQueue);
-            _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
-
-            if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
-            {
-                if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
-                {
-                    return ExitCodes.GenericFailure;
+                    VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
                 }
-            }
-            else
-            {
-                // If no filter was provided, MSBuild will get the test project paths
-                var msbuildResult = _msBuildConnectionHandler.RunWithMSBuild(parseResult);
-                if (msbuildResult != 0)
+
+                BuiltInOptions builtInOptions = new(
+                    parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                    parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                    parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                    parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+
+                if (ContainsHelpOption(parseResult.GetArguments()))
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
-                    return ExitCodes.GenericFailure;
+                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                    {
+                        testApp.HelpRequested += OnHelpRequested;
+                        testApp.ErrorReceived += OnErrorReceived;
+                        testApp.TestProcessExited += OnTestProcessExited;
+                        testApp.Run += OnTestApplicationRun;
+                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
+
+                        return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
+                    });
                 }
+                else
+                {
+                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                    {
+                        testApp.HandshakeReceived += OnHandshakeReceived;
+                        testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
+                        testApp.TestResultsReceived += OnTestResultsReceived;
+                        testApp.FileArtifactsReceived += OnFileArtifactsReceived;
+                        testApp.SessionEventReceived += OnSessionEventReceived;
+                        testApp.ErrorReceived += OnErrorReceived;
+                        testApp.TestProcessExited += OnTestProcessExited;
+                        testApp.Run += OnTestApplicationRun;
+                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
+
+                        return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
+                    });
+                }
+
+                _args = new List<string>(parseResult.UnmatchedTokens);
+                _msBuildConnectionHandler = new(_args, _actionQueue);
+                _testModulesFilterHandler = new(_args, _actionQueue);
+                _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
+
+                if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+                {
+                    if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+                    {
+                        return ExitCodes.GenericFailure;
+                    }
+                }
+                else
+                {
+                    // If no filter was provided, MSBuild will get the test project paths
+                    var msbuildResult = _msBuildConnectionHandler.RunWithMSBuild(parseResult);
+                    if (msbuildResult != 0)
+                    {
+                        VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
+                        return ExitCodes.GenericFailure;
+                    }
+
+                    // If not all test projects have IsTestingPlatformApplication set to true, we will simply return
+                    if (!_msBuildConnectionHandler.EnqueueTestApplications())
+                    {
+                        VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
+                        return ExitCodes.GenericFailure;
+                    }
+                }
+
+                _actionQueue.EnqueueCompleted();
+                hasFailed = _actionQueue.WaitAllActions();
+                // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
+
+                WaitOnMSBuildHandlerPipeConnectionLoop();
             }
-
-            _actionQueue.EnqueueCompleted();
-            var hasFailed = _actionQueue.WaitAllActions();
-
-            // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-            _cancellationToken.Cancel();
-            _namedPipeConnectionLoop.Wait();
-
-            // Clean up everything
-            CleanUp();
+            finally
+            {
+                // Clean up everything
+                CleanUp();
+            }
 
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void WaitOnMSBuildHandlerPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _namedPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private void CleanUp()

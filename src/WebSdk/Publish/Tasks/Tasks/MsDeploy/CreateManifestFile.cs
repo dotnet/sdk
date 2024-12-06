@@ -105,7 +105,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     {
                         if (!File.Exists(ManifestFile))
                         {
-                            File.Create(ManifestFile);
+                            File.Create(ManifestFile).Close();
                         }
                         WriteManifestsToFile(Log, m_manifests, ManifestFile);
                     }

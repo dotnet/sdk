@@ -275,24 +275,6 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="GetMinimumVSVersion"
-          BeforeTargets="GenerateSdkBundle"
-          Condition=" '$(OS)' == 'Windows_NT' "
-          Outputs="$(MinimumVSVersion)">
-    <PropertyGroup>
-      <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
-    </PropertyGroup>
-
-    <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
-      <Output TaskParameter="Lines" PropertyName="MinimumVSVersion" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup Condition=" '$(VersionSDKMinor)' == '1' and '$(StabilizePackageVersion)' == 'true' ">
-      <MinimumVSVersion>$(MinimumVSVersion.Substring(0,$(MinimumVSVersion.LastIndexOf('.'))))</MinimumVSVersion>
-      <MinimumVSVersion >$([MSBuild]::Add($(MinimumVSVersion), .1))</MinimumVSVersion>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
           Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingSdkBundle)' != 'true'"

@@ -5,7 +5,15 @@
 indent_style = space
 
 # Xml files
-[*.{xml,props,targets}]
+[*.xml]
+indent_size = 2
+
+# Xml project files
+[*.{csproj,fsproj,vbproj,proj}]
+indent_size = 2
+
+# Xml config files
+[*.{props,targets,config,nuspec}]
 indent_size = 2
 
 # C# files
