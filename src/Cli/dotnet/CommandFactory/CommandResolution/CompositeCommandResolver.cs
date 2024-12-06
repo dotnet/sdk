@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.CommandFactory
 {
     public class CompositeCommandResolver : ICommandResolver
     {
+        private const string CommandResolveEvent = "dotnet/cli/commandresolution/commandresolved";
         private IList<ICommandResolver> _orderedCommandResolvers;
 
         public IEnumerable<ICommandResolver> OrderedCommandResolvers
@@ -35,7 +36,12 @@ namespace Microsoft.DotNet.CommandFactory
 
                 if (commandSpec != null)
                 {
-                    TelemetryEventEntry.SendFiltered(Tuple.Create(commandResolverArguments.CommandName.GetHashCode(), commandResolver.GetType()));
+                    TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
+                    {
+                        { "commandName", commandResolverArguments.CommandName.GetHashCode().ToString() },
+                        { "commandResolver", commandResolver.GetType().ToString() }
+                    });
+
                     return commandSpec;
                 }
             }
