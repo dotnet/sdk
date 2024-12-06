@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Utils
                         .Split(s_pathSeparator)
                         .Select(p => p.Trim(s_quote))
                         .Where(p => !string.IsNullOrWhiteSpace(p))
-                        .Select(p => ExpandTildeSlash(p)) ?? [string.Empty]);
+                        .Select(p => ExpandTildeSlash(p)) ?? []);
 
                     _searchPaths = searchPaths;
                 }

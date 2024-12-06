@@ -159,16 +159,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 
         internal string? CreateZipFile(string? sourcePath)
         {
+            if (sourcePath is null)
+            {
+                return null;
+            }
+
             // Zip the files from PublishOutput path.
             string zipFileFullPath = Path.Combine(Path.GetTempPath(), string.Format("Publish{0}.zip", new Random().Next(int.MaxValue)));
             Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
 
             try
             {
-                if (sourcePath is not null)
-                {
-                    System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
-                }
+                System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
             }
             catch (Exception e)
             {
