@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli
             CliCommand command = new DocumentedCommand("package", DocsLink);
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
             command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
+            command.Subcommands.Add(PackageAddCommandParser.GetCommand());
 
             return command;
         }
