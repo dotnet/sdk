@@ -862,7 +862,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-m            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux
