@@ -80,7 +80,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
             console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest?.DotNetHostPath),
             reporter,
             out var errorCode);
 
@@ -270,7 +270,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
             console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest?.DotNetHostPath),
             reporter,
             out var errorCode);
 
@@ -386,7 +386,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var program = Program.TryCreate(
             TestOptions.GetCommandLineOptions(["--verbose", "--project", hostProject]),
             console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest?.DotNetHostPath),
             reporter,
             out var errorCode);
 

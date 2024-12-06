@@ -8,7 +8,7 @@ namespace Microsoft.NET.TestFramework
 {
     public class NuGetTestLogger : ILogger
     {
-        private readonly ITestOutputHelper _output;
+        private readonly ITestOutputHelper? _output;
 
         public NuGetTestLogger()
         {
@@ -95,7 +95,7 @@ namespace Microsoft.NET.TestFramework
 
         public void Clear()
         {
-            string msg;
+            string? msg;
             while (Messages.TryDequeue(out msg))
             {
                 // do nothing

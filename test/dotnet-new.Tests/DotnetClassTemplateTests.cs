@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string targetFramework = "")
         {
             // prevents logging a welcome message from sdk installation
-            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            Dictionary<string, string?> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             string folderName = GetFolderName(templateShortName, langVersion, targetFramework);
@@ -68,14 +68,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     "*project.*.*"
                 },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DoNotPrependTemplateNameToScenarioName = true,
                 ScenarioName = folderName,
                 OutputDirectory = workingDir,
                 EnsureEmptyOutputDirectory = false
             }
-            .WithCustomEnvironment(environmentUnderTest)
+            .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
                .AddScrubber((path, content) =>
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             // prevents logging a welcome message from sdk installation
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest!);
 
             string folderName = GetFolderName(templateShortName, langVersion, targetFramework);
             string workingDir = CreateTemporaryFolder($"{nameof(DotnetVisualBasicClassTemplatesTest)}.{folderName}");
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     "*project.*.*"
                 },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DoNotPrependTemplateNameToScenarioName = true,
                 ScenarioName = folderName,

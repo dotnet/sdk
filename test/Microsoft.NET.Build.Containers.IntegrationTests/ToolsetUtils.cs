@@ -27,7 +27,7 @@ internal static class ToolsetUtils
         //until the package is stabilized, the package version matches TestContext.Current.ToolsetUnderTest.SdkVersion
         //after the package is stabilized, the package version doesn't have -prefix (-dev, -ci) anymore
         //so one of those is expected
-        string[] expectedPackageVersions = new[] { TestContext.Current.ToolsetUnderTest.SdkVersion, TestContext.Current.ToolsetUnderTest.SdkVersion.Split('-')[0] };
+        string[] expectedPackageVersions = new[] { TestContext.Current.ToolsetUnderTest?.SdkVersion, TestContext.Current.ToolsetUnderTest?.SdkVersion?.Split('-')[0] }!;
 
         foreach (string expectedVersion in expectedPackageVersions)
         {

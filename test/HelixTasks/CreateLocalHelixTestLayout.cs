@@ -8,18 +8,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     public sealed class CreateLocalHelixTestLayout : Build.Utilities.Task
     {
         [Required]
-        public ITaskItem[] HelixCorrelationPayload { get; set; }
+        public ITaskItem[]? HelixCorrelationPayload { get; set; }
 
         [Required]
-        public string TestOutputDirectory { get; set; }
+        public string? TestOutputDirectory { get; set; }
 
         public override bool Execute()
         {
-            foreach (var payload in HelixCorrelationPayload)
+            foreach (var payload in HelixCorrelationPayload!)
             {
                 var copyfrom = new DirectoryInfo(payload.GetMetadata("PayloadDirectory"));
                 var relativeDestinationPathOnHelix = payload.GetMetadata("Destination");
-                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory, relativeDestinationPathOnHelix));
+                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory!, relativeDestinationPathOnHelix));
 
                 if (Directory.Exists(destination.FullName))
                 {

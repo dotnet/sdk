@@ -131,7 +131,7 @@ public class PackageTests
               $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
         };
 
-        (string packageFilePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packageFilePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
         using ZipArchive archive = new(File.OpenRead(packageFilePath), ZipArchiveMode.Read, false);
 
         IEnumerable<string> actualEntries = archive.Entries

@@ -8,7 +8,7 @@ namespace Microsoft.NET.TestFramework
 {
     public class TestAssetsManager
     {
-        public string TestAssetsRoot { get; private set; }
+        public string TestAssetsRoot { get; private set; } 
 
         private List<string> TestDestinationDirectories { get; } = new List<string>();
 
@@ -30,10 +30,10 @@ namespace Microsoft.NET.TestFramework
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
-            [CallerFilePath] string callerFilePath = null,
-            string identifier = "",
+            [CallerFilePath] string? callerFilePath = null,
+            string? identifier = "",
             string testAssetSubdirectory = "",
-            string testDestinationDirectory = null,
+            string? testDestinationDirectory = null,
             bool allowCopyIfPresent = false)
         {
             var testProjectDirectory = GetAndValidateTestProjectDirectory(testProjectName, testAssetSubdirectory);
@@ -148,7 +148,7 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
-        public TestDirectory CreateTestDirectory([CallerMemberName] string testName = null, string identifier = null)
+        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null)
         {
             string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty);
             return new TestDirectory(dir, TestContext.Current.SdkVersion);
@@ -171,12 +171,12 @@ namespace Microsoft.NET.TestFramework
         }
 
         public static string GetTestDestinationDirectoryPath(
-            string testProjectName,
-            string callingMethodAndFileName,
-            string identifier,
+            string? testProjectName,
+            string? callingMethodAndFileName,
+            string? identifier,
             bool allowCopyIfPresent = false)
         {
-            string baseDirectory = TestContext.Current.TestExecutionDirectory;
+            string? baseDirectory = TestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)
@@ -199,7 +199,7 @@ namespace Microsoft.NET.TestFramework
                                              .AppendFormat("{0:X2}", hash[3]);
             }
 
-            var directoryPath = Path.Combine(baseDirectory, directoryName.ToString());
+            var directoryPath = Path.Combine(baseDirectory!, directoryName.ToString());
 #if CI_BUILD
             if (!allowCopyIfPresent && Directory.Exists(directoryPath))
             {

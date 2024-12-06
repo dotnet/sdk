@@ -66,7 +66,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[] ignoredPatterns = null)
+        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[]? ignoredPatterns = null)
         {
             string filteredStdOut = _commandResult.StdOut;
             if (ignoredPatterns != null && ignoredPatterns.Length > 0)
@@ -222,7 +222,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             foreach (var pattern in filePatterns)
             {
                 var directory = Path.GetDirectoryName(pattern);
-                var path = Path.Combine(unzipped, directory);
+                var path = Path.Combine(unzipped, directory!);
                 var searchPattern = Path.GetFileName(pattern);
 
                 var condition = Directory.GetFiles(path, searchPattern).Length < 1;
@@ -240,7 +240,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             foreach (var pattern in filePatterns)
             {
                 var directory = Path.GetDirectoryName(pattern);
-                var path = Path.Combine(unzipped, directory);
+                var path = Path.Combine(unzipped, directory!);
                 var searchPattern = Path.GetFileName(pattern);
 
                 var condition = Directory.Exists(path) && Directory.GetFiles(path, searchPattern).Length > 0;
