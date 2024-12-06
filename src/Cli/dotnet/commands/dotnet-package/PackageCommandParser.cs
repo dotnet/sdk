@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.Cli
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
             command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
             command.Subcommands.Add(PackageAddCommandParser.GetCommand());
+            command.Subcommands.Add(PackageListCommandParser.GetCommand());
+            command.Subcommands.Add(PackageRemoveCommandParser.GetCommand());
 
             return command;
         }
