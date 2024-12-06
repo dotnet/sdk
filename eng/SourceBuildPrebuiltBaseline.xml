@@ -45,6 +45,11 @@
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.Options/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.Primitives/8.0.0" />
+    <UsagePattern IdentityGlob="System.Buffers/4.6.0" />
+    <UsagePattern IdentityGlob="System.Memory/4.6.0" />
+    <UsagePattern IdentityGlob="System.Numerics.Vectors/4.6.0" />
+    <UsagePattern IdentityGlob="System.Runtime.CompilerServices.Unsafe/6.1.0" />
+    <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/4.6.0" />
 
     <!-- Used only for publishing -->
     <UsagePattern IdentityGlob="Microsoft.Net.Compilers.Toolset.Framework/*" />
