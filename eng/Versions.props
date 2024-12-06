@@ -121,7 +121,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineCliPackageVersion>6.0.429-rtm.24605.2</MicrosoftTemplateEngineCliPackageVersion>
+    <MicrosoftTemplateEngineCliPackageVersion>6.0.429-rtm.24606.1</MicrosoftTemplateEngineCliPackageVersion>
     <MicrosoftTemplateEngineAbstractionsPackageVersion>6.0.429</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>6.0.429</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>6.0.429</MicrosoftTemplateEngineUtilsPackageVersion>
@@ -142,11 +142,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>6.0.37-servicing.24605.4</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>6.0.37-servicing.24606.2</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.37</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>6.0.37-servicing.24605.4</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>6.0.37-servicing.24605.4</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>6.0.37-servicing.24605.4</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>6.0.37-servicing.24606.2</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>6.0.37-servicing.24606.2</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>6.0.37-servicing.24606.2</MicrosoftAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>6.0.37</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>6.0.3-1.22213.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalVersion>6.0.3-1.22213.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
