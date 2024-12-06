@@ -348,7 +348,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             switch (updates.Status)
             {
                 case ModuleUpdateStatus.None:
-                    _reporter.Output("No hot reload changes to apply.");
+                    _reporter.Output("No C# changes to apply.");
                     break;
 
                 case ModuleUpdateStatus.Ready:
