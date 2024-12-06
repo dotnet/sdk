@@ -2,9 +2,6 @@
 ### If run in an sdk PR, new changes are applied to a local copy of the VMR, then it is built and tested
 
 parameters:
-- name: architecture
-  type: string
-
 - name: artifactsRid
   type: string
   default: ''
@@ -111,7 +108,7 @@ parameters:
   type: string
 
 jobs:
-- job: ${{ parameters.buildName }}_${{ parameters.architecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
+- job: ${{ parameters.buildName }}_${{ parameters.targetArchitecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
   pool: ${{ parameters.pool }}
 
   # Currently, CodeQL slows the build down too much
