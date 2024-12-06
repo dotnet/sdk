@@ -7,138 +7,127 @@ using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 
-namespace Microsoft.DotNet.Tools.Sln.Add
+namespace Microsoft.DotNet.Tools.Sln.Add;
+
+internal class AddProjectToSolutionCommand : CommandBase
 {
-    internal class AddProjectToSolutionCommand : CommandBase
+    private readonly string _fileOrDirectory;
+    private readonly bool _inRoot;
+    private readonly IList<string> _relativeRootSolutionFolders;
+    private readonly IReadOnlyList<string> _arguments;
+
+    public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
     {
-        private readonly string _fileOrDirectory;
-        private readonly bool _inRoot;
-        private readonly IList<string> _relativeRootSolutionFolders;
-        private readonly IReadOnlyCollection<string> _arguments;
+        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-        public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
+        _arguments = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? [];
+
+        _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
+        string relativeRoot = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
+
+        SlnArgumentValidator.ParseAndValidateArguments(_arguments, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot);
+
+        bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
+
+        if (hasRelativeRoot)
         {
-            _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+            relativeRoot = PathUtility.GetPathWithDirectorySeparator(relativeRoot);
+            _relativeRootSolutionFolders = relativeRoot.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        }
+        else
+        {
+            _relativeRootSolutionFolders = null;
+        }
+    }
 
-            _arguments = parseResult.GetValue(SlnAddParser.ProjectPathArgument)?.ToArray() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+    public override int Execute()
+    {
+        SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
 
-            _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
-            string relativeRoot = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
-
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _arguments, SlnArgumentValidator.CommandType.Add, _inRoot, relativeRoot);
-
-            bool hasRelativeRoot = !string.IsNullOrEmpty(relativeRoot);
-
-            if (hasRelativeRoot)
-            {
-                relativeRoot = PathUtility.GetPathWithDirectorySeparator(relativeRoot);
-                _relativeRootSolutionFolders = relativeRoot.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-            }
-            else
-            {
-                _relativeRootSolutionFolders = null;
-            }
+        var arguments = (_parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        if (arguments.Count == 0)
+        {
+            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
         }
 
-        public override int Execute()
+        PathUtility.EnsureAllPathsExist(arguments, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
+
+        var fullProjectPaths = _arguments.Select(p =>
         {
-            SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
+            var fullPath = Path.GetFullPath(p);
+            return Directory.Exists(fullPath) ?
+                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName :
+                fullPath;
+        }).ToList();
 
-            var arguments = (_parseResult.GetValue<IEnumerable<string>>(SlnAddParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
-            if (arguments.Count == 0)
-            {
-                throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
-            }
+        var preAddProjectCount = slnFile.Projects.Count;
 
-            PathUtility.EnsureAllPathsExist(arguments, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
+        foreach (var fullProjectPath in fullProjectPaths)
+        {
+            // Identify the intended solution folders
+            var solutionFolders = DetermineSolutionFolder(slnFile, fullProjectPath);
 
-            var fullProjectPaths = _arguments.Select(p =>
-            {
-                var fullPath = Path.GetFullPath(p);
-                return Directory.Exists(fullPath) ?
-                    MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName :
-                    fullPath;
-            }).ToList();
-
-            var preAddProjectCount = slnFile.Projects.Count;
-
-            foreach (var fullProjectPath in fullProjectPaths)
-            {
-                // Identify the intended solution folders
-                var solutionFolders = DetermineSolutionFolder(slnFile, fullProjectPath);
-
-                slnFile.AddProject(fullProjectPath, solutionFolders);
-            }
-
-            if (slnFile.Projects.Count > preAddProjectCount)
-            {
-                slnFile.Write();
-            }
-
-            return 0;
+            slnFile.AddProject(fullProjectPath, solutionFolders);
         }
 
-        private static IList<string> GetSolutionFoldersFromProjectPath(string projectFilePath)
+        if (slnFile.Projects.Count > preAddProjectCount)
         {
-            var solutionFolders = new List<string>();
+            slnFile.Write();
+        }
 
-            if (!IsPathInTreeRootedAtSolutionDirectory(projectFilePath))
-                return solutionFolders;
+        return 0;
+    }
 
-            var currentDirString = $".{Path.DirectorySeparatorChar}";
-            if (projectFilePath.StartsWith(currentDirString))
-            {
-                projectFilePath = projectFilePath.Substring(currentDirString.Length);
-            }
+    private static List<string> GetSolutionFoldersFromProjectPath(string projectFilePath)
+    {
+        var solutionFolders = new List<string>();
 
-            var projectDirectoryPath = TrimProject(projectFilePath);
-            if (string.IsNullOrEmpty(projectDirectoryPath))
-                return solutionFolders;
-
-            var solutionFoldersPath = TrimProjectDirectory(projectDirectoryPath);
-            if (string.IsNullOrEmpty(solutionFoldersPath))
-                return solutionFolders;
-
-            solutionFolders.AddRange(solutionFoldersPath.Split(Path.DirectorySeparatorChar));
-
+        if (!IsPathInTreeRootedAtSolutionDirectory(projectFilePath))
             return solutionFolders;
-        }
 
-        private IList<string> DetermineSolutionFolder(SlnFile slnFile, string fullProjectPath)
+        var currentDirString = $".{Path.DirectorySeparatorChar}";
+        if (projectFilePath.StartsWith(currentDirString))
         {
-            if (_inRoot)
-            {
-                // The user requested all projects go to the root folder
-                return null;
-            }
-
-            if (_relativeRootSolutionFolders != null)
-            {
-                // The user has specified an explicit root
-                return _relativeRootSolutionFolders;
-            }
-
-            // We determine the root for each individual project
-            var relativeProjectPath = Path.GetRelativePath(
-                PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory),
-                fullProjectPath);
-
-            return GetSolutionFoldersFromProjectPath(relativeProjectPath);
+            projectFilePath = projectFilePath.Substring(currentDirString.Length);
         }
 
-        private static bool IsPathInTreeRootedAtSolutionDirectory(string path)
+        var projectDirectoryPath = Path.GetDirectoryName(projectFilePath);
+        if (string.IsNullOrEmpty(projectDirectoryPath))
+            return solutionFolders;
+
+        var solutionFoldersPath = Path.GetDirectoryName(projectDirectoryPath);
+        if (string.IsNullOrEmpty(solutionFoldersPath))
+            return solutionFolders;
+
+        solutionFolders.AddRange(solutionFoldersPath.Split(Path.DirectorySeparatorChar));
+
+        return solutionFolders;
+    }
+
+    private IList<string> DetermineSolutionFolder(SlnFile slnFile, string fullProjectPath)
+    {
+        if (_inRoot)
         {
-            return !path.StartsWith("..");
+            // The user requested all projects go to the root folder
+            return null;
         }
 
-        private static string TrimProject(string path)
+        if (_relativeRootSolutionFolders != null)
         {
-            return Path.GetDirectoryName(path);
+            // The user has specified an explicit root
+            return _relativeRootSolutionFolders;
         }
 
-        private static string TrimProjectDirectory(string path)
-        {
-            return Path.GetDirectoryName(path);
-        }
+        // We determine the root for each individual project
+        var relativeProjectPath = Path.GetRelativePath(
+            PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory),
+            fullProjectPath);
+
+        return GetSolutionFoldersFromProjectPath(relativeProjectPath);
+    }
+
+    private static bool IsPathInTreeRootedAtSolutionDirectory(string path)
+    {
+        return !path.StartsWith("..");
     }
 }

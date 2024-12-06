@@ -32,5 +32,18 @@ namespace Microsoft.DotNet.Tools.Common
 
             return path;
         }
+
+        public static SlnSection GetSolutionItemsSectionOrDefault(this SlnProject project) =>
+            project.Sections.GetSection("SolutionItems", SlnSectionType.PreProcess);
+
+        public static bool ContainsSolutionItem(this SlnProject project, string solutionItemName)
+        {
+            var section = project.GetSolutionItemsSectionOrDefault();
+            if (section == null) { return false; }
+
+            // solution item names are case-insensitive
+            return new Dictionary<string, string>(section.GetContent(), StringComparer.OrdinalIgnoreCase)
+                .ContainsKey(solutionItemName);
+        }
     }
 }

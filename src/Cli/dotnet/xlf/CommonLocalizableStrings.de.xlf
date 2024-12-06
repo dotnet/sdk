@@ -175,6 +175,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Projektdatei</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="new">Project `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Verweis</target>
@@ -802,11 +807,6 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
       <trans-unit id="NoRestoreDescription">
         <source>Do not restore the project before building.</source>
         <target state="translated">Hiermit wird das Projekt nicht vor der Erstellung wiederhergestellt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectRemovedFromTheSolution">
-        <source>Project `{0}` removed from the solution.</source>
-        <target state="translated">Das Projekt "{0}" wurde aus der Projektmappe entfernt.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidXml">

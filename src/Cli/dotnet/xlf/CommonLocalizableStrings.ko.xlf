@@ -175,6 +175,11 @@ export PATH="$PATH:{0}"
         <target state="translated">프로젝트 파일</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="new">Project `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">참조</target>
@@ -803,11 +808,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="NoRestoreDescription">
         <source>Do not restore the project before building.</source>
         <target state="translated">빌드하기 전에 프로젝트를 복원하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectRemovedFromTheSolution">
-        <source>Project `{0}` removed from the solution.</source>
-        <target state="translated">'{0}' 프로젝트가 솔루션에서 제거되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidXml">

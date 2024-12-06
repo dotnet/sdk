@@ -6,536 +6,636 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System.Collections.Generic;
 
-namespace Microsoft.DotNet.Tools.Common
+namespace Microsoft.DotNet.Tools.Common;
+
+internal static class SlnFileExtensions
 {
-    internal static class SlnFileExtensions
+    public static void AddProject(this SlnFile slnFile, string fullProjectPath, IList<string> solutionFolders)
     {
-        public static void AddProject(this SlnFile slnFile, string fullProjectPath, IList<string> solutionFolders)
+        ArgumentException.ThrowIfNullOrEmpty(fullProjectPath);
+
+        var relativeProjectPath = Path.GetRelativePath(
+            PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory),
+            fullProjectPath);
+
+        if (slnFile.Projects.Any((p) =>
+                string.Equals(p.FilePath, relativeProjectPath, StringComparison.OrdinalIgnoreCase)))
         {
-            if (string.IsNullOrEmpty(fullProjectPath))
+            Reporter.Output.WriteLine(string.Format(
+                CommonLocalizableStrings.SolutionAlreadyContainsProject,
+                slnFile.FullPath,
+                relativeProjectPath));
+        }
+        else
+        {
+            ProjectRootElement rootElement = null;
+            ProjectInstance projectInstance = null;
+            try
             {
-                throw new ArgumentException();
+                rootElement = ProjectRootElement.Open(fullProjectPath);
+                projectInstance = new ProjectInstance(rootElement);
+            }
+            catch (InvalidProjectFileException e)
+            {
+                Reporter.Error.WriteLine(string.Format(
+                    CommonLocalizableStrings.InvalidProjectWithExceptionMessage,
+                    fullProjectPath,
+                    e.Message));
+                return;
             }
 
-            var relativeProjectPath = Path.GetRelativePath(
-                PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory),
-                fullProjectPath);
-
-            if (slnFile.Projects.Any((p) =>
-                    string.Equals(p.FilePath, relativeProjectPath, StringComparison.OrdinalIgnoreCase)))
+            var slnProject = new SlnProject
             {
-                Reporter.Output.WriteLine(string.Format(
-                    CommonLocalizableStrings.SolutionAlreadyContainsProject,
-                    slnFile.FullPath,
-                    relativeProjectPath));
-            }
-            else
+                Id = projectInstance.GetProjectId(),
+                TypeGuid = rootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid(),
+                Name = Path.GetFileNameWithoutExtension(relativeProjectPath),
+                FilePath = relativeProjectPath
+            };
+
+            if (string.IsNullOrEmpty(slnProject.TypeGuid))
             {
-                ProjectRootElement rootElement = null;
-                ProjectInstance projectInstance = null;
-                try
-                {
-                    rootElement = ProjectRootElement.Open(fullProjectPath);
-                    projectInstance = new ProjectInstance(rootElement);
-                }
-                catch (InvalidProjectFileException e)
-                {
-                    Reporter.Error.WriteLine(string.Format(
-                        CommonLocalizableStrings.InvalidProjectWithExceptionMessage,
-                        fullProjectPath,
-                        e.Message));
-                    return;
-                }
-
-                var slnProject = new SlnProject
-                {
-                    Id = projectInstance.GetProjectId(),
-                    TypeGuid = rootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid(),
-                    Name = Path.GetFileNameWithoutExtension(relativeProjectPath),
-                    FilePath = relativeProjectPath
-                };
-
-                if (string.IsNullOrEmpty(slnProject.TypeGuid))
-                {
-                    Reporter.Error.WriteLine(
-                        string.Format(
-                            CommonLocalizableStrings.UnsupportedProjectType,
-                            projectInstance.FullPath));
-                    return;
-                }
-
-                // NOTE: The order you create the sections determines the order they are written to the sln
-                // file. In the case of an empty sln file, in order to make sure the solution configurations
-                // section comes first we need to add it first. This doesn't affect correctness but does
-                // stop VS from re-ordering things later on. Since we are keeping the SlnFile class low-level
-                // it shouldn't care about the VS implementation details. That's why we handle this here.
-                if (AreBuildConfigurationsApplicable(slnProject.TypeGuid))
-                {
-                    slnFile.AddDefaultBuildConfigurations();
-
-                    slnFile.MapSolutionConfigurationsToProject(
-                        projectInstance,
-                        slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
-                }
-
-                SetupSolutionFolders(slnFile, solutionFolders, relativeProjectPath, slnProject);
-
-                slnFile.Projects.Add(slnProject);
-
-                Reporter.Output.WriteLine(
-                    string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, relativeProjectPath));
+                Reporter.Error.WriteLine(
+                    string.Format(
+                        CommonLocalizableStrings.UnsupportedProjectType,
+                        projectInstance.FullPath));
+                return;
             }
+
+            // NOTE: The order you create the sections determines the order they are written to the sln
+            // file. In the case of an empty sln file, in order to make sure the solution configurations
+            // section comes first we need to add it first. This doesn't affect correctness but does
+            // stop VS from re-ordering things later on. Since we are keeping the SlnFile class low-level
+            // it shouldn't care about the VS implementation details. That's why we handle this here.
+            if (AreBuildConfigurationsApplicable(slnProject.TypeGuid))
+            {
+                slnFile.AddDefaultBuildConfigurations();
+
+                slnFile.MapSolutionConfigurationsToProject(
+                    projectInstance,
+                    slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
+            }
+
+            SetupSolutionFolders(slnFile, solutionFolders, relativeProjectPath, slnProject);
+
+            slnFile.Projects.Add(slnProject);
+
+            Reporter.Output.WriteLine(
+                string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, relativeProjectPath));
+        }
+    }
+
+    public static void AddSolutionFolder(this SlnFile slnFile, string fullFolderPath, IList<string> solutionFolders)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(fullFolderPath);
+
+        var relativeProjectPath = Path.GetRelativePath(
+            PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory),
+            fullFolderPath);
+
+        if (slnFile.Projects.Any(p => string.Equals(p.FilePath, relativeProjectPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            Reporter.Output.WriteLine(string.Format(
+                Tools.Sln.LocalizableStrings.SolutionAlreadyContainsFolder,
+                slnFile.FullPath,
+                relativeProjectPath));
+        }
+        else
+        {
+            var slnProject = new SlnProject
+            {
+                Id = Guid.NewGuid().ToString("B").ToUpper(),
+                TypeGuid = ProjectTypeGuids.SolutionFolderGuid,
+                Name = Path.GetFileNameWithoutExtension(relativeProjectPath),
+                FilePath = relativeProjectPath,
+            };
+
+            SetupSolutionFolders(slnFile, solutionFolders, relativeProjectPath, slnProject);
+
+            slnFile.Projects.Add(slnProject);
+
+            Reporter.Output.WriteLine(
+                string.Format(Tools.Sln.LocalizableStrings.SolutionFolderAddedToTheSolution, relativeProjectPath));
+        }
+    }
+
+    public static bool SolutionFolderContainsSolutionItem(this SlnFile slnFile, string solutionFolder, string relativeFilePath) =>
+        slnFile.Projects
+            .Any(p => p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid
+                && StringComparer.OrdinalIgnoreCase.Equals(p.Name, solutionFolder)
+                && p.ContainsSolutionItem(Path.GetFileName(relativeFilePath)));
+
+    private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
+    {
+        return !projectTypeGuid.Equals(ProjectTypeGuids.SharedProjectGuid, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Adds <paramref name="relativeFilePath"/> to <paramref name="slnFile"/>, creating solution folders as necessary.
+    /// 
+    /// When adding to the solution folder "b" inside "a" then <paramref name="solutionFolderParts"/> should be ["a", "b"]
+    /// </summary>
+    public static void AddSolutionItem(this SlnFile slnFile, string relativeFilePath, IList<string> solutionFolderParts)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(relativeFilePath);
+
+        if (solutionFolderParts == null)
+        {
+            var defaultSolutionFolder = slnFile.GetOrCreateSolutionFolder();
+            slnFile.AddSolutionItemToSolutionFolder(defaultSolutionFolder.Id, relativeFilePath);
+            return;
         }
 
-        private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
-        {
-            return !projectTypeGuid.Equals(ProjectTypeGuids.SharedProjectGuid, StringComparison.OrdinalIgnoreCase);
-        }
+        var nestedProjectsSection = solutionFolderParts.Count > 1
+            ? slnFile.Sections.GetOrCreateSection("NestedProjects", SlnSectionType.PreProcess)
+            : slnFile.Sections.GetSection("NestedProjects", SlnSectionType.PreProcess);
 
-        private static void SetupSolutionFolders(SlnFile slnFile, IList<string> solutionFolders, string relativeProjectPath, SlnProject slnProject)
+        // Get or create all solution folders, starting from the one at the root
+        for (int i = 0; i < solutionFolderParts.Count; i++)
         {
-            if (solutionFolders != null)
+            string currentSolutionFolderName = solutionFolderParts[i];
+            SlnProject currentSolutionFolder = slnFile.GetOrCreateSolutionFolder(currentSolutionFolderName);
+
+            if (i > 0 && nestedProjectsSection != null)
             {
-                if (solutionFolders.Any())
-                {
-                    // Before adding a solution folder, check if the name conflicts with any existing projects in the solution
-                    var duplicateProjects = slnFile.Projects.Where(p => solutionFolders.Contains(p.Name)
-                                                                    && p.TypeGuid != ProjectTypeGuids.SolutionFolderGuid).ToList();
-                    foreach (SlnProject duplicateProject in duplicateProjects)
-                    {
-                        slnFile.AddSolutionFolders(duplicateProject, new List<string>() { Path.GetDirectoryName(duplicateProject.FilePath) });
-                    }
-                }
-                else
-                {
-                    // If a project and solution folder have the same name, add it's own folder as a solution folder
-                    // eg. foo\extensions.csproj and extensions\library\library.csproj would have a project and solution folder with conflicting names
-                    var duplicateProject = slnFile.Projects.Where(p => string.Equals(p.Name, slnProject.Name, StringComparison.OrdinalIgnoreCase)
-                                                                   && p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid).FirstOrDefault();
-                    if (duplicateProject != null)
-                    {
-                        // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
-                        slnFile.AddSolutionFolders(slnProject, new List<string>() { Path.GetDirectoryName(relativeProjectPath) });
-                    }
-                }
-                // Even if we added a solution folder above for a duplicate, we still need to add the expected folder for the current project
-                slnFile.AddSolutionFolders(slnProject, solutionFolders);
+                string previousSolutionFolderName = solutionFolderParts[i - 1];
+                SlnProject previousSolutionFolder = slnFile.GetOrCreateSolutionFolder(previousSolutionFolderName);
+                // If a solution folder is nested inside another solution folder,
+                // add it to the NestedProjects section (only if it's not there yet)
+                nestedProjectsSection.Properties.TryAdd(currentSolutionFolder.Id, previousSolutionFolder.Id);
+            }
+
+            // Once all solution folders exist, add the solution item to the innemrost solution folder
+            if (i == solutionFolderParts.Count - 1)
+            {
+                slnFile.AddSolutionItemToSolutionFolder(currentSolutionFolder.Id, relativeFilePath);
             }
         }
+    }
 
-        private static void AddDefaultBuildConfigurations(this SlnFile slnFile)
+    private static void AddSolutionItemToSolutionFolder(this SlnFile slnFile, string solutionFolderId, string relativeFilePath)
+    {
+        var solutionFolder = slnFile.Projects.GetProject(solutionFolderId);
+        var solutionItemsSection = solutionFolder.Sections.GetOrCreateSection("SolutionItems", SlnSectionType.PreProcess);
+        var solutionItems = new Dictionary<string, string>(solutionItemsSection.GetContent(), StringComparer.OrdinalIgnoreCase);
+
+        if (solutionItems.TryAdd(relativeFilePath, relativeFilePath))
         {
-            var configurationsSection = slnFile.SolutionConfigurationsSection;
+            solutionItemsSection.SetContent(solutionItems);
+            Reporter.Output.WriteLine(
+                string.Format(Tools.Sln.LocalizableStrings.SolutionItemAddedToTheSolution, relativeFilePath, solutionFolder.Name));
+        }
+        else
+        {
+            throw new GracefulException(string.Format(
+                Tools.Sln.LocalizableStrings.SolutionAlreadyContainsFile,
+                slnFile.FullPath,
+                relativeFilePath));
+        }
+    }
 
-            if (!configurationsSection.IsEmpty)
+    private static SlnProject GetOrCreateSolutionFolder(this SlnFile slnFile, string solutionFolderName = "Solution Items")
+    {
+        var existingSolutionFolder = slnFile.Projects.SingleOrDefault(
+            p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, solutionFolderName));
+        if (existingSolutionFolder != null) { return existingSolutionFolder; }
+
+        var solutionFolder = new SlnProject
+        {
+            Id = Guid.NewGuid().ToString("B").ToUpper(),
+            TypeGuid = ProjectTypeGuids.SolutionFolderGuid,
+            Name = solutionFolderName,
+            FilePath = solutionFolderName,
+        };
+        slnFile.Projects.Add(solutionFolder);
+        return solutionFolder;
+    }
+
+    private static void SetupSolutionFolders(SlnFile slnFile, IList<string> solutionFolders, string relativeProjectPath, SlnProject slnProject)
+    {
+        if (solutionFolders == null)
+        {
+            return;
+        }
+
+        if (solutionFolders.Any())
+        {
+            // Before adding a solution folder, check if the name conflicts with any existing projects in the solution
+            var duplicateProjects = slnFile.Projects.Where(p => solutionFolders.Contains(p.Name)
+                                                            && p.TypeGuid != ProjectTypeGuids.SolutionFolderGuid).ToList();
+            foreach (SlnProject duplicateProject in duplicateProjects)
+            {
+                slnFile.AddSolutionFolders(duplicateProject, [Path.GetDirectoryName(duplicateProject.FilePath)]);
+            }
+        }
+        else
+        {
+            // If a project and solution folder have the same name, add its own folder as a solution folder
+            // eg. foo\extensions.csproj and extensions\library\library.csproj would have a project and solution folder with conflicting names
+            var duplicateProject = slnFile.Projects.Where(p => string.Equals(p.Name, slnProject.Name, StringComparison.OrdinalIgnoreCase)
+                                                           && p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid).FirstOrDefault();
+            if (duplicateProject != null)
+            {
+                // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
+                slnFile.AddSolutionFolders(slnProject, [Path.GetDirectoryName(relativeProjectPath)]);
+            }
+        }
+        // Even if we added a solution folder above for a duplicate, we still need to add the expected folder for the current project
+        slnFile.AddSolutionFolders(slnProject, solutionFolders);
+    }
+
+    private static void AddDefaultBuildConfigurations(this SlnFile slnFile)
+    {
+        var configurationsSection = slnFile.SolutionConfigurationsSection;
+
+        if (!configurationsSection.IsEmpty)
+        {
+            return;
+        }
+
+        var defaultConfigurations = new List<string>()
+        {
+            "Debug|Any CPU",
+            "Debug|x64",
+            "Debug|x86",
+            "Release|Any CPU",
+            "Release|x64",
+            "Release|x86",
+        };
+
+        foreach (var config in defaultConfigurations)
+        {
+            configurationsSection[config] = config;
+        }
+    }
+
+    private static void MapSolutionConfigurationsToProject(
+        this SlnFile slnFile,
+        ProjectInstance projectInstance,
+        SlnPropertySet solutionProjectConfigs)
+    {
+        var (projectConfigurations, defaultProjectConfiguration) = GetKeysDictionary(projectInstance.GetConfigurations());
+        var (projectPlatforms, defaultProjectPlatform) = GetKeysDictionary(projectInstance.GetPlatforms());
+
+        foreach (var solutionConfigKey in slnFile.SolutionConfigurationsSection.Keys)
+        {
+            var projectConfigKey = MapSolutionConfigKeyToProjectConfigKey(
+                solutionConfigKey,
+                projectConfigurations,
+                defaultProjectConfiguration,
+                projectPlatforms,
+                defaultProjectPlatform);
+            if (projectConfigKey == null)
+            {
+                continue;
+            }
+
+            var activeConfigKey = $"{solutionConfigKey}.ActiveCfg";
+            if (!solutionProjectConfigs.ContainsKey(activeConfigKey))
+            {
+                solutionProjectConfigs[activeConfigKey] = projectConfigKey;
+            }
+
+            var buildKey = $"{solutionConfigKey}.Build.0";
+            if (!solutionProjectConfigs.ContainsKey(buildKey))
+            {
+                solutionProjectConfigs[buildKey] = projectConfigKey;
+            }
+        }
+    }
+
+    private static (Dictionary<string, string> Keys, string DefaultKey) GetKeysDictionary(IEnumerable<string> keys)
+    {
+        // A dictionary mapping key -> key is used instead of a HashSet so the original case of the key can be retrieved from the set
+        var dictionary = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+
+        foreach (var key in keys)
+        {
+            dictionary[key] = key;
+        }
+
+        return (dictionary, keys.FirstOrDefault());
+    }
+
+    private static string GetMatchingProjectKey(Dictionary<string, string> projectKeys, string solutionKey)
+    {
+        if (projectKeys.TryGetValue(solutionKey, out string projectKey))
+        {
+            return projectKey;
+        }
+
+        var keyWithoutWhitespace = string.Concat(solutionKey.Where(c => !char.IsWhiteSpace(c)));
+        if (projectKeys.TryGetValue(keyWithoutWhitespace, out projectKey))
+        {
+            return projectKey;
+        }
+
+        return null;
+    }
+
+    private static string MapSolutionConfigKeyToProjectConfigKey(
+        string solutionConfigKey,
+        Dictionary<string, string> projectConfigurations,
+        string defaultProjectConfiguration,
+        Dictionary<string, string> projectPlatforms,
+        string defaultProjectPlatform)
+    {
+        var pair = solutionConfigKey.Split(['|'], 2);
+        if (pair.Length != 2)
+        {
+            return null;
+        }
+
+        var projectConfiguration = GetMatchingProjectKey(projectConfigurations, pair[0]) ?? defaultProjectConfiguration;
+        if (projectConfiguration == null)
+        {
+            return null;
+        }
+
+        var projectPlatform = GetMatchingProjectKey(projectPlatforms, pair[1]) ?? defaultProjectPlatform;
+        if (projectPlatform == null)
+        {
+            return null;
+        }
+
+        // VS stores "Any CPU" platform in the solution regardless of how it is named at the project level
+        return $"{projectConfiguration}|{(projectPlatform == "AnyCPU" ? "Any CPU" : projectPlatform)}";
+    }
+
+    private static void AddSolutionFolders(this SlnFile slnFile, SlnProject slnProject, IList<string> solutionFolders)
+    {
+        if (solutionFolders.Any())
+        {
+            var nestedProjectsSection = slnFile.Sections.GetOrCreateSection(
+                "NestedProjects",
+                SlnSectionType.PreProcess);
+
+            var pathToGuidMap = slnFile.GetSolutionFolderPaths(nestedProjectsSection.Properties);
+
+            if (nestedProjectsSection.Properties.ContainsKey(slnProject.Id))
             {
                 return;
             }
 
-            var defaultConfigurations = new List<string>()
+            string parentDirGuid = null;
+            var solutionFolderHierarchy = string.Empty;
+            foreach (var dir in solutionFolders)
             {
-                "Debug|Any CPU",
-                "Debug|x64",
-                "Debug|x86",
-                "Release|Any CPU",
-                "Release|x64",
-                "Release|x86",
-            };
+                solutionFolderHierarchy = Path.Combine(solutionFolderHierarchy, dir);
+                if (pathToGuidMap.TryGetValue(solutionFolderHierarchy, out string? guid))
+                {
+                    parentDirGuid = guid;
+                }
+                else
+                {
 
-            foreach (var config in defaultConfigurations)
+                    if(HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
+                    {
+                        throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
+                    }
+
+                    var solutionFolder = new SlnProject
+                    {
+                        Id = Guid.NewGuid().ToString("B").ToUpper(),
+                        TypeGuid = ProjectTypeGuids.SolutionFolderGuid,
+                        Name = dir,
+                        FilePath = dir
+                    };
+
+                    slnFile.Projects.Add(solutionFolder);
+
+                    if (parentDirGuid != null)
+                    {
+                        nestedProjectsSection.Properties[solutionFolder.Id] = parentDirGuid;
+                    }
+                    parentDirGuid = solutionFolder.Id;
+                }
+            }
+            if (HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, slnProject.Name, parentDirGuid, slnFile.Projects))
             {
-                configurationsSection[config] = config;
+                throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
+            }
+            nestedProjectsSection.Properties[slnProject.Id] = parentDirGuid;
+        }
+    }
+
+    private static bool HasDuplicateNameForSameValueOfNestedProjects(SlnSection nestedProjectsSection, string name, string value, IList<SlnProject> projects)
+    {
+        foreach (var property in nestedProjectsSection.Properties)
+        {
+            if (property.Value == value)
+            {
+                var existingProject = projects.FirstOrDefault(p => p.Id == property.Key);
+
+                if (existingProject != null && existingProject.Name == name)
+                {
+                    return true;
+                }
             }
         }
+        return false;
+    }
 
-        private static void MapSolutionConfigurationsToProject(
-            this SlnFile slnFile,
-            ProjectInstance projectInstance,
-            SlnPropertySet solutionProjectConfigs)
+    private static Dictionary<string, string> GetSolutionFolderPaths(
+        this SlnFile slnFile,
+        SlnPropertySet nestedProjects)
+    {
+        var solutionFolderPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        var solutionFolderProjects = slnFile.Projects.GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid);
+        foreach (var slnProject in solutionFolderProjects)
         {
-            var (projectConfigurations, defaultProjectConfiguration) = GetKeysDictionary(projectInstance.GetConfigurations());
-            var (projectPlatforms, defaultProjectPlatform) = GetKeysDictionary(projectInstance.GetPlatforms());
-
-            foreach (var solutionConfigKey in slnFile.SolutionConfigurationsSection.Keys)
+            var path = slnProject.FilePath;
+            var id = slnProject.Id;
+            while (nestedProjects.ContainsKey(id))
             {
-                var projectConfigKey = MapSolutionConfigKeyToProjectConfigKey(
-                    solutionConfigKey,
-                    projectConfigurations,
-                    defaultProjectConfiguration,
-                    projectPlatforms,
-                    defaultProjectPlatform);
-                if (projectConfigKey == null)
+                id = nestedProjects[id];
+                var parentSlnProject = solutionFolderProjects.SingleOrDefault(p => p.Id == id)
+                    // see: https://github.com/dotnet/sdk/pull/28811
+                    ?? throw new GracefulException(CommonLocalizableStrings.CorruptSolutionProjectFolderStructure, slnFile.FullPath, id);
+                path = Path.Combine(parentSlnProject.FilePath, path);
+            }
+
+            solutionFolderPaths[path] = slnProject.Id;
+        }
+
+        return solutionFolderPaths;
+    }
+
+    public static bool RemoveProject(this SlnFile slnFile, string projectPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(projectPath);
+
+        var projectPathNormalized = PathUtility.GetPathWithDirectorySeparator(projectPath);
+
+        var projectsToRemove = slnFile.Projects.Where((p) =>
+                string.Equals(p.FilePath, projectPathNormalized, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        bool projectRemoved = false;
+        if (projectsToRemove.Count == 0)
+        {
+            Reporter.Output.WriteLine(string.Format(
+                CommonLocalizableStrings.ProjectNotFoundInTheSolution,
+                projectPath));
+        }
+        else
+        {
+            foreach (var slnProject in projectsToRemove)
+            {
+                var buildConfigsToRemove = slnFile.ProjectConfigurationsSection.GetPropertySet(slnProject.Id);
+                if (buildConfigsToRemove != null)
+                {
+                    slnFile.ProjectConfigurationsSection.Remove(buildConfigsToRemove);
+                }
+
+                var nestedProjectsSection = slnFile.Sections.GetSection(
+                    "NestedProjects",
+                    SlnSectionType.PreProcess);
+                if (nestedProjectsSection != null && nestedProjectsSection.Properties.ContainsKey(slnProject.Id))
+                {
+                    nestedProjectsSection.Properties.Remove(slnProject.Id);
+                }
+
+                slnFile.Projects.Remove(slnProject);
+                Reporter.Output.WriteLine(
+                    string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, slnProject.FilePath));
+            }
+
+            foreach (var project in slnFile.Projects)
+            {
+                var dependencies = project.Dependencies;
+                if (dependencies == null)
                 {
                     continue;
                 }
 
-                var activeConfigKey = $"{solutionConfigKey}.ActiveCfg";
-                if (!solutionProjectConfigs.ContainsKey(activeConfigKey))
-                {
-                    solutionProjectConfigs[activeConfigKey] = projectConfigKey;
-                }
+                dependencies.SkipIfEmpty = true;
 
-                var buildKey = $"{solutionConfigKey}.Build.0";
-                if (!solutionProjectConfigs.ContainsKey(buildKey))
+                foreach (var removed in projectsToRemove)
                 {
-                    solutionProjectConfigs[buildKey] = projectConfigKey;
+                    dependencies.Properties.Remove(removed.Id);
                 }
             }
+
+            projectRemoved = true;
         }
 
-        private static (Dictionary<string, string> Keys, string DefaultKey) GetKeysDictionary(IEnumerable<string> keys)
-        {
-            // A dictionary mapping key -> key is used instead of a HashSet so the original case of the key can be retrieved from the set
-            var dictionary = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        return projectRemoved;
+    }
 
-            foreach (var key in keys)
+    public static void RemoveEmptyConfigurationSections(this SlnFile slnFile)
+    {
+        if (slnFile.Projects.Count == 0)
+        {
+            var solutionConfigs = slnFile.Sections.GetSection("SolutionConfigurationPlatforms");
+            if (solutionConfigs != null)
             {
-                dictionary[key] = key;
+                slnFile.Sections.Remove(solutionConfigs);
             }
 
-            return (dictionary, keys.FirstOrDefault());
+            var projectConfigs = slnFile.Sections.GetSection("ProjectConfigurationPlatforms");
+            if (projectConfigs != null)
+            {
+                slnFile.Sections.Remove(projectConfigs);
+            }
         }
+    }
 
-        private static string GetMatchingProjectKey(IDictionary<string, string> projectKeys, string solutionKey)
+    public static void RemoveEmptySolutionFolders(this SlnFile slnFile)
+    {
+        var solutionFolderProjects = slnFile.Projects
+            .GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid)
+            .ToList();
+
+        if (solutionFolderProjects.Count != 0)
         {
-            string projectKey;
-            if (projectKeys.TryGetValue(solutionKey, out projectKey))
+            var nestedProjectsSection = slnFile.Sections.GetSection(
+                "NestedProjects",
+                SlnSectionType.PreProcess);
+
+            if (nestedProjectsSection == null)
             {
-                return projectKey;
-            }
-
-            var keyWithoutWhitespace = string.Concat(solutionKey.Where(c => !char.IsWhiteSpace(c)));
-            if (projectKeys.TryGetValue(keyWithoutWhitespace, out projectKey))
-            {
-                return projectKey;
-            }
-
-            return null;
-        }
-
-        private static string MapSolutionConfigKeyToProjectConfigKey(
-            string solutionConfigKey,
-            Dictionary<string, string> projectConfigurations,
-            string defaultProjectConfiguration,
-            Dictionary<string, string> projectPlatforms,
-            string defaultProjectPlatform)
-        {
-            var pair = solutionConfigKey.Split(new char[] { '|' }, 2);
-            if (pair.Length != 2)
-            {
-                return null;
-            }
-
-            var projectConfiguration = GetMatchingProjectKey(projectConfigurations, pair[0]) ?? defaultProjectConfiguration;
-            if (projectConfiguration == null)
-            {
-                return null;
-            }
-
-            var projectPlatform = GetMatchingProjectKey(projectPlatforms, pair[1]) ?? defaultProjectPlatform;
-            if (projectPlatform == null)
-            {
-                return null;
-            }
-
-            // VS stores "Any CPU" platform in the solution regardless of how it is named at the project level
-            return $"{projectConfiguration}|{(projectPlatform == "AnyCPU" ? "Any CPU" : projectPlatform)}";
-        }
-
-        private static void AddSolutionFolders(this SlnFile slnFile, SlnProject slnProject, IList<string> solutionFolders)
-        {
-            if (solutionFolders.Any())
-            {
-                var nestedProjectsSection = slnFile.Sections.GetOrCreateSection(
-                    "NestedProjects",
-                    SlnSectionType.PreProcess);
-
-                var pathToGuidMap = slnFile.GetSolutionFolderPaths(nestedProjectsSection.Properties);
-
-                if (slnFile.HasSolutionFolder(nestedProjectsSection.Properties, slnProject))
+                foreach (var solutionFolderProject in solutionFolderProjects)
                 {
-                    return;
-                }
-
-                string parentDirGuid = null;
-                var solutionFolderHierarchy = string.Empty;
-                foreach (var dir in solutionFolders)
-                {
-                    solutionFolderHierarchy = Path.Combine(solutionFolderHierarchy, dir);
-                    if (pathToGuidMap.ContainsKey(solutionFolderHierarchy))
+                    if (solutionFolderProject.Sections.Count == 0)
                     {
-                        parentDirGuid = pathToGuidMap[solutionFolderHierarchy];
-                    }
-                    else
-                    {
-
-                        if(HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
-                        {
-                            throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
-                        }
-
-                        var solutionFolder = new SlnProject
-                        {
-                            Id = Guid.NewGuid().ToString("B").ToUpper(),
-                            TypeGuid = ProjectTypeGuids.SolutionFolderGuid,
-                            Name = dir,
-                            FilePath = dir
-                        };
-
-                        slnFile.Projects.Add(solutionFolder);
-
-                        if (parentDirGuid != null)
-                        {
-                            nestedProjectsSection.Properties[solutionFolder.Id] = parentDirGuid;
-                        }
-                        parentDirGuid = solutionFolder.Id;
+                        slnFile.Projects.Remove(solutionFolderProject);
                     }
                 }
-                if (HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, slnProject.Name, parentDirGuid, slnFile.Projects))
-                {
-                    throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
-                }
-                nestedProjectsSection.Properties[slnProject.Id] = parentDirGuid;
-            }
-        }
-
-        private static bool HasDuplicateNameForSameValueOfNestedProjects(SlnSection nestedProjectsSection, string name, string value, IList<SlnProject> projects)
-        {
-            foreach (var property in nestedProjectsSection.Properties)
-            {
-                if (property.Value == value)
-                {
-                    var existingProject = projects.FirstOrDefault(p => p.Id == property.Key);
-
-                    if (existingProject != null && existingProject.Name == name)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        private static IDictionary<string, string> GetSolutionFolderPaths(
-            this SlnFile slnFile,
-            SlnPropertySet nestedProjects)
-        {
-            var solutionFolderPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            var solutionFolderProjects = slnFile.Projects.GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid);
-            foreach (var slnProject in solutionFolderProjects)
-            {
-                var path = slnProject.FilePath;
-                var id = slnProject.Id;
-                while (nestedProjects.ContainsKey(id))
-                {
-                    id = nestedProjects[id];
-                    var parentSlnProject = solutionFolderProjects.Where(p => p.Id == id).SingleOrDefault();
-                    if (parentSlnProject == null) // see: https://github.com/dotnet/sdk/pull/28811
-                        throw new GracefulException(CommonLocalizableStrings.CorruptSolutionProjectFolderStructure, slnFile.FullPath, id);
-                    path = Path.Combine(parentSlnProject.FilePath, path);
-                }
-
-                solutionFolderPaths[path] = slnProject.Id;
-            }
-
-            return solutionFolderPaths;
-        }
-
-        private static bool HasSolutionFolder(
-            this SlnFile slnFile,
-            SlnPropertySet properties,
-            SlnProject slnProject)
-        {
-            return properties.ContainsKey(slnProject.Id);
-        }
-
-        public static bool RemoveProject(this SlnFile slnFile, string projectPath)
-        {
-            if (string.IsNullOrEmpty(projectPath))
-            {
-                throw new ArgumentException();
-            }
-
-            var projectPathNormalized = PathUtility.GetPathWithDirectorySeparator(projectPath);
-
-            var projectsToRemove = slnFile.Projects.Where((p) =>
-                    string.Equals(p.FilePath, projectPathNormalized, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            bool projectRemoved = false;
-            if (projectsToRemove.Count == 0)
-            {
-                Reporter.Output.WriteLine(string.Format(
-                    CommonLocalizableStrings.ProjectNotFoundInTheSolution,
-                    projectPath));
             }
             else
             {
-                foreach (var slnProject in projectsToRemove)
+                var solutionFoldersInUse = slnFile.GetSolutionFoldersThatContainProjectsInItsHierarchy(
+                    nestedProjectsSection.Properties);
+
+                solutionFoldersInUse.UnionWith(slnFile.GetSolutionFoldersThatContainSolutionItemsInItsHierarchy(
+                    nestedProjectsSection.Properties));
+
+                foreach (var solutionFolderProject in solutionFolderProjects)
                 {
-                    var buildConfigsToRemove = slnFile.ProjectConfigurationsSection.GetPropertySet(slnProject.Id);
-                    if (buildConfigsToRemove != null)
+                    if (!solutionFoldersInUse.Contains(solutionFolderProject.Id))
                     {
-                        slnFile.ProjectConfigurationsSection.Remove(buildConfigsToRemove);
-                    }
-
-                    var nestedProjectsSection = slnFile.Sections.GetSection(
-                        "NestedProjects",
-                        SlnSectionType.PreProcess);
-                    if (nestedProjectsSection != null && nestedProjectsSection.Properties.ContainsKey(slnProject.Id))
-                    {
-                        nestedProjectsSection.Properties.Remove(slnProject.Id);
-                    }
-
-                    slnFile.Projects.Remove(slnProject);
-                    Reporter.Output.WriteLine(
-                        string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, slnProject.FilePath));
-                }
-
-                foreach (var project in slnFile.Projects)
-                {
-                    var dependencies = project.Dependencies;
-                    if (dependencies == null)
-                    {
-                        continue;
-                    }
-
-                    dependencies.SkipIfEmpty = true;
-
-                    foreach (var removed in projectsToRemove)
-                    {
-                        dependencies.Properties.Remove(removed.Id);
-                    }
-                }
-
-                projectRemoved = true;
-            }
-
-            return projectRemoved;
-        }
-
-        public static void RemoveEmptyConfigurationSections(this SlnFile slnFile)
-        {
-            if (slnFile.Projects.Count == 0)
-            {
-                var solutionConfigs = slnFile.Sections.GetSection("SolutionConfigurationPlatforms");
-                if (solutionConfigs != null)
-                {
-                    slnFile.Sections.Remove(solutionConfigs);
-                }
-
-                var projectConfigs = slnFile.Sections.GetSection("ProjectConfigurationPlatforms");
-                if (projectConfigs != null)
-                {
-                    slnFile.Sections.Remove(projectConfigs);
-                }
-            }
-        }
-
-        public static void RemoveEmptySolutionFolders(this SlnFile slnFile)
-        {
-            var solutionFolderProjects = slnFile.Projects
-                .GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid)
-                .ToList();
-
-            if (solutionFolderProjects.Any())
-            {
-                var nestedProjectsSection = slnFile.Sections.GetSection(
-                    "NestedProjects",
-                    SlnSectionType.PreProcess);
-
-                if (nestedProjectsSection == null)
-                {
-                    foreach (var solutionFolderProject in solutionFolderProjects)
-                    {
-                        if (solutionFolderProject.Sections.Count() == 0)
+                        nestedProjectsSection.Properties.Remove(solutionFolderProject.Id);
+                        if (solutionFolderProject.Sections.Count == 0)
                         {
                             slnFile.Projects.Remove(solutionFolderProject);
                         }
                     }
                 }
-                else
+
+                if (nestedProjectsSection.IsEmpty)
                 {
-                    var solutionFoldersInUse = slnFile.GetSolutionFoldersThatContainProjectsInItsHierarchy(
-                        nestedProjectsSection.Properties);
-
-                    solutionFoldersInUse.UnionWith(slnFile.GetSolutionFoldersThatContainSolutionItemsInItsHierarchy(
-                        nestedProjectsSection.Properties));
-
-                    foreach (var solutionFolderProject in solutionFolderProjects)
-                    {
-                        if (!solutionFoldersInUse.Contains(solutionFolderProject.Id))
-                        {
-                            nestedProjectsSection.Properties.Remove(solutionFolderProject.Id);
-                            if (solutionFolderProject.Sections.Count() == 0)
-                            {
-                                slnFile.Projects.Remove(solutionFolderProject);
-                            }
-                        }
-                    }
-
-                    if (nestedProjectsSection.IsEmpty)
-                    {
-                        slnFile.Sections.Remove(nestedProjectsSection);
-                    }
+                    slnFile.Sections.Remove(nestedProjectsSection);
                 }
             }
         }
+    }
 
-        private static HashSet<string> GetSolutionFoldersThatContainProjectsInItsHierarchy(
-            this SlnFile slnFile,
-            SlnPropertySet nestedProjects)
+    private static HashSet<string> GetSolutionFoldersThatContainProjectsInItsHierarchy(
+        this SlnFile slnFile,
+        SlnPropertySet nestedProjects)
+    {
+        var solutionFoldersInUse = new HashSet<string>();
+
+        IEnumerable<SlnProject> nonSolutionFolderProjects;
+        nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
+             ProjectTypeGuids.SolutionFolderGuid);
+
+        foreach (var nonSolutionFolderProject in nonSolutionFolderProjects)
         {
-            var solutionFoldersInUse = new HashSet<string>();
-
-            IEnumerable<SlnProject> nonSolutionFolderProjects;
-            nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
-                 ProjectTypeGuids.SolutionFolderGuid);
-
-            foreach (var nonSolutionFolderProject in nonSolutionFolderProjects)
+            var id = nonSolutionFolderProject.Id;
+            while (nestedProjects.ContainsKey(id))
             {
-                var id = nonSolutionFolderProject.Id;
-                while (nestedProjects.ContainsKey(id))
-                {
-                    id = nestedProjects[id];
-                    solutionFoldersInUse.Add(id);
-                }
-            }
-
-            return solutionFoldersInUse;
-        }
-
-        private static HashSet<string> GetSolutionFoldersThatContainSolutionItemsInItsHierarchy(
-            this SlnFile slnFile,
-            SlnPropertySet nestedProjects)
-        {
-            var solutionFoldersInUse = new HashSet<string>();
-
-            var solutionItemsFolderProjects = slnFile.Projects
-                    .GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid)
-                    .Where(ContainsSolutionItems);
-
-            foreach (var solutionItemsFolderProject in solutionItemsFolderProjects)
-            {
-                var id = solutionItemsFolderProject.Id;
+                id = nestedProjects[id];
                 solutionFoldersInUse.Add(id);
-
-                while (nestedProjects.ContainsKey(id))
-                {
-                    id = nestedProjects[id];
-                    solutionFoldersInUse.Add(id);
-                }
             }
-
-            return solutionFoldersInUse;
         }
 
-        private static bool ContainsSolutionItems(SlnProject project)
+        return solutionFoldersInUse;
+    }
+
+    private static HashSet<string> GetSolutionFoldersThatContainSolutionItemsInItsHierarchy(
+        this SlnFile slnFile,
+        SlnPropertySet nestedProjects)
+    {
+        var solutionFoldersInUse = new HashSet<string>();
+
+        var solutionItemsFolderProjects = slnFile.Projects
+                .GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid)
+                .Where(p => p.GetSolutionItemsSectionOrDefault() != null);
+
+        foreach (var solutionItemsFolderProject in solutionItemsFolderProjects)
         {
-            return project.Sections
-                .GetSection("SolutionItems", SlnSectionType.PreProcess) != null;
+            var id = solutionItemsFolderProject.Id;
+            solutionFoldersInUse.Add(id);
+
+            while (nestedProjects.ContainsKey(id))
+            {
+                id = nestedProjects[id];
+                solutionFoldersInUse.Add(id);
+            }
         }
+
+        return solutionFoldersInUse;
     }
 }

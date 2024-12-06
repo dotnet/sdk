@@ -175,6 +175,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Archivo de proyecto</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="new">Project `{0}` removed from the solution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Referencia</target>
@@ -803,11 +808,6 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
       <trans-unit id="NoRestoreDescription">
         <source>Do not restore the project before building.</source>
         <target state="translated">No restaure el proyecto antes de la compilación.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectRemovedFromTheSolution">
-        <source>Project `{0}` removed from the solution.</source>
-        <target state="translated">Se ha quitado el proyecto "{0}" de la solución.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidXml">
