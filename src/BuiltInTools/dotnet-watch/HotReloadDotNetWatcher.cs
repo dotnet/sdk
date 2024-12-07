@@ -122,8 +122,7 @@ namespace Microsoft.DotNet.Watch
                     if (!await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken))
                     {
                         // error has been reported:
-                        waitForFileChangeBeforeRestarting = false;
-                        return;
+                        continue;
                     }
 
                     rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
