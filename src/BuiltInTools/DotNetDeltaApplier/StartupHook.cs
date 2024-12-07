@@ -10,9 +10,9 @@ using Microsoft.DotNet.HotReload;
 /// </summary>
 internal sealed class StartupHook
 {
-    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
-    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
-    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
+    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariableNames.HotReloadDeltaClientLogMessages) == "1";
+    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DotNetWatchHotReloadNamedPipeName);
+    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DotNetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -33,7 +33,7 @@ internal sealed class StartupHook
 
         Log($"Loaded into process: {processPath}");
 
-        ClearHotReloadEnvironmentVariables();
+        HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
         _ = Task.Run(async () =>
         {
@@ -100,32 +100,6 @@ internal sealed class StartupHook
         return (processPath.EndsWith(".exe", comparison) || processPath.EndsWith(".dll", comparison)) &&
                (targetProcessPath.EndsWith(".exe", comparison) || targetProcessPath.EndsWith(".dll", comparison)) &&
                string.Equals(processPath[..^4], targetProcessPath[..^4], comparison);
-    }
-
-    internal static void ClearHotReloadEnvironmentVariables()
-    {
-        // Clear any hot-reload specific environment variables. This prevents child processes from being
-        // affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
-
-        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks,
-            RemoveCurrentAssembly(Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks)));
-
-        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, "");
-        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "");
-    }
-
-    internal static string RemoveCurrentAssembly(string environment)
-    {
-        if (environment is "")
-        {
-            return environment;
-        }
-
-        var assemblyLocation = typeof(StartupHook).Assembly.Location;
-        var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
-
-        return string.Join(Path.PathSeparator, updatedValues);
     }
 
     private static void Log(string message)
