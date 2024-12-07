@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watch
         {
             var builder = new EnvironmentVariablesBuilder();
 
-            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks) is { } dotnetStartupHooks)
+            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotNetStartupHooks) is { } dotnetStartupHooks)
             {
                 builder.DotNetStartupHookDirective.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
             }

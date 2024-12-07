@@ -64,7 +64,7 @@ internal sealed class ProjectLauncher(
         {
             // ignore dotnet-watch reserved variables -- these shouldn't be set by the project
             if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase) ||
-                name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase))
+                name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -81,12 +81,12 @@ internal sealed class ProjectLauncher(
         // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
         // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
         // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
+        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
 
         if (injectDeltaApplier)
         {
             environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
-            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
 
             if (context.Options.Verbose)
             {
