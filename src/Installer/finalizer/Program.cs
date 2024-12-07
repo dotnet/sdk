@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 
@@ -25,7 +26,7 @@ Logger.Log($"{nameof(platform)}: {platform}");
 try
 {
     // Step 1: Parse and format SDK feature band version
-    string featureBandVersion = ParseSdkVersion(sdkVersion);
+    string featureBandVersion = new SdkFeatureBand(sdkVersion).ToString();
 
     // Step 2: Check if SDK feature band is installed
     bool isInstalled = DetectSdk(featureBandVersion, platform);
@@ -63,25 +64,12 @@ catch (Exception ex)
     Logger.Log($"Error: {ex}");
 }
 
-static string ParseSdkVersion(string sdkVersion)
-{
-    var parts = sdkVersion.Split('.');
-    if (parts.Length < 3)
-        throw new ArgumentException("Invalid SDK version format.");
-
-    if (!int.TryParse(parts[2], out int patch) || patch < 100)
-        throw new ArgumentException("Invalid patch level in SDK version.");
-
-    int featureBand = patch - (patch % 100);
-    return $"{parts[0]}.{parts[1]}.{featureBand}";
-}
-
 static bool DetectSdk(string featureBandVersion, string platform)
 {
     string registryPath = $@"SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\{platform}\sdk";
-    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath))
+    using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(registryPath))
     {
-        if (key == null)
+        if (key is null)
         {
             Logger.Log("SDK registry path not found.");
             return false;
@@ -108,7 +96,7 @@ static bool RemoveDependent(string dependent)
     // This has to be an exhaustive search as we're not looking for a specific provider key, but for a specific dependent
     // that could be registered against any provider key.
     using var hkInstallerDependenciesKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Classes\Installer\Dependencies", writable: true);
-    if (hkInstallerDependenciesKey == null)
+    if (hkInstallerDependenciesKey is null)
     {
         Logger.Log("Installer dependencies key does not exist.");
         return false;
@@ -120,11 +108,11 @@ static bool RemoveDependent(string dependent)
         Logger.Log($"Processing provider key: {providerKeyName}");
 
         using var hkProviderKey = hkInstallerDependenciesKey.OpenSubKey(providerKeyName, writable: true);
-        if (hkProviderKey == null) continue;
+        if (hkProviderKey is null) continue;
 
         // Open the Dependents subkey
         using var hkDependentsKey = hkProviderKey.OpenSubKey("Dependents", writable: true);
-        if (hkDependentsKey == null) continue;
+        if (hkDependentsKey is null) continue;
 
         // Check if the dependent exists and continue if it does not
         bool dependentExists = false;
@@ -162,7 +150,12 @@ static bool RemoveDependent(string dependent)
             // No remaining dependents, handle product uninstallation
             try
             {
-                string productCode = hkProviderKey.GetValue("ProductId").ToString();
+                string? productCode = hkProviderKey.GetValue("ProductId")?.ToString();
+                if (productCode is null)
+                {
+                    Logger.Log($"Can't find ProductId in {providerKeyName}");
+                    return false;
+                }
 
                 // Configure the product to be absent (uninstall the product)
                 uint error = MsiConfigureProductEx(productCode, (int)InstallUILevel.Default, InstallState.ABSENT, "");
@@ -184,9 +177,9 @@ static void DeleteWorkloadRecords(string featureBandVersion, string platform)
 {
     string workloadKey = $@"SOFTWARE\Microsoft\dotnet\InstalledWorkloads\Standalone\{platform}";
 
-    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(workloadKey, writable: true))
+    using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(workloadKey, writable: true))
     {
-        if (key != null)
+        if (key is not null)
         {
             key.DeleteSubKeyTree(featureBandVersion, throwOnMissingSubKey: false);
             Logger.Log($"Deleted workload records for '{featureBandVersion}'.");
@@ -209,7 +202,7 @@ static void RemoveInstallStateFile(string featureBandVersion, string platform)
         Logger.Log($"Deleted install state file: {installStatePath}");
 
         var dir = new DirectoryInfo(installStatePath).Parent;
-        while (dir != null && dir.Exists && dir.GetFiles().Length == 0 && dir.GetDirectories().Length == 0)
+        while (dir is not null && dir.Exists && dir.GetFiles().Length == 0 && dir.GetDirectories().Length == 0)
         {
             dir.Delete();
             dir = dir.Parent;
@@ -223,19 +216,19 @@ static void RemoveInstallStateFile(string featureBandVersion, string platform)
 
 static bool IsRebootPending()
 {
-    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
+    using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
     {
-        if (key != null)
+        if (key is not null)
         {
             Logger.Log("Reboot is pending due to component-based servicing.");
             return true;
         }
     }
 
-    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager"))
+    using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager"))
     {
         var value = key?.GetValue("PendingFileRenameOperations");
-        if (value != null)
+        if (value is not null)
         {
             Logger.Log("Pending file rename operations indicate a reboot is pending.");
             return true;
@@ -256,7 +249,7 @@ static extern uint MsiSetInternalUI(uint dwUILevel, IntPtr phWnd);
 
 static class Logger
 {
-    static StreamWriter s_logStream;
+    static StreamWriter? s_logStream;
 
     public static void Init(StreamWriter logStream) => s_logStream = logStream;
 
@@ -264,6 +257,6 @@ static class Logger
     {
         var pid = Environment.ProcessId;
         var tid = Environment.CurrentManagedThreadId;
-        s_logStream.WriteLine($"[{pid:X4}:{tid:X4}][{DateTime.Now:yyyy-MM-ddTHH:mm:ss}] Finalizer: {message}");
+        s_logStream!.WriteLine($"[{pid:X4}:{tid:X4}][{DateTime.Now:yyyy-MM-ddTHH:mm:ss}] Finalizer: {message}");
     }
 }
