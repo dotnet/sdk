@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ReferenceListCommandParser
     {
+        public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -20,7 +22,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new CliCommand("list", LocalizableStrings.AppFullName);
 
-            command.Arguments.Add(ListProjectToProjectReferencesCommandParser.Argument);
+            command.Arguments.Add(Argument);
 
             command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 

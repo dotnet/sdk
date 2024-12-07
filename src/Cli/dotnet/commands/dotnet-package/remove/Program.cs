@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Tools.Remove.PackageReference
+namespace Microsoft.DotNet.Package.Remove
 {
     internal class RemovePackageReferenceCommand : CommandBase
     {
@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.Tools.Remove.PackageReference
         public RemovePackageReferenceCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(RemoveCommandParser.ProjectArgument);
-            _arguments = parseResult.GetValue(RemovePackageParser.CmdPackageArgument).ToList().AsReadOnly();
+            _fileOrDirectory = parseResult.GetValue(PackageRemoveCommandParser.ProjectArgument);
+            _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
             if (_fileOrDirectory == null)
             {
                 throw new ArgumentNullException(nameof(_fileOrDirectory));
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Tools.Remove.PackageReference
             };
 
             args.AddRange(_parseResult
-                .OptionValuesToBeForwarded(RemovePackageParser.GetCommand())
+                .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
                 .SelectMany(a => a.Split(' ')));
 
             return args.ToArray();

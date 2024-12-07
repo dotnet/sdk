@@ -10,6 +10,17 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PackageRemoveCommandParser
     {
+        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
+        {
+            Description = LocalizableStrings.AppHelpText,
+            Arity = ArgumentArity.OneOrMore,
+        };
+
+        public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
+        {
+            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
+        }.ForwardAs("--interactive");
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -21,8 +32,8 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new CliCommand("remove", LocalizableStrings.AppFullName);
 
-            command.Arguments.Add(RemovePackageParser.CmdPackageArgument);
-            command.Options.Add(RemovePackageParser.InteractiveOption);
+            command.Arguments.Add(CmdPackageArgument);
+            command.Options.Add(InteractiveOption);
 
             command.SetAction((parseResult) => new RemovePackageReferenceCommand(parseResult).Execute());
 

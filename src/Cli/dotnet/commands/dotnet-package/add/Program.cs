@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Tools.Add.PackageReference
+namespace Microsoft.DotNet.Package.Add
 {
     internal class AddPackageReferenceCommand : CommandBase
     {
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
         public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(AddCommandParser.ProjectArgument);
-            _packageId = parseResult.GetValue(AddPackageParser.CmdPackageArgument);
+            _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
         }
 
         public override int Execute()
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
 
             var tempDgFilePath = string.Empty;
 
-            if (_parseResult.GetResult(AddPackageParser.NoRestoreOption) is null)
+            if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is null)
             {
 
                 try
@@ -113,10 +113,10 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
             };
 
             args.AddRange(_parseResult
-                .OptionValuesToBeForwarded(AddPackageParser.GetCommand())
+                .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
                 .SelectMany(a => a.Split(' ', 2)));
 
-            if (_parseResult.GetResult(AddPackageParser.NoRestoreOption) is not null)
+            if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is not null)
             {
                 args.Add("--no-restore");
             }

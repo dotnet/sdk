@@ -9,6 +9,21 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ReferenceAddCommandParser
     {
+        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
+        {
+            Description = LocalizableStrings.ProjectPathArgumentDescription,
+            Arity = ArgumentArity.OneOrMore
+        };
+
+        public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
+        {
+            Description = LocalizableStrings.CmdFrameworkDescription,
+            HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
+
+        }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
+
+        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -20,9 +35,9 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("add", LocalizableStrings.AppFullName);
 
-            command.Arguments.Add(AddProjectToProjectReferenceParser.ProjectPathArgument);
-            command.Options.Add(AddProjectToProjectReferenceParser.FrameworkOption);
-            command.Options.Add(AddProjectToProjectReferenceParser.InteractiveOption);
+            command.Arguments.Add(ProjectPathArgument);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(InteractiveOption);
 
             command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
 
