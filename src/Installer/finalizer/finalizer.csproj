@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <PublishAot>true</PublishAot>
+    <Nullable>enable</Nullable>
     <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <_IsPublishing>true</_IsPublishing>
     <PublishDir>$(ArtifactsDir)bin\finalizer\$(Configuration)\$(SdkTargetFramework)-win-$(Architecture)\publish</PublishDir>
@@ -12,6 +13,11 @@
   <ItemGroup>
     <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallUILevel.cs" />
     <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallState.cs" />
+    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
   <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" />
