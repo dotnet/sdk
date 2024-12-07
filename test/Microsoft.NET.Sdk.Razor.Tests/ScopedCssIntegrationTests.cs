@@ -410,15 +410,32 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Make an edit
             var scopedCssFile = Path.Combine(ProjectDirectory.TestRoot, "Components", "Pages", "Index.razor.css");
-            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
+            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(["body { background-color: orangered; }"]));
 
             build = CreateBuildCommand(ProjectDirectory);
             ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
-            var fileInfo = new FileInfo(bundlePath);
-            fileInfo.Should().Exist();
             // Verify the generated file contains newly added css
-            fileInfo.ReadAllText().Should().Contain("background-color: orangered");
+            AssertFileContains(bundlePath, "background-color: orangered");
+
+            // Verify that CSS edits continue to apply after new JS modules are added to the project
+            // https://github.com/dotnet/aspnetcore/issues/57599
+            var collocatedJsFile = Path.Combine(ProjectDirectory.TestRoot, "Components", "Pages", "Index.razor.js");
+            File.WriteAllLines(collocatedJsFile, ["console.log('Hello, world!');"]);
+            File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(["h1 { color: purple; }"]));
+
+            build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build, "/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
+
+            // Verify the generated file contains newly added css
+            AssertFileContains(bundlePath, "color: purple");
+
+            static void AssertFileContains(string fileName, string content)
+            {
+                var fileInfo = new FileInfo(fileName);
+                fileInfo.Should().Exist();
+                fileInfo.ReadAllText().Should().Contain(content);
+            }
         }
     }
 
