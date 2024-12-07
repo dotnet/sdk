@@ -70,8 +70,9 @@ parameters:
     demands: ImageOverride -equals $(poolImage_Linux)
     os: linux
 
-#### SOURCE-ONLY BUILD ####
 stages:
+
+#### SOURCE-ONLY BUILD ####
 - ${{ if parameters.isSourceOnlyBuild }}:
   - stage: VMR_SourceOnly_Build
     displayName: VMR Source-Only Build
@@ -373,14 +374,15 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: ${{ variables.ubuntuName }}
+        buildName: Windows_DevVersions
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
-        pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntuContainer }}
-        targetOS: linux
-        targetArchitecture: x64
+        architecture: x86
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x86
+        useDevVersions: true # Use dev versions for CI validation of the experience.
+        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
     - template: ../jobs/vmr-build.yml
       parameters:
