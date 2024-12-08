@@ -85,9 +85,11 @@
     <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
     <!-- Set SDK rids so that the packs for the target rid get restored. This is necessary when the host (SDK) rid
          is different from the target rid, i.e. when building win-x86 with a win-x64 SDK. This is necessary for repos
-         that consume live runtime but is generally desirable as it makes the vertical more pure  -->
-    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:NETCoreSdkPortableRuntimeIdentifier=$(TargetRid)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:NETCoreSdkRuntimeIdentifier=$(TargetRid)</BuildArgs>
+         that consume live runtime but is generally desirable as it makes the vertical build more pure by not depending
+         on artifacts from a different RID (even if pre-built). Exclude from source-only builds which don't use the portable
+         RID format which causes the ProcessFrameworkReferences not be able to restore for the given RID.  -->
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:NETCoreSdkPortableRuntimeIdentifier=$(TargetRid)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:NETCoreSdkRuntimeIdentifier=$(TargetRid)</BuildArgs>
 
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
     <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
