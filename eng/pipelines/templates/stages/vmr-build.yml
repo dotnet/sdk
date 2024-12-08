@@ -373,17 +373,6 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: ${{ variables.ubuntuName }}
-        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
-        pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntuContainer }}
-        targetOS: linux
-        targetArchitecture: x64
-
-    - template: ../jobs/vmr-build.yml
-      parameters:
         buildName: Windows_DevVersions
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
