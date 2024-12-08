@@ -42,8 +42,6 @@ namespace Microsoft.DotNet.Configurer
 
         public static string ToolsResolverCachePath => Path.Combine(DotnetUserProfileFolderPath, ToolsResolverCacheFolderName);
 
-        public static string PlatformHomeVariableName => CliFolderPathCalculatorCore.PlatformHomeVariableName;
-
         public static string DotnetHomePath
         {
             get
