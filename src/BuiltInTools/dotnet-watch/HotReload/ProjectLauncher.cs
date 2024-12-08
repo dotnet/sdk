@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -85,7 +86,9 @@ internal sealed class ProjectLauncher(
 
         if (injectDeltaApplier)
         {
-            environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
+            // HotReload startup hook should be loaded before any other startup hooks:
+            environmentBuilder.DotNetStartupHooks.Insert(0, DeltaApplier.StartupHookPath);
+
             environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
 
             if (context.Options.Verbose)

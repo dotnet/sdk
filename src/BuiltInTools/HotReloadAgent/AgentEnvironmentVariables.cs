@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal static class EnvironmentVariableNames
+internal static class AgentEnvironmentVariables
 {
     /// <summary>
     /// Intentionally different from the variable name used by the debugger.

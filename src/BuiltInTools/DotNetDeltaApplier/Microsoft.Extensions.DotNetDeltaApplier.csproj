@@ -14,10 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch\EnvironmentVariables_StartupHook.cs" Link="EnvironmentVariables_StartupHook.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests" />
   </ItemGroup>
 
