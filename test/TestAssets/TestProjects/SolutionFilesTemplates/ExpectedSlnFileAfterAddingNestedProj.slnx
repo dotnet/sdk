@@ -5,7 +5,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/src/">
-    <Project Path="src/Lib/Lib.csproj" Id="__LIB_PROJECT_GUID__" />
+    <Project Path="src/Lib/Lib.csproj" />
   </Folder>
   <Project Path="App.csproj">
     <Platform Solution="*|x64" Project="x64" />
