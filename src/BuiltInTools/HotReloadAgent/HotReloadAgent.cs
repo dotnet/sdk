@@ -204,11 +204,11 @@ internal sealed class HotReloadAgent : IDisposable
     /// </summary>
     public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
     {
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.DotNetStartupHooks,
-            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(EnvironmentVariableNames.DotNetStartupHooks)!));
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
+            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
 
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.DotNetWatchHotReloadNamedPipeName, "");
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.HotReloadDeltaClientLogMessages, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
     }
 
     // internal for testing

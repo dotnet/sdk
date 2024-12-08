@@ -3,8 +3,10 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal static class EnvironmentVariableNames
+internal static class AgentEnvironmentVariables
 {
+    public static readonly int CurrentPipeProtocolVersion = 1;
+
     /// <summary>
     /// Intentionally different from the variable name used by the debugger.
     /// This is to avoid the debugger colliding with dotnet-watch pipe connection when debugging dotnet-watch (or tests).
@@ -32,4 +34,12 @@ internal static class EnvironmentVariableNames
     /// dotnet runtime environment variable.
     /// </summary>
     public const string DotNetModifiableAssemblies = "DOTNET_MODIFIABLE_ASSEMBLIES";
+
+    public static string GenerateNamedPipeName()
+        => $"{CurrentPipeProtocolVersion}_{Guid.NewGuid()}";
+
+    public static int GetProtocolVersion(string namedPipeName)
+        => namedPipeName.IndexOf('_') is var index && index > 0 && ushort.TryParse(namedPipeName.AsSpan(0, index), out var version)
+            ? version
+            : 0;
 }

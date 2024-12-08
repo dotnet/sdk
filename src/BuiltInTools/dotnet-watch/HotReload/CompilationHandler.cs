@@ -169,6 +169,9 @@ namespace Microsoft.DotNet.Watch
             disposables.Items.Clear();
             disposables.Items.Add(runningProject);
 
+            // wait for agent to create the name pipe and send capabilities over:
+            await capabilityProvider;
+
             ImmutableArray<string> observedCapabilities = default;
 
             var appliedUpdateCount = 0;
@@ -176,7 +179,7 @@ namespace Microsoft.DotNet.Watch
             {
                 // Observe updates that need to be applied to the new process
                 // and apply them before adding it to running processes.
-                // Do bot block on udpates being made to other processes to avoid delaying the new process being up-to-date.
+                // Do not block on udpates being made to other processes to avoid delaying the new process being up-to-date.
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
@@ -214,6 +217,9 @@ namespace Microsoft.DotNet.Watch
                     break;
                 }
             }
+
+            // Notifies the agent that it can unblock the execution of the process:
+            await deltaApplier.InitialUpdatesApplied(cancellationToken);
 
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
             if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)

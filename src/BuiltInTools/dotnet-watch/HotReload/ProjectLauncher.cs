@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -58,7 +59,7 @@ internal sealed class ProjectLauncher(
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
-        var namedPipeName = Guid.NewGuid().ToString();
+        var namedPipeName = AgentEnvironmentVariables.GenerateNamedPipeName();
 
         // Directives:
 
