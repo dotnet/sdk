@@ -528,24 +528,50 @@
     </Touch>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GetProducedPackages"
           Condition="'$(IsUtilityProject)' != 'true'"
-          Returns="@(ProducedPackage)">
+          Returns="@(ProducedPackage);@(ProducedPackageFromDependentVertical)">
     <ItemGroup>
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
-    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'@(RepoAssetManifest)' == '' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
-    <Error Text="No repository asset manifest files found at $(RepoAssetManifestsDir)*.xml. This often means the build failed but did not log an error." Condition="'@(RepoAssetManifest)' == ''" />
+    <PropertyGroup>
+      <LogManifestNotFoundError Condition="('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '@(RepoAssetManifest)' == ''">true</LogManifestNotFoundError>
+    </PropertyGroup>
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'$(LogManifestNotFoundError)' == 'true' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
+    <Error Text="No repository asset manifest files found at '$(RepoAssetManifestsDir)*.xml'. This often means the build failed but did not log an error." Condition="'$(LogManifestNotFoundError)' == 'true'" />
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)" RepoOrigin="$(RepositoryName)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
       <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
     </GetKnownArtifactsFromAssetManifests>
 
+    <!-- Mark the artifacts so that they get binplaced. -->
+    <ItemGroup>
+      <ProducedPackage>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) == 'true'">NonShipping</ShippingFolder>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
+      </ProducedPackage>
+
+      <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
+    </ItemGroup>
+
+    <!-- Add manifests from dependent verticals. -->
+    <ItemGroup>
+      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
+    </GetKnownArtifactsFromAssetManifests>
+
     <ItemGroup>
       <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
+      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
     </ItemGroup>
   </Target>
 
@@ -650,7 +676,7 @@
   </Target>
 
   <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
-    <JoinItems Left="@(ProducedPackage)"
+    <JoinItems Left="@(ProducedPackage);@(ProducedPackageFromDependentVertical)"
                Right="@(BuiltSdkPackage)"
                LeftMetadata="*">
       <Output TaskParameter="JoinResult" ItemName="BuiltSdkPackageOverride" />
