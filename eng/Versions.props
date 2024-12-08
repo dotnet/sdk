@@ -153,24 +153,24 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24604.5</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24604.5</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24604.5</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24605.1</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24605.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24605.1</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.13.0-preview.1.84</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.13.0-preview.1.84</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.13.0-preview.1.84</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.13.0-preview.1.84</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.13.0-preview.1.84</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.13.0-preview.1.84</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.13.0-preview.1.84</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.13.0-preview.1.84</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.13.0-preview.1.84</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.13.0-preview.1.84</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.13.0-preview.1.84</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.13.0-preview.1.84</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.13.0-rc.90</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.13.0-rc.90</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.13.0-rc.90</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.13.0-rc.90</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.13.0-rc.90</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.13.0-rc.90</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.13.0-rc.90</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.13.0-rc.90</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.13.0-rc.90</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.13.0-rc.90</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.13.0-rc.90</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.13.0-rc.90</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
@@ -180,8 +180,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
-    <MicrosoftCodeAnalysisNetAnalyzersVersion>10.0.0-preview.24603.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.12.0-beta1.24603.2</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisNetAnalyzersVersion>10.0.0-preview.24605.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.12.0-beta1.24605.1</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/msbuild -->
@@ -277,10 +277,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.24578.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetSignToolVersion>10.0.0-beta.24578.2</MicrosoftDotNetSignToolVersion>
-    <MicrosoftDotNetXliffTasksVersion>10.0.0-beta.24578.2</MicrosoftDotNetXliffTasksVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>10.0.0-beta.24578.2</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.24604.4</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetSignToolVersion>10.0.0-beta.24604.4</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetXliffTasksVersion>10.0.0-beta.24604.4</MicrosoftDotNetXliffTasksVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>10.0.0-beta.24604.4</MicrosoftDotNetXUnitExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
