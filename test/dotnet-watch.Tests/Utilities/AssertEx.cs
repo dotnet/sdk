@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0240 // nullable is redundant
+#nullable enable
+
 using System.Collections;
+using System.Diagnostics;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watch.UnitTests
@@ -34,7 +38,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 return Instance.Equals(left, right);
             }
 
-            bool IEqualityComparer<T>.Equals(T x, T y)
+            bool IEqualityComparer<T>.Equals(T? x, T? y)
             {
                 if (CanBeNull())
                 {
@@ -49,7 +53,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     }
                 }
 
-                if (x.GetType() != y.GetType())
+                if (x!.GetType() != y!.GetType())
                 {
                     return false;
                 }
@@ -103,7 +107,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        public static void Equal<T>(T expected, T actual, IEqualityComparer<T> comparer = null, string message = null)
+        public static void Equal<T>(T expected, T actual, IEqualityComparer<T>? comparer = null, string? message = null)
         {
             if (ReferenceEquals(expected, actual))
             {
@@ -134,19 +138,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public static void Equal<T>(
             IEnumerable<T> expected,
             IEnumerable<T> actual,
-            IEqualityComparer<T> comparer = null,
-            string message = null,
-            string itemSeparator = null,
-            Func<T, string> itemInspector = null)
+            IEqualityComparer<T>? comparer = null,
+            string? message = null,
+            string? itemSeparator = null,
+            Func<T, string>? itemInspector = null)
             => SequenceEqual(expected, actual, comparer, message, itemSeparator, itemInspector);
 
         public static void SequenceEqual<T>(
             IEnumerable<T> expected,
             IEnumerable<T> actual,
-            IEqualityComparer<T> comparer = null,
-            string message = null,
-            string itemSeparator = null,
-            Func<T, string> itemInspector = null)
+            IEqualityComparer<T>? comparer = null,
+            string? message = null,
+            string? itemSeparator = null,
+            Func<T, string>? itemInspector = null)
         {
             if (expected == null)
             {
@@ -157,7 +161,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Assert.NotNull(actual);
             }
 
-            if (!expected.SequenceEqual(actual, comparer ?? EqualityComparer<T>.Default))
+            Debug.Assert(expected != null);
+            Debug.Assert(actual != null);
+
+            if (!expected.SequenceEqual(actual, comparer))
             {
                 Fail(GetAssertMessage(expected, actual, message, itemInspector, itemSeparator));
             }
@@ -166,11 +173,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private static string GetAssertMessage<T>(
             IEnumerable<T> expected,
             IEnumerable<T> actual,
-            string prefix = null,
-            Func<T, string> itemInspector = null,
-            string itemSeparator = null)
+            string? prefix = null,
+            Func<T, string>? itemInspector = null,
+            string? itemSeparator = null)
         {
-            itemInspector ??= (typeof(T) == typeof(byte)) ? b => $"0x{b:X2}" : new Func<T, string>(obj => (obj != null) ? obj.ToString() : "<null>");
+            itemInspector ??= (typeof(T) == typeof(byte)) ? b => $"0x{b:X2}" : new Func<T, string>(obj => (obj != null) ? obj.ToString() ?? "" : "<null>");
             itemSeparator ??= (typeof(T) == typeof(byte)) ? ", " : "," + Environment.NewLine;
 
             var expectedString = string.Join(itemSeparator, expected.Take(10).Select(itemInspector));
@@ -197,8 +204,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return message.ToString();
         }
 
-        public static void Empty(string actual, string message = null)
+        public static void Empty(string actual, string? message = null)
             => Equal("", actual, message: message);
+
+        public static void Empty<T>(IEnumerable<T> collection)
+            => SequenceEqual([], collection);
 
         public static void Fail(string message)
             => throw new XunitException(message);

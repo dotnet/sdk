@@ -3,8 +3,10 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal static class EnvironmentVariableNames
+internal static class AgentEnvironmentVariables
 {
+    public static readonly int CurrentPipeProtocolVersion = 1;
+
     /// <summary>
     /// Intentionally different from the variable name used by the debugger.
     /// This is to avoid the debugger colliding with dotnet-watch pipe connection when debugging dotnet-watch (or tests).

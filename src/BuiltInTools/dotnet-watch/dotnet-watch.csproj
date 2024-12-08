@@ -40,10 +40,11 @@
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
 
-    <Compile Include="..\HotReloadAgent\EnvironmentVariableNames.cs" LinkBase="AgentContracts"/>
+    <Compile Include="..\HotReloadAgent\AgentEnvironmentVariables.cs" LinkBase="AgentContracts"/>
     <Compile Include="..\HotReloadAgent\AgentMessageSeverity.cs" LinkBase="AgentContracts" />
     <Compile Include="..\HotReloadAgent\ResponseLoggingLevel.cs" LinkBase="AgentContracts" />
     <Compile Include="..\HotReloadAgent\UpdateDelta.cs" LinkBase="AgentContracts" />
+    <Compile Include="..\HotReloadAgent\StaticAssetUpdate.cs" LinkBase="AgentContracts" />
   </ItemGroup>
 
   <ItemGroup>
