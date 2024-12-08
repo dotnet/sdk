@@ -127,7 +127,9 @@ internal sealed class HotReloadAgent : IDisposable
             cachedDeltas.Add(delta);
         }
 
-        _metadataUpdateHandlerInvoker.Invoke(GetMetadataUpdateTypes(deltas));
+        _metadataUpdateHandlerInvoker.MetadataUpdated(GetMetadataUpdateTypes(deltas));
+
+        Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
     }
 
     private Type[] GetMetadataUpdateTypes(IEnumerable<UpdateDelta> deltas)
@@ -198,16 +200,24 @@ internal sealed class HotReloadAgent : IDisposable
     }
 
     /// <summary>
+    /// Applies the content update.
+    /// </summary>
+    public void ApplyStaticAssetUpdate(StaticAssetUpdate update)
+    {
+        _metadataUpdateHandlerInvoker.ContentUpdated(update);
+    }
+
+    /// <summary>
     /// Clear any hot-reload specific environment variables. This prevents child processes from being
     /// affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
     /// </summary>
     public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
     {
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.DotNetStartupHooks,
-            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(EnvironmentVariableNames.DotNetStartupHooks)!));
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
+            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
 
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.DotNetWatchHotReloadNamedPipeName, "");
-        Environment.SetEnvironmentVariable(EnvironmentVariableNames.HotReloadDeltaClientLogMessages, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
     }
 
     // internal for testing

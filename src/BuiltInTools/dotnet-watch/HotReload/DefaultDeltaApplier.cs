@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watch
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
-        private bool _changeApplicationErrorFailed;
+        private bool _managedCodeUpdateFailedOrCancelled;
 
         public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watch
 
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                    var capabilities = (await ClientInitializationRequest.ReadAsync(_pipe, cancellationToken)).Capabilities;
+                    var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
                     return [.. capabilities.Split(' ')];
                 }
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Watch
             // Should not be disposed:
             Debug.Assert(_pipe != null);
 
-            if (_changeApplicationErrorFailed)
+            if (_managedCodeUpdateFailedOrCancelled)
             {
                 Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", "🔥");
                 return ApplyStatus.Failed;
@@ -100,15 +100,7 @@ namespace Microsoft.DotNet.Watch
             var canceled = false;
             try
             {
-                await request.WriteAsync(_pipe, cancellationToken);
-                await _pipe.FlushAsync(cancellationToken);
-
-                (success, var log) = await UpdateResponse.ReadAsync(_pipe, cancellationToken);
-
-                await foreach (var (message, severity) in log)
-                {
-                    ReportLogEntry(Reporter, message, severity);
-                }
+                success = await SendAndReceiveUpdate(request, cancellationToken);
             }
             catch (OperationCanceledException) when (!(canceled = true))
             {
@@ -129,7 +121,7 @@ namespace Microsoft.DotNet.Watch
                         Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", "🔥");
                     }
 
-                    _changeApplicationErrorFailed = true;
+                    _managedCodeUpdateFailedOrCancelled = true;
 
                     DisposePipe();
                 }
@@ -140,6 +132,43 @@ namespace Microsoft.DotNet.Watch
             return
                 !success ? ApplyStatus.Failed :
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+        }
+
+        private async ValueTask<bool> SendAndReceiveUpdate<TRequest>(TRequest request, CancellationToken cancellationToken)
+            where TRequest : IUpdateRequest
+        {
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            await _pipe.WriteAsync((byte)request.Type, cancellationToken);
+            await request.WriteAsync(_pipe, cancellationToken);
+            await _pipe.FlushAsync(cancellationToken);
+
+            var (success, log) = await UpdateResponse.ReadAsync(_pipe, cancellationToken);
+
+            await foreach (var (message, severity) in log)
+            {
+                ReportLogEntry(Reporter, message, severity);
+            }
+
+            return success;
+        }
+
+        public override async Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        {
+            // Should only be called after CreateConnection
+            Debug.Assert(_capabilitiesTask != null);
+
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            if (_managedCodeUpdateFailedOrCancelled)
+            {
+                return;
+            }
+
+            await _pipe.WriteAsync((byte)RequestType.InitialUpdatesCompleted, cancellationToken);
+            await _pipe.FlushAsync(cancellationToken);
         }
 
         private void DisposePipe()

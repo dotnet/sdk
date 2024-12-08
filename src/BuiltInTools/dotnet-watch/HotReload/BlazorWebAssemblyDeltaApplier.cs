@@ -135,6 +135,9 @@ namespace Microsoft.DotNet.Watch
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
+        public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
         private readonly struct JsonApplyHotReloadDeltasRequest
         {
             public string Type => "BlazorHotReloadDeltav3";
