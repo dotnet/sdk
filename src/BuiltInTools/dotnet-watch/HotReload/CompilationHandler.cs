@@ -37,19 +37,13 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private ImmutableList<WatchHotReloadService.Update> _previousUpdates = [];
 
-        /// <summary>
-        /// Set of capabilities aggregated across the current set of <see cref="_runningProjects"/>.
-        /// Default if not calculated yet.
-        /// </summary>
-        private ImmutableArray<string> _currentAggregateCapabilities;
-
         private bool _isDisposed;
 
         public CompilationHandler(IReporter reporter)
         {
             _reporter = reporter;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
-            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, GetAggregateCapabilitiesAsync);
+            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
         public void Dispose()
@@ -150,7 +144,10 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var capabilityProvider = deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
+            // Wait for agent to create the name pipe and send capabilities over.
+            // the agent blocks the app execution until initial updates are applied (if any).
+            var capabilities = await deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
+
             var runningProject = new RunningProject(
                 projectNode,
                 projectOptions,
@@ -163,20 +160,18 @@ namespace Microsoft.DotNet.Watch
                 processTerminationSource: processTerminationSource,
                 restartOperation: restartOperation,
                 disposables: [processCommunicationCancellationSource],
-                capabilityProvider);
+                capabilities);
 
             // ownership transferred to running project:
             disposables.Items.Clear();
             disposables.Items.Add(runningProject);
-
-            ImmutableArray<string> observedCapabilities = default;
 
             var appliedUpdateCount = 0;
             while (true)
             {
                 // Observe updates that need to be applied to the new process
                 // and apply them before adding it to running processes.
-                // Do bot block on udpates being made to other processes to avoid delaying the new process being up-to-date.
+                // Do not block on udpates being made to other processes to avoid delaying the new process being up-to-date.
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
@@ -205,26 +200,18 @@ namespace Microsoft.DotNet.Watch
 
                     _runningProjects = _runningProjects.SetItem(projectPath, projectInstances.Add(runningProject));
 
-                    // reset capabilities:
-                    observedCapabilities = _currentAggregateCapabilities;
-                    _currentAggregateCapabilities = default;
-
                     // ownership transferred to _runningProjects
                     disposables.Items.Clear();
                     break;
                 }
             }
 
+            // Notifies the agent that it can unblock the execution of the process:
+            await deltaApplier.InitialUpdatesApplied(cancellationToken);
+
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
             if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)
             {
-                // If capabilities have been observed by an edit session, restart the session. Next time EnC service needs
-                // capabilities it calls GetAggregateCapabilitiesAsync which uses the set of projects assigned above to calculate them.
-                if (!observedCapabilities.IsDefault)
-                {
-                    _hotReloadService.CapabilitiesChanged();
-                }
-
                 // Preparing the compilation is a perf optimization. We can skip it if the session hasn't been started yet. 
                 PrepareCompilations(currentSolution, projectPath, cancellationToken);
             }
@@ -232,33 +219,13 @@ namespace Microsoft.DotNet.Watch
             return runningProject;
         }
 
-        private async ValueTask<ImmutableArray<string>> GetAggregateCapabilitiesAsync()
+        private ImmutableArray<string> GetAggregateCapabilities()
         {
-            var capabilities = _currentAggregateCapabilities;
-            if (!capabilities.IsDefault)
-            {
-                return capabilities;
-            }
-
-            while (true)
-            {
-                var runningProjects = _runningProjects;
-                var capabilitiesByProvider = await Task.WhenAll(runningProjects.SelectMany(p => p.Value).Select(p => p.CapabilityProvider));
-                capabilities = capabilitiesByProvider.SelectMany(c => c).Distinct(StringComparer.Ordinal).ToImmutableArray();
-
-                lock (_runningProjectsAndUpdatesGuard)
-                {
-                    if (runningProjects != _runningProjects)
-                    {
-                        // Another process has been launched while we were retrieving capabilities, query the providers again.
-                        // The providers cache the result so we won't be calling into the respective processes again.
-                        continue;
-                    }
-
-                    _currentAggregateCapabilities = capabilities;
-                    break;
-                }
-            }
+            var capabilities = _runningProjects
+                .SelectMany(p => p.Value)
+                .SelectMany(p => p.Capabilities)
+                .Distinct(StringComparer.Ordinal)
+                .ToImmutableArray();
 
             _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "🔥");
             return capabilities;
@@ -536,9 +503,6 @@ namespace Microsoft.DotNet.Watch
             lock (_runningProjectsAndUpdatesGuard)
             {
                 _runningProjects = updater(_runningProjects);
-
-                // reset capabilities:
-                _currentAggregateCapabilities = default;
             }
         }
 

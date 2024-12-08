@@ -106,6 +106,7 @@ namespace Microsoft.DotNet.Watch
             }
             catch (OperationCanceledException) when (!(canceled = true))
             {
+                // unreachable
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -132,6 +133,23 @@ namespace Microsoft.DotNet.Watch
             return
                 !success ? ApplyStatus.Failed :
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+        }
+
+        public override async Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        {
+            // Should only be called after CreateConnection
+            Debug.Assert(_capabilitiesTask != null);
+
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            if (_changeApplicationErrorFailed)
+            {
+                return;
+            }
+
+            await _pipe.WriteAsync(new byte[] { (byte)PayloadType.InitialUpdatesCompleted }, cancellationToken);
+            await _pipe.FlushAsync(cancellationToken);
         }
 
         private async Task<bool> ReceiveApplyUpdateResult(CancellationToken cancellationToken)

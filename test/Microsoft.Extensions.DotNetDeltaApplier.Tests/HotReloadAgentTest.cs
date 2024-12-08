@@ -10,6 +10,29 @@ namespace Microsoft.DotNet.Watch.UnitTests
     public class HotReloadAgentTest
     {
         [Fact]
+        public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
+        {
+            Assert.Equal("",
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), typeof(StartupHook).Assembly.Location));
+        }
+
+        [Fact]
+        public void ClearHotReloadEnvironmentVariables_PreservedOtherStartupHooks()
+        {
+            var customStartupHook = "/path/mycoolstartup.dll";
+            Assert.Equal(customStartupHook,
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook));
+        }
+
+        [Fact]
+        public void ClearHotReloadEnvironmentVariables_RemovesHotReloadStartup_InCaseInvariantManner()
+        {
+            var customStartupHook = "/path/mycoolstartup.dll";
+            Assert.Equal(customStartupHook,
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), customStartupHook + Path.PathSeparator + typeof(StartupHook).Assembly.Location.ToUpperInvariant()));
+        }
+
+        [Fact]
         public void TopologicalSort_Works()
         {
             // Arrange
