@@ -51,8 +51,8 @@
       <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
       <!-- Fallback to 0 when patch number is not set. This happens only during CI. -->
       <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">000000</CombinedBuildNumberAndRevision>
-      
-      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->    
+
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
       <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
       <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
@@ -301,7 +301,7 @@
                       -UpgradePoliciesWxsFile '$(UpgradePoliciesSrcPath)' ^
                       -WorkloadManifestWxsFile '$(WorkloadManifestsWxsPath)' ^
                       -CLISDKMSIFile '$(SdkMSIInstallerFile)' ^
-                      -ASPNETRuntimeWixLibFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)' ^
+                      -ASPNETRuntimeMSIFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
                       -SharedFxMSIFile '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
                       -HostFxrMSIFile '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
                       -SharedHostMSIFile '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
@@ -336,7 +336,6 @@
         <BundleMsiWixSrcFiles Include="$(WixRoot)\bundle.wixobj" />
         <BundleMsiWixSrcFiles Include="$(WixRoot)\WorkloadManifests.wixobj" />
         <BundleMsiWixSrcFiles Include="$(WixRoot)\upgradePolicies.wixobj" />
-        <BundleMsiWixSrcFiles Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)" />
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
