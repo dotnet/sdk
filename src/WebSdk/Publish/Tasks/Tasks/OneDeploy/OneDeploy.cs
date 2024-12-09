@@ -32,17 +32,17 @@ public partial class OneDeploy : Task
     }
 
     [Required]
-    public string FileToPublishPath { get; set; }
+    public string? FileToPublishPath { get; set; }
 
-    public string PublishUrl { get; set; }
-
-    [Required]
-    public string Username { get; set; }
-
-    public string Password { get; set; }
+    public string? PublishUrl { get; set; }
 
     [Required]
-    public string UserAgentVersion { get; set; }
+    public string? Username { get; set; }
+
+    public string? Password { get; set; }
+
+    [Required]
+    public string? UserAgentVersion { get; set; }
 
     /// <inheritdoc/>
     public override bool Execute()
@@ -54,13 +54,13 @@ public partial class OneDeploy : Task
     }
 
     public async Task<bool> OneDeployAsync(
-        string fileToPublishPath,
-        string username,
-        string password,
-        string url,
-        string userAgentVersion,
-        string webjobName = null,
-        string webjobType = null,
+        string? fileToPublishPath,
+        string? username,
+        string? password,
+        string? url,
+        string? userAgentVersion,
+        string? webjobName = null,
+        string? webjobType = null,
         CancellationToken cancellationToken = default)
     {
         using DefaultHttpClient httpClient = new();
@@ -73,13 +73,13 @@ public partial class OneDeploy : Task
     }
 
     internal async Task<bool> OneDeployAsync(
-        string fileToPublishPath,
-        string username,
-        string password,
-        string url,
+        string? fileToPublishPath,
+        string? username,
+        string? password,
+        string? url,
         string userAgent,
-        string webjobName,
-        string webjobType,
+        string? webjobName,
+        string? webjobType,
         IHttpClient httpClient,
         IDeploymentStatusService<DeploymentResponse> deploymentStatusService,
         CancellationToken cancellationToken = default)
@@ -99,7 +99,7 @@ public partial class OneDeploy : Task
         }
 
         // 'PublishUrl' must be valid
-        if (!GetPublishUrl(url, webjobName, webjobType, out var oneDeployPublishUri))
+        if (!GetPublishUrl(url, webjobName, webjobType, out var oneDeployPublishUri) || oneDeployPublishUri is null)
         {
             _taskLogger.LogError(string.Format(Resources.ONEDEPLOY_InvalidPublishUrl, url));
             return false;
@@ -116,9 +116,9 @@ public partial class OneDeploy : Task
             httpClient, oneDeployPublishUri, username, password, userAgent, fileToPublishPath, webjobName, webjobType, fileToPublishStream, cancellationToken);
 
         // if push failed, finish operation
-        if (!response.IsResponseSuccessful())
+        if (!(response?.IsResponseSuccessful() ?? false))
         {
-            var responseText = await response.GetTextResponseAsync(cancellationToken);
+            var responseText = response is null ? string.Empty : await response.GetTextResponseAsync(cancellationToken);
 
             var errorMessage = !string.IsNullOrEmpty(responseText)
                 ? string.Format(Resources.ONEDEPLOY_FailedDeployRequest_With_ResponseText, oneDeployPublishUri, response?.StatusCode, responseText)
@@ -136,19 +136,19 @@ public partial class OneDeploy : Task
         {
             var deploymentResponse = await deploymentStatusService.PollDeploymentAsync(httpClient, deploymentUrl, username, password, userAgent, cancellationToken);
 
-            if (deploymentResponse.IsSuccessfulResponse())
+            if (deploymentResponse?.IsSuccessfulResponse() ?? false)
             {
                 _taskLogger.LogMessage(MessageImportance.High, Resources.ONEDEPLOY_Success);
                 return true;
             }
 
-            if (deploymentResponse.IsFailedResponse())
+            if (deploymentResponse?.IsFailedResponse() ?? true)
             {
                 _taskLogger.LogError(string.Format(Resources.ONEDEPLOY_FailedWithLogs,
                     fileToPublishPath,
                     oneDeployPublishUri,
-                    deploymentResponse.Status ?? DeploymentStatus.Unknown,
-                    deploymentResponse.GetLogUrlWithId()));
+                    deploymentResponse?.Status ?? DeploymentStatus.Unknown,
+                    deploymentResponse?.GetLogUrlWithId()));
 
                 return false;
             }
@@ -166,15 +166,15 @@ public partial class OneDeploy : Task
         return hostObj.ExtractCredentials(out user, out password);
     }
 
-    private Task<IHttpResponse> DeployAsync(
+    private Task<IHttpResponse?> DeployAsync(
         IHttpClient httpClient,
         Uri publishUri,
-        string username,
-        string password,
-        string userAgent,
-        string fileToPublish,
-        string webjobName,
-        string webjobType,
+        string? username,
+        string? password,
+        string? userAgent,
+        string? fileToPublish,
+        string? webjobName,
+        string? webjobType,
         FileStream fileToPublishStream,
         CancellationToken cancellationToken)
     {
@@ -183,11 +183,11 @@ public partial class OneDeploy : Task
            : DefaultDeployAsync(httpClient, publishUri, username, password, userAgent, fileToPublishStream, cancellationToken);
     }
 
-    private bool GetPublishUrl(string publishUrl, string webjobName, string webjobType, out Uri publishUri)
+    private bool GetPublishUrl(string? publishUrl, string? webjobName, string? webjobType, out Uri? publishUri)
     {
         publishUri = null;
 
-        if (string.IsNullOrEmpty(publishUrl) ||
+        if (publishUrl is null || publishUrl.Length == 0 ||
             !Uri.TryCreate(publishUrl, UriKind.Absolute, out var _))
         {
             return false;
@@ -198,12 +198,12 @@ public partial class OneDeploy : Task
             : GetDefaultPublishUri(publishUrl, out publishUri);
     }
 
-    private async Task<IHttpResponse> DefaultDeployAsync(
+    private async Task<IHttpResponse?> DefaultDeployAsync(
         IHttpClient httpClient,
         Uri publishUri,
-        string username,
-        string password,
-        string userAgent,
+        string? username,
+        string? password,
+        string? userAgent,
         FileStream fileToPublishStream,
         CancellationToken cancellationToken)
     {

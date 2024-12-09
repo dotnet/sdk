@@ -1,5 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable IDE0240
+#nullable enable
+#pragma warning restore IDE0240
+
 using System.Text.Json;
 #if DotnetCsproj
 using Microsoft.DotNet.Workloads.Workload.History;
@@ -10,8 +15,8 @@ namespace Microsoft.DotNet.Workloads.Workload
 {
     static class WorkloadFileBasedInstall
     {
-        public static bool IsUserLocal(string dotnetDir, string sdkFeatureBand)
-            => File.Exists(GetUserInstallFilePath(dotnetDir, sdkFeatureBand));
+        public static bool IsUserLocal(string? dotnetDir, string? sdkFeatureBand)
+            => dotnetDir is not null && File.Exists(GetUserInstallFilePath(dotnetDir, sdkFeatureBand));
 
         internal static void SetUserLocal(string dotnetDir, string sdkFeatureBand)
         {
@@ -21,9 +26,9 @@ namespace Microsoft.DotNet.Workloads.Workload
             File.WriteAllText(filePath, "");
         }
 
-        private static string GetUserInstallFilePath(string dotnetDir, string sdkFeatureBand)
+        private static string GetUserInstallFilePath(string dotnetDir, string? sdkFeatureBand)
         {
-            if (sdkFeatureBand.Contains("-") || !sdkFeatureBand.EndsWith("00", StringComparison.Ordinal))
+            if (sdkFeatureBand is not null && (sdkFeatureBand.Contains("-") || !sdkFeatureBand.EndsWith("00", StringComparison.Ordinal)))
             {
                 // The user passed in the sdk version. Derive the feature band version.
                 if (!Version.TryParse(sdkFeatureBand.Split('-')[0], out var sdkVersionParsed))
@@ -57,7 +62,10 @@ namespace Microsoft.DotNet.Workloads.Workload
                 try
                 {
                     var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
-                    historyRecords.Add(historyRecord);
+                    if (historyRecord is not null)
+                    {
+                        historyRecords.Add(historyRecord);
+                    }
                 }
                 catch (JsonException)
                 {

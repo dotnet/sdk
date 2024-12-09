@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Cli.Utils
     internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor
     {
         private static string Path = "PATH";
-        public string Get(SdkEnvironmentVariableTarget currentUserBeforeEvaluation)
+        public string? Get(SdkEnvironmentVariableTarget currentUserBeforeEvaluation)
         {
-            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(writable: false, sdkEnvironmentVariableTarget: currentUserBeforeEvaluation))
+            using (RegistryKey? environmentKey = OpenEnvironmentKeyIfExists(writable: false, sdkEnvironmentVariableTarget: currentUserBeforeEvaluation))
             {
                 return environmentKey?.GetValue(Path, "", RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
             }
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public void Set(string value, SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget)
         {
-            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(writable: true, sdkEnvironmentVariableTarget: sdkEnvironmentVariableTarget))
+            using (RegistryKey? environmentKey = OpenEnvironmentKeyIfExists(writable: true, sdkEnvironmentVariableTarget: sdkEnvironmentVariableTarget))
             {
                 environmentKey?.SetValue(Path, value, RegistryValueKind.ExpandString);
             }
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Utils
             });
         }
 
-        private static RegistryKey OpenEnvironmentKeyIfExists(bool writable, SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget)
+        private static RegistryKey? OpenEnvironmentKeyIfExists(bool writable, SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget)
         {
             RegistryKey baseKey;
             string keyName;

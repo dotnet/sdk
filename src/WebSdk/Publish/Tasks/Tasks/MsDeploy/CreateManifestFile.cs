@@ -9,33 +9,32 @@
 ///
 /// Copyright(c) 2006 Microsoft Corporation
 ///--------------------------------------------------------------------------------------------
+
+using Framework = Microsoft.Build.Framework;
+using Utilities = Microsoft.Build.Utilities;
+using Xml = System.Xml;
+
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using System.IO;
-    using Framework = Microsoft.Build.Framework;
-    using Utilities = Microsoft.Build.Utilities;
-    using Xml = System.Xml;
-
-    public class CreateManifestFile : Utilities.Task
+    public class CreateManifestFile : Task
     {
-        private Framework.ITaskItem[] m_manifests = null;
-        private string m_manifestFile = null;
+        private Framework.ITaskItem[]? m_manifests = null;
+        private string? m_manifestFile = null;
         private bool m_generateFileEvenIfEmpty = false;
 
         [Framework.Required]
-        public Framework.ITaskItem[] Manifests
+        public Framework.ITaskItem[]? Manifests
         {
             get { return m_manifests; }
             set { m_manifests = value; }
         }
 
         [Framework.Required]
-        public string ManifestFile
+        public string? ManifestFile
         {
             get { return m_manifestFile; }
             set { m_manifestFile = value; }
         }
-
 
         public bool GenerateFileEvenIfEmpty
         {
@@ -49,7 +48,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="loggingHelper"></param>
         /// <param name="parameters"></param>
         /// <param name="outputFileName"></param>
-        private static void WriteManifestsToFile(Utilities.TaskLoggingHelper loggingHelper, Framework.ITaskItem[] items, string outputFileName)
+        private static void WriteManifestsToFile(Utilities.TaskLoggingHelper loggingHelper, Framework.ITaskItem[]? items, string outputFileName)
         {
             Xml.XmlDocument document = new();
             Xml.XmlElement manifestElement = document.CreateElement("sitemanifest");
@@ -102,7 +101,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 try
                 {
-                    if (!string.IsNullOrEmpty(ManifestFile))
+                    if (ManifestFile is not null && ManifestFile.Length != 0)
                     {
                         if (!File.Exists(ManifestFile))
                         {
@@ -112,13 +111,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                 }
 #if NET472
-                catch (System.Xml.XmlException ex)
+                catch (Xml.XmlException ex)
                 {
-                    System.Uri sourceUri = new(ex.SourceUri);
+                    Uri sourceUri = new(ex.SourceUri);
                     succeeded = false;
                 }
 #endif
-                catch (System.Exception)
+                catch (Exception)
                 {
                     succeeded = false;
                 }
@@ -132,7 +131,4 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return succeeded;
         }
     }
-
-
-
 }
