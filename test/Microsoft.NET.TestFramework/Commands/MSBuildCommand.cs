@@ -70,7 +70,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null, string? platform = null)
         {
-            if (TestAsset != null && platform is not null)
+            if (TestAsset != null)
             {
                 return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework, configuration, runtimeIdentifier, platform));
             }
