@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Tools.Help
 {
@@ -101,7 +102,7 @@ namespace Microsoft.DotNet.Tools.Help
         private bool TryGetDocsLink(string[] command, out string docsLink)
         {
             var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
-            if (parsedCommand?.CommandResult?.Command is DocumentedCommand dc)
+            if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)
             {
                 docsLink = dc.DocsLink;
                 return true;
