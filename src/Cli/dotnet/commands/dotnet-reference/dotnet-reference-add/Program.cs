@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Reference.Add
+namespace Microsoft.DotNet.Tools.Reference.Add
 {
     internal class AddProjectToProjectReferenceCommand : CommandBase
     {

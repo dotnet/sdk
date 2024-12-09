@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
-using LocalizableStrings = Microsoft.DotNet.Tools.Add.ProjectToProjectReference.LocalizableStrings;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Reference.Add;
+using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -15,10 +16,12 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.OneOrMore
         };
 
+        public static readonly CliOption<string> ProjectOption = new("--project");
+
         public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
-            HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
+            HelpName = CommonLocalizableStrings.CmdFramework
 
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
@@ -38,6 +41,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);
             command.Options.Add(InteractiveOption);
+            command.Options.Add(ProjectOption);
 
             command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
 

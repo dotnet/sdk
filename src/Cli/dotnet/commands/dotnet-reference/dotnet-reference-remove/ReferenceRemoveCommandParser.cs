@@ -3,8 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Remove.ProjectToProjectReference;
-using LocalizableStrings = Microsoft.DotNet.Tools.Remove.ProjectToProjectReference.LocalizableStrings;
+using Microsoft.DotNet.Tools.Reference.Remove;
+using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
         }.AddCompletions(Complete.ProjectReferencesFromProjectFile);
+
+        public static readonly CliOption<string> ProjectOption = new("--project");
 
         public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
         {
@@ -35,6 +37,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);
+            command.Options.Add(ProjectOption);
 
             command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
 

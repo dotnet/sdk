@@ -6,7 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Reference.List
+namespace Microsoft.DotNet.Tools.Reference.List
 {
     internal class ListProjectToProjectReferencesCommand : CommandBase
     {

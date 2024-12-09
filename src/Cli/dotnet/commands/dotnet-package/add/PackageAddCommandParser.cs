@@ -4,10 +4,10 @@
 using System.CommandLine;
 using Microsoft.DotNet.Tools;
 using System.CommandLine.Completions;
-using Microsoft.DotNet.Tools.Add.PackageReference;
-using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
+using Microsoft.DotNet.Tools.Package.Add;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -97,6 +97,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(PackageDirOption);
             command.Options.Add(InteractiveOption);
             command.Options.Add(PrereleaseOption);
+            command.Options.Add(PackageCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
 

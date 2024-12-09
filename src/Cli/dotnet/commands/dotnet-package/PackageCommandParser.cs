@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Cli
     {
         private const string DocsLink = "https://aka.ms/dotnet-package";
 
+        public static readonly CliOption<string> ProjectOption = new("--project");
+
         public static CliCommand GetCommand()
         {
             CliCommand command = new DocumentedCommand("package", DocsLink);

@@ -32,8 +32,8 @@
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Tools" />
     <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.BuildServer" />
     <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.CommandFactory" />
-    <EmbeddedResource Update="**\dotnet-add-package\*.resx" Namespace="Microsoft.DotNet.Tools.Add.PackageReference" />
-    <EmbeddedResource Update="**\dotnet-add-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Add.ProjectToProjectReference" />
+    <EmbeddedResource Update="**\dotnet-package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
+    <EmbeddedResource Update="**\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
     <EmbeddedResource Update="**\dotnet-add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
     <EmbeddedResource Update="**\dotnet-build\*.resx" Namespace="Microsoft.DotNet.Tools.Build" />
     <EmbeddedResource Update="**\dotnet-buildserver\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer" />
@@ -42,15 +42,15 @@
     <EmbeddedResource Update="**\dotnet-sdk\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk" />
     <EmbeddedResource Update="**\dotnet-sdk\check\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk.Check" />
     <EmbeddedResource Update="**\dotnet-help\*.resx" Namespace="Microsoft.DotNet.Tools.Help" />
-    <EmbeddedResource Update="**\dotnet-list-package\*.resx" Namespace="Microsoft.DotNet.Tools.List.PackageReferences" />
-    <EmbeddedResource Update="**\dotnet-list-reference\*.resx" Namespace="Microsoft.DotNet.Tools.List.ProjectToProjectReferences" />
+    <EmbeddedResource Update="**\dotnet-package\list\*.resx" Namespace="Microsoft.DotNet.Tools.Package.List" />
+    <EmbeddedResource Update="**\dotnet-reference-list\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.List" />
     <EmbeddedResource Update="**\dotnet-list\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
     <EmbeddedResource Update="**\dotnet-new\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
     <EmbeddedResource Update="**\dotnet-pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
     <EmbeddedResource Update="**\dotnet-package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
     <EmbeddedResource Update="**\dotnet-publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
-    <EmbeddedResource Update="**\dotnet-remove-package\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.PackageReference" />
-    <EmbeddedResource Update="**\dotnet-remove-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.ProjectToProjectReference" />
+    <EmbeddedResource Update="**\dotnet-package\remove\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Remove" />
+    <EmbeddedResource Update="**\dotnet-reference-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Remove" />
     <EmbeddedResource Update="**\dotnet-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Remove" />
     <EmbeddedResource Update="**\dotnet-restore\*.resx" Namespace="Microsoft.DotNet.Tools.Restore" />
     <EmbeddedResource Update="**\dotnet-run\*.resx" Namespace="Microsoft.DotNet.Tools.Run" />

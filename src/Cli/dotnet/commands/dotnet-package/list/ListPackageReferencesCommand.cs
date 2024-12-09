@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Package.List
+namespace Microsoft.DotNet.Tools.Package.List
 {
     internal class ListPackageReferencesCommand : CommandBase
     {

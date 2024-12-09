@@ -5,8 +5,9 @@ using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
 
-namespace Microsoft.DotNet.Reference.Remove
+namespace Microsoft.DotNet.Tools.Reference.Remove
 {
     internal class RemoveProjectToProjectReferenceCommand : CommandBase
     {
@@ -16,7 +17,7 @@ namespace Microsoft.DotNet.Reference.Remove
         public RemoveProjectToProjectReferenceCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(RemoveCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectOption);
             _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
             if (_arguments.Count == 0)

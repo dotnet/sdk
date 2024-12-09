@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Tools.Package.List;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.List.PackageReferences;
-using LocalizableStrings = Microsoft.DotNet.Tools.List.PackageReferences.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -111,6 +111,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(InteractiveOption);
             command.Options.Add(FormatOption);
             command.Options.Add(OutputVersionOption);
+            command.Options.Add(PackageCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
 

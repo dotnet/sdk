@@ -3,14 +3,13 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Remove.PackageReference;
-using LocalizableStrings = Microsoft.DotNet.Tools.Remove.PackageReference.LocalizableStrings;
+using Microsoft.DotNet.Tools.Package.Remove;
 
 namespace Microsoft.DotNet.Cli
 {
     internal static class PackageRemoveCommandParser
     {
-        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
+        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Package.Add.LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.AppHelpText,
             Arity = ArgumentArity.OneOrMore,
@@ -34,6 +33,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(CmdPackageArgument);
             command.Options.Add(InteractiveOption);
+            command.Options.Add(PackageCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new RemovePackageReferenceCommand(parseResult).Execute());
 

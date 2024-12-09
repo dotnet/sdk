@@ -4,10 +4,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Package.Add
+namespace Microsoft.DotNet.Tools.Package.Add
 {
     internal class AddPackageReferenceCommand : CommandBase
     {

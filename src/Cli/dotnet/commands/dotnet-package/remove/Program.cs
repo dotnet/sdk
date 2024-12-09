@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Package.Remove
+namespace Microsoft.DotNet.Tools.Package.Remove
 {
     internal class RemovePackageReferenceCommand : CommandBase
     {
@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Package.Remove
         public RemovePackageReferenceCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(PackageRemoveCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.GetValue(PackageCommandParser.ProjectOption);
             _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
             if (_fileOrDirectory == null)
             {
