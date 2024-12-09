@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
                 try
                 {
-                    AddProject(solution, relativePath, projectPath, solutionFolder, serializer is ISolutionSerializer<SlnV12SerializerSettings>);
+                    AddProject(solution, relativePath, projectPath, solutionFolder, serializer);
                 }
                 catch (InvalidProjectFileException ex)
                 {
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
 
-        private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder, bool shouldAddProjectInstanceId = false)
+        private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder, ISolutionSerializer serializer = null)
         {
             // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             // Add settings based on existing project instance
             ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
             string projectInstanceId = projectInstance.GetProjectId();
-            if (!string.IsNullOrEmpty(projectInstanceId) && shouldAddProjectInstanceId)
+            if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
             {
                 project.Id = new Guid(projectInstanceId);
             }
