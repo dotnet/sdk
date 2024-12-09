@@ -5,9 +5,9 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class DotnetCommand : TestCommand
     {
-        public DotnetCommand(ITestOutputHelper log, params string?[] args) : base(log)
+        public DotnetCommand(ITestOutputHelper log, params string[] args) : base(log)
         {
-            Arguments.AddRange(args!);
+            Arguments.AddRange(args);
         }
 
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)

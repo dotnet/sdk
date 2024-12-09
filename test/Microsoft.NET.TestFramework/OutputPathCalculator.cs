@@ -236,7 +236,7 @@ namespace Microsoft.NET.TestFramework
 
                 if (IncludeProjectNameInArtifactsPaths)
                 {
-                    return Path.Combine(ArtifactsPath ?? string.Empty, "publish", Path.GetFileNameWithoutExtension(ProjectPath)!, pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "publish", Path.GetFileNameWithoutExtension(ProjectPath) ?? string.Empty, pivot);
                 }
                 else
                 {

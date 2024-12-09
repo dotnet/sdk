@@ -133,7 +133,7 @@ namespace Microsoft.NET.TestFramework
             {
                 if (project.Root is not null)
                 {
-                    var ns = project.Root!.Name.Namespace;
+                    var ns = project.Root.Name.Namespace;
                     foreach (var PropertyName in PropertyNames)
                     {
                         var packageReferencesToUpdate =
@@ -234,7 +234,7 @@ namespace Microsoft.NET.TestFramework
             {
                 FindProjectFiles();
             }
-            foreach (var projectFile in _projectFiles!)
+            foreach (var projectFile in _projectFiles ?? new())
             {
                 var project = XDocument.Load(projectFile);
 
