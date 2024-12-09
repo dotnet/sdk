@@ -110,7 +110,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         using var clientThrottle = new SemaphoreSlim(16, 16);
         List<Task> downloadTasks = new();
-        
+
         foreach (XDocument verticalManifest in verticalManifests)
         {
             string verticalName = GetRequiredRootAttribute(verticalManifest, _verticalNameAttribute);
@@ -151,7 +151,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         // Create MergedManifest.xml
         // taking the attributes from the main manifest
-        XElement mainManifestRoot = verticalManifests.First().Root
+        XElement mainManifestRoot = mainVerticalManifest.Root
             ?? throw new ArgumentException("The root element of the vertical manifest is null.");
         mainManifestRoot.Attribute(_verticalNameAttribute)!.Remove();
 
@@ -160,9 +160,10 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             mainManifestRoot.Name,
             mainManifestRoot.Attributes(),
             packageElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value),
-            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)));
+            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)
+        ));
 
-        File.WriteAllText(manifestOutputPath, mergedManifest.ToString());
+        mergedManifest.Save(manifestOutputPath);
 
         Log.LogMessage(MessageImportance.High, $"### Duplicate items found in the following verticals: ###");
 
@@ -188,28 +189,28 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         await Task.WhenAll(fileNamesToDownload.Select(async fileName =>
             await DownloadFileFromArtifact(
-                filesInformation, 
-                artifactName, 
-                azureDevOpsClient, 
-                buildId, 
-                fileName, 
-                outputDirectory, 
+                filesInformation,
+                artifactName,
+                azureDevOpsClient,
+                buildId,
+                fileName,
+                outputDirectory,
                 clientThrottle)));
     }
 
     private async Task DownloadFileFromArtifact(
-        ArtifactFiles artifactFilesMetadata, 
-        string azureDevOpsArtifact, 
-        AzureDevOpsClient azureDevOpsClient, 
-        string buildId, 
-        string manifestFile, 
+        ArtifactFiles artifactFilesMetadata,
+        string azureDevOpsArtifact,
+        AzureDevOpsClient azureDevOpsClient,
+        string buildId,
+        string manifestFile,
         string destinationDirectory,
         SemaphoreSlim clientThrottle)
     {
         try
         {
             await clientThrottle.WaitAsync();
-            
+
             ArtifactItem fileItem;
 
             var matchingFilePaths = artifactFilesMetadata.Items.Where(f => Path.GetFileName(f.Path) == Path.GetFileName(manifestFile));
@@ -272,7 +273,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             Directory.CreateDirectory(destinationDirectory);
         }
 
-        foreach (var sourceFile in sourceFiles) 
+        foreach (var sourceFile in sourceFiles)
         {
             string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
 
@@ -291,9 +292,9 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         string verticalName = verticalManifest.Root!.Attribute(_verticalNameAttribute)!.Value;
 
-        foreach (XElement artifactElement in verticalManifest.Descendants(elementName)) 
+        foreach (XElement artifactElement in verticalManifest.Descendants(elementName))
         {
-            string elementId = artifactElement.Attribute(_idAttribute)?.Value 
+            string elementId = artifactElement.Attribute(_idAttribute)?.Value
                 ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
 
             if (addedArtifacts.TryAdd(elementId, new AddedElement(verticalName, artifactElement)))
@@ -327,7 +328,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
     private static string GetRequiredRootAttribute(XDocument document, string attributeName)
     {
-        return document.Root?.Attribute(attributeName)?.Value 
+        return document.Root?.Attribute(attributeName)?.Value
             ?? throw new ArgumentException($"Required attribute '{attributeName}' not found in root element.");
     }
 
