@@ -34,19 +34,18 @@ sdk-options:
   --version         {LocalizableStrings.SDKVersionCommandDefinition}
 
 {LocalizableStrings.Commands}:
-  add               {LocalizableStrings.AddDefinition}
   build             {LocalizableStrings.BuildDefinition}
   build-server      {LocalizableStrings.BuildServerDefinition}
   clean             {LocalizableStrings.CleanDefinition}
   format            {LocalizableStrings.FormatDefinition}
   help              {LocalizableStrings.HelpDefinition}
-  list              {LocalizableStrings.ListDefinition}
   msbuild           {LocalizableStrings.MsBuildDefinition}
   new               {LocalizableStrings.NewDefinition}
   nuget             {LocalizableStrings.NugetDefinition}
   pack              {LocalizableStrings.PackDefinition}
+  package           {LocalizableStrings.PackageDefinition}
   publish           {LocalizableStrings.PublishDefinition}
-  remove            {LocalizableStrings.RemoveDefinition}
+  reference         {LocalizableStrings.ReferenceDefinition}
   restore           {LocalizableStrings.RestoreDefinition}
   run               {LocalizableStrings.RunDefinition}
   sdk               {LocalizableStrings.SdkDefinition}

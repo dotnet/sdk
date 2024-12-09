@@ -7,6 +7,16 @@
         <target state="translated">Appliquez les préférences de style à un projet ou une solution.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
+        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceDefinition">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Restaurer par progression la version du framework (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
@@ -122,16 +132,6 @@
         <target state="translated">Commandes de modification de projet</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddDefinition">
-        <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">Ajoutez un package ou une référence à un projet .NET.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveDefinition">
-        <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">Supprimez un package ou une référence d'un projet .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
         <target state="translated">Commandes avancées</target>
@@ -165,11 +165,6 @@
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
         <target state="translated">Modifiez les fichiers solution Visual Studio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListDefinition">
-        <source>List packages or references of a .NET project.</source>
-        <target state="translated">Répertorie les packages ou références d’un projet .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

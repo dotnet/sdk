@@ -7,6 +7,16 @@
         <target state="translated">프로젝트 또는 솔루션에 스타일 기본 설정을 적용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
+        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceDefinition">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">프레임워크 버전(LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable)으로 롤포워드합니다.</target>
@@ -122,16 +132,6 @@
         <target state="translated">프로젝트 수정 명령</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddDefinition">
-        <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">.NET 프로젝트에 패키지 또는 참조를 추가합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveDefinition">
-        <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">.NET 프로젝트에서 패키지 또는 참조를 제거합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
         <target state="translated">고급 명령</target>
@@ -165,11 +165,6 @@
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
         <target state="translated">Visual Studio 솔루션 파일을 수정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListDefinition">
-        <source>List packages or references of a .NET project.</source>
-        <target state="translated">.NET 프로젝트의 패키지 또는 참조를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">
