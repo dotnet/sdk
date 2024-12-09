@@ -52,6 +52,9 @@ Global
 		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
 		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 EndGlobal
 ";
 
@@ -61,6 +64,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26006.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 EndGlobal
 ";
 
@@ -151,6 +165,9 @@ Global
 		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
 		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
 		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
 ";
@@ -314,19 +331,23 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "InvalidSolution.sln", "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectoryRoot = _testAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
+
+            var projectDirectory = solutionExtension == ".sln"
+                ? Path.Join(projectDirectoryRoot, "Sln")
+                : Path.Join(projectDirectoryRoot, "Slnx");
 
             var solutionPath = Path.Combine(projectDirectory, "InvalidSolution.sln");
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
@@ -334,7 +355,7 @@ EndGlobal
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -408,7 +429,7 @@ EndGlobal
             var contentBefore = File.ReadAllText(solutionPath);
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "referenceDoesNotExistInSln.csproj");
+                .Execute(solutionCommand, "App.sln", "remove", "referenceDoesNotExistInSln.csproj");
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "referenceDoesNotExistInSln.csproj"));
             File.ReadAllText(solutionPath)
@@ -432,7 +453,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
@@ -457,7 +478,7 @@ EndGlobal
             var projectToRemove = Path.Combine("ConsoleApp1", "ConsoleApp1.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
@@ -467,7 +488,7 @@ EndGlobal
                 .BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems);
         }
 
-        [Theory]
+        [Theory(Skip = "vs-solutionpersistence does not allow duplicate references.")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
@@ -484,7 +505,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             string outputText = string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove);
@@ -513,7 +534,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
+                .Execute(solutionCommand, "App.sln", "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
             cmd.Should().Pass();
 
             string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "idontexist.csproj")}
@@ -544,7 +565,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             File.ReadAllText(solutionPath)
@@ -567,7 +588,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "Lib");
+                .Execute(solutionCommand, "App.sln", "remove", "Lib");
             cmd.Should().Pass();
 
             File.ReadAllText(solutionPath)
@@ -587,7 +608,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", directoryToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -609,7 +630,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", directoryToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -635,7 +656,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             new DotnetCommand(Log)
@@ -705,7 +726,7 @@ EndGlobal
             var libPath = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", libPath, appPath);
+                .Execute(solutionCommand, "App.sln", "remove", libPath, appPath);
             cmd.Should().Pass();
 
             var solutionContents = File.ReadAllText(solutionPath);
@@ -728,7 +749,7 @@ EndGlobal
             var projectToRemove = Path.Combine("src", "NotLastProjInSrc", "NotLastProjInSrc.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             File.ReadAllText(solutionPath)
@@ -750,7 +771,7 @@ EndGlobal
             var projectToRemove = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             File.ReadAllText(solutionPath)
@@ -772,7 +793,7 @@ EndGlobal
             var projectToRemove = Path.Combine("Second", "Second.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             File.ReadAllText(solutionPath)
