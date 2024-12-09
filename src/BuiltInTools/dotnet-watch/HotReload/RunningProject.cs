@@ -8,15 +8,19 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
+    internal delegate ValueTask<RunningProject> RestartOperation(bool build, CancellationToken cancellationToken);
+
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
         DeltaApplier deltaApplier,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
-        Task runningProcess,
+        Task<int> runningProcess,
+        int processId,
         CancellationTokenSource processExitedSource,
         CancellationTokenSource processTerminationSource,
+        RestartOperation restartOperation,
         IReadOnlyList<IDisposable> disposables,
         Task<ImmutableArray<string>> capabilityProvider) : IDisposable
     {
@@ -26,7 +30,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         public readonly DeltaApplier DeltaApplier = deltaApplier;
         public readonly Task<ImmutableArray<string>> CapabilityProvider = capabilityProvider;
         public readonly IReporter Reporter = reporter;
-        public readonly Task RunningProcess = runningProcess;
+        public readonly Task<int> RunningProcess = runningProcess;
+        public readonly int ProcessId = processId;
+        public readonly RestartOperation RestartOperation = restartOperation;
 
         /// <summary>
         /// Cancellation source triggered when the process exits.
