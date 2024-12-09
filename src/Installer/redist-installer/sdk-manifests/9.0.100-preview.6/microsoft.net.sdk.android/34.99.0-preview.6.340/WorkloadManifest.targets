@@ -1,0 +1,22 @@
+<Project>
+  <ImportGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <Import Project="Sdk.targets" Sdk="Microsoft.Android.Sdk.net9"
+        Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '9.0')) " />
+    <Import Project="Sdk.targets" Sdk="Microsoft.Android.Sdk.net8"
+        Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) " />
+    <Import Project="Eol.targets" Sdk="Microsoft.Android.Sdk.net9"
+        Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '7.0')) or $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '6.0')) " />
+  </ImportGroup>
+
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) ">
+    <KnownFrameworkReference
+        Update="Microsoft.Android"
+        LatestRuntimeFrameworkVersion="34.0.113"
+        TargetingPackVersion="34.0.113"
+    />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) ">
+    <SdkSupportedTargetPlatformIdentifier Include="android" DisplayName="Android" />
+  </ItemGroup>
+</Project>
