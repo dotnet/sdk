@@ -1,6 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
@@ -192,5 +196,33 @@ internal sealed class HotReloadAgent : IDisposable
         }
 
         return default;
+    }
+
+    /// <summary>
+    /// Clear any hot-reload specific environment variables. This prevents child processes from being
+    /// affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
+    /// </summary>
+    public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
+    {
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
+            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
+
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
+    }
+
+    // internal for testing
+    internal static string RemoveCurrentAssembly(Type startupHookType, string environment)
+    {
+        if (environment is "")
+        {
+            return environment;
+        }
+
+        var assemblyLocation = startupHookType.Assembly.Location;
+        var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
+
+        return string.Join(Path.PathSeparator, updatedValues);
     }
 }
