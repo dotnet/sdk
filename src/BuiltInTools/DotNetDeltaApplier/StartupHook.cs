@@ -72,7 +72,7 @@ internal sealed class StartupHook
         //
         // Updates made before the process is launched need to be applied before loading the affected modules. 
 
-        using var pipeClient = CreatePipe();
+        var pipeClient = CreatePipe();
         try
         {
             pipeClient.Connect(ConnectionTimeoutMS);
@@ -93,18 +93,17 @@ internal sealed class StartupHook
             // The debugger takes care of this when launching process with the debugger attached.
             if (!Debugger.IsAttached)
             {
-                ReceiveInitialUpdatesAsync(pipeClient, agent, CancellationToken.None).GetAwaiter().GetResult();
+                ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: true, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             // fire and forget:
-            _ = ReceiveAndApplyUpdatesAsync(pipeClient, agent, CancellationToken.None);
+            _ = ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: false, CancellationToken.None);
         }
         catch (Exception ex)
         {
             Log(ex.Message);
+            pipeClient.Dispose();
         }
-
-        Log("Stopped received delta updates. Server is no longer connected.");
     }
 
     private static void ProtocolV0()
@@ -129,14 +128,12 @@ internal sealed class StartupHook
             try
             {
                 SendCapabilities(pipeClient, agent);
-                await ReceiveAndApplyUpdatesAsync(pipeClient, agent, CancellationToken.None);
+                await ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: false, CancellationToken.None);
             }
             catch (Exception ex)
             {
                 Log(ex.Message);
             }
-
-            Log("Stopped received delta updates. Server is no longer connected.");
         });
     }
 
@@ -151,49 +148,50 @@ internal sealed class StartupHook
         initPayload.Write(pipeClient);
     }
 
-    private static async Task ReceiveInitialUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
+    private static async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, bool initialUpdates, CancellationToken cancellationToken)
     {
-        while (pipeClient.IsConnected)
+        try
         {
-            var payloadType = await ReadPayloadTypeAsync(pipeClient, cancellationToken);
-            switch (payloadType)
+            byte[] buffer = new byte[1];
+
+            while (pipeClient.IsConnected)
             {
-                case PayloadType.ManagedCodeUpdate:
-                    await ReadAndApplyManagedUpdateAsync(pipeClient, agent, cancellationToken);
-                    break;
+                var bytesRead = await pipeClient.ReadAsync(buffer, offset: 0, count: 1, cancellationToken);
+                if (bytesRead != 1)
+                {
+                    continue;
+                }
 
-                case PayloadType.InitialUpdatesCompleted:
-                    return;
+                var payloadType = (PayloadType)buffer[0];
+                switch (payloadType)
+                {
+                    case PayloadType.ManagedCodeUpdate:
+                        await ReadAndApplyManagedUpdateAsync(pipeClient, agent, cancellationToken);
+                        break;
 
-                default:
-                    agent.Reporter.Report($"Unexpected payload type: {payloadType}", AgentMessageSeverity.Error);
+                    case PayloadType.StaticAssetUpdate when !initialUpdates:
+                        await ReadAndApplyStaticAssetUpdateAsync(pipeClient, agent, cancellationToken);
+                        break;
 
-                    // can't continue, the pipe content is in an unknown state
-                    return;
+                    case PayloadType.InitialUpdatesCompleted when initialUpdates:
+                        return;
+
+                    default:
+                        // can't continue, the pipe content is in an unknown state
+                        Log($"Unexpected payload type: {payloadType}. Terminating agent.");
+                        return;
+                }
             }
         }
-    }
-
-    private static async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
-    {
-        while (pipeClient.IsConnected)
+        catch (Exception ex)
         {
-            var payloadType = await ReadPayloadTypeAsync(pipeClient, cancellationToken);
-            switch (payloadType)
+            Log(ex.Message);
+        }
+        finally
+        {
+            if (!pipeClient.IsConnected)
             {
-                case PayloadType.ManagedCodeUpdate:
-                    await ReadAndApplyManagedUpdateAsync(pipeClient, agent, cancellationToken);
-                    break;
-
-                case PayloadType.StaticAssetUpdate:
-                    await ReadAndApplyStaticAssetUpdateAsync(pipeClient, agent, cancellationToken);
-                    break;
-
-                default:
-                    agent.Reporter.Report($"Unexpected payload type: {payloadType}", AgentMessageSeverity.Error);
-
-                    // can't continue, the pipe content is in an unknown state
-                    return;
+                await pipeClient.DisposeAsync();
             }
         }
     }
@@ -247,18 +245,6 @@ internal sealed class StartupHook
             //    result.Write(pipeClient);
             //}
         }
-    }
-
-    private static async ValueTask<PayloadType> ReadPayloadTypeAsync(Stream stream, CancellationToken cancellationToken)
-    {
-        byte[] buffer = new byte[1];
-        int bytesRead = await stream.ReadAsync(buffer, 0, 1, cancellationToken);
-        if (bytesRead == 1)
-        {
-            return (PayloadType)buffer[0];
-        }
-
-        return PayloadType.Unknown;
     }
 
     public static bool IsMatchingProcess(string processPath, string targetProcessPath)

@@ -7,7 +7,6 @@ namespace Microsoft.DotNet.Watch
 {
     internal enum PayloadType
     {
-        Unknown = 0,
         ManagedCodeUpdate = 1,
         StaticAssetUpdate = 2,
         InitialUpdatesCompleted = 3,
@@ -33,9 +32,8 @@ namespace Microsoft.DotNet.Watch
             binaryWriter.Write(Version);
             binaryWriter.Write(Deltas.Count);
 
-            for (var i = 0; i < Deltas.Count; i++)
+            foreach (var delta in Deltas)
             {
-                var delta = Deltas[i];
                 binaryWriter.Write(delta.ModuleId.ToString());
                 await binaryWriter.WriteAsync(delta.MetadataDelta, cancellationToken);
                 await binaryWriter.WriteAsync(delta.ILDelta, cancellationToken);

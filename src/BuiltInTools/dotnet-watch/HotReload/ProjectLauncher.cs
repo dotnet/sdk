@@ -93,14 +93,10 @@ internal sealed class ProjectLauncher(
             environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
             environmentBuilder.SetDirective(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
 
-            // Do not ask agent to log to stdout until https://github.com/dotnet/sdk/issues/40484 is fixed.
-            // For now we need to set the env variable explicitly when we need to diagnose issue with the agent.
-            // Build targets might launch a process and read it's stdout. If the agent is loaded into such process and starts logging
-            // to stdout it might interfere with the expected output.
-            //if (context.Options.Verbose)
-            //{
-            //    environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
-            //}
+            if (context.Options.Verbose)
+            {
+                environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+            }
 
             // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
             var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");

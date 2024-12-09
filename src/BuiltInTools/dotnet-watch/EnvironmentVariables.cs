@@ -21,6 +21,7 @@ internal static class EnvironmentVariables
         public const string DotNetWatchHotReloadTargetProcessPath = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadTargetProcessPath;
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
+        public const string HotReloadDeltaClientLogMessages = HotReload.AgentEnvironmentVariables.HotReloadDeltaClientLogMessages;
     }
 
     public static bool VerboseCliOutput => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
