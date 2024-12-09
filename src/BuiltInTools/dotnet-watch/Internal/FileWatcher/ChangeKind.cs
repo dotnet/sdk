@@ -10,4 +10,6 @@ internal enum ChangeKind
     Delete
 }
 
-internal readonly record struct ChangedFile(FileItem Item, ChangeKind Change);
+internal readonly record struct ChangedFile(FileItem Item, ChangeKind Kind);
+
+internal readonly record struct ChangedPath(string Path, ChangeKind Kind);
