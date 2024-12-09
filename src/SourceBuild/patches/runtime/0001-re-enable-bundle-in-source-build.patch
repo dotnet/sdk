@@ -4,6 +4,7 @@ Date: Thu, 5 Dec 2024 10:11:01 -0800
 Subject: [PATCH] Re-enable bundle archive building in source build
 
 Backport: https://github.com/dotnet/runtime/pull/110448
+
 ---
  eng/Subsets.props | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
