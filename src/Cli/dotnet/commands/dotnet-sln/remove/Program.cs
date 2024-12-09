@@ -20,6 +20,30 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
         private readonly string _fileOrDirectory;
         private readonly IReadOnlyCollection<string> _projects;
 
+        private int CountNonFolderDescendants(SolutionModel solution, SolutionFolderModel item, Dictionary<SolutionFolderModel, int> cached)
+        {
+            if (cached.ContainsKey(item))
+            {
+                return cached[item];
+            }
+            int count = 0;
+            var children = solution.SolutionItems.Where(i => i.Parent == item);
+            foreach (var child in children)
+            {
+                if (child is SolutionFolderModel folderModel)
+                {
+                    count += CountNonFolderDescendants(solution, folderModel, cached);
+                }
+                else
+                {
+                    count++;
+                }
+            }
+            count += (item.Files?.Count ?? 0);
+            cached.Add(item, count);
+            return count;
+        }
+
         public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
@@ -94,18 +118,16 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 }
             }
 
-            // TODO: Remove empty solution folders
-            HashSet<SolutionFolderModel> emptySolutionFolders = solution.SolutionFolders.ToHashSet();
-            foreach (var item in solution.SolutionItems)
+            Dictionary<SolutionFolderModel, int> nonFolderDescendantsCount = new();
+            foreach (var item in solution.SolutionFolders)
             {
-                if (item.Parent != null)
-                {
-                    emptySolutionFolders.Remove(item.Parent);
-                }
+                CountNonFolderDescendants(solution, item, nonFolderDescendantsCount);
             }
-            foreach (var emptySolutionFolder in emptySolutionFolders)
+
+            var emptyFolders = nonFolderDescendantsCount.Where(i => i.Value == 0);
+            foreach (var folder in emptyFolders)
             {
-                solution.RemoveFolder(emptySolutionFolder);
+                solution.RemoveFolder(folder.Key);
             }
 
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
