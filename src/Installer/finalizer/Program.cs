@@ -37,7 +37,7 @@ try
     }
 
     // Step 3: Remove dependent components if necessary
-    bool restartRequired = RemoveDependent(featureBandVersion);
+    bool restartRequired = RemoveDependent($"Microsoft.NET.Sdk,{featureBandVersion},{platform}");
     if (restartRequired)
     {
         Logger.Log("A restart may be required after removing the dependent component.");
