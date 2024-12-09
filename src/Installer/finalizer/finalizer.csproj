@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <_IsPublishing>true</_IsPublishing>
-    <PublishDir>$(BaseOutputPath)$(Configuration)\$(TargetFramework)-$(Architecture)\publish</PublishDir>
+    <PublishDir>$(ArtifactsDir)bin\finalizer\$(Configuration)\$(SdkTargetFramework)-win-$(Architecture)\publish</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
