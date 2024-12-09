@@ -10,7 +10,7 @@ Backport: https://github.com/dotnet/runtime/pull/110448
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/eng/Subsets.props b/eng/Subsets.props
-index a50fd3e80025e..1491a0aeba8a3 100644
+index a50fd3e8002..1491a0aeba8 100644
 --- a/eng/Subsets.props
 +++ b/eng/Subsets.props
 @@ -550,7 +550,7 @@
