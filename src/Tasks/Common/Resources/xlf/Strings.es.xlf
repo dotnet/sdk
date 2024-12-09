@@ -72,6 +72,11 @@
         <target state="needs-review-translation">NETSDK1079: El paquete Microsoft.AspNetCore.All no se admite cuando el destino es .NET Core 3.0 o posterior. En su lugar, se debe usar un valor de FrameworkReference para Microsoft.AspNetCore.App, y se incluirá implícitamente en Microsoft.NET.Sdk.Web.</target>
         <note>{StrBegins="NETSDK1079: "}</note>
       </trans-unit>
+      <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
+        <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
+        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <note>{StrBegins="NETSDK1224: "}</note>
+      </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
         <source>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</source>
         <target state="needs-review-translation">NETSDK1080: No se necesita un valor de PackageReference para Microsoft.AspNetCore.App cuando el destino es .NET Core 3.0 o superior. Si se utiliza Microsoft.NET.Sdk.Web, se hará referencia automáticamente el marco de trabajo compartido. De lo contrario, PackageReference debe sustituirse por un valor de FrameworkReference.</target>
@@ -641,10 +646,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: El SDK de .NET actual no admite .NET Framework sin usar los valores predeterminados de dicho SDK. Posiblemente se deba a la falta de coincidencia entre la propiedad CLRSupport del proyecto de C++/CLI y TargetFramework.</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="needs-review-translation">NETSDK1213: no se admite el destino de .NET 8.0 o posterior en Visual Studio 2022 17.7.</target>
-        <note>{StrBegins="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="new">NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</target>
+        <note>{StrBegins="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -762,9 +767,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegins="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="needs-review-translation">NETSDK1214: PreferNativeArm64 solo se aplica a destinos de .NET Framework. No se admite y no tiene efecto cuando el destino es .NET Core.</target>
-        <note>{StrBegins="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="needs-review-translation">NETSDK1222: PreferNativeArm64 solo se aplica a destinos de .NET Framework. No se admite y no tiene efecto cuando el destino es .NET Core.</target>
+        <note>{StrBegins="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

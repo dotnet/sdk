@@ -65,8 +65,6 @@ extends:
     containers:
       alpine319WithNode:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-      cblMariner20Fpm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
@@ -75,8 +73,6 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
       mariner20CrossArm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
-      ubuntu2204DebPkg:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -200,21 +196,20 @@ extends:
               runTests: false
             ### PORTABLE ###
             - categoryName: Portable
-              container: ubuntu2204DebPkg
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: centosStream9
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: centosStream9
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
@@ -291,17 +286,28 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
+      ### ARM64 TESTBUILD ###
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: Azure Pipelines
+              vmImage: macOS-latest
+              os: macOS
+            helixTargetQueue: osx.13.arm64
+            macOSJobParameterSets:
+            - categoryName: TestBuild
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
 
       ############### SOURCE BUILD ###############
-      # Temporarily removed until the SDK can target net10. The assets produced by upstream repos
-      # are net10, but this repo needs net9.
-      # - template: /eng/common/templates-official/job/source-build.yml@self
-      #   parameters:
-      #     platform:
-      #       name: Managed
-      #       container: centosStream9
-      #       jobProperties:
-      #         timeoutInMinutes: 30
+      - template: /eng/common/templates-official/job/source-build.yml@self
+        parameters:
+          platform:
+            name: Managed
+            container: centosStream9
+            jobProperties:
+              timeoutInMinutes: 30
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:

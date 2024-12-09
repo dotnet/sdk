@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -8,7 +9,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [Fact]
         public async Task AddSourceFile()
         {
             Logger.WriteLine("AddSourceFile started");
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [Fact]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -69,7 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
@@ -191,22 +192,22 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: http://localhost:5000/");
             await App.AssertWaitingForChanges();
 
-            // TODO: enable once https://github.com/dotnet/razor/issues/10818 is fixed
-            //var newSource = """
-            //    @page "/"
-            //    <h1>Updated</h1>
-            //    """;
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains("dotnet watch ⌚ Launching browser: http://localhost:5000/");
 
-            //UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            //await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded);
+            var newSource = """
+                @page "/"
+                <h1>Updated</h1>
+                """;
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [Fact]
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -369,6 +370,45 @@ namespace Microsoft.DotNet.Watcher.Tests
             Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
             await App.AssertOutputLineStartsWith("> NewSubdir");
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        public async Task Aspire()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+                .WithSource();
+
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "aspire", "--include-previews"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
+            var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
+            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost");
+
+            await App.AssertWaitingForChanges();
+
+            // check that Aspire server output is logged via dotnet-watch reporter:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+
+            // wait until after DCP session started:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+
+            var newSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+            newSource = newSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)");
+            UpdateSourceFile(serviceSourcePath, newSource);
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains("Using Aspire process launcher.");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net10.0)");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net10.0)");
+
+            // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
+            Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
         }
     }
 }

@@ -16,10 +16,24 @@
     <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
+
+    <RepoArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts'))</RepoArtifactsDir>
+    <RepoArtifactsPackageCache>$([MSBuild]::NormalizeDirectory('$(RepoArtifactsDir)', 'sb', 'package-cache'))</RepoArtifactsPackageCache>
+
     <!-- Pass location for packages -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</BuildArgs>
     <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</BuildArgs>
+
+    <!-- Pass RID and Portable/non-portable information -->
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -522,6 +536,7 @@
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'@(RepoAssetManifest)' == '' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
     <Error Text="No repository asset manifest files found at $(RepoAssetManifestsDir)*.xml. This often means the build failed but did not log an error." Condition="'@(RepoAssetManifest)' == ''" />
 
     <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
@@ -547,7 +562,7 @@
   <Target Name="CopyInnerBuildRestoredPackages"
           Condition="'$(IsUtilityProject)' != 'true' and '$(DotNetBuildSourceOnly)' == 'true'">
     <ItemGroup>
-      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
+      <_InnerPackageCacheFiles Include="$(RepoArtifactsPackageCache)**/*" />
     </ItemGroup>
 
     <!-- Retries can be necessary due to file locking when parallel builds are enabled and multiple repos
@@ -562,11 +577,11 @@
 
   <Target Name="MoveDotNetBuildLogs"
         Condition="'$(IsUtilityProject)' != 'true' and
-                    Exists('$(ProjectDirectory)artifacts')">
+                    Exists('$(RepoArtifactsDir)')">
     <ItemGroup>
-      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.log" />
-      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.binlog" />
-      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+      <LogFilesToMove Include="$(RepoArtifactsDir)**/*.log" />
+      <LogFilesToMove Include="$(RepoArtifactsDir)**/*.binlog" />
+      <PrebuiltReportsToMove Include="$(RepoArtifactsDir)sb/prebuilt-report/*" />
     </ItemGroup>
 
     <!-- Move the build logs -->
@@ -585,7 +600,7 @@
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
-                     Exists('$(ProjectDirectory)artifacts')">
+                     Exists('$(RepoArtifactsDir)')">
     <!--
       Some repositories (WinForms) use source generators that open files manually and keep file handles open on the compiler server (CsWin32).
       These source generators are written incorrectly (a source generator should never do IO itself),
@@ -594,6 +609,7 @@
       Don't fail the build when shutdown returns a failure.
     -->
     <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+          EnvironmentVariables="NUGET_PACKAGES=$(RepoArtifactsPackageCache)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
 
@@ -602,7 +618,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/**/project.assets.json" />
+      <ObjFilesToCopy Include="$(RepoArtifactsDir)**/project.assets.json" />
     </ItemGroup>
 
     <!-- Make a copy of project.assets.json files -->
@@ -611,7 +627,7 @@
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
-      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(ProjectDirectory)artifacts'))" />
+      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(RepoArtifactsDir)'))" />
 
       <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
       <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />

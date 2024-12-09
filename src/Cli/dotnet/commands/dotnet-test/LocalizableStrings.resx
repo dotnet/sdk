@@ -315,4 +315,15 @@ Examples:
   <data name="CmdTestModulesRootDirectoryDescription" xml:space="preserve">
     <value>The test modules have the specified root directory.</value>
   </data>
+  <data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
+    <value>Message Request type '{0}' is unsupported.</value>
+    <comment>{0} - message request type</comment>
+  </data>
+  <data name="CmdInvalidTestMessageStateException" xml:space="preserve">
+    <value>Invalid test message state '{0}'</value>
+    <comment>{0} - test message state</comment>
+  </data>
+  <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
+    <value>Test application(s) that support VSTest are not supported.</value>
+  </data>
 </root>
