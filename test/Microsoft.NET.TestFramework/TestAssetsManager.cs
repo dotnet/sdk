@@ -140,7 +140,10 @@ namespace Microsoft.NET.TestFramework
 
                     foreach (var referencedProject in project.ReferencedProjects)
                     {
-                        projectStack.Push(referencedProject);
+                        if(referencedProject is not null)
+                        {
+                            projectStack.Push(referencedProject);
+                        }
                     }
                 }
             }
