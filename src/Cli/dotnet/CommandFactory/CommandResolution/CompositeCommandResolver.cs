@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.CommandFactory
                 {
                     TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
                     {
-                        { "commandName", Sha256Hasher.HashWithNormalizedCasing(commandResolverArguments.CommandName) },
+                        { "commandName", commandResolverArguments is null ? string.Empty : Sha256Hasher.HashWithNormalizedCasing(commandResolverArguments.CommandName) },
                         { "commandResolver", commandResolver.GetType().ToString() }
                     });
 
