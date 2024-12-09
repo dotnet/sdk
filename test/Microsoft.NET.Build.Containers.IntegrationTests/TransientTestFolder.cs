@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 /// </summary>
 internal sealed class TransientTestFolder : IDisposable
 {
-    public readonly string Path = Combine(TestSettings.TestArtifactsDirectory!, GetRandomFileName());
+    public readonly string Path = Combine(TestSettings.TestArtifactsDirectory, GetRandomFileName());
     public readonly DirectoryInfo DirectoryInfo;
 
     public TransientTestFolder()

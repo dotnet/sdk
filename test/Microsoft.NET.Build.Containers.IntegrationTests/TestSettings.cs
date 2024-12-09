@@ -13,7 +13,7 @@ internal static class TestSettings
     /// <summary>
     /// Gets temporary location for test artifacts.
     /// </summary>
-    internal static string? TestArtifactsDirectory
+    internal static string TestArtifactsDirectory
     {
         get
         {

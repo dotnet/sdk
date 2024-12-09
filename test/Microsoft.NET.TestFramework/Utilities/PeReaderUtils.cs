@@ -13,10 +13,10 @@ namespace Microsoft.NET.TestFramework.Utilities
             const int CROSSGEN_FLAG = 4;
             bool isCrossgened = false;
 
-            if (peReader.HasMetadata)
+            if (peReader.HasMetadata && peReader.PEHeaders.CorHeader is not null)
             {
                 // 4 is the magic numbers that is set in the CLR header's flags when crossgened.
-                isCrossgened = ((int)peReader.PEHeaders.CorHeader?.Flags! & CROSSGEN_FLAG) == CROSSGEN_FLAG;
+                isCrossgened = ((int)peReader.PEHeaders.CorHeader.Flags & CROSSGEN_FLAG) == CROSSGEN_FLAG;
             }
 
             return isCrossgened;
@@ -142,7 +142,7 @@ namespace Microsoft.NET.TestFramework.Utilities
                 if (signatureTypeCode == SignatureTypeCode.String)
                 {
                     // Custom attribute constructor must take only strings
-                    arguments.Add(valueReader.ReadSerializedString()!);
+                    arguments.Add(valueReader.ReadSerializedString() ?? string.Empty);
                 }
             }
 

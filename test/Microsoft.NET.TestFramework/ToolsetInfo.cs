@@ -18,11 +18,11 @@ namespace Microsoft.NET.TestFramework
         public const string LatestMacRuntimeIdentifier = "osx";
         public const string LatestRuntimeIdentifiers = $"{LatestWinRuntimeIdentifier}-x64;{LatestWinRuntimeIdentifier}-x86;osx-x64;{LatestMacRuntimeIdentifier}-x64;{LatestLinuxRuntimeIdentifier}-x64;linux-musl-x64";
 
-        public string? DotNetRoot { get; }
+        public string DotNetRoot { get; }
         public string DotNetHostPath { get; }
 
         private string? _sdkVersion;
-        public string? SdkVersion
+        public string SdkVersion
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Microsoft.NET.TestFramework
                     //  for the TestContext to finish being initialize
                     InitSdkVersion();
                 }
-                return _sdkVersion;
+                return _sdkVersion ?? throw new InvalidOperationException("SdkVersion should never be null."); ;
             }
         }
 
@@ -68,13 +68,13 @@ namespace Microsoft.NET.TestFramework
 
         public string? SdkResolverPath { get; set; }
 
-        public ToolsetInfo(string? dotNetRoot)
+        public ToolsetInfo(string dotNetRoot)
         {
             DotNetRoot = dotNetRoot;
 
-            DotNetHostPath = Path.Combine(dotNetRoot!, $"dotnet{Constants.ExeSuffix}");
+            DotNetHostPath = Path.Combine(dotNetRoot, $"dotnet{Constants.ExeSuffix}");
 
-            _sdkFolderUnderTest = new Lazy<string>(() => Path.Combine(DotNetRoot!, "sdk", SdkVersion!));
+            _sdkFolderUnderTest = new Lazy<string>(() => Path.Combine(DotNetRoot, "sdk", SdkVersion));
             _sdksPath = new Lazy<string>(() => Path.Combine(SdkFolderUnderTest, "Sdks"));
         }
 
@@ -136,25 +136,32 @@ namespace Microsoft.NET.TestFramework
             {
                 if (ShouldUseFullFrameworkMSBuild)
                 {
+                    string? msbuildRoot = null;
                     var msbuildBinPath = Path.GetDirectoryName(FullFrameworkMSBuildPath);
-                    var msbuildRoot = Directory.GetParent(msbuildBinPath!)?.Parent?.FullName;
-                    return Path.Combine(msbuildRoot!, @"Microsoft\Microsoft.NET.Build.Extensions");
+                    if(msbuildBinPath is not null)
+                    {
+                        msbuildRoot = Directory.GetParent(msbuildBinPath)?.Parent?.FullName;
+                    }
+                    return Path.Combine(msbuildRoot ?? string.Empty, @"Microsoft\Microsoft.NET.Build.Extensions");
                 }
                 else
                 {
-                    return Path.Combine(DotNetRoot!, "sdk", SdkVersion!, @"Microsoft\Microsoft.NET.Build.Extensions");
+                    return Path.Combine(DotNetRoot, "sdk", SdkVersion, @"Microsoft\Microsoft.NET.Build.Extensions");
                 }
             }
         }
 
-        public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
+        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
         {
             if (ShouldUseFullFrameworkMSBuild)
             {
-                string sdksPath = Path.Combine(DotNetRoot!, "sdk", SdkVersion!, "Sdks");
+                string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
 
                 //  Use stage 2 MSBuild SDK resolver
-                environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER"] = SdkResolverPath;
+                if(SdkResolverPath is not null)
+                {
+                    environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER"] = SdkResolverPath;
+                }
 
                 //  Avoid using stage 0 dotnet install dir
                 environment["DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR"] = "";
@@ -165,7 +172,10 @@ namespace Microsoft.NET.TestFramework
                 if (!string.IsNullOrEmpty(MicrosoftNETBuildExtensionsPathOverride))
                 {
                     var microsoftNETBuildExtensionsPath = GetMicrosoftNETBuildExtensionsPath();
-                    environment["MicrosoftNETBuildExtensionsTargets"] = Path.Combine(microsoftNETBuildExtensionsPath!, "Microsoft.NET.Build.Extensions.targets");
+                    if (microsoftNETBuildExtensionsPath is not null)
+                    {
+                        environment["MicrosoftNETBuildExtensionsTargets"] = Path.Combine(microsoftNETBuildExtensionsPath, "Microsoft.NET.Build.Extensions.targets");
+                    }
 
                     if (UsingFullMSBuildWithoutExtensionsTargets())
                     {
@@ -185,7 +195,7 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_ROOT(x86)", DotNetRoot);
             }
 
-            if (!string.IsNullOrEmpty(CliHomePath))
+            if (CliHomePath is not null && !string.IsNullOrEmpty(CliHomePath))
             {
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
             }
@@ -229,13 +239,13 @@ namespace Microsoft.NET.TestFramework
                 ret.Arguments = newArgs;
             }
 
-            TestContext.Current.AddTestEnvironmentVariables(ret.Environment!);
+            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }
 
         private static string GetDotnetHostPath(string? dotnetRoot)
-            => Path.Combine(dotnetRoot!, "dotnet" + Constants.ExeSuffix);
+            => Path.Combine(dotnetRoot ?? string.Empty, "dotnet" + Constants.ExeSuffix);
 
         public static ToolsetInfo Create(string? repoRoot, string? repoArtifactsDir, string configuration, TestCommandLine commandLine)
         {
@@ -252,9 +262,9 @@ namespace Microsoft.NET.TestFramework
                 dotnetRoot = Path.GetDirectoryName(commandLine.DotnetHostPath);
                 hostNotFoundReason = "Command line argument -dotnetPath is incorrect.";
             }
-            else if (repoRoot != null)
+            else if (repoRoot != null && repoArtifactsDir is not null)
             {
-                dotnetRoot = Path.Combine(repoArtifactsDir!, "bin", "redist", configuration, "dotnet");
+                dotnetRoot = Path.Combine(repoArtifactsDir, "bin", "redist", configuration, "dotnet");
                 hostNotFoundReason = "Is 'redist.csproj' built?";
             }
             else if (!string.IsNullOrEmpty(dotnetInstallDirFromEnvironment))
@@ -276,7 +286,7 @@ namespace Microsoft.NET.TestFramework
             }
 
             var dotnetHost = GetDotnetHostPath(dotnetRoot);
-            if (!File.Exists(dotnetHost))
+            if (dotnetRoot is null || !File.Exists(dotnetHost))
             {
                 throw new FileNotFoundException($"Host '{dotnetHost}' not found. {hostNotFoundReason}");
             }
@@ -304,20 +314,20 @@ namespace Microsoft.NET.TestFramework
             {
                 ret.MicrosoftNETBuildExtensionsPathOverride = Path.GetDirectoryName(microsoftNETBuildExtensionsTargetsFromEnvironment);
             }
-            else if (repoRoot != null && ret.ShouldUseFullFrameworkMSBuild)
+            else if (repoRoot != null && ret.ShouldUseFullFrameworkMSBuild && repoArtifactsDir is not null)
             {
                 //  Find path to Microsoft.NET.Build.Extensions for full framework
-                string sdksPath = Path.Combine(repoArtifactsDir!, "bin", configuration, "Sdks");
+                string sdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
                 var buildExtensionsSdkPath = Path.Combine(sdksPath, "Microsoft.NET.Build.Extensions");
                 ret.MicrosoftNETBuildExtensionsPathOverride = Path.Combine(buildExtensionsSdkPath, "msbuildExtensions", "Microsoft", "Microsoft.NET.Build.Extensions");
             }
 
             if (ret.ShouldUseFullFrameworkMSBuild)
             {
-                if (repoRoot != null)
+                if (repoRoot != null && repoArtifactsDir is not null)
                 {
                     // Find path to MSBuildSdkResolver for full framework
-                    ret.SdkResolverPath = Path.Combine(repoArtifactsDir!, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
+                    ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
                 }
                 else if (!string.IsNullOrWhiteSpace(commandLine.MsbuildAdditionalSdkResolverFolder))
                 {
@@ -333,9 +343,9 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            if (repoRoot != null)
+            if (repoRoot != null && repoArtifactsDir is not null)
             {
-                ret.CliHomePath = Path.Combine(repoArtifactsDir!, "tmp", configuration);
+                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
             }
 
             return ret;
@@ -356,7 +366,7 @@ namespace Microsoft.NET.TestFramework
             {
                 pathSplitChar = ';';
                 extensions = extensions
-                    .Concat(Environment.GetEnvironmentVariable("PATHEXT")?.Split(pathSplitChar)!)
+                    .Concat(Environment.GetEnvironmentVariable("PATHEXT")?.Split(pathSplitChar) ?? Array.Empty<string>())
                     .ToArray();
             }
             else
@@ -365,7 +375,7 @@ namespace Microsoft.NET.TestFramework
             }
 
             var paths = Environment.GetEnvironmentVariable("PATH")?.Split(pathSplitChar);
-            string? result = extensions.SelectMany(ext => paths?.Select(p => Path.Combine(p, command + ext))!)
+            string? result = extensions.SelectMany(ext => paths?.Select(p => Path.Combine(p, command + ext)) ?? Array.Empty<string>())
                 .FirstOrDefault(File.Exists);
 
             if (result == null)
@@ -384,15 +394,15 @@ namespace Microsoft.NET.TestFramework
                 return false;
             }
             string? fullMSBuildDirectory = Path.GetDirectoryName(FullFrameworkMSBuildPath);
-            string extensionsImportAfterPath = Path.Combine(fullMSBuildDirectory!, "..", "Microsoft.Common.targets", "ImportAfter", "Microsoft.NET.Build.Extensions.targets");
+            string extensionsImportAfterPath = Path.Combine(fullMSBuildDirectory ?? string.Empty, "..", "Microsoft.Common.targets", "ImportAfter", "Microsoft.NET.Build.Extensions.targets");
             return !File.Exists(extensionsImportAfterPath);
         }
 
         internal static IEnumerable<(string versionPropertyName, string version)> GetPackageVersionProperties()
             => typeof(ToolsetInfo).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(a => a.Key.EndsWith("PackageVersion"))
-                .Select(a => (a.Key, a.Value))!;
+                .Where(a => a.Key is not null && a.Key.EndsWith("PackageVersion"))
+                .Select(a => (a.Key ?? string.Empty, a.Value ?? string.Empty));
 
         private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() => GetPackageVersionProperties().Single(p => p.versionPropertyName == "NewtonsoftJsonPackageVersion").version);
 

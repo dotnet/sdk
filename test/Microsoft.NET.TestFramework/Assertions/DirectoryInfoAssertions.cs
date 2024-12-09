@@ -99,7 +99,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             Execute.Assertion.ForCondition(dir != null)
                 .FailWith("Expected directory {0} cannot be found inside directory {1}.", expectedDir, _dirInfo.FullName);
 
-            return new AndConstraint<DirectoryInfoAssertions>(new DirectoryInfoAssertions(dir!));
+            return new AndConstraint<DirectoryInfoAssertions>(new DirectoryInfoAssertions(dir ?? new DirectoryInfo(string.Empty)));
         }
 
         public AndConstraint<DirectoryInfoAssertions> OnlyHaveFiles(IEnumerable<string> expectedFiles, SearchOption searchOption = SearchOption.AllDirectories)

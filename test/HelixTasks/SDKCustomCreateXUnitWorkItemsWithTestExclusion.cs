@@ -71,8 +71,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <returns></returns>
         private async Task ExecuteAsync()
         {
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects?.Select(PrepareWorkItem)!))
-                .SelectMany(i => i!)
+            if(XUnitProjects is null)
+            {
+                return;
+            }
+
+            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+                .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
                 .ToArray();
             return;

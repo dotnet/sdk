@@ -31,9 +31,9 @@ namespace Microsoft.NET.TestFramework
             }
 
             //  Support passing in the root test path and looking in subfolder specified by testProject
-            if (projectPath == null && testProject != null)
+            if (projectPath == null && testProject != null && testProject.Name is not null && originalProjectPath is not null)
             {
-                projectPath = Path.Combine(originalProjectPath!, testProject.Name!);
+                projectPath = Path.Combine(originalProjectPath, testProject.Name);
 
                 if (!File.Exists(projectPath) && Directory.Exists(projectPath))
                 {
@@ -75,17 +75,23 @@ namespace Microsoft.NET.TestFramework
                     {
                         throw new InvalidOperationException("Couldn't find Directory.Build.props for test project " + projectPath);
                     }
-                    calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(directoryBuildPropsFile)!, "artifacts");
+                    calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(directoryBuildPropsFile) ?? string.Empty, "artifacts");
                 }
                 else
                 {
-                    calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(projectPath)!, "artifacts");
+                    calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(projectPath) ?? string.Empty, "artifacts");
                 }
             }
             else
             {
                 var project = XDocument.Load(projectPath);
-                var ns = project.Root!.Name.Namespace;
+
+                if (project.Root is null)
+                {
+                    throw new InvalidOperationException($"The project file '{projectPath}' does not have a root element.");
+                }
+
+                var ns = project.Root.Name.Namespace;
 
                 var useArtifactsOutputElement = project.Root.Elements(ns + "PropertyGroup").Elements(ns + "UseArtifactsOutput").FirstOrDefault();
                 if (useArtifactsOutputElement != null)
@@ -94,7 +100,7 @@ namespace Microsoft.NET.TestFramework
                     if (calculator.UseArtifactsOutput)
                     {
                         calculator.IncludeProjectNameInArtifactsPaths = false;
-                        calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(projectPath)!, "artifacts");
+                        calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(projectPath) ?? string.Empty, "artifacts");
                     }
                 }
 
@@ -120,7 +126,11 @@ namespace Microsoft.NET.TestFramework
                 if (directoryBuildPropsFile != null)
                 {
                     var dbp = XDocument.Load(directoryBuildPropsFile);
-                    var dbpns = dbp.Root!.Name.Namespace;
+                    if (dbp.Root is null)
+                    {
+                        throw new InvalidOperationException($"The project file '{directoryBuildPropsFile}' does not have a root element.");
+                    }
+                    var dbpns = dbp.Root.Name.Namespace;
 
                     var dbpUsesArtifacts = dbp.Root.Elements(dbpns + "PropertyGroup").Elements(dbpns + "UseArtifactsOutput").FirstOrDefault();
                     if (dbpUsesArtifacts != null)
@@ -130,7 +140,7 @@ namespace Microsoft.NET.TestFramework
                         if (calculator.UseArtifactsOutput)
                         {
                             calculator.IncludeProjectNameInArtifactsPaths = true;
-                            calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(directoryBuildPropsFile)!, "artifacts");
+                            calculator.ArtifactsPath = Path.Combine(Path.GetDirectoryName(directoryBuildPropsFile) ?? string.Empty, "artifacts");
                         }
                     }
                 }
@@ -179,11 +189,11 @@ namespace Microsoft.NET.TestFramework
 
                 if (IncludeProjectNameInArtifactsPaths)
                 {
-                    return Path.Combine(ArtifactsPath!, "bin", Path.GetFileNameWithoutExtension(ProjectPath)!, pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "bin", Path.GetFileNameWithoutExtension(ProjectPath) ?? string.Empty, pivot);
                 }
                 else
                 {
-                    return Path.Combine(ArtifactsPath!, "bin", pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "bin", pivot);
                 }
             }
             else
@@ -195,18 +205,18 @@ namespace Microsoft.NET.TestFramework
 
                 if (IsSdkProject)
                 {
-                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath)!, "bin", platform, configuration, targetFramework, runtimeIdentifier);
+                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath) ?? string.Empty, "bin", platform, configuration, targetFramework, runtimeIdentifier);
                     return output;
                 }
                 else
                 {
-                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath)!, "bin", platform, configuration);
+                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath) ?? string.Empty, "bin", platform, configuration);
                     return output;
                 }
             }
         }
 
-        public string GetPublishDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string platform = "")
+        public string GetPublishDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string? platform = "")
         {
             if (UseArtifactsOutput)
             {
@@ -226,11 +236,11 @@ namespace Microsoft.NET.TestFramework
 
                 if (IncludeProjectNameInArtifactsPaths)
                 {
-                    return Path.Combine(ArtifactsPath!, "publish", Path.GetFileNameWithoutExtension(ProjectPath)!, pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "publish", Path.GetFileNameWithoutExtension(ProjectPath)!, pivot);
                 }
                 else
                 {
-                    return Path.Combine(ArtifactsPath!, "publish", pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "publish", pivot);
                 }
             }
             else
@@ -240,7 +250,7 @@ namespace Microsoft.NET.TestFramework
                 runtimeIdentifier ??= RuntimeIdentifier ?? string.Empty;
                 platform ??= string.Empty;
 
-                string output = Path.Combine(Path.GetDirectoryName(ProjectPath)!, "bin", platform, configuration, targetFramework, runtimeIdentifier, "publish");
+                string output = Path.Combine(Path.GetDirectoryName(ProjectPath) ?? string.Empty, "bin", platform, configuration, targetFramework, runtimeIdentifier, "publish");
                 return output;
             }
         }
@@ -265,11 +275,11 @@ namespace Microsoft.NET.TestFramework
 
                 if (IncludeProjectNameInArtifactsPaths)
                 {
-                    return Path.Combine(ArtifactsPath!, "obj", Path.GetFileNameWithoutExtension(ProjectPath)!, pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "obj", Path.GetFileNameWithoutExtension(ProjectPath) ?? string.Empty, pivot);
                 }
                 else
                 {
-                    return Path.Combine(ArtifactsPath!, "obj", pivot);
+                    return Path.Combine(ArtifactsPath ?? string.Empty, "obj", pivot);
                 }
 
             }
@@ -278,7 +288,7 @@ namespace Microsoft.NET.TestFramework
             configuration = configuration ?? string.Empty;
             runtimeIdentifier = runtimeIdentifier ?? RuntimeIdentifier ?? string.Empty;
 
-            string output = Path.Combine(Path.GetDirectoryName(ProjectPath)!, "obj", configuration, targetFramework, runtimeIdentifier);
+            string output = Path.Combine(Path.GetDirectoryName(ProjectPath) ?? string.Empty, "obj", configuration, targetFramework, runtimeIdentifier);
             return output;
         }
 
@@ -286,11 +296,11 @@ namespace Microsoft.NET.TestFramework
         {
             if (UseArtifactsOutput)
             {
-                return Path.Combine(ArtifactsPath!, "package", configuration.ToLowerInvariant());
+                return Path.Combine(ArtifactsPath ?? string.Empty, "package", configuration.ToLowerInvariant());
             }
             else
             {
-                return Path.Combine(Path.GetDirectoryName(ProjectPath)!, "bin", configuration);
+                return Path.Combine(Path.GetDirectoryName(ProjectPath) ?? string.Empty, "bin", configuration);
             }
         }
     }

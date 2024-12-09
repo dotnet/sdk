@@ -9,7 +9,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
-            if (TestContext.Current.ToolsetUnderTest != null && TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+            if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
             {
                 return new SdkCommandSpec()
                 {
@@ -22,7 +22,7 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 return new SdkCommandSpec()
                 {
-                    FileName = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                    FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
                     Arguments = { "msbuild", "-version" },
                     WorkingDirectory = WorkingDirectory
                 };

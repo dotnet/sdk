@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     retVal = false;
                 }
             }
-            if (SourceDirectory != null)
+            if (SourceDirectory is not null)
             {
                 SourceDirectory = Path.GetFullPath(SourceDirectory);
 
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         private string GetSourceSpecification()
         {
-            if (IncludeBaseDirectory && SourceDirectory != null)
+            if (SourceDirectory is not null && IncludeBaseDirectory)
             {
                 var parentDirectory = Directory.GetParent(SourceDirectory)?.Parent?.FullName;
 

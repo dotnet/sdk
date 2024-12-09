@@ -10,7 +10,7 @@ partial class Program
     public static int Main(string[] args)
     {
         var testCommandLine = TestCommandLine.HandleCommandLine(args);
-        var newArgs = testCommandLine.RemainingArgs?.ToList()!;
+        List<string> newArgs = testCommandLine.RemainingArgs?.ToList() ?? new List<string>();
 
         // Help argument needs to be the first one to xunit, so don't insert assembly location in that case
         if (testCommandLine.ShouldShowHelp)

@@ -27,7 +27,7 @@ public sealed class ProjectInitializer
         var combinedContent = new List<string>();
         combinedContent.AddRange(propsContent[..^1]);
         combinedContent.AddRange(targetsContent[1..]);
-        var tempTargetLocation = Path.Combine(TestSettings.TestArtifactsDirectory!, "Containers", "Microsoft.NET.Build.Containers.targets");
+        var tempTargetLocation = Path.Combine(TestSettings.TestArtifactsDirectory, "Containers", "Microsoft.NET.Build.Containers.targets");
         string? directoryName = Path.GetDirectoryName(tempTargetLocation);
         Assert.NotNull(directoryName);
         Directory.CreateDirectory(directoryName);

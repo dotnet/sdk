@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
         public void TestGetManifestFeatureBands()
         {
             var manifestProvider = CreateManifestProvider();
-            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest?.DotNetRoot!);
+            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest.DotNetRoot);
 
             foreach (var manifestInfo in workloadResolver.GetInstalledManifests())
             {
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 
         SdkDirectoryWorkloadManifestProvider CreateManifestProvider()
         {
-            return new(TestContext.Current.ToolsetUnderTest?.DotNetRoot!, TestContext.Current.ToolsetUnderTest?.SdkVersion!, userProfileDir: null, globalJsonPath: null);
+            return new(TestContext.Current.ToolsetUnderTest.DotNetRoot, TestContext.Current.ToolsetUnderTest.SdkVersion, userProfileDir: null, globalJsonPath: null);
         }
 
         public IEnumerable<WorkloadManifest> GetManifests(SdkDirectoryWorkloadManifestProvider? manifestProvider = null)
@@ -149,7 +149,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 
             var manifestProvider = CreateManifestProvider();
             var manifests = GetManifests(manifestProvider);
-            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest?.DotNetRoot!);
+            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest.DotNetRoot);
 
             foreach (var manifest in manifests)
             {

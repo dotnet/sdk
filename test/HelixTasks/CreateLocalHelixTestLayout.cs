@@ -15,11 +15,16 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         public override bool Execute()
         {
-            foreach (var payload in HelixCorrelationPayload!)
+            if (HelixCorrelationPayload is null)
+            {
+                return false;
+            };
+
+            foreach (var payload in HelixCorrelationPayload)
             {
                 var copyfrom = new DirectoryInfo(payload.GetMetadata("PayloadDirectory"));
                 var relativeDestinationPathOnHelix = payload.GetMetadata("Destination");
-                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory!, relativeDestinationPathOnHelix));
+                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory ?? string.Empty, relativeDestinationPathOnHelix));
 
                 if (Directory.Exists(destination.FullName))
                 {

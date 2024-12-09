@@ -132,7 +132,7 @@ public class PackageTests
         };
 
         (string? packageFilePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
-        using ZipArchive archive = new(File.OpenRead(packageFilePath), ZipArchiveMode.Read, false);
+        using ZipArchive archive = new(File.OpenRead(packageFilePath ?? string.Empty), ZipArchiveMode.Read, false);
 
         IEnumerable<string> actualEntries = archive.Entries
             .Select(e => e.FullName)

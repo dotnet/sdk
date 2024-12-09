@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -134,7 +135,7 @@ namespace Microsoft.NET.TestFramework
             if (_generateMSbuildLogs)
             {
                 var i = 0;
-                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory!, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                for (i = 0; command.WorkingDirectory is not null && File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
                 var log = $"msbuild{i}.binlog";
 
                 return command.Execute([$"/bl:{log}", .. arguments]);
@@ -152,7 +153,7 @@ namespace Microsoft.NET.TestFramework
             if (_generateMSbuildLogs)
             {
                 var i = 0;
-                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory!, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                for (i = 0; command.WorkingDirectory is not null && File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
                 var log = $"msbuild{i}.binlog";
                 return command.ExecuteWithoutRestore([$"/bl:{log}", .. arguments]);
             }

@@ -14,11 +14,11 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             var sdkCommandSpec = new SdkCommandSpec()
             {
-                FileName = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory
             };
-            TestContext.Current.AddTestEnvironmentVariables(sdkCommandSpec.Environment!);
+            TestContext.Current.AddTestEnvironmentVariables(sdkCommandSpec.Environment);
             return sdkCommandSpec;
         }
     }

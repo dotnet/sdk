@@ -43,15 +43,15 @@ namespace Microsoft.NET.TestFramework.Commands
             var nugetExePath = TestContext.Current.NuGetExePath;
             if (!string.IsNullOrEmpty(NuGetExeVersion))
             {
-                nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath)!, NuGetExeVersion, "nuget.exe");
+                nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath) ?? string.Empty, NuGetExeVersion, "nuget.exe");
             }
 
             if (!File.Exists(nugetExePath))
             {
-                string? directory = Path.GetDirectoryName(nugetExePath);
+                string directory = Path.GetDirectoryName(nugetExePath) ?? string.Empty;
                 if (!Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory(directory!);
+                    Directory.CreateDirectory(directory);
                 }
 
                 string url = string.IsNullOrEmpty(NuGetExeVersion) ?
@@ -60,7 +60,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
                 using (var client = new System.Net.Http.HttpClient())
                 using (var response = client.GetAsync(url).ConfigureAwait(false).GetAwaiter().GetResult())
-                using (var fs = new FileStream(nugetExePath!, FileMode.CreateNew))
+                using (var fs = new FileStream(nugetExePath, FileMode.CreateNew))
                 {
                     response.Content.CopyToAsync(fs).ConfigureAwait(false).GetAwaiter().GetResult();
                 }
@@ -72,7 +72,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments = newArgs
             };
 
-            TestContext.Current.AddTestEnvironmentVariables(ret.Environment!);
+            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }

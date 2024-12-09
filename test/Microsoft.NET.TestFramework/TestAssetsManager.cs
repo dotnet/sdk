@@ -8,7 +8,7 @@ namespace Microsoft.NET.TestFramework
 {
     public class TestAssetsManager
     {
-        public string TestAssetsRoot { get; private set; } 
+        public string TestAssetsRoot { get; private set; }
 
         private List<string> TestDestinationDirectories { get; } = new List<string>();
 
@@ -199,7 +199,7 @@ namespace Microsoft.NET.TestFramework
                                              .AppendFormat("{0:X2}", hash[3]);
             }
 
-            var directoryPath = Path.Combine(baseDirectory!, directoryName.ToString());
+            var directoryPath = Path.Combine(baseDirectory, directoryName.ToString());
 #if CI_BUILD
             if (!allowCopyIfPresent && Directory.Exists(directoryPath))
             {

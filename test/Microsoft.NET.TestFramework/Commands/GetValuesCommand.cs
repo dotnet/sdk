@@ -46,7 +46,7 @@ namespace Microsoft.NET.TestFramework.Commands
             string? targetFramework = null)
             : base(testAsset, "WriteValuesToFile", relativePathToProject: null)
         {
-            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework!;
+            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework ?? string.Empty;
 
             _valueName = valueName;
             _valueType = valueType;
@@ -67,7 +67,12 @@ namespace Microsoft.NET.TestFramework.Commands
 
             var project = XDocument.Load(ProjectFile);
 
-            var ns = project.Root!.Name.Namespace;
+            if(project.Root is null)
+            {
+                throw new InvalidOperationException($"The project file '{ProjectFile}' does not have a root element.");
+            }
+
+            var ns = project.Root.Name.Namespace;
 
             string linesAttribute;
             if (_valueType == ValueType.Property)
@@ -134,7 +139,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest?.CreateCommandForTarget(TargetName, newArgs)!;
+            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
         }
 
         public List<string> GetValues()

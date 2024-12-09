@@ -70,9 +70,9 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null, string? platform = null)
         {
-            if (TestAsset != null)
+            if (TestAsset != null && platform is not null)
             {
-                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework!, configuration, runtimeIdentifier!, platform!));
+                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework, configuration, runtimeIdentifier, platform));
             }
 
             platform ??= string.Empty;
@@ -88,7 +88,7 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             if (TestAsset != null)
             {
-                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetIntermediateDirectory(targetFramework!, configuration, runtimeIdentifier!));
+                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetIntermediateDirectory(targetFramework, configuration, runtimeIdentifier));
             }
 
             targetFramework = targetFramework ?? string.Empty;
@@ -152,7 +152,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
 
-            return TestContext.Current.ToolsetUnderTest?.CreateCommandForTarget(Target, newArgs)!;
+            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
         }
     }
 }

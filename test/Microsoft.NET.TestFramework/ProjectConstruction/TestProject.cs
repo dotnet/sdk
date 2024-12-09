@@ -127,7 +127,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
         {
-            string targetFolder = Path.Combine(targetTestAsset.Path, Name!);
+            string targetFolder = Path.Combine(targetTestAsset.Path, Name ?? string.Empty);
             Directory.CreateDirectory(targetFolder);
 
             string targetProjectPath = Path.Combine(targetFolder, Name + targetExtension);
@@ -144,7 +144,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
 
             //  Copy any additional files from template
-            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(sourceProject)!))
+            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(sourceProject) ?? string.Empty))
             {
                 if (file != sourceProject)
                 {
@@ -154,26 +154,30 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             var projectXml = XDocument.Load(sourceProject);
 
-            var ns = projectXml.Root!.Name.Namespace;
+            if (projectXml.Root is null)
+            {
+                throw new InvalidOperationException($"The project file '{sourceProject}' does not have a root element.");
+            }
+            var ns = projectXml.Root.Name.Namespace;
 
-            if (ProjectSdk != null)
+            if (projectXml.Root.Attribute("Sdk") is not null && ProjectSdk != null)
             {
                 projectXml.Root.Attribute("Sdk")!.Value = ProjectSdk;
             }
 
             var propertyGroup = projectXml.Root?.Elements(ns + "PropertyGroup").First();
 
-            var packageReferenceItemGroup = projectXml.Root!.Elements(ns + "ItemGroup")
+            var packageReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                 .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "PackageReference").Count() > 0);
             if (packageReferenceItemGroup == null)
             {
-                packageReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                packageReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault();
             }
             if (packageReferenceItemGroup == null)
             {
                 packageReferenceItemGroup = new XElement(ns + "ItemGroup");
-                projectXml.Root.Add(packageReferenceItemGroup);
+                projectXml.Root?.Add(packageReferenceItemGroup);
             }
 
             foreach (TestPackageReference packageReference in PackageReferences)
@@ -238,11 +242,17 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
                     //  To construct an accurate PCL project file, we must modify the import of the CSharp targets;
                     //    building/testing the SDK requires a VSDev command prompt which sets 'VSINSTALLDIR'
-                    var importGroup = projectXml.Root.Elements(ns + "Import").Last();
-                    importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
+                    var importGroup = projectXml.Root?.Elements(ns + "Import").Last();
+                    if(importGroup?.Attribute("Project") is not null)
+                    {
+                        importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
+                    }  
                 }
 
-                propertyGroup?.Element(ns + "TargetFrameworkVersion")?.SetValue(TargetFrameworkVersion!);
+                if(TargetFrameworkVersion is not null)
+                {
+                    propertyGroup?.Element(ns + "TargetFrameworkVersion")?.SetValue(TargetFrameworkVersion);
+                }
             }
 
             foreach (var additionalProperty in AdditionalProperties)
@@ -254,11 +264,11 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             {
                 foreach (var additionalItem in AdditionalItems)
                 {
-                    var additionalItemGroup = projectXml.Root.Elements(ns + "ItemGroup").FirstOrDefault();
+                    var additionalItemGroup = projectXml.Root?.Elements(ns + "ItemGroup").FirstOrDefault();
                     if (additionalItemGroup == null)
                     {
                         additionalItemGroup = new XElement(ns + "ItemGroup");
-                        projectXml.Root.Add(packageReferenceItemGroup);
+                        projectXml.Root?.Add(packageReferenceItemGroup);
                     }
                     var item = new XElement(ns + additionalItem.Key);
                     foreach (var attribute in additionalItem.Value)
@@ -283,7 +293,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             if (ReferencedProjects.Any())
             {
-                var projectReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                var projectReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "ProjectReference").Count() > 0);
                 if (projectReferenceItemGroup == null)
                 {
@@ -299,7 +309,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             if (References.Any())
             {
-                var referenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                var referenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "Reference").Count() > 0);
                 if (referenceItemGroup == null)
                 {
@@ -317,7 +327,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             if (FrameworkReferences.Any())
             {
                 var frameworkReferenceItemGroup = new XElement(ns + "ItemGroup");
-                projectXml.Root.Add(frameworkReferenceItemGroup);
+                projectXml.Root?.Add(frameworkReferenceItemGroup);
                 foreach (var frameworkReference in FrameworkReferences)
                 {
                     frameworkReferenceItemGroup.Add(new XElement(ns + "FrameworkReference",
@@ -343,7 +353,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     }
 
                     target.Add(copyElement);
-                    projectXml.Root.Add(target);
+                    projectXml.Root?.Add(target);
                 }
             }
 
@@ -490,7 +500,7 @@ namespace {safeThisName}
         {
             var propertyValues = new Dictionary<string, string>();
 
-            string intermediateOutputPath = Path.Combine(testRoot, Name!, "obj", configuration, targetFramework ?? TargetFrameworks);
+            string intermediateOutputPath = Path.Combine(testRoot, Name ?? string.Empty, "obj", configuration, targetFramework ?? TargetFrameworks);
 
             foreach (var line in File.ReadAllLines(Path.Combine(intermediateOutputPath, "PropertyValues.txt")))
             {
@@ -514,7 +524,7 @@ namespace {safeThisName}
 
         private OutputPathCalculator GetOutputPathCalculator(string testRoot)
         {
-            return OutputPathCalculator.FromProject(Path.Combine(testRoot, Name!, Name + ".csproj"), this);
+            return OutputPathCalculator.FromProject(Path.Combine(testRoot, Name ?? string.Empty, Name + ".csproj"), this);
         }
 
         public string GetOutputDirectory(string testRoot, string? targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")

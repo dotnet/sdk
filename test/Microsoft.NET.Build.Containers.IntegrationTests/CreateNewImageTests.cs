@@ -246,7 +246,7 @@ public class CreateNewImageTests
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
         // Build an application image on top of the rootless base runtime image.
-        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory!, nameof(CreateNewImage_RootlessBaseImage)));
+        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CreateNewImage_RootlessBaseImage)));
 
         if (newProjectDir.Exists)
         {
@@ -307,7 +307,7 @@ public class CreateNewImageTests
         return (buildEngine, errors);
     }
 
-    private static string GetTestDirectoryName([CallerMemberName] string testName = "DefaultTest") => Path.Combine(TestSettings.TestArtifactsDirectory!, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+    private static string GetTestDirectoryName([CallerMemberName] string testName = "DefaultTest") => Path.Combine(TestSettings.TestArtifactsDirectory, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
 }

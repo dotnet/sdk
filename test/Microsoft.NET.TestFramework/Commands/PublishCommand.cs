@@ -24,9 +24,9 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public override DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string? platformIdentifier = "")
         {
-            if (TestAsset != null)
+            if (TestAsset != null && targetFramework is not null)
             {
-                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetPublishDirectory(targetFramework!, configuration, runtimeIdentifier!, platformIdentifier!));
+                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetPublishDirectory(targetFramework, configuration, runtimeIdentifier, platformIdentifier));
             }
 
             if (string.IsNullOrEmpty(targetFramework))

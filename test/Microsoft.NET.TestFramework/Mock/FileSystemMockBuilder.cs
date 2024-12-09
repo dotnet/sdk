@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFile(string name, string content = "")
         {
-            _actions.Add(() => _mockFileSystemModel?.CreateDirectory(Path.GetDirectoryName(name)!));
+            _actions.Add(() => _mockFileSystemModel?.CreateDirectory(Path.GetDirectoryName(name) ?? string.Empty));
             _actions.Add(() => _mockFileSystemModel?.CreateFile(name, content));
             return this;
         }
@@ -220,7 +220,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
 
-                return predicate(directoryNode?.Subs!);
+                return predicate(directoryNode?.Subs ?? new());
             }
 
             public DirectoryNode GetParentOfDirectoryNode(string path)
@@ -517,7 +517,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                if (_files != null && _files.TryGetNodeParent(path, out DirectoryNode current))
+                if (_files is not null && _files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     PathModel pathModel = new(path);
 
@@ -541,7 +541,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is DirectoryNode)
-                        .Select(s => Path.Combine(path, s.Key)))!;
+                        .Select(s => Path.Combine(path, s.Key)));
             }
 
             public IEnumerable<string>? EnumerateFiles(string path)
@@ -550,7 +550,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is FileNode)
-                        .Select(s => Path.Combine(path, s.Key)))!;
+                        .Select(s => Path.Combine(path, s.Key)));
             }
 
             public IEnumerable<string>? EnumerateFileSystemEntries(string path)
@@ -558,12 +558,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
                 return _files?.EnumerateDirectory(path,
-                    subs => subs.Select(s => Path.Combine(path, s.Key)))!;
+                    subs => subs.Select(s => Path.Combine(path, s.Key)));
             }
 
-            public string GetCurrentDirectory()
+            public string? GetCurrentDirectory()
             {
-                return _files?.WorkingDirectory!;
+                return _files?.WorkingDirectory;
             }
 
             public void CreateDirectory(string? path)
@@ -590,7 +590,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 }
                 else
                 {
-                    if (EnumerateFiles(path)!.Any())
+                    if (EnumerateFiles(path)?.Any() ?? false)
                     {
                         throw new IOException("Directory not empty");
                     }
@@ -618,7 +618,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 IFileSystemTreeNode? sourceNode = sourceParent?.Subs[parentPathModel.FileOrDirectoryName()];
 
-                if (_files != null && _files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
+                if (_files is not null && _files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
                 {
                     PathModel destinationPathModel = new(destination);
 
@@ -632,8 +632,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         throw new IOException($"Cannot create {destination} because a file or" +
                                               " directory with the same name already exists");
                     }
-
-                    sourceNode = current.Subs.GetOrAdd(destinationPathModel.FileOrDirectoryName(), sourceNode!);
+                    if(sourceNode is not null)
+                    {
+                        sourceNode = current.Subs.GetOrAdd(destinationPathModel.FileOrDirectoryName(), sourceNode);
+                    }
                     sourceParent?.Subs.TryRemove(parentPathModel.FileOrDirectoryName(), out _);
                 }
                 else

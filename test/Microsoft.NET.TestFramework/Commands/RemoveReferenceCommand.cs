@@ -17,7 +17,7 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             List<string> newArgs = new();
             newArgs.Add("remove");
-            if (_projectName != null && !string.IsNullOrEmpty(_projectName))
+            if (_projectName is not null && !string.IsNullOrEmpty(_projectName))
             {
                 newArgs.Add(_projectName);
             }

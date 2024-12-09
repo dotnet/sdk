@@ -151,29 +151,32 @@ namespace Microsoft.NET.TestFramework
             foreach (var testConfigFile in TestConfigFiles)
             {
                 var testConfig = XDocument.Load(testConfigFile);
-                foreach (var item in testConfig.Root!.Elements())
+                if (testConfig.Root is not null)
                 {
-                    if (item.Name.LocalName.Equals("TestList", StringComparison.OrdinalIgnoreCase))
+                    foreach (var item in testConfig.Root.Elements())
                     {
-                        testLists.Add(TestList.Parse(item));
-                    }
-                    else if (item.Name.LocalName.Equals("SkippedTests", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var skippedGroup = TestList.Parse(item);
-                        testsToSkip.AddRange(skippedGroup.TestSpecifiers);
-                    }
-                    else
-                    {
-                        if (bool.TryParse(item.Attribute("Skip")?.Value ?? string.Empty, out bool shouldSkip) &&
-                            shouldSkip)
+                        if (item.Name.LocalName.Equals("TestList", StringComparison.OrdinalIgnoreCase))
                         {
-                            testsToSkip.Add(TestSpecifier.Parse(item));
+                            testLists.Add(TestList.Parse(item));
+                        }
+                        else if (item.Name.LocalName.Equals("SkippedTests", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var skippedGroup = TestList.Parse(item);
+                            testsToSkip.AddRange(skippedGroup.TestSpecifiers);
+                        }
+                        else
+                        {
+                            if (bool.TryParse(item.Attribute("Skip")?.Value ?? string.Empty, out bool shouldSkip) &&
+                                shouldSkip)
+                            {
+                                testsToSkip.Add(TestSpecifier.Parse(item));
+                            }
                         }
                     }
                 }
             }
 
-            foreach (var testList in testLists.Where(g => TestListsToRun.Contains(g.Name!)))
+            foreach (var testList in testLists.Where(g => TestListsToRun.Contains(g.Name ?? string.Empty)))
             {
                 foreach (var testSpec in testList.TestSpecifiers)
                 {
@@ -193,7 +196,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         throw new ArgumentException("Unrecognized test specifier type: " + testSpec.Type);
                     }
-                    ret.Add(testSpec.Specifier!);
+                    ret.Add(testSpec.Specifier ?? string.Empty);
                 }
             }
 
@@ -215,7 +218,7 @@ namespace Microsoft.NET.TestFramework
                 {
                     throw new ArgumentException("Unrecognized test specifier type: " + testSpec.Type);
                 }
-                ret.Add(testSpec.Specifier!);
+                ret.Add(testSpec.Specifier ?? string.Empty);
             }
 
             return ret;
