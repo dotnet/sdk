@@ -34,24 +34,15 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 return;
             }
 
-            string instanceId;
-            string installationVersion;
-            bool isPrerelease;
-
-            try
-            {
-                var configuration = new SetupConfiguration();
-                var instance = configuration.GetInstanceForCurrentProcess();
-
-                instanceId = instance.GetInstanceId();
-                installationVersion = instance.GetInstallationVersion();
-                isPrerelease = ((ISetupInstanceCatalog)instance).IsPrerelease();
-            }
-            catch (COMException)
+            var instance = GetSetupInstanceForCurrentProcess();
+            if (instance == null)
             {
                 return;
             }
 
+            var instanceId = instance.GetInstanceId();
+            var installationVersion = instance.GetInstallationVersion();
+            var isPrerelease = ((ISetupInstanceCatalog)instance).IsPrerelease();
             var version = Version.Parse(installationVersion);
 
             _settingsFilePath = Path.Combine(
@@ -155,6 +146,56 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             // File does not have UsePreviews entry -> use default
             _disallowPrerelease = _disallowPrereleaseByDefault;
         }
+
+#if NETFRAMEWORK
+        // The custom interop here is done to avoid first-chance exceptions in non-exceptional circumstances.
+        private const string CLSID_SetupConfiguration = "177F0C4A-1CD3-4DE7-A32C-71DBBB9FA36D";
+        private const string IID_ISetupConfiguration = "42843719-DB4C-46C2-8E7C-64F1816EFD5B";
+        private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
+        private const int CLSCTX_INPROC_SERVER = 1;
+        private const nint NO_ERROR_INFO = -1;
+
+        private static ISetupInstance? GetSetupInstanceForCurrentProcess()
+        {
+            var clsid = new Guid(CLSID_SetupConfiguration);
+            var iid = new Guid(IID_ISetupConfiguration);
+            var hr = CoCreateInstance(clsid, null, CLSCTX_INPROC_SERVER, iid, out var obj);
+
+            if (hr == REGDB_E_CLASSNOTREG)
+            {
+                // Visual Studio is not installed.
+                return null; 
+            }
+
+            // Other errors from CoCreateInstance are not expected and would indicate a bug.
+            Marshal.ThrowExceptionForHR(hr, NO_ERROR_INFO);
+
+            var configuration = (ISetupConfiguration)obj;
+            hr = configuration.GetInstanceForCurrentProcess(out var instance);
+            if (hr != 0)
+            {
+                // Main module of current process is not in a Visual Studio directory.
+                return null;
+            }
+
+            return instance;
+        }
+
+        [ComImport, Guid(IID_ISetupConfiguration), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface ISetupConfiguration
+        {
+            void _VtblGap1_1();
+            [PreserveSig] int GetInstanceForCurrentProcess([MarshalAs(UnmanagedType.Interface)] out ISetupInstance instance);
+        }
+
+        [DllImport("ole32.dll")]
+        private static extern int CoCreateInstance(
+            in Guid clsid,
+            [MarshalAs(UnmanagedType.IUnknown)] object? outer,
+            int context,
+            in Guid iid,
+            [MarshalAs(UnmanagedType.IUnknown)] out object obj);
+#endif
     }
 }
 
