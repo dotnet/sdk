@@ -177,7 +177,6 @@ $darcArgs = (
     "--vmr", $vmrDir,
     "--tmp", $tmpDir,
     "--$verbosity",
-    "--component-template", $componentTemplate,
     "--tpn-template", $tpnTemplate,
     "--discard-patches",
     "--generate-credscansuppressions",

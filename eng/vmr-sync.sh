@@ -135,10 +135,6 @@ while [[ $# -gt 0 ]]; do
       additional_remotes="$additional_remotes $2"
       shift
       ;;
-    --component-template)
-      component_template=$2
-      shift
-      ;;
     --tpn-template)
       tpn_template=$2
       shift
@@ -271,7 +267,6 @@ fi
   $recursive_arg                             \
   $ci_arg                                    \
   $additional_remotes                        \
-  --component-template "$component_template" \
   --tpn-template "$tpn_template"             \
   --discard-patches                          \
   --generate-credscansuppressions            \
