@@ -33,11 +33,6 @@
 ###   --debug
 ###       Optional. Turns on the most verbose logging for the VMR tooling
 ###
-###   --component-template
-###       Optional. Template for VMRs Component.md used for regenerating the file to list the newest versions of
-###       components.
-###       Defaults to src/VirtualMonoRepo/Component.template.md
-###
 ###   --recursive
 ###       Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
 ###       This is used when performing the full synchronization during sdk's CI and the final VMR sync.
@@ -104,7 +99,6 @@ repository=''
 additional_remotes=''
 recursive=false
 verbosity=verbose
-component_template="$sdk_dir/src/VirtualMonoRepo/Component.template.md"
 tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
 enable_build_lookup=''
 azdev_pat=''

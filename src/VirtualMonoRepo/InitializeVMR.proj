@@ -58,7 +58,7 @@
       VmrPath="$(VmrDir)"
       TmpPath="$(TmpDir)"
       SdkPath="$(RepoRoot)"
-      ComponentTemplatePath="$(MSBuildThisFileDirectory)/Component.template.md"
+      ComponentTemplatePath=""
       TpnTemplatePath="$(MSBuildThisFileDirectory)/THIRD-PARTY-NOTICES.template.txt"
       SourceMappingsPath="$(MSBuildThisFileDirectory)/source-mappings.json" />
 
