@@ -41,11 +41,14 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _process.EnableRaisingEvents = true;
 
-#if DEBUG
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = null;
+            if (CommandLoggingContext.IsVerbose)
+            {
+                sw = Stopwatch.StartNew();
 
-            Reporter.Verbose.WriteLine($"> {FormatProcessInfo(_process.StartInfo)}".White());
-#endif
+                Reporter.Verbose.WriteLine($"> {FormatProcessInfo(_process.StartInfo)}".White());
+            }
+
             using (var reaper = new ProcessReaper(_process))
             {
                 _process.Start();
@@ -69,21 +72,22 @@ namespace Microsoft.DotNet.Cli.Utils
 
             var exitCode = _process.ExitCode;
 
-#if DEBUG
-            var message = string.Format(
-                LocalizableStrings.ProcessExitedWithCode,
-                FormatProcessInfo(_process.StartInfo),
-                exitCode,
-                sw.ElapsedMilliseconds);
-            if (exitCode == 0)
+            if (CommandLoggingContext.IsVerbose)
             {
-                Reporter.Verbose.WriteLine(message.Green());
+                var message = string.Format(
+                    LocalizableStrings.ProcessExitedWithCode,
+                    FormatProcessInfo(_process.StartInfo),
+                    exitCode,
+                    sw.ElapsedMilliseconds);
+                if (exitCode == 0)
+                {
+                    Reporter.Verbose.WriteLine(message.Green());
+                }
+                else
+                {
+                    Reporter.Verbose.WriteLine(message.Red().Bold());
+                }
             }
-            else
-            {
-                Reporter.Verbose.WriteLine(message.Red().Bold());
-            }
-#endif
 
             return new CommandResult(
                 _process.StartInfo,
