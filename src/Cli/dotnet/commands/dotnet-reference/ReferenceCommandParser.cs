@@ -7,9 +7,9 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class RemoveCommandParser
+    internal static class ReferenceCommandParser
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
+        public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
 
         public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
         {
@@ -25,14 +25,12 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand)
-            {
-                Hidden = true
-            };
+            var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
 
             command.Arguments.Add(ProjectArgument);
-            command.Subcommands.Add(RemovePackageParser.GetCommand());
-            command.Subcommands.Add(RemoveProjectToProjectReferenceParser.GetCommand());
+            command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
+            command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
+            command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());
 
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

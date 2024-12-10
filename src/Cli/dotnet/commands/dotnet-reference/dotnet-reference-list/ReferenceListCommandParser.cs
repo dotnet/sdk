@@ -7,8 +7,12 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStri
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class ListProjectToProjectReferencesCommandParser
+    internal static class ReferenceListCommandParser
     {
+        public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+
+        public static readonly CliOption<string> ProjectOption = new("--project");
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -18,9 +22,10 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+            var command = new CliCommand("list", LocalizableStrings.AppFullName);
 
-            command.Arguments.Add(ReferenceListCommandParser.Argument);
+            command.Arguments.Add(Argument);
+            command.Options.Add(ProjectOption);
 
             command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 

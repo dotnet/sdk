@@ -168,8 +168,14 @@
   <data name="BuildDefinition" xml:space="preserve">
     <value>Build a .NET project.</value>
   </data>
+  <data name="PackageDefinition" xml:space="preserve">
+    <value>Search for, add, remove, or list PackageReferences for a .NET project.</value>
+  </data>
   <data name="PublishDefinition" xml:space="preserve">
     <value>Publish a .NET project for deployment.</value>
+  </data>
+  <data name="ReferenceDefinition" xml:space="preserve">
+    <value>Add, remove, or list ProjectReferences for a .NET project.</value>
   </data>
   <data name="RunDefinition" xml:space="preserve">
     <value>Build and run a .NET project output.</value>
@@ -185,15 +191,6 @@
   </data>
   <data name="ProjectModificationCommands" xml:space="preserve">
     <value>Project modification commands</value>
-  </data>
-  <data name="AddDefinition" xml:space="preserve">
-    <value>Add a package or reference to a .NET project.</value>
-  </data>
-  <data name="RemoveDefinition" xml:space="preserve">
-    <value>Remove a package or reference from a .NET project.</value>
-  </data>
-  <data name="ListDefinition" xml:space="preserve">
-    <value>List packages or references of a .NET project.</value>
   </data>
   <data name="AdvancedCommands" xml:space="preserve">
     <value>Advanced Commands</value>
