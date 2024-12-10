@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnableToLocateDotNetCliExitCode = 4;
 
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
-        private static string[] SeverityLevels => new[] { "info", "warn", "error" };
+        private static string[] SeverityLevels => new[] { "info", "warn", "error", "hidden" };
 
         public static readonly CliArgument<string> SlnOrProjectArgument = new CliArgument<string>(Resources.SolutionOrProjectArgumentName)
         {
@@ -307,6 +307,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
+                FixSeverity.Hidden => DiagnosticSeverity.Hidden,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity)),
             };
         }
