@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// </summary>
         public string[] KeepFeedPrefixes { get; set; } = [];
 
-        private readonly string[] Sections = [ "packageSources", "auditSources" ];
+        private readonly string[] Sections = [ "packageSources" ];
 
         public override bool Execute()
         {

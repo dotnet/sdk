@@ -10,7 +10,8 @@
     <Product>Sdk</Product>
     <BlobStoragePartialRelativePath>$(Product)</BlobStoragePartialRelativePath>
     <BlobStoragePartialRelativePath Condition="'$(IsNotOrchestratedPublish)' == 'false'">assets/$(Product)</BlobStoragePartialRelativePath>
-    <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets.xml</SdkAssetManifestFileName>
+    <SdkAssetManifestBuildPass Condition="'$(DotNetBuildPass)' != ''">-BuildPass$(DotNetBuildPass)</SdkAssetManifestBuildPass>
+    <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets$(SdkAssetManifestBuildPass).xml</SdkAssetManifestFileName>
     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
 
     <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
@@ -143,7 +144,7 @@
       <AssetManifestOS Condition="'$(SYSTEM_PHASENAME)' != ''">$(AssetManifestOS)-$(SYSTEM_PHASENAME)</AssetManifestOS>
       <BaseAssetManifestFileName>$(AssetManifestOS)</BaseAssetManifestFileName>
       <BaseAssetManifestFileName Condition="'$(SYSTEM_PHASENAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
-      <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers</InstallersAssetManifestFileName>
+      <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers$(SdkAssetManifestBuildPass)</InstallersAssetManifestFileName>
       <!-- Property AssetManifestFilePath would be reassigned by the Arcade SDK, so use a different name (InstallersAssetManifestFilePath) -->
       <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>
 
@@ -183,7 +184,10 @@
     <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
   </ItemGroup>
 
-  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines)">
+  <!-- Publish the sdk and the checksums only in the initial build pass. -->
+  <Target Name="PublishSdkAssetsAndChecksums"
+          BeforeTargets="Publish"
+          Condition="'$(DotNetPublishUsingPipelines)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <ReadLinesFromFile File="$(ArtifactsTmpDir)FullNugetVersion.version">
       <Output TaskParameter="Lines" PropertyName="FullNugetVersion" />
     </ReadLinesFromFile>

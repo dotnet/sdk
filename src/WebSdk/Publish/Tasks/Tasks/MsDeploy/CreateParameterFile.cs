@@ -66,13 +66,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private static readonly string[] s_setParameterAttributes = {   SyncParameterMetadata.Description.ToString().ToLowerInvariant(),
                                                                         SyncParameterMetadata.Value.ToString().ToLowerInvariant(),
                                                                         SyncParameterMetadata.Tags.ToString().ToLowerInvariant(),};
-        private static readonly string[] s_parameterEntryIdentities = { ExistingParameterValiationMetadata.Element.ToString().ToLowerInvariant(),
+        private static readonly string[] s_parameterEntryIdentities = { ExistingParameterValidationMetadata.Element.ToString().ToLowerInvariant(),
                                                                           ExistingDeclareParameterMetadata.Kind.ToString().ToLowerInvariant(),
                                                                           ExistingDeclareParameterMetadata.Scope.ToString().ToLowerInvariant(),
                                                                           ExistingDeclareParameterMetadata.Match.ToString().ToLowerInvariant(),};
 
-        private static readonly string[] s_parameterValidationIdentities = {  ExistingParameterValiationMetadata.Element.ToString().ToLowerInvariant(),
-                                                                           ExistingParameterValiationMetadata.Kind.ToString().ToLowerInvariant(),
+        private static readonly string[] s_parameterValidationIdentities = {  ExistingParameterValidationMetadata.Element.ToString().ToLowerInvariant(),
+                                                                           ExistingParameterValidationMetadata.Kind.ToString().ToLowerInvariant(),
                                                                           "validationString",};
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                     if (parameterElement != null)
                     {
-                        string elementValue = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                        string elementValue = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                         if (string.IsNullOrEmpty(elementValue))
                             elementValue = "parameterEntry";
 
@@ -286,7 +286,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 {
                     if (!File.Exists(DeclareSetParameterFile))
                     {
-                        File.Create(DeclareSetParameterFile);
+                        File.Create(DeclareSetParameterFile).Close();
                     }
 
                     if (!string.IsNullOrEmpty(DeclareParameterFile))

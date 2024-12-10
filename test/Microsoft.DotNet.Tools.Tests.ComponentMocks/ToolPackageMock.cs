@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
     internal class ToolPackageMock : IToolPackage
     {
         private IFileSystem _fileSystem;
-        private Lazy<IReadOnlyList<RestoredCommand>> _commands;
+        private Lazy<RestoredCommand> _command;
         private IEnumerable<string> _warnings;
         private readonly IReadOnlyList<FilePath> _packagedShims;
 
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             Id = id;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageDirectory = packageDirectory;
-            _commands = new Lazy<IReadOnlyList<RestoredCommand>>(GetCommands);
+            _command = new Lazy<RestoredCommand>(GetCommand);
             _warnings = warnings ?? new List<string>();
             _packagedShims = packagedShims ?? new List<FilePath>();
             Frameworks = frameworks ?? new List<NuGetFramework>();
@@ -41,11 +41,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public NuGetVersion Version { get; private set; }
         public DirectoryPath PackageDirectory { get; private set; }
 
-        public IReadOnlyList<RestoredCommand> Commands
+        public RestoredCommand Command
         {
             get
             {
-                return _commands.Value;
+                return _command.Value;
             }
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public IEnumerable<NuGetFramework> Frameworks { get; private set; }
 
-        private IReadOnlyList<RestoredCommand> GetCommands()
+        private RestoredCommand GetCommand()
         {
             try
             {
@@ -78,13 +78,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     name = root.GetProperty("Name").GetString();
                 }
 
-                return new RestoredCommand[]
-                {
-                    new RestoredCommand(
+                return new RestoredCommand(
                         new ToolCommandName(name),
                         "dotnet",
-                        PackageDirectory.WithFile(executablePath))
-                };
+                        PackageDirectory.WithFile(executablePath));
             }
             catch (IOException ex)
             {

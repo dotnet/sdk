@@ -312,11 +312,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Find all files in the final output directory. -->
     <FindUnderPath Path="$(_NormalizedPublishDir)" Files="@(_UnfilteredAbsolutePriorPublishFileWrites)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOuput"/>
+      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOutput"/>
     </FindUnderPath>
 
     <!-- Remove duplicates from files produced in the previous publish. -->
-    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOuput)" >
+    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOutput)" >
       <Output TaskParameter="Filtered" ItemName="_PriorPublishFileWrites"/>
     </RemoveDuplicates>
 

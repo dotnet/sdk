@@ -65,6 +65,9 @@ Optional. Path to the dotnet/dotnet repository. When null, gets cloned to the te
 
 .PARAMETER debugOutput
 Optional. Enables debug logging in the darc vmr command.
+
+.PARAMETER ci
+Optional. Denotes that the script is running in a CI environment.
 #>
 param (
   [Parameter(Mandatory=$true, HelpMessage="Path to the temporary folder where repositories will be cloned")]
@@ -77,6 +80,7 @@ param (
   [string]$tpnTemplate = "src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt",
   [string]$azdevPat,
   [string][Alias('v', 'vmr')]$vmrDir,
+  [switch]$ci,
   [switch]$debugOutput
 )
 
@@ -189,10 +193,14 @@ $darcArgs = (
     "--discard-patches",
     "--generate-credscansuppressions",
     $repository
-)  
+)
 
 if ($recursive) {
   $darcArgs += ("--recursive")
+}
+
+if ($ci) {
+  $darcArgs += ("--ci")
 }
 
 if ($additionalRemotes) {

@@ -141,7 +141,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     }
 
 
-    internal enum ExistingParameterValiationMetadata
+    internal enum ExistingParameterValidationMetadata
     {
         Element,
         Kind,
@@ -943,7 +943,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (item != null && vSMSDeploySyncOption != null)
             {
                 string name = item.ItemSpec;
-                string elemment = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                string elemment = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                 if (string.IsNullOrEmpty(elemment))
                     elemment = "parameterEntry";
                 string kind = item.GetMetadata(DeclareParameterMetadata.Kind.ToString());
@@ -989,7 +989,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     {
                         // this is bogus assertion because by default msdeploy always setup the validation which is never be null
                         // System.Diagnostics.Debug.Assert(deploymentSyncParameter.Validation == null, "deploymentSyncParameter.Validation is already set");
-                        string validationString = item.GetMetadata(ExistingParameterValiationMetadata.ValidationString.ToString());
+                        string validationString = item.GetMetadata(ExistingParameterValidationMetadata.ValidationString.ToString());
 
                         object validationKindNone = MSWebDeploymentAssembly.DynamicAssembly.GetEnumValue("Microsoft.Web.Deployment.DeploymentSyncParameterValidationKind", "None");
                         dynamic validationKind = validationKindNone;
@@ -1335,10 +1335,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     string description = item.GetMetadata(SyncParameterMetadata.Description.ToString());
                     string defaultValue = item.GetMetadata(SyncParameterMetadata.DefaultValue.ToString());
                     string tags = item.GetMetadata(SyncParameterMetadata.Tags.ToString());
-                    string element = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                    string element = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                     if (string.IsNullOrEmpty(element))
                         element = "parameterEntry";
-                    string validationString = item.GetMetadata(ExistingParameterValiationMetadata.ValidationString.ToString());
+                    string validationString = item.GetMetadata(ExistingParameterValidationMetadata.ValidationString.ToString());
 
 
                     if (string.IsNullOrEmpty(value))

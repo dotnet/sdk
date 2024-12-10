@@ -26,7 +26,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null
         );
     }
 }

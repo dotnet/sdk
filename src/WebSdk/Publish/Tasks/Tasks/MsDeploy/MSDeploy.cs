@@ -191,9 +191,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private Framework.ITaskItem[] m_skipRuleItemsITaskItem = null;
         private Framework.ITaskItem[] m_declareParameterItems = null;
         private Framework.ITaskItem[] m_importDeclareParametersItems = null;
-        private Framework.ITaskItem[] m_simpleSetParamterItems = null;
+        private Framework.ITaskItem[] m_simpleSetParameterItems = null;
         private Framework.ITaskItem[] m_importSetParametersItems = null;
-        private Framework.ITaskItem[] m_setParamterItems = null;
+        private Framework.ITaskItem[] m_setParameterItems = null;
 
 
         private bool m_previewOnly = false;
@@ -456,15 +456,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public Framework.ITaskItem[] SimpleSetParameterItems
         {
-            get { return m_simpleSetParamterItems; }
-            set { m_simpleSetParamterItems = value; }
+            get { return m_simpleSetParameterItems; }
+            set { m_simpleSetParameterItems = value; }
         }
 
 
         public Framework.ITaskItem[] SetParameterItems
         {
-            get { return m_setParamterItems; }
-            set { m_setParamterItems = value; }
+            get { return m_setParameterItems; }
+            set { m_setParameterItems = value; }
         }
 
         public Framework.ITaskItem[] AdditionalDestinationProviderOptions { get; set; }
@@ -648,7 +648,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 string name = item.ItemSpec;
                 if (!string.IsNullOrEmpty(name))
                 {
-                    string element = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                    string element = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                     if (string.IsNullOrEmpty(element))
                         element = "parameterEntry";
                     if (string.Compare(element, "parameterEntry", StringComparison.OrdinalIgnoreCase) == 0)
@@ -783,7 +783,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     string name = item.ItemSpec;
                     if (!string.IsNullOrEmpty(name))
                     {
-                        string element = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                        string element = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                         if (string.IsNullOrEmpty(element))
                             element = "parameterEntry";
 
@@ -1014,8 +1014,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             AddDeclareParametersOptions(commandLine, m_declareParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
 
             AddImportSetParametersFilesOptions(commandLine, m_importSetParametersItems);
-            AddSimpleSetParametersToObject(commandLine, m_simpleSetParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
-            AddSetParametersToObject(commandLine, m_setParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
+            AddSimpleSetParametersToObject(commandLine, m_simpleSetParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
+            AddSetParametersToObject(commandLine, m_setParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
 
             if (m_xml) commandLine.AppendSwitch("-xml");
             if (m_whatif) commandLine.AppendSwitch("-whatif");

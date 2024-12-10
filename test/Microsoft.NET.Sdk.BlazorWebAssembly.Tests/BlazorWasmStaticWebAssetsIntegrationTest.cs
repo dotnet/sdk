@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
@@ -126,7 +126,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void StaticWebAssets_Publish_DoesNotIncludeXmlDocumentationFiles_AsAssets()
         {
             // Arrange

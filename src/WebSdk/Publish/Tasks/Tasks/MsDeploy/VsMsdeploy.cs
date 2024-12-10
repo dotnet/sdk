@@ -592,9 +592,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private Framework.ITaskItem[] m_skipRuleItemsITaskItem = null;
         private Framework.ITaskItem[] m_declareParameterItems = null;
         private Framework.ITaskItem[] m_importDeclareParametersItems = null;
-        private Framework.ITaskItem[] m_simpleSetParamterItems = null;
+        private Framework.ITaskItem[] m_simpleSetParameterItems = null;
         private Framework.ITaskItem[] m_importSetParametersItems = null;
-        private Framework.ITaskItem[] m_setParamterItems = null;
+        private Framework.ITaskItem[] m_setParameterItems = null;
 
         private BaseMSDeployDriver m_msdeployDriver = null;
 
@@ -730,8 +730,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public Framework.ITaskItem[] SimpleSetParameterItems
         {
-            get { return m_simpleSetParamterItems; }
-            set { m_simpleSetParamterItems = value; }
+            get { return m_simpleSetParameterItems; }
+            set { m_simpleSetParameterItems = value; }
         }
 
         public Framework.ITaskItem[] ImportSetParametersItems
@@ -742,8 +742,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public Framework.ITaskItem[] SetParameterItems
         {
-            get { return m_setParamterItems; }
-            set { m_setParamterItems = value; }
+            get { return m_setParameterItems; }
+            set { m_setParameterItems = value; }
         }
 
         public bool EnableMSDeployBackup { get; set; }

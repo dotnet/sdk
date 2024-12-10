@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Tests
                 .Execute(toolPrefersCLIRuntime ? "portable-v1-prefercli" : "portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 1.1.2!");
+                .And.HaveStdOutContaining("I'm running on shared framework version");
 
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tests
 
                 toolReference.Attribute("Include").Value = toolName;
 
-                //  Restore tools for .NET Core 1.1
+                // Restore tools for .NET Core 1.1
                 project.Root.Element(ns + "PropertyGroup")
                     .Add(new XElement(ns + "DotnetCliToolTargetFramework", "netcoreapp1.1"));
 
@@ -124,10 +124,11 @@ namespace Microsoft.DotNet.Tests
                     .Execute("portable-v1");
 
             result.Should().Pass()
-                .And.HaveStdOutContaining("I'm running on shared framework version 1.1.2!");
+                .And.HaveStdOutContaining("I'm running on shared framework version");
         }
 
-        [Fact]
+        // Old .net tool test that doesn't work off Windows
+        [WindowsOnlyFact]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")

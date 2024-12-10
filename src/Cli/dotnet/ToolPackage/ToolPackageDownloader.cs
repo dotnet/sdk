@@ -108,11 +108,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
 
                     if (isGlobalTool)
                     {
-                        NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
+                        NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
                         var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 
                         if (globalPackage != null)
@@ -206,22 +206,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             ToolPackageInstance toolPackageInstance
             )
         {
-            foreach (var command in toolPackageInstance.Commands)
+            var runtimeConfigFilePath = Path.ChangeExtension(toolPackageInstance.Command.Executable.Value, ".runtimeconfig.json");
+
+            // Update the runtimeconfig.json file
+            if (File.Exists(runtimeConfigFilePath))
             {
-                var runtimeConfigFilePath = Path.ChangeExtension(command.Executable.Value, ".runtimeconfig.json");
+                string existingJson = File.ReadAllText(runtimeConfigFilePath);
 
-                // Update the runtimeconfig.json file
-                if (File.Exists(runtimeConfigFilePath))
+                var jsonObject = JObject.Parse(existingJson);
+                if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
                 {
-                    string existingJson = File.ReadAllText(runtimeConfigFilePath);
-
-                    var jsonObject = JObject.Parse(existingJson);
-                    if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
-                    {
-                        runtimeOptions["rollForward"] = "Major";
-                        string updateJson = jsonObject.ToString();
-                        File.WriteAllText(runtimeConfigFilePath, updateJson);
-                    }
+                    runtimeOptions["rollForward"] = "Major";
+                    string updateJson = jsonObject.ToString();
+                    File.WriteAllText(runtimeConfigFilePath, updateJson);
                 }
             }
         }
@@ -299,7 +296,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             }
 
             // Extract the package
-            var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToString());
+            var nupkgDir = new VersionFolderPathResolver(packagesRootPath).GetInstallPath(packageId.ToString(), version);
             await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             return version;
@@ -376,7 +373,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false)
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null)
         {
             ILogger nugetLogger = new NullLogger();
 
@@ -395,7 +393,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
                 verboseLogger: nugetLogger,
                 shouldUsePackageSourceMapping: true,
-                verbosityOptions: verbosity);
+                verbosityOptions: verbosity,
+                restoreActionConfig: restoreActionConfig);
 
             var packageSourceLocation = new PackageSourceLocation(
                 nugetConfig: packageLocation.NugetConfig,

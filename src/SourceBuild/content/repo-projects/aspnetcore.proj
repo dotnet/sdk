@@ -9,16 +9,26 @@
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) -NativeToolsOnMachine</BuildActions>
     <!-- On non-windows, we don't have the JDK available and don't need to build those projects anyway because they are not consumed downstream. -->
     <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)no-build-java</BuildActions>
+    <!-- Enable building installers on Windows. We can't build installers on Linux until https://github.com/dotnet/aspnetcore/pull/58612 as been merged and flows -->
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
+    <!-- <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions> -->
+
+    <!-- aspnetcore must be built with desktop msbuild but defaults to dotnet build. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
-    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
+    <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
+
+    <!-- PackageValidation fails with desktop msbuild: https://github.com/dotnet/sdk/issues/45004. -->
+    <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
   </PropertyGroup>
 

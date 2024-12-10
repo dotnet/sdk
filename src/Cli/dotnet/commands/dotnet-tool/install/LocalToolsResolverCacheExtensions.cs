@@ -30,20 +30,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     nameof(targetFrameworkToInstall));
             }
 
-            foreach (var restoredCommand in toolDownloadedPackage.Commands)
-            {
-                localToolsResolverCache.Save(
-                    new Dictionary<RestoredCommandIdentifier, RestoredCommand>
-                    {
-                        [new RestoredCommandIdentifier(
-                                toolDownloadedPackage.Id,
-                                toolDownloadedPackage.Version,
-                                NuGetFramework.Parse(targetFrameworkToInstall),
-                                Constants.AnyRid,
-                                restoredCommand.Name)] =
-                            restoredCommand
-                    });
-            }
+            localToolsResolverCache.Save(
+                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                {
+                    [new RestoredCommandIdentifier(
+                            toolDownloadedPackage.Id,
+                            toolDownloadedPackage.Version,
+                            NuGetFramework.Parse(targetFrameworkToInstall),
+                            Constants.AnyRid,
+                            toolDownloadedPackage.Command.Name)] =
+                        toolDownloadedPackage.Command
+                });
         }
     }
 }
