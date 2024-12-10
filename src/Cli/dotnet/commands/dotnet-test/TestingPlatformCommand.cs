@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -24,7 +23,7 @@ namespace Microsoft.DotNet.Cli
         private TestApplicationActionQueue _actionQueue;
         private Task _namedPipeConnectionLoop;
         private List<string> _args;
-        private Dictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+        private ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
         private byte _cancelled;
         private bool _isDiscovery;
 
@@ -212,7 +211,6 @@ namespace Microsoft.DotNet.Cli
         {
             var testApp = (TestApplication)sender;
             var appInfo = _executions[testApp];
-            _executions[testApp] = appInfo;
 
             foreach (var test in args.DiscoveredTests)
             {
