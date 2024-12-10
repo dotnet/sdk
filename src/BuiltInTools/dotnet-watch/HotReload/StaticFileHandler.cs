@@ -2,15 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Collections;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.CodeAnalysis.StackTraceExplorer;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class StaticFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
     {
@@ -23,6 +19,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var allFilesHandled = true;
             var refreshRequests = new Dictionary<BrowserRefreshServer, List<string>>();
+            var projectsWithoutRefreshServer = new HashSet<ProjectGraphNode>();
+
             for (int i = 0; i < files.Count; i++)
             {
                 var file = files[i].Item;
@@ -50,10 +48,15 @@ namespace Microsoft.DotNet.Watcher.Tools
                         {
                             if (!refreshRequests.TryGetValue(refreshServer, out var filesPerServer))
                             {
+                                reporter.Verbose($"[{projectNode.GetDisplayName()}] Refreshing browser.");
                                 refreshRequests.Add(refreshServer, filesPerServer = []);
                             }
 
                             filesPerServer.Add(file.StaticWebAssetPath);
+                        }
+                        else if (projectsWithoutRefreshServer.Add(projectNode))
+                        {
+                            reporter.Verbose($"[{projectNode.GetDisplayName()}] No refresh server.");
                         }
                     }
                 }
@@ -69,9 +72,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // Serialize all requests sent to a single server:
                 foreach (var path in request.Value)
                 {
-                    reporter.Verbose($"Sending static file update request for asset '{path}'");
+                    reporter.Verbose($"Sending static file update request for asset '{path}'.");
                     var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = path }, s_jsonSerializerOptions);
-                    await request.Key.SendMessage(message, cancellationToken);
+                    await request.Key.SendAsync(message, cancellationToken);
                 }
             });
 

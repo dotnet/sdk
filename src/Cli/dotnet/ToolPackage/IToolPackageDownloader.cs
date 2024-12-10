@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            bool verifySignatures = true,
-            RestoreActionConfig restoreActionConfig = null
+            RestoreActionConfig restoreActionConfig = null,
+            bool verifySignatures = true
         );
 
         NuGetVersion GetNuGetVersion(

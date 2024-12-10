@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.WebTools.AspireService.Helpers;
+namespace Aspire.Tools.Service;
 
 internal sealed class LoggerProvider(Action<string> reporter) : ILoggerProvider
 {

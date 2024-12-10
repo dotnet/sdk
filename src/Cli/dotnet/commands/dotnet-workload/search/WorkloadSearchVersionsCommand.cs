@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly string _workloadSetOutputFormat;
         private readonly FileBasedInstaller _installer;
         private readonly string _workloadVersion;
+        private readonly bool _includePreviews;
 
         public WorkloadSearchVersionsCommand(
             ParseResult result,
@@ -64,6 +65,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 );
 
             _workloadVersion = result.GetValue(WorkloadSearchVersionsCommandParser.WorkloadVersionArgument);
+
+            _includePreviews = result.HasOption(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) ?
+                result.GetValue(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) :
+                new SdkFeatureBand(_sdkVersion).IsPrerelease;
         }
 
         public override int Execute()
@@ -76,7 +81,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 List<string> versions;
                 try
                 {
-                    versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: !string.IsNullOrWhiteSpace(_sdkVersion.Prerelease))
+                    versions = PackageDownloader.GetLatestPackageVersions(packageId, _numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: _includePreviews)
                         .GetAwaiter().GetResult()
                         .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
                         .ToList();

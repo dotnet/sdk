@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _currentWorkingDirectory;
         private readonly bool? _verifySignatures;
 
-        internal readonly RestoreActionConfig restoreActionConfig;
+        internal readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -88,11 +88,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
-            restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
                 NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: _restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
             _store = store;
 
@@ -194,8 +194,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         verbosity: _verbosity,
                         isGlobalTool: true,
                         isGlobalToolRollForward: _allowRollForward,
-                        verifySignatures: _verifySignatures ?? true,
-                        restoreActionConfig: restoreActionConfig
+                        restoreActionConfig: _restoreActionConfig,
+                        verifySignatures: _verifySignatures ?? true
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);

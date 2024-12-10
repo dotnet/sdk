@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.FormatOptionDescription
         };
 
+        public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -36,6 +38,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(WorkloadVersionArgument);
             command.Options.Add(FormatOption);
             command.Options.Add(TakeOption);
+            command.Options.Add(IncludePreviewsOption);
 
             TakeOption.Validators.Add(optionResult =>
             {

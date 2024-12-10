@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowRollForward;
         private readonly bool _updateAll;
 
-        internal RestoreActionConfig restoreActionConfig;
+        internal readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -57,12 +57,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
-            restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
                 NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
 
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests, restoreActionConfig);
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests, _restoreActionConfig);
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
         }
