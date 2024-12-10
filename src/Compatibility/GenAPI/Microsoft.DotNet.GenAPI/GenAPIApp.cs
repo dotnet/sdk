@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 #endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -19,32 +18,39 @@ namespace Microsoft.DotNet.GenAPI
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(GenApiAppConfiguration c)
+        public static void Run(GenAPIConfiguration config)
         {
             // Invoke an assembly symbol writer for each directly loaded assembly.
-            foreach (IAssemblySymbol? assemblySymbol in c.AssemblySymbols)
+            foreach (IAssemblySymbol? assemblySymbol in config.AssemblySymbols)
             {
                 if (assemblySymbol is null)
                     continue;
 
-                using TextWriter textWriter = GetTextWriter(c.OutputPath, assemblySymbol.Name);
-                IAssemblySymbolWriter writer = new CSharpFileBuilder(c, textWriter);
+                using TextWriter textWriter = GetTextWriter(config.OutputPath, assemblySymbol.Name);
+                IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
+                                                                     textWriter,
+                                                                     config.Loader,
+                                                                     config.SymbolFilter,
+                                                                     config.AttributeDataSymbolFilter,
+                                                                     config.Header,
+                                                                     config.ExceptionMessage,
+                                                                     config.IncludeAssemblyAttributes);
                 writer.WriteAssembly(assemblySymbol);
             }
 
-            if (c.Loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            if (config.Loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
             {
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    c.Logger.LogWarning(warning.Id, warning.ToString());
+                    config.Logger.LogWarning(warning.Id, warning.ToString());
                 }
             }
 
-            if (c.Loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            if (config.Loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
             {
                 foreach (AssemblyLoadWarning warning in loadWarnings)
                 {
-                    c.Logger.LogWarning(warning.DiagnosticId, warning.Message);
+                    config.Logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }

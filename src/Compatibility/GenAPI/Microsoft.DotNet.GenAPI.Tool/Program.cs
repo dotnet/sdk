@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+                GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
                     .WithLogger(new ConsoleLog(MessageImportance.Normal))
                     .WithAssembliesPaths(parseResult.GetValue(assembliesOption)!)
                     .WithAssemblyReferencesPaths(parseResult.GetValue(assemblyReferencesOption))
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     .WithIncludeAssemblyAttributes(parseResult.GetValue(includeAssemblyAttributesOption))
                     .Build();
 
-                GenAPIApp.Run(c);
+                GenAPIApp.Run(config);
             });
 
             return rootCommand.Parse(args).Invoke();
