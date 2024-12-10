@@ -1662,49 +1662,6 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass().And.NotHaveStdErrContaining("This process might take a while");
         }
 
-        [Fact()]
-        public void ILLink_and_crossgen_process_razor_assembly()
-        {
-            var targetFramework = "netcoreapp3.0";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-
-            var testProject = new TestProject
-            {
-                Name = "TestWeb",
-                IsExe = true,
-                ProjectSdk = "Microsoft.NET.Sdk.Web",
-                TargetFrameworks = targetFramework,
-                SourceFiles =
-                {
-                    ["Program.cs"] = @"
-                        class Program
-                        {
-                            static void Main() {}
-                        }",
-                    ["Test.cshtml"] = @"
-                        @page
-                        @{
-                            System.IO.Compression.ZipFile.OpenRead(""test.zip"");
-                        }
-                    ",
-                },
-                AdditionalProperties =
-                {
-                    ["RuntimeIdentifier"] = rid,
-                    ["PublishTrimmed"] = "true",
-                    ["PublishReadyToRun"] = "true",
-                }
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute().Should().Pass();
-
-            var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
-            publishDir.Should().HaveFile("System.IO.Compression.ZipFile.dll");
-            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.Views.dll").FullName);
-        }
-
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false)]

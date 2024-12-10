@@ -940,14 +940,7 @@ You may need to build the project on another operating system or architecture, o
 &lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</value>
     <comment>{StrBegins="NETSDK1212: "}</comment>
   </data>
-  <data name="Net8NotCompatibleWithDev177" xml:space="preserve">
-    <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
-    <comment>{StrBegins="NETSDK1213: "}</comment>
-  </data>
-  <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
-    <value>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
-    <comment>{StrBegins="NETSDK1214: "}</comment>
-  </data>
+  <!-- Skipping NETSDK1214 on purpose, as that is "UsingUnsupportedUseUwpFeature" on .NET 8 (see https://github.com/dotnet/sdk/issues/44006) -->
   <data name="TargetFrameworkIsNotRecommended" xml:space="preserve">
     <value>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</value>
     <comment>{StrBegins="NETSDK1215: "}</comment>
@@ -976,9 +969,18 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1221: NuGetPackageRoot property is empty so package Microsoft.Net.Sdk.Compilers.Toolset cannot be used but it is recommended because your MSBuild and SDK versions are mismatched. Ensure you are building with '/restore /t:Build' and not '/t:Restore;Build'.</value>
     <comment>{StrBegins="NETSDK1221: "}{Locked="NuGetPackageRoot"}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="'/restore /t:Build'"}{Locked="'/t:Restore;Build'"}</comment>
   </data>
-  <data name="AspNetCorePackUnsupportedTargetFramework" xml:space="preserve">
-    <value>NETSDK1222: ASP.NET Core framework assets are not supported for the target framework.</value>
+  <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
+    <value>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
     <comment>{StrBegins="NETSDK1222: "}</comment>
+  </data>
+  <data name="Net9NotCompatibleWithDev1711" xml:space="preserve">
+    <value>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
+    <comment>{StrBegins="NETSDK1223: "}</comment>
+  </data>
+  <!-- The latest message added is Net9NotCompatibleWithDev1711. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="AspNetCorePackUnsupportedTargetFramework" xml:space="preserve">
+    <value>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</value>
+    <comment>{StrBegins="NETSDK1224: "}</comment>
   </data>
   <!-- The latest message added is AspNetCorePackUnsupportedTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
