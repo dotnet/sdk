@@ -46,7 +46,7 @@
     <CollatePackageDownloads Packages="@(BundledTemplates)">
       <Output TaskParameter="PackageDownloads" ItemName="BundledTemplatePackageDownload" />
     </CollatePackageDownloads>
-    <!-- Create a separate project to for template PackageDownloads, as we want to use a task in core-sdk-tasks to collate them, but we
+    <!-- Create a separate project to for template PackageDownloads, as we want to use a task in sdk-tasks to collate them, but we
        can't use those tasks before normal NuGet restore -->
     <PropertyGroup>
       <TemplatePackageDownloadProjectContent>

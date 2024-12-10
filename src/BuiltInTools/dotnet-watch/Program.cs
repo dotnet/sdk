@@ -97,27 +97,27 @@ namespace Microsoft.DotNet.Watcher
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var cancellationSource = new CancellationTokenSource();
-            var cancellationToken = cancellationSource.Token;
+            var shutdownCancellationSource = new CancellationTokenSource();
+            var shutdownCancellationToken = shutdownCancellationSource.Token;
             console.CancelKeyPress += OnCancelKeyPress;
 
             try
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (shutdownCancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(cancellationToken);
+                    return await ListFilesAsync(shutdownCancellationToken);
                 }
 
                 var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
-                await watcher.WatchAsync(cancellationToken);
+                await watcher.WatchAsync(shutdownCancellationToken);
                 return 0;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (shutdownCancellationToken.IsCancellationRequested)
             {
                 // Ctrl+C forced an exit
                 return 0;
@@ -131,20 +131,24 @@ namespace Microsoft.DotNet.Watcher
             finally
             {
                 console.CancelKeyPress -= OnCancelKeyPress;
-                cancellationSource.Dispose();
+                shutdownCancellationSource.Dispose();
             }
 
             void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
             {
-                // suppress CTRL+C on the first press
-                args.Cancel = !cancellationSource.IsCancellationRequested;
+                // if we already canceled, we force immediate shutdown:
+                var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
 
-                if (args.Cancel)
+                if (!forceShutdown)
                 {
                     reporter.Report(MessageDescriptor.ShutdownRequested);
+                    shutdownCancellationSource.Cancel();
+                    args.Cancel = true;
                 }
-
-                cancellationSource.Cancel();
+                else
+                {
+                    Environment.Exit(0);
+                }
             }
         }
 
@@ -156,21 +160,12 @@ namespace Microsoft.DotNet.Watcher
                 reporter.Output("Polling file watcher is enabled");
             }
 
-            var projectGraph = TryReadProject(rootProjectOptions, reporter);
-            if (projectGraph != null)
-            {
-                // use normalized MSBuild path so that we can index into the ProjectGraph
-                rootProjectOptions = rootProjectOptions with { ProjectPath = projectGraph.GraphRoots.Single().ProjectInstance.FullPath };
-            }
-
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.TargetFramework,
                 rootProjectOptions.BuildProperties,
                 environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: true);
+                reporter);
 
             bool enableHotReload;
             if (rootProjectOptions.Command != "run")
@@ -191,7 +186,6 @@ namespace Microsoft.DotNet.Watcher
 
             var context = new DotNetWatchContext
             {
-                ProjectGraph = projectGraph,
                 Reporter = reporter,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
@@ -203,33 +197,6 @@ namespace Microsoft.DotNet.Watcher
                 : new DotNetWatcher(context, fileSetFactory);
         }
 
-        // internal for testing
-        internal static ProjectGraph? TryReadProject(ProjectOptions options, IReporter reporter)
-        {
-            var globalOptions = new Dictionary<string, string>();
-            if (options.TargetFramework != null)
-            {
-                globalOptions.Add("TargetFramework", options.TargetFramework);
-            }
-
-            foreach (var (name, value) in options.BuildProperties)
-            {
-                globalOptions[name] = value;
-            }
-
-            try
-            {
-                return new ProjectGraph(options.ProjectPath, globalOptions);
-            }
-            catch (Exception ex)
-            {
-                reporter.Verbose("Reading the project instance failed.");
-                reporter.Verbose(ex.ToString());
-            }
-
-            return null;
-        }
-
         private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
         {
             var fileSetFactory = new MSBuildFileSetFactory(
@@ -237,11 +204,9 @@ namespace Microsoft.DotNet.Watcher
                 rootProjectOptions.TargetFramework,
                 rootProjectOptions.BuildProperties,
                 environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: false);
+                reporter);
 
-            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not { } evaluationResult)
+            if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
                 return 1;
             }

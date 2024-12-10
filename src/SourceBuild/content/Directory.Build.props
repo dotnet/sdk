@@ -30,8 +30,8 @@
     <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
-    <!-- NativeAOT Mac builds are short -->
-    <ShortStack Condition="'$(TargetOS)' == 'osx' and '$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
+    <!-- NativeAOT builds are short -->
+    <ShortStack Condition="'$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
     <!-- Mono LLVM builds are short -->
     <ShortStack Condition="'$(MonoEnableLLVM)' == 'true' or '$(MonoAOTEnableLLVM)' == 'true'">true</ShortStack>
     <!-- Mono AOT cross compiler builds are short -->
@@ -162,8 +162,11 @@
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
-    <AssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests'))</AssetManifestsDir>
+    
+    <ArtifactsAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests', '$(Configuration)'))</ArtifactsAssetManifestsDir>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+    
     <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
 
     <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
@@ -197,7 +200,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MergedAssetManifestOutputPath>$(AssetManifestsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+    <!-- Respect the VerticalName property which is set to a unique identifier in CI. Otherwise default to 'VerticalManifest'. -->
+    <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$([MSBuild]::ValueOrDefault('$(VerticalName)', 'VerticalManifest')).xml</MergedAssetManifestOutputPath>
+    <ArtifactsStagingDir Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(ArtifactsDir)staging</ArtifactsStagingDir>
   </PropertyGroup>
 
 </Project>

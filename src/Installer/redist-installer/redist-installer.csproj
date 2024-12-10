@@ -10,6 +10,7 @@
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
     <!-- DotNetBuildOrchestrator is (currently) needed in order to obtain NuGet packages from the runtime build. -->
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +26,7 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
-  <Import Project="targets\BuildCoreSdkTasks.targets" />
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
   <Import Project="targets\Branding.targets" />
@@ -38,9 +39,6 @@
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />
-  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateDebs.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateRPMs.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GeneratePKG.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateInstallers.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\Badge.targets" />

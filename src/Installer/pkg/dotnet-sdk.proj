@@ -1,0 +1,160 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(IsRPMBasedDistro)' != 'true'">true</SkipBuild>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <GenerateInstallers>true</GenerateInstallers>
+    <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
+    <BuildRpmPackage Condition="'$(IsRPMBasedDistro)' == 'true'">true</BuildRpmPackage>
+    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
+    <ProductBrandPrefix>Microsoft .NET</ProductBrandPrefix>
+    <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>
+    <InstallerName>dotnet-sdk</InstallerName>
+    <PackageBrandNameSuffix>SDK</PackageBrandNameSuffix>
+    <!--
+      Installer infra requires MajorVersion and MinorVersion, which triggers reevaluation of Arcade's
+      VersionPrefix property. This requires PatchVersion to be set in order to produce the correct SDK version.
+    -->
+    <MajorVersion>$(VersionMajor)</MajorVersion>
+    <MinorVersion>$(VersionMinor)</MinorVersion>
+    <PatchVersion>$(VersionPrefix.Split('.')[2])</PatchVersion>
+    <!--
+      All supported installer runtime identifiers should be specified here.
+      New arcade infra is only used for Linux installers, at the moment.
+    -->
+    <InstallerRuntimeIdentifiers>linux-$(Architecture)</InstallerRuntimeIdentifiers>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\redist-installer\redist-installer.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <PropertyGroup>
+    <RedistLayoutPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RedistLayoutPath>
+    <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
+    <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
+    <TemplatesRoot>$(RedistLayoutPath)templates/</TemplatesRoot>
+  </PropertyGroup>
+
+  <Target Name="PublishToDisk">
+    <Error Condition="'$(OutputPath)' == ''" Text="Publishing to disk requires the OutputPath to be set to the root of the path to write to." />
+
+    <ItemGroup>
+      <CLISdkFiles Include="$(CLISdkRoot)**/*" />
+      <TemplatesFiles Include="$(TemplatesRoot)**/*" />
+      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
+    </ItemGroup>
+
+    <!-- Create layout: Binaries -->
+    <Copy
+      DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(CLISdkFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Templates -->
+    <Copy
+      DestinationFiles="@(TemplatesFiles->'$(OutputPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(TemplatesFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Workload Manifests -->
+    <Copy
+      DestinationFiles="@(ManifestFiles->'$(OutputPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(ManifestFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+  </Target>
+
+  <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">
+    <PropertyGroup>
+      <PackageSummary>Microsoft .NET SDK $(PackageVersion)</PackageSummary>
+      <!-- Clear PackageDescription to have it correctly set by Arcade. -->
+      <PackageDescription></PackageDescription>
+    </PropertyGroup>
+
+    <!--
+      Manpages are not installed atm, tracked with https://github.com/dotnet/sdk/issues/44833
+      Arcade infra expects the following items, but the installation path is TBD.
+      Tracked in https://github.com/dotnet/arcade/issues/15243
+
+    <ItemGroup>
+      <Manpage Include="$(ManpagesDirectory)**/*" />
+    </ItemGroup>
+    -->
+
+  </Target>
+
+  <Target Name="AddLinuxPackageInformation"
+      BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties"
+      DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
+
+    <PropertyGroup>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)../redist-installer/packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstFile>$(BaseIntermediateOutputPath)debian/postinst</DebianPostinstFile>
+    </PropertyGroup>
+
+    <!-- Generate postinst file -->
+    <ReplaceFileContents
+      InputFiles="$(DebianPostinstTemplateFile)"
+      DestinationFiles="$(DebianPostinstFile)"
+      ReplacementPatterns="%SDK_VERSION%"
+      ReplacementStrings="$(Version)"
+      Condition="'$(BuildDebPackage)' == 'true'" />
+
+    <ItemGroup>
+      <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
+      <LinuxPackageDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersionWithTilde)" />
+      <LinuxPackageDependency Include="dotnet-apphost-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
+      <LinuxPackageDependency Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
+      <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
+      <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
+      <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CalculateLinuxNativeInstallerDependencyVersions">
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRuntimePackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="MicrosoftNETCoreAppMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="MicrosoftNETCoreAppMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRefPackageVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRuntimeVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions  PackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRefVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
+      <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+  </Target>
+
+</Project>
