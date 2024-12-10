@@ -9,5 +9,10 @@ namespace Microsoft.DotNet.Watcher;
 /// </summary>
 internal interface IRuntimeProcessLauncher : IAsyncDisposable
 {
-    ValueTask<IEnumerable<(string name, string value)>> GetEnvironmentVariablesAsync(CancellationToken cancelationToken);
+    IEnumerable<(string name, string value)> GetEnvironmentVariables();
+
+    /// <summary>
+    /// Initiates shutdown. Terminates all created processes.
+    /// </summary>
+    ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken);
 }
