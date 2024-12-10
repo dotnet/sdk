@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(targetFrameworkNet6, "6")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "1")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
         [InlineData(targetFrameworkNetFramework472, "4")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_WarningLevel_To_The_Current_TFM_When_Net(string tfm, string warningLevel)
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(1, "1")]
-        [InlineData(null, "1")]
+        [InlineData(null, ToolsetInfo.CurrentTargetFrameworkVersion)]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_always_accepts_user_defined_WarningLevel(int? warningLevel, string expectedWarningLevel)
         {
@@ -156,8 +156,11 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
-        [RequiresMSBuildVersionTheory("16.8")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
+        // Fixing this test requires bumping _LatestAnalysisLevel and _PreviewAnalysisLevel
+        // Bumping will cause It_maps_analysis_properties_to_globalconfig to fail which requires changes in dotnet/roslyn-analyzers repo.
+        // See instructions in the comment in It_maps_analysis_properties_to_globalconfig
+        [RequiresMSBuildVersionTheory("16.8", Skip = "https://github.com/dotnet/sdk/issues/45299")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
             var testProject = new TestProject
@@ -375,7 +378,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("recommended", "true", new string[] { "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "false", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "true", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        [RequiresMSBuildVersionTheory("17.12.0")]
         public void It_bulk_configures_rules_with_different_analysis_modes(string analysisMode, string codeAnalysisTreatWarningsAsErrors, string[] expectedViolations)
         {
             var testProject = new TestProject

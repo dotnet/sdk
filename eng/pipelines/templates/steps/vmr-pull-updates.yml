@@ -43,25 +43,23 @@ steps:
   workingDirectory: ${{ parameters.vmrPath }}
 
 - script: |
-    echo '**/*' > .artifactignore
-    echo '!./*.patch' >> .artifactignore
-  displayName: Prepare .artifactignore
-  workingDirectory: $(Agent.TempDirectory)
+    ./eng/vmr-sync.sh                                                                                 \
+      --vmr ${{ parameters.vmrPath }}                                                                 \
+      --tmp $(Agent.TempDirectory)                                                                    \
+      --azdev-pat '$(dn-bot-all-orgs-code-r)'                                                         \
+      --branch ${{ parameters.vmrBranch }}                                                            \
+      --repository "sdk:${{ parameters.targetRef }}"                                                  \
+      --recursive                                                                                     \
+      --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
+      --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md      \
+      --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
+      --ci                                                                                            \
+      --debug
 
-- script: >
-    ./eng/vmr-sync.sh
-    --vmr ${{ parameters.vmrPath }}
-    --tmp $(Agent.TempDirectory)
-    --azdev-pat '$(dn-bot-all-orgs-code-r)'
-    --branch ${{ parameters.vmrBranch }}
-    --repository "sdk:${{ parameters.targetRef }}"
-    --recursive
-    --remote "sdk:$(Agent.BuildDirectory)/sdk"
-    --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md
-    --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
-    --debug
-    ||
-    (echo "##vso[task.logissue type=error]Failed to synchronize the VMR" && exit 1)
+    if [ "$?" -ne 0 ]; then
+      echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+      exit 1
+    fi
   displayName: Synchronize dotnet/dotnet (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
@@ -70,19 +68,18 @@ steps:
   displayName: Disable astextplain in git diff (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
-- powershell: >
+- powershell: |
     ./eng/vmr-sync.ps1 `
-    -vmr ${{ parameters.vmrPath }} `
-    -tmp $(Agent.TempDirectory) `
-    -azdevPat '$(dn-bot-all-orgs-code-r)' `
-    -branch ${{ parameters.vmrBranch }} `
-    -repository "sdk:${{ parameters.targetRef }}" `
-    -recursive `
-    # passing remote fails for some reason, but it is the default anyway
-    # -remote "sdk:$(Agent.BuildDirectory)/sdk"
-    -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
-    -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
-    -debugOutput
+      -vmr ${{ parameters.vmrPath }} `
+      -tmp $(Agent.TempDirectory) `
+      -azdevPat '$(dn-bot-all-orgs-code-r)' `
+      -branch ${{ parameters.vmrBranch }} `
+      -repository "sdk:${{ parameters.targetRef }}" `
+      -recursive `
+      -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
+      -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+      -ci `
+      -debugOutput
 
     if ($LASTEXITCODE -ne 0) {
       echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
@@ -93,7 +90,15 @@ steps:
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-  - publish: $(Agent.TempDirectory)
+  - task: CopyFiles@2
+    displayName: Collect failed patches
+    condition: failed()
+    inputs:
+      SourceFolder: '$(Agent.TempDirectory)'
+      Contents: '*.patch'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/FailedPatches'
+
+  - publish: '$(Build.ArtifactStagingDirectory)/FailedPatches'
     artifact: $(System.JobDisplayName)_FailedPatches
     displayName: Upload failed patches
     condition: failed()

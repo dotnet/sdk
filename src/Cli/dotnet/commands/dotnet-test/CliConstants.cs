@@ -9,7 +9,6 @@ namespace Microsoft.DotNet.Cli
         public const string HelpOptionKey = "--help";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
-        public const string ProjectOptionKey = "--project";
         public const string FrameworkOptionKey = "--framework";
 
         public const string ServerOptionValue = "dotnettestcli";

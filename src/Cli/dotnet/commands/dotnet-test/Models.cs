@@ -5,7 +5,7 @@
 
 namespace Microsoft.DotNet.Cli
 {
-    internal sealed record Module(string? DLLOrExe, string? ProjectPath, string? TargetFramework, string? RunSettingsFilePath);
+    internal sealed record Module(string? DllOrExePath, string? ProjectPath, string? TargetFramework, string? RunSettingsFilePath);
 
     internal sealed record Handshake(Dictionary<byte, string>? Properties);
 
