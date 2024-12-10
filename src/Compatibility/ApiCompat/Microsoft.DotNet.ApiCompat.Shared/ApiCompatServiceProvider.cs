@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ApiCompat
                 CompositeSymbolFilter attributeDataSymbolFilter = new(accessibilitySymbolFilter);
                 if (excludeAttributesFiles is not null)
                 {
-                    attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
+                    attributeDataSymbolFilter.Add(DocIdSymbolFilter.GetFilterForDocIds(excludeAttributesFiles));
                 }
 
                 ApiComparerSettings apiComparerSettings = new(

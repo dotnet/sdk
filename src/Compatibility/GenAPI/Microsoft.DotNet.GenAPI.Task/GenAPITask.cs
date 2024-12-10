@@ -62,17 +62,20 @@ namespace Microsoft.DotNet.GenAPI.Task
         /// <inheritdoc />
         protected override void ExecuteCore()
         {
-            GenAPIApp.Run(new MSBuildLog(Log),
-                Assemblies!,
-                AssemblyReferences,
-                OutputPath,
-                HeaderFile,
-                ExceptionMessage,
-                ExcludeApiFiles,
-                ExcludeAttributesFiles,
-                RespectInternals,
-                IncludeAssemblyAttributes
-            );
+            GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+                .WithLogger(new MSBuildLog(Log))
+                .WithAssembliesPaths(Assemblies)
+                .WithAssemblyReferencesPaths(AssemblyReferences)
+                .WithOutputPath(OutputPath)
+                .WithHeaderFilePath(HeaderFile)
+                .WithExceptionMessage(ExceptionMessage)
+                .WithApiExclusionFilePaths(ExcludeApiFiles)
+                .WithAttributeExclusionFilePaths(ExcludeAttributesFiles)
+                .WithRespectInternals(RespectInternals)
+                .WithIncludeAssemblyAttributes(IncludeAssemblyAttributes)
+                .Build();
+
+            GenAPIApp.Run(c);
         }
     }
 }
