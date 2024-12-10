@@ -30,44 +30,26 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
+            string excludeApiFile = null,
             string excludedAttributeFile = null,
             [CallerMemberName] string assemblyName = "")
         {
-            StringWriter stringWriter = new();
-
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
-
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
-
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
-
-            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                new ConsoleLog(MessageImportance.Low),
-                symbolFilter,
-                attributeDataSymbolFilter,
-                stringWriter,
-                null,
-                false,
-                MetadataReferences);
+            using StringWriter stringWriter = new();
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
 
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
+            GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+                .WithLogger(new ConsoleLog(MessageImportance.Low))
+                .WithAssemblyStreams((assemblyName, assemblyStream))
+                .WithRespectInternals(includeInternalSymbols)
+                .WithIncludeEffectivelyPrivateSymbols(includeEffectivelyPrivateSymbols)
+                .WithIncludeExplicitInterfaceImplementationSymbols(includeExplicitInterfaceImplementationSymbols)
+                .WithApiExclusionFilePaths(excludeApiFile)
+                .WithAttributeExclusionFilePaths(excludedAttributeFile)
+                .Build();
+
+            IAssemblySymbolWriter writer = new CSharpFileBuilder(c, stringWriter);
+            writer.WriteAssembly(c.AssemblySymbols.First());
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();
@@ -229,7 +211,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             RunTest(original: """
                 namespace Foo
-                {   
+                {
                     public record RecordClass;
                     public record RecordClass1(int i);
                     public record RecordClass2(string s, int i);
@@ -238,7 +220,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public record DerivedRecord3(string x, int i, double d) : RecordClass2(default(string)!, i);
                     public record DerivedRecord4(double d) : RecordClass2(default(string)!, default);
                     public record DerivedRecord5() : RecordClass2(default(string)!, default);
-                
+
                     public record RecordClassWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -343,11 +325,11 @@ namespace Microsoft.DotNet.GenAPI.Tests
             RunTest(original: """
                 namespace Foo
                 {
-                    
-                    public record struct RecordStruct;                    
+
+                    public record struct RecordStruct;
                     public record struct RecordStruct1(int i);
                     public record struct RecordStruct2(string s, int i);
-                
+
                     public record struct RecordStructWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -365,10 +347,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public RecordStructWithConstructors() : this(1) { }
                         public RecordStructWithConstructors(string s) : this(int.Parse(s)) { }
                     }
-                
+
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace Foo
                 {
                     public partial struct RecordStruct : System.IEquatable<RecordStruct>
@@ -1642,12 +1624,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1670,7 +1652,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public partial class C : B
                         {
                             internal C() : base(default) {}
@@ -1700,12 +1682,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1779,8 +1761,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public partial class B
                         {
                             protected B() {}
-                        }                    
-                    
+                        }
+
                         public partial class C : B
                         {
                             internal C() {}
@@ -1933,7 +1915,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public class D { }
 
                         public class Id { }
-                    
+
                         public class V { }
                     }
                     """,
@@ -2826,7 +2808,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
                         }
                     }
-                    
+
                     """,
                 // https://github.com/dotnet/sdk/issues/32195 tracks interface expansion
                 expected: """
@@ -2907,7 +2889,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public ref struct C<T>
                         where T : unmanaged
                     {
-                        public required (string? k, dynamic v, nint n) X { get; init; }    
+                        public required (string? k, dynamic v, nint n) X { get; init; }
                     }
 
                     public static class E
@@ -2916,7 +2898,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace N
                 {
                     public ref partial struct C<T>
@@ -2980,7 +2962,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     namespace a
                     {
                         #pragma warning disable CS8597
-                        
+
                         public partial class MyStringCollection : ICollection, IEnumerable, IList
                         {
                             public int Count { get { throw null; } }
@@ -3004,7 +2986,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             void ICollection.CopyTo(Array array, int index) { }
                             IEnumerator IEnumerable.GetEnumerator() { throw null; }
                             int IList.Add(object? value) { throw null; }
-                            bool IList.Contains(object? value) { throw null; }                            
+                            bool IList.Contains(object? value) { throw null; }
                             int IList.IndexOf(object? value) { throw null; }
                             void IList.Insert(int index, object? value) { }
                             void IList.Remove(object? value) { }
@@ -3013,7 +2995,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         #pragma warning restore CS8597
                     }
                     """,
-                expected: """                    
+                expected: """
                     namespace a
                     {
                         public partial class MyStringCollection : System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList

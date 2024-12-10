@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
          * - ReturnValues
          * - Constructors
          * - Generic Parameters
-         * 
+         *
          * Grouped into:
          * - Type
          * - Member
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
 
         private static ISymbolFilter GetAccessibilityAndAttributeSymbolFiltersAsComposite(params string[] excludeAttributeFiles) =>
-            new CompositeSymbolFilter().Add(new AccessibilitySymbolFilter(false)).Add(new DocIdSymbolFilter(excludeAttributeFiles));
+            new CompositeSymbolFilter().Add(new AccessibilitySymbolFilter(false)).Add(DocIdSymbolFilter.GetFilterForDocIds(excludeAttributeFiles));
 
         public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -56,7 +56,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -77,7 +77,7 @@ new CompatDifference[] {}
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -94,7 +94,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -116,7 +116,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -133,7 +133,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -156,7 +156,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -173,7 +173,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -196,7 +196,7 @@ new CompatDifference[] {}
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -212,7 +212,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -311,7 +311,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -337,7 +337,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -370,7 +370,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -396,7 +396,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -429,7 +429,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -457,7 +457,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -492,7 +492,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -518,7 +518,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -551,7 +551,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -577,7 +577,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -610,7 +610,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -634,7 +634,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -666,7 +666,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -687,7 +687,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -716,7 +716,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -740,7 +740,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -792,7 +792,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -815,7 +815,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -832,7 +832,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1366,7 +1366,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1382,7 +1382,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1418,7 +1418,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1433,7 +1433,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}

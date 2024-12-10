@@ -9,9 +9,15 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the logic of filtering out api.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
-    public class DocIdSymbolFilter(string[] docIdsToExcludeFiles) : ISymbolFilter
+    public class DocIdSymbolFilter : ISymbolFilter
     {
-        private readonly HashSet<string> _docIdsToExclude = new(ReadDocIdsAttributes(docIdsToExcludeFiles));
+        private readonly HashSet<string> _docIdsToExclude;
+
+        public static DocIdSymbolFilter GetFilterForDocIds(params string[] docIdsToExclude)
+            => new DocIdSymbolFilter(ReadDocIdsAttributes(docIdsToExclude));
+
+        private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)
+            => _docIdsToExclude = [.. docIdsToExclude];
 
         /// <summary>
         ///  Determines whether the <see cref="ISymbol"/> should be included.
@@ -29,10 +35,15 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             return true;
         }
 
-        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
+        private static IEnumerable<string> ReadDocIdsAttributes(params string[] docIdsToExcludeFiles)
         {
             foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
             {
+                if (string.IsNullOrWhiteSpace(docIdsToExcludeFile))
+                {
+                    continue;
+                }
+
                 foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
                 {
 #if NET
