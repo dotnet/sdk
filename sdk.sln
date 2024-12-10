@@ -497,6 +497,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Inst
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.csproj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sdk", "src\Installer\pkg\dotnet-sdk.proj", "{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\VSTemplateLocator\VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks.Tests", "test\sdk-tasks.Tests\sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
@@ -965,6 +967,10 @@ Global
 		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1142,6 +1148,7 @@ Global
 		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{D9617F63-15F4-4CA2-8ECF-728A94B45D82} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
@@ -1150,6 +1157,7 @@ Global
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
+		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5
