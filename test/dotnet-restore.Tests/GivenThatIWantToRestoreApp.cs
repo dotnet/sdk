@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Restore.Test
                 .WithSource()
                 .Path;
 
-            string[] args = new[] { "--packages", fullPath };
+            string[] args = new[] { "App.sln", "--packages", fullPath };
             args = HandleStaticGraphEvaluation(useStaticGraphEvaluation, args);
             new DotnetRestoreCommand(Log)
                  .WithWorkingDirectory(projectDirectory)
