@@ -169,7 +169,7 @@ namespace Microsoft.NET.TestFramework
             return !string.IsNullOrEmpty(TargetFrameworks);
         }
 
-        public string GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string platform = "")
+        public string GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string? platform = "")
         {
             if (UseArtifactsOutput)
             {
