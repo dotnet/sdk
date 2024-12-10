@@ -6,11 +6,9 @@
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -40,7 +38,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
 
-            GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+            GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
                 .WithLogger(new ConsoleLog(MessageImportance.Low))
                 .WithAssemblyStreams((assemblyName, assemblyStream))
                 .WithRespectInternals(includeInternalSymbols)
@@ -50,8 +48,15 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 .WithAttributeExclusionFilePaths(excludedAttributeFile)
                 .Build();
 
-            IAssemblySymbolWriter writer = new CSharpFileBuilder(c, stringWriter);
-            writer.WriteAssembly(c.AssemblySymbols.First());
+            IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
+                                                                 stringWriter,
+                                                                 config.Loader,
+                                                                 config.SymbolFilter,
+                                                                 config.AttributeDataSymbolFilter,
+                                                                 config.Header,
+                                                                 config.ExceptionMessage,
+                                                                 config.IncludeAssemblyAttributes);
+            writer.WriteAssembly(config.AssemblySymbols.First());
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();

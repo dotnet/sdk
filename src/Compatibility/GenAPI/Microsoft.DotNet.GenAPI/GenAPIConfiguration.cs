@@ -21,9 +21,9 @@ public enum OutputType
     Diff
 }
 
-public class GenApiAppConfiguration
+public class GenAPIConfiguration
 {
-    private GenApiAppConfiguration()
+    private GenAPIConfiguration()
     {
     }
 
@@ -212,7 +212,7 @@ public class GenApiAppConfiguration
             return this;
         }
 
-        public GenApiAppConfiguration Build()
+        public GenAPIConfiguration Build()
         {
             AssemblySymbolLoader loader;
             IReadOnlyList<IAssemblySymbol?> assemblySymbols;
@@ -269,7 +269,7 @@ public class GenApiAppConfiguration
             }
             attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
-            return new GenApiAppConfiguration()
+            return new GenAPIConfiguration()
             {
                 Logger = _logger ?? new ConsoleLog(MessageImportance.Normal),
                 OutputType = _outputType,
@@ -302,7 +302,7 @@ public class GenApiAppConfiguration
             if (_header != null)
             {
 #if NET
-                _header = header.ReplaceLineEndings();
+                _header = _header.ReplaceLineEndings();
 #else
                 _header = Regex.Replace(_header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
 #endif

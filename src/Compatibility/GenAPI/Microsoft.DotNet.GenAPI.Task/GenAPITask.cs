@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.GenAPI.Task
         /// <inheritdoc />
         protected override void ExecuteCore()
         {
-            GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+            GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
                 .WithLogger(new MSBuildLog(Log))
                 .WithAssembliesPaths(Assemblies)
                 .WithAssemblyReferencesPaths(AssemblyReferences)
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.GenAPI.Task
                 .WithIncludeAssemblyAttributes(IncludeAssemblyAttributes)
                 .Build();
 
-            GenAPIApp.Run(c);
+            GenAPIApp.Run(config);
         }
     }
 }

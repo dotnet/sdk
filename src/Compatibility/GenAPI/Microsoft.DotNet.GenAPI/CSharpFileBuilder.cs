@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI
@@ -22,15 +24,34 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public sealed class CSharpFileBuilder : IAssemblySymbolWriter
     {
-        private readonly GenApiAppConfiguration _c;
+        private readonly ILog _logger;
         private readonly TextWriter _textWriter;
+        private readonly AssemblySymbolLoader _loader;
+        private readonly CompositeSymbolFilter _symbolFilter;
+        private readonly CompositeSymbolFilter _attributeDataSymbolFilter;
+        private readonly string _header;
+        private readonly string? _exceptionMessage;
+        private readonly bool _includeAssemblyAttributes;
         private readonly AdhocWorkspace _adhocWorkspace;
         private readonly SyntaxGenerator _syntaxGenerator;
 
-        public CSharpFileBuilder(GenApiAppConfiguration configuration, TextWriter textWriter)
+        public CSharpFileBuilder(ILog logger,
+                                 TextWriter textWriter,
+                                 AssemblySymbolLoader loader,
+                                 CompositeSymbolFilter symbolFilter,
+                                 CompositeSymbolFilter attributeDataSymbolFilter,
+                                 string header,
+                                 string? exceptionMessage,
+                                 bool includeAssemblyAttributes)
         {
-            _c = configuration;
+            _logger = logger;
             _textWriter = textWriter;
+            _loader = loader;
+            _symbolFilter = symbolFilter;
+            _attributeDataSymbolFilter = attributeDataSymbolFilter;
+            _header = header;
+            _exceptionMessage = exceptionMessage;
+            _includeAssemblyAttributes = includeAssemblyAttributes;
             _adhocWorkspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
         }
@@ -38,16 +59,16 @@ namespace Microsoft.DotNet.GenAPI
         /// <inheritdoc />
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
-            _textWriter.Write(_c.Header);
+            _textWriter.Write(_header);
 
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
                     nullableContextOptions: NullableContextOptions.Enable);
             Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
                 ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
                 compilationOptions: compilationOptions));
-            project = project.AddMetadataReferences(_c.Loader.MetadataReferences);
+            project = project.AddMetadataReferences(_loader.MetadataReferences);
 
-            IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_c.SymbolFilter.Include);
+            IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
             List<SyntaxNode> namespaceSyntaxNodes = [];
 
             foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
@@ -63,9 +84,9 @@ namespace Microsoft.DotNet.GenAPI
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
                 .Rewrite(new TypeDeclarationCSharpSyntaxRewriter())
-                .Rewrite(new BodyBlockCSharpSyntaxRewriter(_c.ExceptionMessage));
+                .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage));
 
-            if (_c.IncludeAssemblyAttributes)
+            if (_includeAssemblyAttributes)
             {
                 compilationUnit = GenerateAssemblyAttributes(assemblySymbol, compilationUnit);
             }
@@ -86,7 +107,7 @@ namespace Microsoft.DotNet.GenAPI
         {
             SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
 
-            IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_c.SymbolFilter.Include);
+            IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_symbolFilter.Include);
             if (!typeMembers.Any())
             {
                 return null;
@@ -95,8 +116,8 @@ namespace Microsoft.DotNet.GenAPI
             foreach (INamedTypeSymbol typeMember in typeMembers.Order())
             {
                 SyntaxNode typeDeclaration = _syntaxGenerator
-                    .DeclarationExt(typeMember, _c.SymbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, typeMember, _c.AttributeDataSymbolFilter);
+                    .DeclarationExt(typeMember, _symbolFilter)
+                    .AddMemberAttributes(_syntaxGenerator, typeMember, _attributeDataSymbolFilter);
 
                 typeDeclaration = Visit(typeDeclaration, typeMember);
 
@@ -131,7 +152,7 @@ namespace Microsoft.DotNet.GenAPI
 
                 // If they're methods, compare their names and signatures.
                 return baseType.GetMembers(member.Name)
-                    .Any(baseMember => _c.SymbolFilter.Include(baseMember) &&
+                    .Any(baseMember => _symbolFilter.Include(baseMember) &&
                          (baseMember.Kind != SymbolKind.Method ||
                           method.SignatureEquals((IMethodSymbol)baseMember)));
             }
@@ -140,7 +161,7 @@ namespace Microsoft.DotNet.GenAPI
                 // If they're indexers, compare their signatures.
                 return baseType.GetMembers(member.Name)
                     .Any(baseMember => baseMember is IPropertySymbol baseProperty &&
-                         _c.SymbolFilter.Include(baseMember) &&
+                         _symbolFilter.Include(baseMember) &&
                          (prop.GetMethod.SignatureEquals(baseProperty.GetMethod) ||
                           prop.SetMethod.SignatureEquals(baseProperty.SetMethod)));
             }
@@ -148,21 +169,21 @@ namespace Microsoft.DotNet.GenAPI
             {
                 // For all other kinds of members, compare their names.
                 return baseType.GetMembers(member.Name)
-                    .Any(_c.SymbolFilter.Include);
+                    .Any(_symbolFilter.Include);
             }
         }
 
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
-            IEnumerable<ISymbol> members = namedType.GetMembers().Where(_c.SymbolFilter.Include);
+            IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
 
             // If it's a value type
             if (namedType.TypeKind == TypeKind.Struct)
             {
-                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_c.SymbolFilter, _c.AttributeDataSymbolFilter));
+                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter, _attributeDataSymbolFilter));
             }
 
-            namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_c.SymbolFilter));
+            namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_symbolFilter));
 
             foreach (ISymbol member in members.Order())
             {
@@ -170,15 +191,15 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter out it as well.
                     if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
-                        method.ExplicitInterfaceImplementations.Any(m => !_c.SymbolFilter.Include(m.ContainingSymbol) ||
+                        method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
                         // if explicit interface implementation method has inaccessible type argument
-                        m.ContainingType.HasInaccessibleTypeArgument(_c.SymbolFilter)))
+                        m.ContainingType.HasInaccessibleTypeArgument(_symbolFilter)))
                     {
                         continue;
                     }
 
                     // Filter out default constructors since these will be added automatically
-                    if (method.IsImplicitDefaultConstructor(_c.SymbolFilter))
+                    if (method.IsImplicitDefaultConstructor(_symbolFilter))
                     {
                         continue;
                     }
@@ -186,14 +207,14 @@ namespace Microsoft.DotNet.GenAPI
 
                 // If the property is derived from an interface that was filter out, we must filtered out it either.
                 if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
-                    property.ExplicitInterfaceImplementations.Any(m => !_c.SymbolFilter.Include(m.ContainingSymbol)))
+                    property.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol)))
                 {
                     continue;
                 }
 
                 SyntaxNode memberDeclaration = _syntaxGenerator
-                    .DeclarationExt(member, _c.SymbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, member, _c.AttributeDataSymbolFilter);
+                    .DeclarationExt(member, _symbolFilter)
+                    .AddMemberAttributes(_syntaxGenerator, member, _attributeDataSymbolFilter);
 
                 if (member is INamedTypeSymbol nestedTypeSymbol)
                 {
@@ -226,7 +247,7 @@ namespace Microsoft.DotNet.GenAPI
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
             // When assembly references aren't available, assembly attributes with foreign types won't be resolved.
-            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_c.AttributeDataSymbolFilter);
+            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_attributeDataSymbolFilter);
 
             // Emit assembly attributes from the IAssemblySymbol
             List<SyntaxNode> attributeSyntaxNodes = attributes
@@ -263,7 +284,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateForwardedTypeAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_c.SymbolFilter.Include))
+            foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_symbolFilter.Include))
             {
                 if (symbol.TypeKind != TypeKind.Error)
                 {
@@ -276,7 +297,7 @@ namespace Microsoft.DotNet.GenAPI
                 }
                 else
                 {
-                    _c.Logger.LogWarning(string.Format(
+                    _logger.LogWarning(string.Format(
                         Resources.ResolveTypeForwardFailed,
                         symbol.ToDisplayString(),
                         $"{symbol.ContainingAssembly.Name}.dll"));
