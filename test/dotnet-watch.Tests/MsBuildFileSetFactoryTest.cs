@@ -422,7 +422,7 @@ $@"<ItemGroup>
             return result;
         }
 
-        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
+        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject?.Name + ".csproj");
 
         private static string WriteFile(TestAsset testAsset, string name, string contents = "")
         {
@@ -443,6 +443,6 @@ $@"<ItemGroup>
         }
 
         private static string GetTestProjectDirectory(TestAsset testAsset)
-            => Path.Combine(testAsset.Path, testAsset.TestProject.Name);
+            => Path.Combine(testAsset.Path, testAsset.TestProject?.Name ?? string.Empty);
     }
 }
