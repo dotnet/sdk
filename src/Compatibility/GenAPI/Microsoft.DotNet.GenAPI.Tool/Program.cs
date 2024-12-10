@@ -97,17 +97,20 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
-                    parseResult.GetValue(assembliesOption)!,
-                    parseResult.GetValue(assemblyReferencesOption),
-                    parseResult.GetValue(outputPathOption),
-                    parseResult.GetValue(headerFileOption),
-                    parseResult.GetValue(exceptionMessageOption),
-                    parseResult.GetValue(excludeApiFilesOption),
-                    parseResult.GetValue(excludeAttributesFilesOption),
-                    parseResult.GetValue(respectInternalsOption),
-                    parseResult.GetValue(includeAssemblyAttributesOption)
-                );
+                GenApiAppConfiguration c = GenApiAppConfiguration.GetBuilder()
+                    .WithLogger(new ConsoleLog(MessageImportance.Normal))
+                    .WithAssembliesPaths(parseResult.GetValue(assembliesOption)!)
+                    .WithAssemblyReferencesPaths(parseResult.GetValue(assemblyReferencesOption))
+                    .WithOutputPath(parseResult.GetValue(outputPathOption))
+                    .WithHeaderFilePath(parseResult.GetValue(headerFileOption))
+                    .WithExceptionMessage(parseResult.GetValue(exceptionMessageOption))
+                    .WithApiExclusionFilePaths(parseResult.GetValue(excludeApiFilesOption))
+                    .WithAttributeExclusionFilePaths(parseResult.GetValue(excludeAttributesFilesOption))
+                    .WithRespectInternals(parseResult.GetValue(respectInternalsOption))
+                    .WithIncludeAssemblyAttributes(parseResult.GetValue(includeAssemblyAttributesOption))
+                    .Build();
+
+                GenAPIApp.Run(c);
             });
 
             return rootCommand.Parse(args).Invoke();
