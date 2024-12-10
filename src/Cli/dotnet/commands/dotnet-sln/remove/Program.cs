@@ -26,20 +26,14 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             {
                 return cached[item];
             }
-            int count = 0;
+            int count = item.Files?.Count ?? 0;
             var children = solution.SolutionItems.Where(i => i.Parent == item);
             foreach (var child in children)
             {
-                if (child is SolutionFolderModel folderModel)
-                {
-                    count += CountNonFolderDescendants(solution, folderModel, cached);
-                }
-                else
-                {
-                    count++;
-                }
+                count += child is SolutionFolderModel folderModel
+                    ? CountNonFolderDescendants(solution, folderModel, cached)
+                    : 1;
             }
-            count += (item.Files?.Count ?? 0);
             cached.Add(item, count);
             return count;
         }
@@ -124,10 +118,10 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 CountNonFolderDescendants(solution, item, nonFolderDescendantsCount);
             }
 
-            var emptyFolders = nonFolderDescendantsCount.Where(i => i.Value == 0);
+            var emptyFolders = nonFolderDescendantsCount.Where(i => i.Value == 0).Select(i => i.Key);
             foreach (var folder in emptyFolders)
             {
-                solution.RemoveFolder(folder.Key);
+                solution.RemoveFolder(folder);
             }
 
             await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
