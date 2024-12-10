@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     {
         private readonly HashSet<string> _docIdsToExclude;
 
-        public static DocIdSymbolFilter GetFilterForDocIds(params string[] docIdsToExclude)
+        public static DocIdSymbolFilter Create(params string[] docIdsToExclude)
             => new DocIdSymbolFilter(ReadDocIdsAttributes(docIdsToExclude));
 
         private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)

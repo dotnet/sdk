@@ -256,7 +256,7 @@ public class GenAPIConfiguration
             CompositeSymbolFilter symbolFilter = new();
             if (_apiExclusionFilePaths?.Count() > 0)
             {
-                symbolFilter.Add(DocIdSymbolFilter.GetFilterForDocIds(_apiExclusionFilePaths));
+                symbolFilter.Add(DocIdSymbolFilter.Create(_apiExclusionFilePaths));
             }
             symbolFilter.Add(new ImplicitSymbolFilter());
             symbolFilter.Add(accessibilitySymbolFilter);
@@ -265,7 +265,7 @@ public class GenAPIConfiguration
             CompositeSymbolFilter attributeDataSymbolFilter = new();
             if (_attributeExclusionFilePaths?.Count() > 0)
             {
-                attributeDataSymbolFilter.Add(DocIdSymbolFilter.GetFilterForDocIds(_attributeExclusionFilePaths));
+                attributeDataSymbolFilter.Add(DocIdSymbolFilter.Create(_attributeExclusionFilePaths));
             }
             attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
