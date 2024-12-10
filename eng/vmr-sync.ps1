@@ -115,11 +115,6 @@ if (-not $tmpDir) {
   exit 1
 }
 
-if (-not (Test-Path -Path $componentTemplate -PathType Leaf)) {
-  Fail "File '$componentTemplate' does not exist. Please specify a valid path to the component template"
-  exit 1
-}
-
 if (-not (Test-Path -Path $tpnTemplate -PathType Leaf)) {
   Fail "File '$tpnTemplate' does not exist. Please specify a valid path to the THIRD-PARTY-NOTICES template"
   exit 1

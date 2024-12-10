@@ -182,11 +182,6 @@ if [[ -z "$tmp_dir" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$component_template" ]]; then
-  fail "File '$component_template' does not exist. Please specify a valid path to the Component.md template"
-  exit 1
-fi
-
 if [[ ! -f "$tpn_template" ]]; then
   fail "File '$tpn_template' does not exist. Please specify a valid path to the THIRD-PARTY-NOTICES template"
   exit 1
