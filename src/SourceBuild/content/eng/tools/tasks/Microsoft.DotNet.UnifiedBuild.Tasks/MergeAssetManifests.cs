@@ -76,7 +76,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             XDocument verticalManifest = new(new XElement(mergedManifestRoot.Name, mergedManifestRoot.Attributes(), packageElements, blobElements));
 
-            File.WriteAllText(MergedAssetManifestOutputPath, verticalManifest.ToString());
+            FileInfo outputFileInfo = new(MergedAssetManifestOutputPath);
+            outputFileInfo.Directory!.Create();
+            File.WriteAllText(outputFileInfo.FullName, verticalManifest.ToString());
+
             Log.LogMessage(MessageImportance.High, $"Merged asset manifest written to {MergedAssetManifestOutputPath}");
 
             return !Log.HasLoggedErrors;
