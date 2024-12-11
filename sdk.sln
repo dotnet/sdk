@@ -210,9 +210,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishProfiles", "PublishP
 		src\WebSdk\Publish\Targets\PublishProfiles\Default.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\Default.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeployPackage.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultMSDeployPackage.pubxml
-		src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultOneDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultOneDeploy.pubxml
 		src\WebSdk\Publish\Targets\PublishProfiles\DefaultWebJobOneDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultWebJobOneDeploy.pubxml
+		src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml = src\WebSdk\Publish\Targets\PublishProfiles\DefaultZipDeploy.pubxml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishTargets", "PublishTargets", "{40E6E4B1-286B-4542-B814-2A3DA29510D1}"
@@ -222,8 +222,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishTargets", "PublishTa
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.Kudu.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.Kudu.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeploy.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeployPackage.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.MSDeployPackage.targets
-		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets
 		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.OneDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.OneDeploy.targets
+		src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets = src\WebSdk\Publish\Targets\PublishTargets\Microsoft.NET.Sdk.Publish.ZipDeploy.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TransformTargets", "TransformTargets", "{DFA91CC3-D6E4-45B7-AF6F-4385288886E4}"
@@ -511,6 +511,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Sdk.Compilers.Toolset", "src\Microsoft.Net.Sdk.Compilers.Toolset\Microsoft.Net.Sdk.Compilers.Toolset.csproj", "{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireService.Tests", "test\Microsoft.WebTools.AspireService.Tests\Microsoft.WebTools.AspireService.Tests.csproj", "{1F0B4B3C-DC88-4740-B04F-1707102E9930}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.shproj", "{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "src\BuiltInTools\HotReloadAgent.Package\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{2FF79F82-60C1-349A-4726-7783D5A6D5DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -974,6 +978,10 @@ Global
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1153,6 +1161,8 @@ Global
 		{94C8526E-DCC2-442F-9868-3DD0BA2688BE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
@@ -1160,7 +1170,11 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{2ff79f82-60c1-349a-4726-7783d5a6d5df}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{418b10bd-ca42-49f3-8f4a-d8cc90c8a17d}*SharedItemsImports = 13
+		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5

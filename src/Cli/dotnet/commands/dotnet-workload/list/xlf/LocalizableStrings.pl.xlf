@@ -13,13 +13,8 @@
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
-        <target state="translated">Znaleziono wersję obciążenia {0} przypiętą w pliku global.json w pozycji {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
-        <target state="translated">Znaleziono wersję obciążenia {0} przypiętą w pliku global.json w pozycji {1}, ale nie została ona zainstalowana. Uruchomienie polecenia „dotnet workload install”, „dotnet workload update” lub „dotnet workload restore” może rozwiązać ten problem.</target>
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="needs-review-translation">Znaleziono wersję obciążenia {0} przypiętą w pliku global.json w pozycji {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">

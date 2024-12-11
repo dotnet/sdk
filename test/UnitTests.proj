@@ -8,7 +8,7 @@
 
     <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
-    <XUnitWorkItemTimeout>00:45:00</XUnitWorkItemTimeout>
+    <XUnitWorkItemTimeout>01:00:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
   <ItemGroup>

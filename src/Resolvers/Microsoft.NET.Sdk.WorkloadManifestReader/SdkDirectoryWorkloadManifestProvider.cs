@@ -138,7 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
 
                 //  Check to see if workload set is from a different feature band
-                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+                var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(workloadSetVersion);
                 if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
                 {
                     var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);
@@ -230,10 +230,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 return comparison;
             }
 
-            var modifiedFirst = "1.1.1" + (firstDash == first.Length ? string.Empty : first.Substring(firstDash));
-            var modifiedSecond = "1.1.1" + (secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+            var modifiedFirst = new ReleaseVersion(1, 1, 1, firstDash == first.Length ? null : first.Substring(firstDash));
+            var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? null : second.Substring(secondDash));
 
-            return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
+            return modifiedFirst.CompareTo(modifiedSecond);
         }
 
         void ThrowExceptionIfManifestsNotAvailable()
@@ -251,21 +251,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
                 // If this came from --info or workload --version, the error won't be thrown, but we should still
                 // suggest running `dotnet workload restore` to the user.
-                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
+                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, _globalJsonPathFromConstructor);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version);
+                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
             var installState = InstallStateContents.FromPath(installStateFilePath)!;
-            string? shouldRestoreMessage = installState.UseWorkloadSets == true ?
-                Strings.ShouldInstallAWorkloadSet :
-                null;
 
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -281,7 +278,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", null, UpdateModeMessage: shouldRestoreMessage);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.UseWorkloadSets == true);
             }
         }
 
@@ -596,26 +593,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 directory = Path.GetDirectoryName(directory);
             }
             return null;
-        }
-
-        public GlobalJsonInformation? GetGlobalJsonInformation()
-        {
-            return _globalJsonWorkloadSetVersion is null || _globalJsonPathFromConstructor is null ?
-                null :
-                new GlobalJsonInformation(_globalJsonPathFromConstructor, _globalJsonWorkloadSetVersion, _exceptionToThrow is null);
-        }
-
-        public record GlobalJsonInformation
-        {
-            public string GlobalJsonPath { get; }
-            public string GlobalJsonVersion { get; }
-            public bool WorkloadVersionInstalled { get; }
-            public GlobalJsonInformation(string path, string version, bool installed)
-            {
-                GlobalJsonPath = path;
-                GlobalJsonVersion = version;
-                WorkloadVersionInstalled = installed;
-            }
         }
     }
 }
