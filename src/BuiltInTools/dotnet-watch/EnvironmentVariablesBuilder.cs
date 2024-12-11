@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watch
         {
             var builder = new EnvironmentVariablesBuilder();
 
-            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks) is { } dotnetStartupHooks)
+            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotNetStartupHooks) is { } dotnetStartupHooks)
             {
                 builder.DotNetStartupHookDirective.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
             }
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Watch
         public void SetDirective(string name, string value)
         {
             // should use DotNetStartupHookDirective
-            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase));
 
             _directives[name] = value;
         }
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watch
 
             if (DotNetStartupHookDirective is not [])
             {
-                yield return MakeDirective(EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
+                yield return MakeDirective(EnvironmentVariables.Names.DotNetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
             }
 
             static string MakeDirective(string name, string value)
