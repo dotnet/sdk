@@ -183,13 +183,6 @@ namespace Microsoft.DotNet.Cli
             return defaultTestingSdk;
         }
 
-        private static bool IsTestingPlatformEnabled()
-        {
-            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
-            var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
-            return isTestingPlatformEnabled;
-        }
-
         private static CliCommand ConstructCommand()
         {
 #if RELEASE
