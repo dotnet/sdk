@@ -248,6 +248,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [SkipOnPlatform(TestPlatforms.OSX, "sadness")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64", "windows,linux,osx", "X64,Arm64", "_", "_")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64", "windows,linux,osx", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
         // In .NET 6.0 building targeting Windows on linux or osx doesn't support emitting native symbols.

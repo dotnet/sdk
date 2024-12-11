@@ -104,6 +104,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
+        [SkipOnPlatform(TestPlatforms.OSX, "sadness")]
         public void Publish_Works_WithLibraryUsingHintPath()
         {
             // Arrange

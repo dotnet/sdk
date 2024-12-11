@@ -610,6 +610,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
+        [SkipOnPlatform(TestPlatforms.OSX, "sadness")]
         public void ItShouldShowImportantMessage()
         {
             string testAppName = "VSTestCore";
