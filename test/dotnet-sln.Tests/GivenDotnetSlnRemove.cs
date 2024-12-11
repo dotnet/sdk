@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence;
@@ -286,8 +285,9 @@ Options:
                 .Path;
 
             var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(3);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(3);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
@@ -299,8 +299,7 @@ Options:
             outputText += Environment.NewLine + outputText;
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
