@@ -667,6 +667,7 @@
     <Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24610.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>bd822c7fd899f9ac902505c82bd93dbafff33bbe</Sha>
+      <SourceBuild RepoName="testfx" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="MSTest" Version="3.7.0-preview.24604.7">
       <Uri>https://github.com/microsoft/testfx</Uri>
