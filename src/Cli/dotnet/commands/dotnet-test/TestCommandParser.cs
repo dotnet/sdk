@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -159,6 +161,28 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
+        private static string GetTestingSdkName()
+        {
+            string defaultTestingSdk = "vstest";
+
+            string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+
+            if (!string.IsNullOrEmpty(globalJsonPath))
+            {
+                JsonNode globalJson = JsonObject.Parse(File.ReadAllText(globalJsonPath));
+
+                if (globalJson is not null)
+                {
+                    var testSdkSection = globalJson["test-sdk"];
+                    if (testSdkSection is not null && testSdkSection["name"] is not null)
+                    {
+                        return testSdkSection["name"].AsValue().GetValue<string>();
+                    }
+                }
+            }
+            return defaultTestingSdk;
+        }
+
         private static bool IsTestingPlatformEnabled()
         {
             var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
@@ -171,16 +195,15 @@ namespace Microsoft.DotNet.Cli
 #if RELEASE
             return GetVSTestCliCommand();
 #else
-            bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
-            string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
+            string testingSdkName = GetTestingSdkName();
 
-            if (isTestingPlatformEnabled)
-            {
-                return GetTestingPlatformCliCommand();
-            }
-            else
+            if (testingSdkName.Equals("vstest", StringComparison.OrdinalIgnoreCase))
             {
                 return GetVSTestCliCommand();
+            }
+            else if (testingSdkName.Equals("testingplatform", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetTestingPlatformCliCommand();
             }
 
             throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
