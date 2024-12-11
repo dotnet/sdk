@@ -275,10 +275,12 @@ function Build {
         initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
       fi
 
-      "$CLI_ROOT/dotnet" build-server shutdown
+      # --msbuild is added as a temporary workaround - https://github.com/dotnet/source-build/issues/4796
+      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
       "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-      "$CLI_ROOT/dotnet" build-server shutdown
+      # --msbuild is added as a temporary workaround - https://github.com/dotnet/source-build/issues/4796
+      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
     fi
 
     # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver
