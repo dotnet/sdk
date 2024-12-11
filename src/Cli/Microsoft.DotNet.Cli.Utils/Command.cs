@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _process.EnableRaisingEvents = true;
 
-            Stopwatch sw = null;
+            Stopwatch? sw = null;
             if (CommandLoggingContext.IsVerbose)
             {
                 sw = Stopwatch.StartNew();
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     LocalizableStrings.ProcessExitedWithCode,
                     FormatProcessInfo(_process.StartInfo),
                     exitCode,
-                    sw.ElapsedMilliseconds);
+                    sw?.ElapsedMilliseconds);
                 if (exitCode == 0)
                 {
                     Reporter.Verbose.WriteLine(message.Green());
