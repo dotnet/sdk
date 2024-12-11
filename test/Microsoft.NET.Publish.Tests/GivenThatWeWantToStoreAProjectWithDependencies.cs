@@ -121,7 +121,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45417")]
         public void store_nativeonlyassets()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
