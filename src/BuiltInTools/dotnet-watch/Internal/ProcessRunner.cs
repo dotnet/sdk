@@ -3,9 +3,8 @@
 
 
 using System.Diagnostics;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class ProcessRunner
     {
@@ -246,19 +245,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        process.Kill();
+                        TerminateWindowsProcess(process, state, reporter);
                     }
                     else
                     {
-                        [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-                        static extern int sys_kill(int pid, int sig);
-
-                        var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
-                        if (result != 0)
-                        {
-                            var error = Marshal.GetLastPInvokeError();
-                            reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
-                        }
+                        TerminateUnixProcess(state, reporter);
                     }
 
                     reporter.Verbose($"Process {state.ProcessId} killed.");
@@ -270,6 +261,52 @@ namespace Microsoft.DotNet.Watcher.Internal
 #if DEBUG
                 reporter.Verbose(ex.ToString());
 #endif
+            }
+        }
+
+        private static void TerminateWindowsProcess(Process process, ProcessState state, IReporter reporter)
+        {
+            // Needs API: https://github.com/dotnet/runtime/issues/109432
+            // Code below does not work because the process creation needs CREATE_NEW_PROCESS_GROUP flag.
+#if TODO    
+            if (!state.ForceExit)
+            {
+                const uint CTRL_C_EVENT = 0;
+
+                [DllImport("kernel32.dll", SetLastError = true)]
+                static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
+
+                [DllImport("kernel32.dll", SetLastError = true)]
+                static extern bool AttachConsole(uint dwProcessId);
+
+                [DllImport("kernel32.dll", SetLastError = true)]
+                static extern bool FreeConsole();
+
+                if (AttachConsole((uint)state.ProcessId) &&
+                    GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0) &&
+                    FreeConsole())
+                {
+                    return;
+                }
+
+                var error = Marshal.GetLastPInvokeError();
+                reporter.Verbose($"Failed to send Ctrl+C to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error})");
+            }
+#endif
+
+            process.Kill();
+        }
+
+        private static void TerminateUnixProcess(ProcessState state, IReporter reporter)
+        {
+            [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+            static extern int sys_kill(int pid, int sig);
+
+            var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
+            if (result != 0)
+            {
+                var error = Marshal.GetLastPInvokeError();
+                reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
             }
         }
     }

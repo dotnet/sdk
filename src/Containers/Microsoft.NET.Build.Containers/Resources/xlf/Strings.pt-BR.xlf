@@ -257,6 +257,11 @@
         <target state="translated">'{0}' não era um nome de imagem de contêiner válido, foi normalizado para '{1}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="OciImageMultipleTagsNotSupported">
+        <source>Unable to create tarball for oci image with multiple tags.</source>
+        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
         <source>CONTAINER2011: {0} '{1}' does not exist</source>
         <target state="needs-review-translation">CONTAINER2011: {0} '{1}' não existe</target>
@@ -376,6 +381,11 @@
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
         <target state="needs-review-translation">CONTAINER2001: MediaType não reconhecido '{0}'.</target>
         <note>{StrBegins="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaTypeForTarball">
+        <source>Unable to create tarball for mediaType '{0}'.</source>
+        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <note />
       </trans-unit>
       <trans-unit id="_Test">
         <source>CONTAINER0000: Value for unit test {0}</source>

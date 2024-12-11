@@ -116,6 +116,33 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var command = new ToolInstallLocalCommand(parseResult);
+            command._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+
+            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
+        }
+
+        [Fact]
         public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();

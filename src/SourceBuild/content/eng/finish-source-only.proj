@@ -30,16 +30,27 @@
                           OutputPath="$(ArtifactsLogDir)" />
   </Target>
 
+  <Target Name="DetermineSourceBuiltSdkNonStableVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+    <ItemGroup>
+      <SdkVersionFileItem Include="$(DotNetSdkExtractDir)/sdk/**/.version" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <SourceBuiltSdkNonStableVersion>$([System.Text.RegularExpressions.Regex]::Split('$([System.IO.File]::ReadAllText('%(SdkVersionFileItem.Identity)'))', '\r\n|\r|\n')[3])</SourceBuiltSdkNonStableVersion>
+    </PropertyGroup>
+  </Target>
+
   <!--
     Determine symbols tarball names and discover all intermediate symbols,
     to be used as inputs and outputs of symbols repackaging targets.
   -->
   <Target Name="DetermineSymbolsTargetsInputsAndOutputs"
-          BeforeTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion">
     <PropertyGroup>
-      <UnifiedSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
-      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
+      <UnifiedSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkNonStableVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkNonStableVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
     </PropertyGroup>
     <ItemGroup>
       <IntermediateSymbol Include="$(IntermediateSymbolsRootDir)**/*" />
@@ -172,10 +183,10 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion"
           Condition="'@(PrebuiltFile)' != ''">
     <PropertyGroup>
-      <PrebuiltsTarball>$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</PrebuiltsTarball>
+      <PrebuiltsTarball>$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkNonStableVersion).$(TargetRid)$(ArchiveExtension)</PrebuiltsTarball>
       <PrebuiltsTarballWorkingDir>$(ResultingPrebuiltPackagesDir)</PrebuiltsTarballWorkingDir>
     </PropertyGroup>
 
@@ -197,7 +208,7 @@
 
 
   <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion;ResolveProjectReferences">
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion;ResolveProjectReferences">
     <!-- Inputs: Packages to include in the tarball -->
     <ItemGroup>
       <ArtifactsPackageToBundle Include="$(ArtifactsShippingPackagesDir)**;
@@ -213,7 +224,7 @@
       <SourceBuiltLayoutDir>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', 'artifacts-layout'))</SourceBuiltLayoutDir>
 
       <!-- Outputs -->
-      <SourceBuiltTarballName>$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkNonStableVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
       <SourceBuiltVersionName>$(SourceBuiltLayoutDir).version</SourceBuiltVersionName>
       <AllPackageVersionsPropsName>$(SourceBuiltLayoutDir)PackageVersions.props</AllPackageVersionsPropsName>
       <SourceBuiltMergedAssetManifestName>$(SourceBuiltLayoutDir)%(MergedAssetManifest.Filename)%(MergedAssetManifest.Extension)</SourceBuiltMergedAssetManifestName>
@@ -246,7 +257,7 @@
 
     <!-- Content of the .version file to include in the tarball -->
     <ItemGroup>
-      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkVersion)" />
+      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkNonStableVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(SourceBuiltVersionName)"

@@ -127,6 +127,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SDDLTests" />
+    <InternalsVisibleTo Include="dotnet-watch" />
+    <InternalsVisibleTo Include="dotnet-watch.Tests" />
   </ItemGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

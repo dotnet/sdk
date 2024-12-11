@@ -64,6 +64,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem CompilerOptions { get; set; }
 
+        public ITaskItem[] ExcludeFromPublishPackageReferences { get; set; } = Array.Empty<ITaskItem>();
+
         public ITaskItem[] RuntimeStorePackages { get; set; }
 
         // NuGet compilation assets
@@ -232,6 +234,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithDirectReferences(directReferences)
                 .WithDependencyReferences(dependencyReferences)
                 .WithReferenceProjectInfos(referenceProjects)
+                .WithExcludeFromPublishAssets(PackageReferenceConverter.GetPackageIds(ExcludeFromPublishPackageReferences))
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
                 .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
