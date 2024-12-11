@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Assert.NotNull(actual);
             }
 
-            if (!expected.SequenceEqual(actual, comparer))
+            if (!expected.SequenceEqual(actual, comparer ?? EqualityComparer<T>.Default))
             {
                 Fail(GetAssertMessage(expected, actual, message, itemInspector, itemSeparator));
             }
