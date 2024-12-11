@@ -11,29 +11,29 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// Full Path to the Project Folder. This is used to determine the default appsettings location.
         /// </summary>
         [Required]
-        public string ProjectDirectory { get; set; }
+        public string? ProjectDirectory { get; set; }
         /// <summary>
         /// Path to the Publish Folder.
         /// </summary>
         [Required]
-        public string PublishDirectory { get; set; }
+        public string? PublishDirectory { get; set; }
         /// <summary>
         /// Gets the destination connection string information.
         /// </summary>
         [Required]
-        public ITaskItem[] DestinationConnectionStrings { get; set; }
+        public ITaskItem[]? DestinationConnectionStrings { get; set; }
         /// <summary>
         /// AppSettings file name.
         /// </summary>
-        public string SourceAppSettingsName { get; set; }
+        public string? SourceAppSettingsName { get; set; }
         /// <summary>
         /// Optional: Get the destination AppSettingsName
         /// </summary>
-        public string DestinationAppSettingsName { get; set; }
+        public string? DestinationAppSettingsName { get; set; }
         /// <summary>
         ///  options: Name of the deployment environment.
         /// </summary>
-        public string EnvironmentName { get; set; }
+        public string? EnvironmentName { get; set; }
 
         public override bool Execute()
         {
@@ -58,12 +58,21 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             InitializeProperties();
 
-            string sourceAppSettingsFilePath = Path.Combine(ProjectDirectory, SourceAppSettingsName);
+
+            string sourceAppSettingsFilePath = string.Empty;
+            if (ProjectDirectory is not null && SourceAppSettingsName is not null)
+            {
+                sourceAppSettingsFilePath = Path.Combine(ProjectDirectory, SourceAppSettingsName);
+            }
             if (string.IsNullOrEmpty(DestinationAppSettingsName))
             {
                 DestinationAppSettingsName = $"{Path.GetFileNameWithoutExtension(SourceAppSettingsName)}.{EnvironmentName}{Path.GetExtension(SourceAppSettingsName)}";
             }
-            string destinationAppSettingsFilePath = Path.Combine(PublishDirectory, DestinationAppSettingsName);
+            string destinationAppSettingsFilePath = string.Empty;
+            if (PublishDirectory is not null)
+            {
+                destinationAppSettingsFilePath = Path.Combine(PublishDirectory, DestinationAppSettingsName);
+            }
 
             // If the source appsettings is not present, generate one.
             if (!File.Exists(sourceAppSettingsFilePath))
@@ -103,6 +112,5 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 EnvironmentName = "production";
             }
         }
-
     }
 }

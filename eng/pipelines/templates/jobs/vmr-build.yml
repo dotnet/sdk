@@ -13,6 +13,10 @@ parameters:
   type: string
   default: ''
 
+- name: configuration
+  type: string
+  default: 'Release'
+
 - name: container
   type: string
   default: ''
@@ -155,6 +159,11 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
+  # Must be a path under $(sourcesPath). Inside the docker container, we mount $(sourcesPath) to /vmr
+  # and can't write outside of that folder.
+  - name: artifactsStagingDir
+    value: $(sourcesPath)/artifacts/staging
+
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
     outputs:
@@ -166,14 +175,14 @@ jobs:
       sbomEnabled: false
 
     - output: pipelineArtifact
-      path: $(Build.ArtifactStagingDirectory)/publishing
+      path: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - output: buildArtifacts
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
+      PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
       ArtifactName: VerticalManifests
       displayName: Publish Vertical Manifest
       sbomEnabled: false
@@ -276,13 +285,13 @@ jobs:
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -330,7 +339,8 @@ jobs:
         df -h
 
         customEnvVars=""
-        customBuildArgs="--ci --clean-while-building --prepareMachine"
+        customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}"
+
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
         fi
@@ -473,10 +483,10 @@ jobs:
 
           # Only use Docker when a container is specified
           if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           else
             cd $(sourcesPath)
-            ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+            ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
           fi
 
         displayName: Run Tests
@@ -588,38 +598,8 @@ jobs:
         publishRunAttachments: true
         testRunTitle: ScenarioTests_$(Agent.JobName)
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: $(sourcesPath)/artifacts
-      Contents: |
-        assets/**
-        manifests/**
-      TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
-    displayName: Copy artifacts to Artifact Staging Directory
-
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
-    - powershell: |
-        $sourcePath = "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml"
-        $targetPath = "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
-        New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/manifests" -Force | Out-Null
-        Copy-Item $sourcePath -Destination $targetPath -Force
-      displayName: Copy vertical manifest to Artifact Staging Directory
-  - ${{ else }}:
-    - script: |
-        mkdir -p "$(Build.ArtifactStagingDirectory)/manifests"
-        cp "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml" "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
-      displayName: Copy vertical manifest to Artifact Staging Directory
-
-  # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
-  - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: $(sourcesPath)/artifacts/packages
-        TargetFolder: $(Build.ArtifactStagingDirectory)/publishing/packages
-      displayName: Copy packages to Artifact Staging Directory
-
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    - publish: $(Build.ArtifactStagingDirectory)/publishing
+    - publish: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       continueOnError: true
@@ -627,6 +607,6 @@ jobs:
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
+        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
         ArtifactName: VerticalManifests
       displayName: Publish Vertical Manifest

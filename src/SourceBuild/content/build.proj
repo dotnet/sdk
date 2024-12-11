@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.Traversal" InitialTargets="PrintInfo">
+<Project Sdk="Microsoft.Build.Traversal">
 
 <!-- Default targets and parallelization -->
  <ItemDefinitionGroup>
@@ -26,7 +26,7 @@
     <ProjectReference Include="$(RepositoryEngineeringDir)finish-source-only.proj" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-  <Target Name="PrintInfo">
+  <Target Name="PrintInfo" BeforeTargets="Build">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>

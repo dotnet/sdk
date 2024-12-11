@@ -11,9 +11,9 @@ internal class HttpResponseMessageForStatusCode(HttpStatusCode statusCode) : IHt
     public HttpStatusCode StatusCode { get; private set; } = statusCode;
 
     /// <inheritdoc/>
-    public Task<Stream> GetResponseBodyAsync()
+    public Task<Stream?> GetResponseBodyAsync()
     {
-        return System.Threading.Tasks.Task.FromResult<Stream>(new MemoryStream());
+        return System.Threading.Tasks.Task.FromResult<Stream?>(new MemoryStream());
     }
 
     /// <inheritdoc/>

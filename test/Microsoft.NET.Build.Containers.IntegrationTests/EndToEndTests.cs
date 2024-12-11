@@ -415,16 +415,13 @@ public class EndToEndTests : IDisposable
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
         bool everSucceeded = false;
-
-
-
         if (projectType == "webapi")
         {
             var portCommand =
             ContainerCli.PortCommand(_testOutput, containerName, 8080)
                 .Execute();
             portCommand.Should().Pass();
-            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            var port = portCommand.StdOut?.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
             _testOutput.WriteLine($"Discovered port was '{port}'");
             var tempUri = new Uri($"http://{port}", UriKind.Absolute);
             var appUri = new UriBuilder(tempUri)

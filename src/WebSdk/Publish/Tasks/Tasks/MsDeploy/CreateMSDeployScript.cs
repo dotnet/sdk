@@ -9,29 +9,33 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     public class CreateMSDeployScript : Task
     {
         [Required]
-        public string ProjectName { get; set; }
+        public string? ProjectName { get; set; }
 
         [Required]
-        public string ScriptFullPath { get; set; }
+        public string? ScriptFullPath { get; set; }
 
         [Required]
-        public string ReadMeFullPath { get; set; }
+        public string? ReadMeFullPath { get; set; }
 
         public override bool Execute()
         {
-            if (!File.Exists(ScriptFullPath))
+            if (ScriptFullPath is not null)
             {
-                File.Create(ScriptFullPath).Close();
+                if (!File.Exists(ScriptFullPath))
+                {
+                    File.Create(ScriptFullPath).Close();
+                }
+                File.WriteAllLines(ScriptFullPath, GetReplacedFileContents(Resources.MsDeployBatchFile));
             }
 
-            File.WriteAllLines(ScriptFullPath, GetReplacedFileContents(Resources.MsDeployBatchFile));
-
-            if (!File.Exists(ReadMeFullPath))
+            if (ReadMeFullPath is not null)
             {
-                File.Create(ReadMeFullPath).Close();
+                if (!File.Exists(ReadMeFullPath))
+                {
+                    File.Create(ReadMeFullPath).Close();
+                }
+                File.WriteAllLines(ReadMeFullPath, GetReplacedFileContents(Resources.MsDeployReadMe));
             }
-
-            File.WriteAllLines(ReadMeFullPath, GetReplacedFileContents(Resources.MsDeployReadMe));
 
             return true;
         }
@@ -41,7 +45,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             var lines = fileContents.Split(new string[] { Environment.NewLine, "\n" }, StringSplitOptions.None);
             for (int i = 0; i < lines.Length; i++)
             {
-                lines[i] = lines[i]?.Replace("$$ProjectName$$", ProjectName);
+                lines[i] = lines[i].Replace("$$ProjectName$$", ProjectName);
             }
 
             return lines;

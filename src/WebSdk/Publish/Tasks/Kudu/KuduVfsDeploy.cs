@@ -24,13 +24,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         {
             get
             {
-                return string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "vfs/site/wwwroot/");
+                return ConnectionInfo.DestinationUrl is null
+                    ? string.Empty : string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "vfs/site/wwwroot/");
             }
         }
 
-        public System.Threading.Tasks.Task DeployAsync(string sourcePath)
+        public System.Threading.Tasks.Task? DeployAsync(string? sourcePath)
         {
-            if (!Directory.Exists(sourcePath))
+            if (sourcePath is null || !Directory.Exists(sourcePath))
             {
                 return null;
             }
@@ -88,7 +89,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                             }
                         }
                     }
-                });
+                }
+            );
         }
     }
 }
