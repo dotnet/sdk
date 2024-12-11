@@ -21,12 +21,9 @@ namespace Microsoft.DotNet.GenAPI
         public static void Run(GenAPIConfiguration config)
         {
             // Invoke an assembly symbol writer for each directly loaded assembly.
-            foreach (IAssemblySymbol? assemblySymbol in config.AssemblySymbols)
+            foreach (KeyValuePair<string, IAssemblySymbol> kvp in config.AssemblySymbols)
             {
-                if (assemblySymbol is null)
-                    continue;
-
-                using TextWriter textWriter = GetTextWriter(config.OutputPath, assemblySymbol.Name);
+                using TextWriter textWriter = GetTextWriter(config.OutputPath, kvp.Key);
                 IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
                                                                      textWriter,
                                                                      config.Loader,
@@ -35,7 +32,7 @@ namespace Microsoft.DotNet.GenAPI
                                                                      config.Header,
                                                                      config.ExceptionMessage,
                                                                      config.IncludeAssemblyAttributes);
-                writer.WriteAssembly(assemblySymbol);
+                writer.WriteAssembly(kvp.Value);
             }
 
             if (config.Loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))

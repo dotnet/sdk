@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                                                                  config.Header,
                                                                  config.ExceptionMessage,
                                                                  config.IncludeAssemblyAttributes);
-            writer.WriteAssembly(config.AssemblySymbols.First());
+            writer.WriteAssembly(config.AssemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();

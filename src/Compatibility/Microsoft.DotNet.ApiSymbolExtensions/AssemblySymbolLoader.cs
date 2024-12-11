@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
-        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
+        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
@@ -104,6 +104,29 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 MetadataReference metadataReference = assembliesToReturn[i];
                 ISymbol? symbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference);
                 assemblySymbols[i] = symbol as IAssemblySymbol;
+            }
+
+            return assemblySymbols;
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
+        {
+            // First resolve all assemblies that are passed in and create metadata references out of them.
+            // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
+            // as they are resolved as part of the loop below.
+            ImmutableHashSet<string> fileNames = paths.Select(path => Path.GetFileName(path)).ToImmutableHashSet();
+            List<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
+
+            // Create IAssemblySymbols out of the MetadataReferences.
+            // Doing this after resolving references to make sure that references are available.
+            Dictionary<string, IAssemblySymbol> assemblySymbols = [];
+            foreach (MetadataReference metadataReference in assembliesToReturn)
+            {
+                if(_cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) is IAssemblySymbol assemblySymbol)
+                {
+                    assemblySymbols.Add(assemblySymbol.Name, assemblySymbol);
+                }
             }
 
             return assemblySymbols;

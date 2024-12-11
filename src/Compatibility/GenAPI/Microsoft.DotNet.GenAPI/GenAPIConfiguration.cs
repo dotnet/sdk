@@ -38,7 +38,7 @@ public class GenAPIConfiguration
     [AllowNull]
     public AssemblySymbolLoader Loader { get; private set; }
     [AllowNull]
-    public IReadOnlyList<IAssemblySymbol?> AssemblySymbols { get; private set; }
+    public IReadOnlyDictionary<string, IAssemblySymbol> AssemblySymbols { get; private set; }
     [AllowNull]
     public CompositeSymbolFilter SymbolFilter { get; private set; }
     [AllowNull]
@@ -215,7 +215,7 @@ public class GenAPIConfiguration
         public GenAPIConfiguration Build()
         {
             AssemblySymbolLoader loader;
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols;
+            IReadOnlyDictionary<string, IAssemblySymbol> assemblySymbols;
 
             if (_assembliesPaths?.Length > 0)
             {
@@ -225,22 +225,23 @@ public class GenAPIConfiguration
                 {
                     loader.AddReferenceSearchPaths(_assemblyReferencesPaths);
                 }
-                assemblySymbols = loader.LoadAssemblies(_assembliesPaths);
+                assemblySymbols = loader.LoadAssembliesAsDictionary(_assembliesPaths);
             }
             else if (_assemblyStreams?.Count() > 0)
             {
                 loader = new(resolveAssemblyReferences: true, includeInternalSymbols: _respectInternals);
                 loader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
                 loader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-                List<IAssemblySymbol> symbols = [];
+                Dictionary<string, IAssemblySymbol> symbols = [];
                 foreach ((string assemblyName, Stream assemblyStream) in _assemblyStreams)
                 {
                     if (loader.LoadAssembly(assemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
                     {
-                        symbols.Add(assemblySymbol);
+                        symbols.Add(assemblyName, assemblySymbol);
                     }
                 }
-                assemblySymbols = symbols.AsReadOnly();
+
+                assemblySymbols = symbols;
             }
             else
             {

@@ -34,11 +34,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         bool HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings);
 
         /// <summary>
-        /// Loads a list of assemblies and gets its corresponding <see cref="IAssemblySymbol"/> from the specified paths.
+        /// Loads a set of assemblies from the filesystem and gets their corresponding <see cref="IAssemblySymbol"/> instances as a list.
         /// </summary>
         /// <param name="paths">List of paths to load binaries from. Can be full paths to binaries or directories.</param>
-        /// <returns>The list of resolved <see cref="IAssemblySymbol"/>.</returns>
+        /// <returns>The list of resolved <see cref="IAssemblySymbol"/> instances, which can be resolved to <see langword="null"/>.</returns>
         IReadOnlyList<IAssemblySymbol?> LoadAssemblies(params string[] paths);
+
+        /// <summary>
+        /// Loads a set of assemblies from the filesystem and gets their corresponding <see cref="IAssemblySymbol"/> instances as a dictionary.
+        /// </summary>
+        /// <param name="paths">List of paths to load binaries from. Can be full paths to binaries or directories.</param>
+        /// <returns>The dictionary of resolved <see cref="IAssemblySymbol"/> instances,excluding those which resolved as <see langword="null"/>.</returns>
+        IReadOnlyDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths);
 
         /// <summary>
         /// Loads assemblies from an archive based on the given relative paths.
@@ -60,7 +67,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         /// <param name="name">The name to use to resolve the assembly.</param>
         /// <param name="stream">The stream to read the metadata from.</param>
-        /// <returns><see cref="IAssemblySymbol"/> representing the given <paramref name="stream"/>. If an 
+        /// <returns><see cref="IAssemblySymbol"/> representing the given <paramref name="stream"/>. If an
         /// assembly with the same <paramref name="name"/> was already loaded, the previously loaded assembly is returned.</returns>
         IAssemblySymbol? LoadAssembly(string name, Stream stream);
 
