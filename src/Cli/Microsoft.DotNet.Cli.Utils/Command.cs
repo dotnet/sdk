@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _process.EnableRaisingEvents = true;
 
-            Stopwatch sw = null;
+            Stopwatch sw = new Stopwatch();
             if (CommandLoggingContext.IsVerbose)
             {
                 sw = Stopwatch.StartNew();
