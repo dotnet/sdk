@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return process.ExitCode;
         }
 
-        public static int ExecuteAndCaptureOutput(this ProcessStartInfo startInfo, out string stdOut, out string stdErr)
+        public static int ExecuteAndCaptureOutput(this ProcessStartInfo startInfo, out string? stdOut, out string? stdErr)
         {
             var outStream = new StreamForwarder().Capture();
             var errStream = new StreamForwarder().Capture();
