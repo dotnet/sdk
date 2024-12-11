@@ -285,7 +285,7 @@ Options:
                 .Path;
 
             var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(3);
 
@@ -299,8 +299,7 @@ Options:
             outputText += Environment.NewLine + outputText;
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
