@@ -145,18 +145,12 @@ setTimeout(async function () {
     }
 
     let applyError = undefined;
-    if (window.Blazor?._internal?.applyHotReload) {
-      // Only apply hot reload deltas if Blazor has been initialized.
-      // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
-      // to be a failure. These deltas will get applied later, when Blazor completes initialization.
-      deltas.forEach(d => {
-        try {
-          window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes)
-        } catch (error) {
-          console.warn(error);
-          applyError = error;
-        }
-      });
+
+    try {
+      applyDeltas_legacy(deltas)
+    } catch (error) {
+      console.warn(error);
+      applyError = error;
     }
 
     try {
@@ -174,6 +168,24 @@ setTimeout(async function () {
     }
   }
 
+  function applyDeltas_legacy(deltas) {
+    let apply = window.Blazor?._internal?.applyHotReload
+
+    // Only apply hot reload deltas if Blazor has been initialized.
+    // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
+    // to be a failure. These deltas will get applied later, when Blazor completes initialization.
+    if (apply) {
+      deltas.forEach(d => {
+        if (apply.length == 5) {
+          // WASM 8.0
+          apply(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes)
+        } else {
+          // WASM 9.0
+          apply(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta)
+        }
+      });
+    }
+  }
   function sendDeltaApplied() {
     connection.send(new Uint8Array([1]).buffer);
   }
@@ -198,11 +210,13 @@ setTimeout(async function () {
 
     let applyError = undefined;
     let log = [];
-    if (window.Blazor?._internal?.applyHotReloadDeltas) {
-      // Only apply hot reload deltas if Blazor has been initialized.
-      // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
-      // to be a failure. These deltas will get applied later, when Blazor completes initialization.
-      try {
+    try {
+      let applyDeltas = window.Blazor?._internal?.applyHotReloadDeltas
+      if (applyDeltas) {
+        // Only apply hot reload deltas if Blazor has been initialized.
+        // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
+        // to be a failure. These deltas will get applied later, when Blazor completes initialization.
+      
         let wasmDeltas = deltas.map(delta => {
           return {
             "moduleId": delta.moduleId,
@@ -213,12 +227,15 @@ setTimeout(async function () {
           };
         });
 
-        log = window.Blazor._internal.applyHotReloadDeltas(wasmDeltas, responseLoggingLevel);
-      } catch (error) {
-        console.warn(error);
-        applyError = error;
-        log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
+        log = applyDeltas(wasmDeltas, responseLoggingLevel);      
+      } else {
+        // Try invoke older WASM API:
+        applyDeltas_legacy(deltas)
       }
+    } catch (error) {
+      console.warn(error);
+      applyError = error;
+      log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
     }
 
     try {
