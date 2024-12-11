@@ -196,4 +196,8 @@
     <value>Version</value>
     <comment>Table lable</comment>
   </data>
+  <data name="NeedNuGetInConfig" xml:space="preserve">
+    <value>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.</value>
+    <comment>Do not translate 'dotnet tool search' or 'nuget.config'</comment>
+  </data>
 </root>
