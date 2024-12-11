@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
 using Microsoft.DotNet.ApiCompatibility.Rules;
@@ -74,7 +72,7 @@ namespace AssemblyMapperTestNamespace3
             IEnumerable<INamespaceMapper> namespaceMappers = assemblyMapper.GetNamespaces();
 
             Assert.Equal(3, namespaceMappers.Count());
-            Assert.Equal(new string?[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
+            Assert.Equal(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
             Assert.Equal(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", "AssemblyMapperTestNamespace3" }, namespaceMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }

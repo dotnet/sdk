@@ -1,0 +1,57 @@
+From 519d583b26ef1d6e12c7ed6084a4f3288d363a8b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
+ <1175054+carlossanlop@users.noreply.github.com>
+Date: Mon, 9 Dec 2024 15:35:33 -0800
+Subject: [PATCH] Only update razor dependencies coming from 
+ maintenance-packages when source build is true. Tracking issue: 
+ https://github.com/dotnet/sdk/issues/45155
+
+---
+ Directory.Packages.props |  4 ++--
+ eng/Versions.props       | 10 ++++++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 3d16f73684..fa36bb4024 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -115,7 +115,7 @@
+     <PackageVersion Include="System.Security.Cryptography.Xml" Version="7.0.1" />
+     <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
+     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
+-    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
++    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
+     <PackageVersion Include="xunit" Version="$(_XunitPackageVersion)" />
+     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
+     <PackageVersion Include="xunit.extensibility.execution" Version="$(_XunitPackageVersion)" />
+@@ -127,7 +127,7 @@
+       at the appropriate version, in combination with using CentralPackageTransitivePinningEnabled, will
+       ensure the correct version is used in all places
+     -->
+-    <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />
++    <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistVersion)" />
+     <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
+   </ItemGroup>
+ </Project>
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 6be719a0d8..6a02305158 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -100,4 +100,14 @@
+     <XUnitVersion>2.6.6</XUnitVersion>
+     <XUnitAnalyzersVersion>1.7.0</XUnitAnalyzersVersion>
+   </PropertyGroup>
++
++  <!-- The maintenance-packages dependency versions need to be conditionally selected: https://github.com/dotnet/sdk/issues/45155 -->
++  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
++    <MicrosoftIORedistVersion>6.0.1</MicrosoftIORedistVersion>
++    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
++  </PropertyGroup>
++    <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++    <MicrosoftIORedistVersion>6.1.0</MicrosoftIORedistVersion>
++    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
++  </PropertyGroup>
+ </Project>
+-- 
+2.47.1.windows.1
+
