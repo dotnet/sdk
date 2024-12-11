@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 

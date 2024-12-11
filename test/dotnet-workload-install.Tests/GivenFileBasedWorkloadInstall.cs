@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 string path = Path.Combine(dotnetRoot, "metadata", "workloads", version.ToString(), "InstalledWorkloads");
                 Directory.CreateDirectory(path);
-                File.Create(Path.Combine(path, "6.0.100"));
+                File.Create(Path.Combine(path, "6.0.100")).Close();
             }
 
             IEnumerable<SdkFeatureBand> featureBands = installer.GetWorkloadInstallationRecordRepository().GetFeatureBandsWithInstallationRecords();
@@ -357,7 +357,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write workload install record
             var workloadsRecordPath = Path.Combine(dotnetRoot, "metadata", "workloads", version, "InstalledWorkloads");
             Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "android-sdk-workload"));
+            File.Create(Path.Combine(workloadsRecordPath, "android-sdk-workload")).Close();
 
             var downloads = installer.GetDownloads(new[] { new WorkloadId("android-sdk-workload"), new WorkloadId("android-buildtools-workload") }, new SdkFeatureBand(version), false).ToList();
 
@@ -384,7 +384,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write mock cache
             Directory.CreateDirectory(cachePath);
             var nupkgPath = Path.Combine(cachePath, $"{packId}.{packVersion}.nupkg");
-            File.Create(nupkgPath);
+            File.Create(nupkgPath).Close();
 
             CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath)));
             var mockNugetInstaller = nugetInstaller as MockNuGetPackageDownloader;

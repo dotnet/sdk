@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <ItemGroup>
     <SupportedPlatform Remove="Android" />
     <SupportedPlatform Remove="iOS" />
@@ -36,18 +37,22 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup>
+    <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel)</FullNugetVersion>
+    <FullNugetVersion Condition="'$(PreReleaseVersionIteration)' != ''">$(FullNugetVersion).$(PreReleaseVersionIteration)</FullNugetVersion>
+    <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
+  </PropertyGroup>
+
   <!-- Optionally override arcade's test target with one which will run the tests as tools.
        Conditionally overriding a target requires a conditional import of another (.targets)
        file. -->
   <Import Project="OverrideTest.targets"
           Condition="'$(RunTestsAsTool)' == 'true' And '$(CanRunTestAsTool)' == 'true'"/>
 
-
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                           and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
-                          and '$(MSBuildProjectName)' != 'toolset-tasks'
-                          and '$(MSBuildProjectName)' != 'core-sdk-tasks'">
+                          and '$(MSBuildProjectName)' != 'sdk-tasks'">
     <FrameworkReference
         Update="Microsoft.NETCore.App"
         TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"

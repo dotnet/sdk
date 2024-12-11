@@ -2,7 +2,6 @@
 <Project>
 
   <ItemGroup>
-    <Foo Include="Bar" />
     <_CopyDirectoryBuildTestDependenciesInput Include="$(MSBuildThisFileDirectory)..\Common\Empty.props" />
     <_CopyDirectoryBuildTestDependenciesInput Include="$(MSBuildThisFileDirectory)..\Common\Empty.targets" />
   </ItemGroup>

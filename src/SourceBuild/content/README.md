@@ -3,10 +3,12 @@
 This repository is a **Virtual Monolithic Repository (VMR)** which includes all the source code and infrastructure needed to build the .NET SDK.
 
 What this means:
+
 - **Monolithic** - a join of multiple repositories that make up the whole product, such as [dotnet/runtime](https://github.com/dotnet/runtime) or [dotnet/sdk](https://github.com/dotnet/sdk).
 - **Virtual** - a mirror (not replacement) of product repos where sources from those repositories are synchronized into.
 
 In the VMR, you can find:
+
 - source files of [each product repository](#list-of-components) which are mirrored inside of their respective directories under [`src/`](https://github.com/dotnet/dotnet/tree/main/src),
 - tooling that enables [building the whole .NET product from source](https://github.com/dotnet/source-build) on Linux platforms,
 - small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/sdk/src/SourceBuild/patches), applied on top of the original code to make the build possible,
@@ -23,11 +25,11 @@ See also [dotnet/source-build](https://github.com/dotnet/source-build) for more 
 - The main purpose of the [dotnet/dotnet](https://github.com/dotnet/dotnet) repository is to have all source code necessary to build the .NET product available in one repository and identified by a single commit.
 - The VMR also aims to become the place from which we release and service future versions of .NET to reduce the complexity of the product construction process. This should allow our partners and and 3rd parties to easily build, test and modify .NET using their custom infrastructure as well as make the process available to the community.
 - Lastly, we hope to solve other problems that the current multi-repo setup brings:
-    - Enable the standard [down-/up-stream open-source model](src/arcade/Documentation/UnifiedBuild/VMR-Upstream-Downstream.md).
-    - Fulfill requirements of .NET distro builders such as RedHat or Canonical to natively include .NET in their distribution repositories.
-    - Simplify scenarios such as client-run testing of bug fixes and improvements. The build should work in an offline environment too for certain platforms.
-    - Enable developers to make and test changes spanning multiple repositories.
-    - More efficient pipeline for security fixes during the CVE pre-disclosure process.
+  - Enable the standard [down-/up-stream open-source model](src/arcade/Documentation/UnifiedBuild/VMR-Upstream-Downstream.md).
+  - Fulfill requirements of .NET distro builders such as RedHat or Canonical to natively include .NET in their distribution repositories.
+  - Simplify scenarios such as client-run testing of bug fixes and improvements. The build should work in an offline environment too for certain platforms.
+  - Enable developers to make and test changes spanning multiple repositories.
+  - More efficient pipeline for security fixes during the CVE pre-disclosure process.
 
 We will achieve these goals while keeping active coding work in the separate repos where it happens today. For example: ASP.NET features will continue to be developed in `dotnet/aspnetcore` and CLR features will be continue to be developed in `dotnet/runtime`. Each of these repos have their own distinct communities and processes, and aggregating development into a true mono-repo would work against that. Hence, the "virtual" monolithic repo: the VMR gives us the simplicity of a mono-repo for building and servicing the product, while active development of components of that product stays in its various existing repos. The day to day experience for typical contributors will not change.
 
@@ -39,15 +41,16 @@ See the [Unified Build roadmap](src/arcade/Documentation/UnifiedBuild/Roadmap.md
 
 ### Supported platforms
 
-* 8.0 
-    * source-build configuration on Linux
-* 9.0+ (WIP)
-    * source-build configuration on Linux
-    * non-source-build configuration on Linux, Mac, and Windows
+- 8.0 and 9.0
+  - source-build configuration on Linux
+- 10.0+ (WIP)
+  - source-build configuration on Linux
+  - non-source-build configuration on Linux, Mac, and Windows
 
 For the latest information about Source-Build support for new .NET versions, please check our [GitHub Discussions page](https://github.com/dotnet/source-build/discussions) for announcements.
 
 ### Code flow
+
 For the time being, the source code only flows one way - from the development repos into the VMR.
 More details on this process:
 
@@ -83,23 +86,26 @@ In case you don't want to / cannot prepare your environment per the requirements
    cd dotnet-dotnet
    ```
 
-2. **Build the .NET SDK**
+1. **Build the .NET SDK**
 
     Choose one of the following build modes:
-   
+
     - **Microsoft based build**
 
         For Unix:
+
         ```bash
         ./build.sh --clean-while-building
         ```
 
         For Windows:
+
         ```cmd
         .\build.cmd -cleanWhileBuilding
         ```
 
     - **Building from source**
+
         ```bash
         # Prep the source to build on your distro.
         # This downloads a .NET SDK and a number of .NET packages needed to build .NET from source.
@@ -111,9 +117,10 @@ In case you don't want to / cannot prepare your environment per the requirements
 
     The resulting SDK is placed at `artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz` (for Unix) or `artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].zip` (for Windows).
 
-4. *(Optional)* **Unpack and install the .NET SDK**
-    
+1. *(Optional)* **Unpack and install the .NET SDK**
+
     For Unix:
+
     ```bash
     mkdir -p $HOME/dotnet
     tar zxf artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz -C $HOME/dotnet
@@ -121,12 +128,13 @@ In case you don't want to / cannot prepare your environment per the requirements
     ```
 
     For Windows:
+
     ```cmd
     mkdir %userprofile%\dotnet
     tar -xf artifacts/assets/Release/dotnet-sdk-9.0.100-[your RID].zip -C %userprofile%\dotnet
     set "PATH=%userprofile%\dotnet;%PATH%"
     ```
-    
+
     To test your built SDK, run the following:
 
     ```bash

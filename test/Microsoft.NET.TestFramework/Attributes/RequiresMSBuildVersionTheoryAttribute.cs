@@ -5,6 +5,11 @@ namespace Microsoft.NET.TestFramework
 {
     public class RequiresMSBuildVersionTheoryAttribute : TheoryAttribute
     {
+        /// <summary>
+        /// Can be used to document the reason a test needs a specific version of MSBuild
+        /// </summary>
+        public string Reason { get; set; }
+
         public RequiresMSBuildVersionTheoryAttribute(string version)
         {
             CheckForRequiredMSBuildVersion(this, version);

@@ -10,23 +10,15 @@ function InitializeCustomSDKToolset {
 
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them in source build.
-  if ($env:DotNetBuildFromSource -eq "true" -or $productBuild -or $properties -like "*DotNetBuildRepo=true*") {
+  if ($productBuild -or $properties -like "*DotNetBuildRepo=true*") {
     return
   }
 
   $cli = InitializeDotnetCli -install:$true
-  if (-not ($env:PROCESSOR_ARCHITECTURE -like "arm64"))
-  {
-  InstallDotNetSharedFramework "1.0.5"
-  InstallDotNetSharedFramework "1.1.2"
-  InstallDotNetSharedFramework "2.1.0"
-  InstallDotNetSharedFramework "2.2.8"
-  }
-  InstallDotNetSharedFramework "3.1.0"
-  InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut

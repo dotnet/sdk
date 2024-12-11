@@ -3,16 +3,6 @@
 
 using System.Reflection;
 
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable enable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
-//  Work around https://github.com/dotnet/roslyn-analyzers/issues/6094
-#pragma warning disable CA1420
-
-//  Work around https://github.com/dotnet/roslyn-analyzers/issues/6094
-#pragma warning disable CA1420
-
 namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop

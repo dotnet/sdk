@@ -1,9 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -82,7 +80,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return !Log.HasLoggedErrors;
     }
 
-    private bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
+    private static bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
     {
         var updated = false;
         for (var i = 0; i < operations.Length; i++)
@@ -116,7 +114,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return updated;
     }
 
-    private bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
@@ -151,7 +149,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private (T[], bool replaced) RemoveAllIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static (T[], bool replaced) RemoveAllIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
         List<T> selectors = null;
         for (var i = 0; i < elements.Length; i++)
@@ -181,7 +179,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private (T[], bool replaced) RemoveFirstIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static (T[], bool replaced) RemoveFirstIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
         for (var i = 0; i < elements.Length; i++)
         {
@@ -197,7 +195,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
@@ -253,7 +251,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private (T[], bool replaced) ReplaceFirstIfFound<T>(
+    private static (T[], bool replaced) ReplaceFirstIfFound<T>(
         T[] elements,
         Func<T, string> getName,
         Func<T, string> getValue,
@@ -274,7 +272,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         return (elements, false);
     }
 
-    private bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private static bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
@@ -346,7 +344,7 @@ public class UpdateStaticWebAssetEndpoints : Task
         }
     }
 
-    private class StaticWebAssetEndpointOperation(string type, string target, string name, string value, string newValue, string quality)
+    private sealed class StaticWebAssetEndpointOperation(string type, string target, string name, string value, string newValue, string quality)
     {
         public string Type { get; } = type;
 
@@ -360,15 +358,12 @@ public class UpdateStaticWebAssetEndpoints : Task
 
         public string Quality { get; } = quality;
 
-        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item)
-        {
-            return new StaticWebAssetEndpointOperation(
+        public static StaticWebAssetEndpointOperation FromTaskItem(ITaskItem item) => new(
                 item.ItemSpec,
                 item.GetMetadata("UpdateTarget"),
                 item.GetMetadata("Name"),
                 item.GetMetadata("Value"),
                 item.GetMetadata("NewValue"),
                 item.GetMetadata("Quality"));
-        }
     }
 }

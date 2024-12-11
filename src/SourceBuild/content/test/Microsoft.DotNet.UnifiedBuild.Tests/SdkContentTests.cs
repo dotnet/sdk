@@ -217,7 +217,7 @@ public class SdkContentTests : TestBase
         string downloadCacheDir = Path.Combine(Config.DownloadCacheDirectory, "Sdks");
         Directory.CreateDirectory(downloadCacheDir);
         var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
-        var channel = UbSdkVersion[..5] + "xx";
+        var channel = UbSdkVersion[..6] + "xx";
         var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{Config.TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
 
         var redirectResponse = await client.GetAsync(akaMsUrl);
