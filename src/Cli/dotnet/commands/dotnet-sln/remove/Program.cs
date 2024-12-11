@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
