@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (runtimeVersion != null)
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add("MSBUILD_NET_TASKHOST_RUNTIME_VERSION", runtimeVersion);
+                    propertiesToAdd.Add("MSBuildNetTaskHostRuntimeVersion", runtimeVersion);
                 }
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
