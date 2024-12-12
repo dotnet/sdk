@@ -11,7 +11,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         private static string customIcuFilename = "icudt_custom.dat";
         private static string fullIcuFilename = "icudt.dat";
-        private static string hybridIcuFilename = "icudt_hybrid.dat";
         private static string[] icuShardFilenames = new string[] {
             "icudt_EFIGS.dat",
             "icudt_CJK.dat",
@@ -491,7 +490,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
             bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
-            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
             foreach (var shardFilename in icuShardFilenames)
             {
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
@@ -499,7 +497,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
                 new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
@@ -535,7 +532,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
             bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
-            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
             foreach (var shardFilename in icuShardFilenames)
             {
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
@@ -543,7 +539,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
                 new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();

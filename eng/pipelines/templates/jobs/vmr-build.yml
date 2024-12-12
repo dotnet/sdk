@@ -177,10 +177,8 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
-  # Must be a path under $(sourcesPath). Inside the docker container, we mount $(sourcesPath) to /vmr
-  # and can't write outside of that folder.
   - name: artifactsStagingDir
-    value: $(sourcesPath)/artifacts/staging
+    value: $(Build.ArtifactStagingDirectory)/artifacts
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -303,13 +301,13 @@ jobs:
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) ${{ parameters.extraProperties }}
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -421,6 +419,7 @@ jobs:
         fi
 
         extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+        extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
@@ -455,6 +454,7 @@ jobs:
           customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
+          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }}"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
@@ -484,6 +484,7 @@ jobs:
           fi
 
           extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+          extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
