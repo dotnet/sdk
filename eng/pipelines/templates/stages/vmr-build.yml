@@ -90,7 +90,7 @@ stages:
         buildName: ${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
+        targetArchitecture: x64
         pool: ${{ parameters.pool_Linux }}
         container: ${{ variables.centOSStreamContainer }}
         buildFromArchive: false            # 🚫
@@ -111,7 +111,7 @@ stages:
       #     buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
       #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       #     vmrBranch: ${{ variables.VmrBranch }}
-      #     architecture: x64
+      #     targetArchitecture: x64
       #     pool: ${{ parameters.pool_Linux }}
       #     container: ${{ variables.centOSStreamContainer }}
       #     buildFromArchive: false            # 🚫
@@ -131,7 +131,7 @@ stages:
       #     buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpinePreviousName) }}
       #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       #     vmrBranch: ${{ variables.VmrBranch }}
-      #     architecture: x64
+      #     targetArchitecture: x64
       #     artifactsRid: ${{ variables.alpinePreviousX64Rid }}
       #     pool: ${{ parameters.pool_Linux }}
       #     container: ${{ variables.alpinePreviousContainer }}
@@ -150,7 +150,7 @@ stages:
           buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
-          architecture: x64
+          targetArchitecture: x64
           pool: ${{ parameters.pool_Linux }}
           container: ${{ variables.ubuntuContainer }}
           buildFromArchive: false            # 🚫
@@ -171,7 +171,7 @@ stages:
             buildName: ${{ format('{0}_Offline_MsftSdk', variables.almaLinuxName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
+            targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.almaLinuxContainer }}
             targetRid: ${{ variables.almaLinuxX64Rid }}
@@ -189,7 +189,7 @@ stages:
             buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
+            targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.alpineLatestContainer }}
             targetRid: ${{ variables.alpineLatestX64Rid }}
@@ -207,7 +207,7 @@ stages:
             buildName: ${{ format('{0}_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
+            targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: true             # ✅
@@ -225,7 +225,7 @@ stages:
         #     buildName: ${{ format('{0}_Online_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
         #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         #     vmrBranch: ${{ variables.VmrBranch }}
-        #     architecture: x64
+        #     targetArchitecture: x64
         #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
         #     pool: ${{ parameters.pool_Linux }}
         #     container: ${{ variables.centOSStreamContainer }}
@@ -244,7 +244,7 @@ stages:
         #     buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
         #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         #     vmrBranch: ${{ variables.VmrBranch }}
-        #     architecture: x64
+        #     targetArchitecture: x64
         #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
         #     pool: ${{ parameters.pool_Linux }}
         #     container: ${{ variables.centOSStreamContainer }}
@@ -262,7 +262,7 @@ stages:
             buildName: ${{ format('{0}_Mono_Offline_MsftSdk', variables.centOSStreamName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
+            targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.centOSStreamContainer }}
             buildFromArchive: true             # ✅
@@ -279,7 +279,7 @@ stages:
             buildName: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
+            targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.fedoraContainer }}
             buildFromArchive: true             # ✅
@@ -296,7 +296,7 @@ stages:
             buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
+            targetArchitecture: arm64
             pool: ${{ parameters.pool_LinuxArm64 }}
             container: ${{ variables.ubuntuArmContainer }}
             buildFromArchive: false            # 🚫
@@ -314,7 +314,7 @@ stages:
         #     buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.fedoraName) }}
         #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         #     vmrBranch: ${{ variables.VmrBranch }}
-        #     architecture: x64
+        #     targetArchitecture: x64
         #     pool: ${{ parameters.pool_Linux }}
         #     container: ${{ variables.fedoraContainer }}
         #     buildFromArchive: false            # 🚫
@@ -334,7 +334,7 @@ stages:
         #     buildName: ${{ format('{0}_Mono_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
         #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         #     vmrBranch: ${{ variables.VmrBranch }}
-        #     architecture: x64
+        #     targetArchitecture: x64
         #     pool: ${{ parameters.pool_Linux }}
         #     container: ${{ variables.centOSStreamContainer }}
         #     buildFromArchive: true             # ✅
@@ -363,7 +363,6 @@ stages:
         buildName: ${{ format('{0}_DevVersions', variables.ubuntuName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
         pool: ${{ parameters.pool_Linux }}
         container: ${{ variables.ubuntuContainer }}
         targetOS: linux
@@ -373,21 +372,9 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: ${{ variables.ubuntuName }}
-        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
-        pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntuContainer }}
-        targetOS: linux
-        targetArchitecture: x64
-
-    - template: ../jobs/vmr-build.yml
-      parameters:
         buildName: Windows_DevVersions
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x86
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x86
@@ -410,7 +397,6 @@ stages:
         buildName: Windows
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
@@ -420,7 +406,6 @@ stages:
         buildName: Android_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: arm64
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.androidCrossContainer }}
         targetOS: android
@@ -432,7 +417,6 @@ stages:
         buildName: Browser_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: wasm
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.browserCrossContainer }}
         crossRootFs: '/crossrootfs/x64'
@@ -445,7 +429,6 @@ stages:
         buildName: iOSSimulator_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: arm64
         pool: ${{ parameters.pool_Mac }}
         targetOS: iossimulator
         targetArchitecture: arm64
@@ -459,7 +442,6 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
@@ -471,7 +453,6 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
@@ -483,7 +464,6 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
@@ -495,7 +475,6 @@ stages:
             buildName: Browser_Multithreaded_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: wasm
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.browserCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -509,7 +488,6 @@ stages:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.linuxBionicCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -522,7 +500,6 @@ stages:
             buildName: LinuxBionic_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.linuxBionicCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -536,7 +513,6 @@ stages:
             buildName: LinuxBionic_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.linuxBionicCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -550,7 +526,6 @@ stages:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.linuxBionicCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -563,7 +538,6 @@ stages:
             buildName: LinuxBionic_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.linuxBionicCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -577,7 +551,6 @@ stages:
             buildName: iOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: ios
             targetArchitecture: arm64
@@ -588,7 +561,6 @@ stages:
             buildName: iOS_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: ios
             targetArchitecture: arm64
@@ -600,7 +572,6 @@ stages:
             buildName: iOSSimulator_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: arm64
@@ -612,7 +583,6 @@ stages:
             buildName: iOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: x64
@@ -623,7 +593,6 @@ stages:
             buildName: iOSSimulator_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: x64
@@ -635,7 +604,6 @@ stages:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
@@ -646,7 +614,6 @@ stages:
             buildName: MacCatalyst_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
@@ -658,7 +625,6 @@ stages:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: x64
@@ -669,7 +635,6 @@ stages:
             buildName: MacCatalyst_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: x64
@@ -681,7 +646,6 @@ stages:
             buildName: tvOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvos
             targetArchitecture: arm64
@@ -692,7 +656,6 @@ stages:
             buildName: tvOS_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvos
             targetArchitecture: arm64
@@ -704,7 +667,6 @@ stages:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: arm64
@@ -715,7 +677,6 @@ stages:
             buildName: tvOSSimulator_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: arm64
@@ -727,7 +688,6 @@ stages:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: x64
@@ -738,7 +698,6 @@ stages:
             buildName: tvOSSimulator_NativeAOT_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: x64
@@ -750,7 +709,6 @@ stages:
             buildName: Wasi_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: wasm
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.wasiCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -763,7 +721,6 @@ stages:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: x64
@@ -773,7 +730,6 @@ stages:
             buildName: OSX_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             useMonoRuntime: true
             targetOS: osx
@@ -784,7 +740,6 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -796,7 +751,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -811,20 +765,19 @@ stages:
             buildName: AzureLinux_x64_Cross_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
             targetOS: linux
             targetArchitecture: x64
+            runTests: false  # scenario-tests time out: https://github.com/dotnet/source-build/issues/4775
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -839,7 +792,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -854,7 +806,6 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArmCrossContainer }}
             crossRootFs: '/crossrootfs/arm'
@@ -866,7 +817,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArmCrossContainer }}
             crossRootFs: '/crossrootfs/arm'
@@ -879,7 +829,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArmCrossContainer }}
             crossRootFs: '/crossrootfs/arm'
@@ -893,7 +842,6 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -905,7 +853,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -920,7 +867,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -933,7 +879,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -946,7 +891,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -960,7 +904,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArmAlpineCrossContainer }}
             crossRootFs: '/crossrootfs/arm'
@@ -973,7 +916,6 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -986,7 +928,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -1001,7 +942,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Alpine_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1016,7 +956,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxX64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -1031,7 +970,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArmAlpineCrossContainer }}
             crossRootFs: '/crossrootfs/arm'
@@ -1046,7 +984,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Alpine_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux }}
             container: ${{ variables.azurelinuxArm64AlpineCrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1061,7 +998,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -1075,7 +1011,6 @@ stages:
             buildName: AzureLinux_x64_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
@@ -1089,7 +1024,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1103,7 +1037,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1118,7 +1051,6 @@ stages:
             buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMJIT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1133,7 +1065,6 @@ stages:
             buildName: AzureLinux_x64_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.azurelinuxArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
@@ -1147,7 +1078,6 @@ stages:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: arm64
@@ -1157,7 +1087,6 @@ stages:
             buildName: OSX_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             useMonoRuntime: true
             targetOS: osx
@@ -1168,7 +1097,6 @@ stages:
             buildName: OSX_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: x64
@@ -1180,7 +1108,6 @@ stages:
             buildName: OSX_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: arm64
@@ -1192,7 +1119,6 @@ stages:
             buildName: OSX_ShortStack_Mono_LLVMJIT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             useMonoRuntime: true
             targetOS: osx
@@ -1205,7 +1131,6 @@ stages:
             buildName: OSX_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: x64
@@ -1217,7 +1142,6 @@ stages:
             buildName: OSX_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: arm64
@@ -1229,7 +1153,6 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -1239,7 +1162,6 @@ stages:
             buildName: Windows_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -1251,7 +1173,6 @@ stages:
             buildName: Windows_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Windows }}
             useMonoRuntime: true
             targetOS: windows
@@ -1262,7 +1183,6 @@ stages:
             buildName: Windows_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
@@ -1274,7 +1194,6 @@ stages:
             buildName: Windows_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
@@ -1286,7 +1205,6 @@ stages:
             buildName: Windows_ShortStack_Mono_CrossAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -1298,7 +1216,6 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
@@ -1308,7 +1225,6 @@ stages:
             buildName: Windows_ShortStack_NativeAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
@@ -1320,7 +1236,6 @@ stages:
             buildName: Windows_Mono
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
             pool: ${{ parameters.pool_Windows }}
             useMonoRuntime: true
             targetOS: windows
@@ -1331,7 +1246,6 @@ stages:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
@@ -1344,7 +1258,6 @@ stages:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x86
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
@@ -1357,7 +1270,6 @@ stages:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: arm64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -1372,7 +1284,6 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64

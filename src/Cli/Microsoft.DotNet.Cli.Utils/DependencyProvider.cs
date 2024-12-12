@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <summary>
         /// The product code of the MSI associated with the dependency provider.
         /// </summary>
-        public string ProductCode => GetProductCode();
+        public string? ProductCode => GetProductCode();
 
         /// <summary>
         /// The path of the provider key, relative to the <see cref="BaseKey"/>.
@@ -143,12 +143,12 @@ namespace Microsoft.DotNet.Cli.Utils
                 throw new ArgumentException($"{nameof(dependent)} cannot be empty.");
             }
 
-            using RegistryKey dependentsKey = BaseKey.OpenSubKey(DependentsKeyPath, writable: true);
+            using RegistryKey? dependentsKey = BaseKey.OpenSubKey(DependentsKeyPath, writable: true);
             dependentsKey?.DeleteSubKeyTree(dependent);
 
             if ((removeProvider) && (Dependents.Count() == 0))
             {
-                using RegistryKey providerKey = BaseKey.OpenSubKey(DependenciesKeyRelativePath, writable: true);
+                using RegistryKey? providerKey = BaseKey.OpenSubKey(DependenciesKeyRelativePath, writable: true);
                 providerKey?.DeleteSubKeyTree(ProviderKeyName);
             }
         }
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <returns>All dependents of the provider key.</returns>
         private IEnumerable<string> GetDependents()
         {
-            using RegistryKey dependentsKey = BaseKey.OpenSubKey(DependentsKeyPath);
+            using RegistryKey? dependentsKey = BaseKey.OpenSubKey(DependentsKeyPath);
 
             return dependentsKey?.GetSubKeyNames() ?? Enumerable.Empty<string>();
         }
@@ -169,22 +169,22 @@ namespace Microsoft.DotNet.Cli.Utils
         /// value.
         /// </summary>
         /// <returns>The ProductCode associated with this dependency provider or <see langword="null"/> if it does not exist.</returns>
-        private string GetProductCode()
+        private string? GetProductCode()
         {
-            using RegistryKey providerKey = BaseKey.OpenSubKey(ProviderKeyPath);
+            using RegistryKey? providerKey = BaseKey.OpenSubKey(ProviderKeyPath);
             return providerKey?.GetValue(null) as string ?? null;
         }
 
         public override string ToString() => ProviderKeyName;
 
-        public static DependencyProvider GetFromProductCode(string productCode, bool allUsers = true)
+        public static DependencyProvider? GetFromProductCode(string productCode, bool allUsers = true)
         {
             var baseKey = allUsers ? Registry.LocalMachine : Registry.CurrentUser;
-            using RegistryKey dependenciesKey = baseKey.OpenSubKey(DependenciesKeyRelativePath);
+            using RegistryKey? dependenciesKey = baseKey.OpenSubKey(DependenciesKeyRelativePath);
 
-            foreach (var providerKeyName in dependenciesKey.GetSubKeyNames())
+            foreach (var providerKeyName in dependenciesKey?.GetSubKeyNames() ?? [])
             {
-                using RegistryKey providerKey = dependenciesKey.OpenSubKey(providerKeyName);
+                using RegistryKey? providerKey = dependenciesKey?.OpenSubKey(providerKeyName);
                 var thisProductCode = providerKey?.GetValue(null) as string ?? null;
                 if (string.Equals(thisProductCode, productCode, StringComparison.OrdinalIgnoreCase))
                 {

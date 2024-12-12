@@ -85,15 +85,4 @@
     <EnvironmentVariables Include="PublishWindowsPdb=false" />
   </ItemGroup>
 
-  <!-- Copy SDK archive to assets root. -->
-  <Target Name="CopySdkArchive"
-          AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
-    <Copy SourceFiles="$(SdkTarballPath)"
-          DestinationFolder="$(ArtifactsAssetsDir)"
-          SkipUnchangedFiles="true"
-          UseHardlinksIfPossible="true" />
-  </Target>
-
 </Project>
