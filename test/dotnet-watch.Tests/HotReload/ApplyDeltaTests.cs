@@ -68,6 +68,60 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        [Fact]
+        public async Task ChangeFileInFSharpProject()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
+        [Fact]
+        public async Task ChangeFileInFSharpProjectWithLoop()
+        {
+            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+                .WithSource();
+
+            var source = """
+            module ConsoleApplication.Program
+
+            open System
+            open System.Threading
+
+            [<EntryPoint>]
+            let main argv =
+                while true do
+                    printfn "Waiting"
+                    Thread.Sleep(200)
+                0
+            """;
+
+            var sourcePath = Path.Combine(testAsset.Path, "Program.fs");
+
+            File.WriteAllText(sourcePath, source);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated>");
+
+            UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.AssertOutputLineStartsWith("<Updated2>");
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleTypeLoadFailure()
