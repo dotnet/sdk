@@ -179,7 +179,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/testfx -->
-    <MicrosoftTestingPlatformVersion>1.5.0-preview.24602.2</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformVersion>1.5.0-preview.24604.7</MicrosoftTestingPlatformVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
