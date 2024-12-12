@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
         public override int Execute()
         {
-            if (_workloadVersion is null)
+            if (_workloadVersion.Count() == 0)
             {
                 List<string> versions;
                 try
@@ -90,7 +90,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
+                    Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => new Dictionary<string, string>()
+                    {
+                        { "workloadVersion", version }
+                    })));
                 }
                 else
                 {
@@ -99,7 +102,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
             else if (_workloadVersion.Any(v => v.Contains('@')))
             {
-                var versions = FindBestWorkloadSetsFromComponents();
+                var versions = FindBestWorkloadSetsFromComponents()?.Take(_numberOfWorkloadSetsToTake);
                 if (versions is null)
                 {
                     return 0;
@@ -167,6 +170,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             List<string> versions;
             try
             {
+                // 0 indicates 'give all versions'. Not all will match, so we don't know how many we will need
                 versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader);
             }
             catch (NuGetPackageNotFoundException)
