@@ -251,9 +251,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24605.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24605.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24605.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.24611.3</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.24611.3</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.24611.3</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
