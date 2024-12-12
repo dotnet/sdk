@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void ReportProcessOutput(OutputLine line)
         {
-            output.WriteLine(line.Content);
+            WriteTestOutput(line.Content);
             ProcessOutput.Add(line.Content);
 
             OnProcessOutput?.Invoke(line);
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var content = $"[{project.GetDisplayName()}]: {line.Content}";
 
-            output.WriteLine(content);
+            WriteTestOutput(content);
             ProcessOutput.Add(content);
 
             OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
@@ -67,12 +67,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             if (descriptor.TryGetMessage(prefix, args, out var message))
             {
-                output.WriteLine($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
             }
 
             if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
             {
                 action();
+            }
+        }
+
+        private void WriteTestOutput(string message)
+        {
+            try
+            {
+                output.WriteLine(message);
+            }
+            catch (InvalidOperationException)
+            {
+                // May happen when a test is aborted and no longer running.
             }
         }
 

@@ -65,6 +65,75 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        /// <summary>
+        /// Unchanged project doesn't build. Wait for source change and rebuild.
+        /// </summary>
+        [Fact]
+        public async Task BaselineCompilationError()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            File.WriteAllText(programPath,
+                """
+                Console.Write
+                """);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+
+            UpdateSourceFile(programPath, """
+                System.Console.WriteLine("<Updated>");
+                """);
+
+            await App.AssertOutputLineStartsWith("<Updated>");
+        }
+
+        /// <summary>
+        /// We currently do not support applying project changes.
+        /// The workaround is to restart via Ctrl+R.
+        /// </summary>
+        [Fact]
+        public async Task ProjectChangeAndRestart()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
+
+            App.Start(testAsset, ["--no-exit"], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            // missing System.Linq import:
+            UpdateSourceFile(programPath, content => content.Replace("""
+                Console.WriteLine("Started");
+                """,
+                """
+                Console.WriteLine($">>> {typeof(Enumerable)}");
+                """));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- add item -->
+                """,
+                """
+                <Using Include="System.Linq" />
+                """));
+
+            // project change not applied:
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            // Ctlr+R rebuilds and restarts:
+            App.SendControlR();
+
+            await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
+        }
+
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
@@ -231,11 +300,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
-        public async Task BlazorWasm()
+        [Theory]
+        [CombinatorialData]
+        public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: projectSpecifiesCapabilities.ToString())
                 .WithSource();
+
+            if (projectSpecifiesCapabilities)
+            {
+                testAsset = testAsset.WithProjectChanges(proj =>
+                {
+                    proj.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse("""
+                            <WebAssemblyHotReloadCapabilities>Baseline;AddMethodToExistingType</WebAssemblyHotReloadCapabilities>
+                            """));
+                });
+            }
 
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
@@ -244,7 +326,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
+
+            // Browser is launched based on blazor-devserver output "Now listening on: ...".
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
+
+            // Middleware should have been loaded to blazor-devserver before the browser is launched:
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware[0]");
+            App.AssertOutputContains("Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js");
+            App.AssertOutputContains("Middleware loaded. Script /_framework/blazor-hotreload.js");
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware");
+            App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
             AssertEx.DoesNotContain("🕵️", App.Process.Output);
@@ -256,6 +348,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
             await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
+
+            // check project specified capapabilities:
+            if (projectSpecifiesCapabilities)
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+            }
+            else
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+            }
         }
 
         [Fact]
