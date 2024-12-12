@@ -190,6 +190,13 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
+                string dotnetExe = Path.Combine(dotnetRoot, "dotnet.exe");
+                if (File.Exists(dotnetExe))
+                {
+                    propertiesToAdd ??= new Dictionary<string, string?>();
+                    propertiesToAdd.Add("DOTNET_HOST_PATH", dotnetExe);
+                }
+
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
                 {
                     logger?.LogMessage($"Could not resolve SDK specified in '{resolverResult.GlobalJsonPath}'. Ignoring global.json for this resolution.");
@@ -208,10 +215,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         warnings.Add(Strings.GlobalJsonResolutionFailed);
                     }
 
-                    if (propertiesToAdd == null)
-                    {
-                        propertiesToAdd = new Dictionary<string, string?>();
-                    }
+                    propertiesToAdd ??= new Dictionary<string, string?>();
                     propertiesToAdd.Add("SdkResolverHonoredGlobalJson", "false");
                     propertiesToAdd.Add("SdkResolverGlobalJsonPath", resolverResult.GlobalJsonPath);
 
