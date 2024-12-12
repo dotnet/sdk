@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
-        public ITaskItem[] XUnitProjects { get; set; }
+        public ITaskItem[]? XUnitProjects { get; set; }
 
         /// <summary>
         /// The path to the dotnet executable on the Helix agent. Defaults to "dotnet"
@@ -40,15 +40,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
-        public string XUnitWorkItemTimeout { get; set; }
+        public string? XUnitWorkItemTimeout { get; set; }
 
-        public string XUnitArguments { get; set; }
+        public string? XUnitArguments { get; set; }
 
         /// <summary>
         /// An array of ITaskItems of type HelixWorkItem
         /// </summary>
         [Output]
-        public ITaskItem[] XUnitWorkItems { get; set; }
+        public ITaskItem[]? XUnitWorkItems { get; set; }
 
         /// <summary>
         /// The main method of this MSBuild task which calls the asynchronous execution method and
@@ -71,8 +71,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <returns></returns>
         private async Task ExecuteAsync()
         {
+            if(XUnitProjects is null)
+            {
+                return;
+            }
+
             XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
-                .SelectMany(i => i)
+                .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
                 .ToArray();
             return;
@@ -83,7 +88,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// </summary>
         /// <param name="publishPath">The non-relative path to the publish directory.</param>
         /// <returns>An ITaskItem instance representing the prepared HelixWorkItem.</returns>
-        private async Task<List<ITaskItem>> PrepareWorkItem(ITaskItem xunitProject)
+        private async Task<List<ITaskItem>?> PrepareWorkItem(ITaskItem xunitProject)
         {
             // Forces this task to run asynchronously
             await Task.Yield();
@@ -164,12 +169,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
                 partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(assemblyPartitionInfo.DisplayName + testIdentityDifferentiator, new Dictionary<string, string>()
-                    {
-                        { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
-                        { "PayloadDirectory", publishDirectory },
-                        { "Command", command },
-                        { "Timeout", timeout.ToString() },
-                    }));
+                {
+                    { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
+                    { "PayloadDirectory", publishDirectory },
+                    { "Command", command },
+                    { "Timeout", timeout.ToString() },
+                }));
             }
 
             return partitionedWorkItem;
