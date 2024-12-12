@@ -22,14 +22,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly int _numberOfWorkloadSetsToTake;
         private readonly string _workloadSetOutputFormat;
         private readonly IInstaller _installer;
-        private readonly string _workloadVersion;
+        private readonly IEnumerable<string> _workloadVersion;
         private readonly bool _includePreviews;
         private readonly IWorkloadResolver _resolver;
-
-        public WorkloadSearchVersionsCommand(string workloadVersion)
-        {
-            _workloadVersion = workloadVersion;
-        }
 
         public WorkloadSearchVersionsCommand(
             ParseResult result,
@@ -102,9 +97,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                     Reporter.WriteLine(string.Join('\n', versions));
                 }
             }
-            else if (_workloadVersion.Contains('@'))
+            else if (_workloadVersion.Any(v => v.Contains('@')))
             {
-                var versions = FindBestWorkloadSetFromComponents();
+                var versions = FindBestWorkloadSetsFromComponents();
                 if (versions is null)
                 {
                     return 0;
@@ -112,7 +107,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
                 if (!versions.Any())
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, _workloadVersion));
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, string.Join(' ', _workloadVersion)));
                 }
                 else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
@@ -125,7 +120,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
             else
             {
-                var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion);
+                var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion.Last());
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     var set = new WorkloadSet() { ManifestVersions = workloadSet.ManifestVersions };
@@ -149,41 +144,49 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
         private List<string> GetVersions(int numberOfWorkloadSetsToTake)
         {
-            var featureBand = new SdkFeatureBand(_sdkVersion);
-            var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
+            return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader);
+        }
 
-            return PackageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: _includePreviews)
+        private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader)
+        {
+            var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
+
+            return packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
                 .GetAwaiter().GetResult()
                 .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
                 .ToList();
         }
 
-        public IEnumerable<string> FindBestWorkloadSetFromComponents()
+        private IEnumerable<string> FindBestWorkloadSetsFromComponents()
+        {
+            return FindBestWorkloadSetsFromComponents(new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _workloadVersion, _resolver, _numberOfWorkloadSetsToTake);
+        }
+
+        public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
         {
             List<string> versions;
             try
             {
-                versions = GetVersions(0);
+                versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader);
             }
             catch (NuGetPackageNotFoundException)
             {
-                Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
+                Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
                 return null;
             }
 
-            var workloadVersions = _workloadVersion.Split(';');
             var packageNamesAndVersions = workloadVersions.Select(version =>
             {
                 var split = version.Split('@');
-                return (new ManifestId(_resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
+                return (new ManifestId(resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
             });
 
             // Since these are ordered by version (descending), the first is the highest version
             return versions.Where(version =>
             {
-                var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
+                var manifestVersions = installer.GetWorkloadSetContents(version).ManifestVersions;
                 return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
-            }).Take(_numberOfWorkloadSetsToTake);
+            }).Take(numberOfWorkloadSetsToTake);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly string _fromRollbackDefinition;
         protected int _fromHistorySpecified;
         protected bool _historyManifestOnlyOption;
-        protected string _workloadSetVersionFromCommandLine;
+        protected IEnumerable<string> _workloadSetVersionFromCommandLine;
         protected string _globalJsonPath;
         protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected bool UseRollback => !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         protected bool FromHistory => _fromHistorySpecified != 0;
-        protected bool SpecifiedWorkloadSetVersionOnCommandLine => !string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine);
+        protected bool SpecifiedWorkloadSetVersionOnCommandLine => _workloadSetVersionFromCommandLine?.Any() == true;
         protected bool SpecifiedWorkloadSetVersionInGlobalJson => !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson);
         protected WorkloadHistoryState _WorkloadHistoryRecord
         {
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 // This is essentially the same as updating to a specific workload set version, and we're now past the error check,
                 // so we can just use the same code path.
-                _workloadSetVersionFromCommandLine = _WorkloadHistoryRecord.WorkloadSetVersion;
+                _workloadSetVersionFromCommandLine = [_WorkloadHistoryRecord.WorkloadSetVersion];
             }
             else if ((UseRollback || FromHistory) && updateToLatestWorkloadSet)
             {
@@ -209,7 +209,39 @@ namespace Microsoft.DotNet.Workloads.Workload
                 }
             }
 
-            string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ??_workloadSetVersionFromCommandLine;
+            string resolvedWorkloadSetVersion = null;
+
+            if (_workloadSetVersionFromCommandLine?.Any(v => v.Contains('@')) == true)
+            {
+                var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
+                    _sdkFeatureBand,
+                    _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+                    _sdkFeatureBand.IsPrerelease,
+                    PackageDownloader,
+                    _workloadSetVersionFromCommandLine,
+                    _workloadResolver,
+                    numberOfWorkloadSetsToTake: 1);
+
+                if (versions is null)
+                {
+                    return;
+                }
+                else if (!versions.Any())
+                {
+                    Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                    return;
+                }
+                else
+                {
+                    resolvedWorkloadSetVersion = versions.Single();
+                }
+            }
+            else if (SpecifiedWorkloadSetVersionOnCommandLine)
+            {
+                resolvedWorkloadSetVersion = _workloadSetVersionFromCommandLine.Single();
+            }
+
+            resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ?? resolvedWorkloadSetVersion;
             if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback && !FromHistory)
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
@@ -235,28 +267,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
                 return;
-            }
-
-            if (resolvedWorkloadSetVersion?.Contains('@') == true)
-            {
-                var searchVersionsCommand = new WorkloadSearchVersionsCommand(
-                     Parser.Instance.Parse("dotnet workload search version " + resolvedWorkloadSetVersion),
-                    installer: _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
-                    nugetPackageDownloader: PackageDownloader);
-                 var versions = searchVersionsCommand.FindBestWorkloadSetFromComponents();
-                if (versions is null)
-                {
-                    return;
-                }
-                else if (!versions.Any())
-                {
-                    Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
-                    return;
-                }
-                else
-                {
-                    resolvedWorkloadSetVersion = versions.First();
-                }
             }
 
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
@@ -458,9 +468,10 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
-        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        public static readonly CliOption<IEnumerable<string>> WorkloadSetVersionOption = new("--version")
         {
-            Description = Strings.WorkloadSetVersionOptionDescription
+            Description = Strings.WorkloadSetVersionOptionDescription,
+            AllowMultipleArgumentsPerToken = true
         };
 
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")

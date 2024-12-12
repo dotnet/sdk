@@ -9,10 +9,10 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchVersionsCommandParser
     {
-        public static readonly CliArgument<string> WorkloadVersionArgument =
+        public static readonly CliArgument<IEnumerable<string>> WorkloadVersionArgument =
             new(LocalizableStrings.WorkloadVersionArgument)
             {
-                Arity = ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrMore,
                 Description = LocalizableStrings.WorkloadVersionArgumentDescription
             };
 
