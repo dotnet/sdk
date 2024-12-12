@@ -59,6 +59,19 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
+                if (CodeFormatter.AnyFSharpFiles(formatOptions.WorkspaceFilePath))
+                {
+                    var isFantomas = await CodeFormatter.IsFantomasInstalled();
+                    if (!isFantomas)
+                    {
+                        CodeFormatter.LogFantomasInstallationInstructions(logger);
+                    }
+                    else
+                    {
+                        await CodeFormatter.FantomasFormatAsync(formatOptions, logger).ConfigureAwait(false);
+                    }
+                }
+
                 return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
             }
         }
