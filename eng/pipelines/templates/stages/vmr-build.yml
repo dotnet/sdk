@@ -957,7 +957,7 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
               image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
@@ -971,7 +971,7 @@ stages:
             vmrBranch: ${{ variables.VmrBranch }}
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.azurelinuxX64AlpineCrossContainer }}
+              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
               image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
