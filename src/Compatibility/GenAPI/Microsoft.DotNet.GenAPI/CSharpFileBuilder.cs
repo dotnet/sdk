@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
@@ -23,46 +22,51 @@ namespace Microsoft.DotNet.GenAPI
     /// <summary>
     /// Processes assembly symbols to build corresponding structures in C# language.
     /// </summary>
-    public sealed class CSharpFileBuilder : IAssemblySymbolWriter, IDisposable
+    public sealed class CSharpFileBuilder : IAssemblySymbolWriter
     {
         private readonly ILog _logger;
         private readonly TextWriter _textWriter;
-        private readonly ISymbolFilter _symbolFilter;
-        private readonly ISymbolFilter _attributeDataSymbolFilter;
+        private readonly AssemblySymbolLoader _loader;
+        private readonly CompositeSymbolFilter _symbolFilter;
+        private readonly CompositeSymbolFilter _attributeDataSymbolFilter;
+        private readonly string _header;
         private readonly string? _exceptionMessage;
         private readonly bool _includeAssemblyAttributes;
         private readonly AdhocWorkspace _adhocWorkspace;
         private readonly SyntaxGenerator _syntaxGenerator;
-        private readonly IEnumerable<MetadataReference> _metadataReferences;
 
         public CSharpFileBuilder(ILog logger,
-            ISymbolFilter symbolFilter,
-            ISymbolFilter attributeDataSymbolFilter,
-            TextWriter textWriter,
-            string? exceptionMessage,
-            bool includeAssemblyAttributes,
-            IEnumerable<MetadataReference> metadataReferences)
+                                 TextWriter textWriter,
+                                 AssemblySymbolLoader loader,
+                                 CompositeSymbolFilter symbolFilter,
+                                 CompositeSymbolFilter attributeDataSymbolFilter,
+                                 string header,
+                                 string? exceptionMessage,
+                                 bool includeAssemblyAttributes)
         {
             _logger = logger;
             _textWriter = textWriter;
+            _loader = loader;
             _symbolFilter = symbolFilter;
             _attributeDataSymbolFilter = attributeDataSymbolFilter;
+            _header = header;
             _exceptionMessage = exceptionMessage;
             _includeAssemblyAttributes = includeAssemblyAttributes;
             _adhocWorkspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
-            _metadataReferences = metadataReferences;
         }
 
         /// <inheritdoc />
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
+            _textWriter.Write(_header);
+
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
                     nullableContextOptions: NullableContextOptions.Enable);
             Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
                 ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
                 compilationOptions: compilationOptions));
-            project = project.AddMetadataReferences(_metadataReferences);
+            project = project.AddMetadataReferences(_loader.MetadataReferences);
 
             IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
             List<SyntaxNode> namespaceSyntaxNodes = [];
@@ -341,8 +345,5 @@ namespace Microsoft.DotNet.GenAPI
                 .WithChangedOption(CSharpFormattingOptions.NewLineForMembersInAnonymousTypes, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLineForClausesInQuery, false);
         }
-
-        /// <inheritdoc />
-        public void Dispose() => _textWriter.Dispose();
     }
 }

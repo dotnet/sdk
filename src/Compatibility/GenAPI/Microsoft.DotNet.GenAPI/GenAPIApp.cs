@@ -6,9 +6,6 @@ using System.Text.RegularExpressions;
 #endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -21,84 +18,36 @@ namespace Microsoft.DotNet.GenAPI
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(ILog logger,
-            string[] assemblies,
-            string[]? assemblyReferences,
-            string? outputPath,
-            string? headerFile,
-            string? exceptionMessage,
-            string[]? excludeApiFiles,
-            string[]? excludeAttributesFiles,
-            bool respectInternals,
-            bool includeAssemblyAttributes)
+        public static void Run(GenAPIConfiguration config)
         {
-            bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
-
-            // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
-            if (assemblyReferences is not null)
+            // Invoke an assembly symbol writer for each directly loaded assembly.
+            foreach (KeyValuePair<string, IAssemblySymbol> kvp in config.AssemblySymbols)
             {
-                loader.AddReferenceSearchPaths(assemblyReferences);
-            }
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(assemblies);
-
-            string headerFileText = ReadHeaderFile(headerFile);
-
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                respectInternals,
-                includeEffectivelyPrivateSymbols: true,
-                includeExplicitInterfaceImplementationSymbols: true);
-
-            // Configure the symbol filter
-            CompositeSymbolFilter symbolFilter = new();
-            if (excludeApiFiles is not null)
-            {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
-            }
-            symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
-
-            // Configure the attribute data symbol filter
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludeAttributesFiles is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
-
-            // Invoke the CSharpFileBuilder for each directly loaded assembly.
-            foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
-            {
-                if (assemblySymbol is null)
-                    continue;
-
-                using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
-                textWriter.Write(headerFileText);
-
-                using CSharpFileBuilder fileBuilder = new(logger,
-                    symbolFilter,
-                    attributeDataSymbolFilter,
-                    textWriter,
-                    exceptionMessage,
-                    includeAssemblyAttributes,
-                    loader.MetadataReferences);
-
-                fileBuilder.WriteAssembly(assemblySymbol);
+                using TextWriter textWriter = GetTextWriter(config.OutputPath, kvp.Key);
+                IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
+                                                                     textWriter,
+                                                                     config.Loader,
+                                                                     config.SymbolFilter,
+                                                                     config.AttributeDataSymbolFilter,
+                                                                     config.Header,
+                                                                     config.ExceptionMessage,
+                                                                     config.IncludeAssemblyAttributes);
+                writer.WriteAssembly(kvp.Value);
             }
 
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            if (config.Loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
             {
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    logger.LogWarning(warning.Id, warning.ToString());
+                    config.Logger.LogWarning(warning.Id, warning.ToString());
                 }
             }
 
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            if (config.Loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
             {
                 foreach (AssemblyLoadWarning warning in loadWarnings)
                 {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
+                    config.Logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }
@@ -118,34 +67,6 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             return File.CreateText(outputDirPath);
-        }
-
-        // Read the header file if specified, or use default one.
-        private static string ReadHeaderFile(string? headerFile)
-        {
-            const string defaultFileHeader = """
-            //------------------------------------------------------------------------------
-            // <auto-generated>
-            //     This code was generated by a tool.
-            //
-            //     Changes to this file may cause incorrect behavior and will be lost if
-            //     the code is regenerated.
-            // </auto-generated>
-            //------------------------------------------------------------------------------
-
-            """;
-
-            string header = !string.IsNullOrEmpty(headerFile) ?
-                File.ReadAllText(headerFile) :
-                defaultFileHeader;
-
-#if NET
-            header = header.ReplaceLineEndings();
-#else
-            header = Regex.Replace(header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
-#endif
-
-            return header;
         }
     }
 }
