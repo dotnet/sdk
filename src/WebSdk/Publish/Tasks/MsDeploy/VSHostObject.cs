@@ -7,8 +7,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
     internal class VSHostObject
     {
-        IEnumerable<ITaskItem> _hostObject;
-        public VSHostObject(IEnumerable<ITaskItem> hostObject)
+        IEnumerable<ITaskItem>? _hostObject;
+        public VSHostObject(IEnumerable<ITaskItem>? hostObject)
         {
             _hostObject = hostObject;
         }
@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             username = password = string.Empty;
             if (_hostObject != null)
             {
-                ITaskItem credentialItem = _hostObject.FirstOrDefault<ITaskItem>(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentailItemSpecName);
+                ITaskItem? credentialItem = _hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentialItemSpecName);
                 if (credentialItem != null)
                 {
                     retVal = true;
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return retVal;
         }
 
-        public void GetFileSkips(out ITaskItem[] srcSkips, out ITaskItem[] destSkips)
+        public void GetFileSkips(out ITaskItem[]? srcSkips, out ITaskItem[]? destSkips)
         {
             srcSkips = null;
             destSkips = null;
