@@ -6,7 +6,6 @@
     <BuildArgs Condition="'$(TargetOS)' == 'windows'">$(BuildArgs) -nativeToolsOnMachine</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
 
@@ -38,6 +37,9 @@
     <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
     <BuildArgs>$(BuildArgs) /p:FallbackPublicBaseURL=https://dotnetbuilds.blob.core.windows.net/public/</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
+
+    <!-- Temporarily disable crossgen until there's a host pack available to use in the vertical build: https://github.com/dotnet/source-build/issues/3793 -->
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
     <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
