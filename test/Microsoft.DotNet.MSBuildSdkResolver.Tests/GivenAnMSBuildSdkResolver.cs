@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
-            result.PropertiesToAdd.Should().NotBeNull();
+            result.PropertiesToAdd.Count.Should().Be(1);
             result.PropertiesToAdd.Should().ContainKey("DOTNET_HOST_PATH");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeNullOrEmpty();
