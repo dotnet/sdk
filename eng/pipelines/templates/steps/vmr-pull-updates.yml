@@ -51,7 +51,6 @@ steps:
       --repository "sdk:${{ parameters.targetRef }}"                                                  \
       --recursive                                                                                     \
       --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
-      --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md      \
       --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
       --ci                                                                                            \
       --debug
@@ -76,7 +75,6 @@ steps:
       -branch ${{ parameters.vmrBranch }} `
       -repository "sdk:${{ parameters.targetRef }}" `
       -recursive `
-      -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
       -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
       -ci `
       -debugOutput
