@@ -30,6 +30,8 @@
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
+    <!-- A source-build build can have a separate RID from the SDK that we're building against. This will cause the SDK to not be able to find a crossgen tool pack and fail to R2R: https://github.com/dotnet/source-build/issues/3793 -->
+    <BuildArgs>$(BuildArgs) /p:CrossgenOutput=false</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
