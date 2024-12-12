@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
@@ -610,6 +611,55 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should()
             .Pass();
+
+        static string[] DecideEntrypoint(string rid, string appName, string workingDir)
+        {
+            var binary = rid.StartsWith("win", StringComparison.Ordinal) ? $"{appName}.exe" : appName;
+            return new[] { $"{workingDir}/{binary}" };
+        }
+    }
+
+    [DockerAvailableFact]
+    public async Task CheckErrorMessageWhenSourceRepositoryThrows()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(CheckErrorMessageWhenSourceRepositoryThrows));
+        string rid = "win-x64";
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
+
+        // Build the image
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewWindowsSpecificImageTag,
+            rid,
+            ToolsetUtils.RidGraphManifestPicker,
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType);
+
+        imageBuilder.AddLayer(l);
+        imageBuilder.SetWorkingDirectory("C:\\app");
+
+        string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", "C:\\app");
+        imageBuilder.SetEntrypointAndCmd(entryPoint, Array.Empty<string>());
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Load the image into the local registry
+        var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net9PreviewImageTag);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
+        var sawMyException = false;
+        try
+        {
+            await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        }
+        catch (UnableToDownloadFromRepositoryException e)
+        {
+            sawMyException = true;
+            Assert.Contains("The load of the image from repository some_random_image has failed", e.ToString());
+        }
+        Assert.True(sawMyException);
 
         static string[] DecideEntrypoint(string rid, string appName, string workingDir)
         {
