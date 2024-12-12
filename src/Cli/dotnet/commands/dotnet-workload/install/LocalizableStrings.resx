@@ -365,4 +365,8 @@
   <data name="FailedToInstallWorkloadSet" xml:space="preserve">
     <value>Failed to install workload version {0}: {1}</value>
   </data>
+  <data name="CannotSpecifyVersionAndWorkloadIdsByComponent" xml:space="preserve">
+    <value>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</value>
+    <comment>--version should not be translated.</comment>
+  </data>
 </root>

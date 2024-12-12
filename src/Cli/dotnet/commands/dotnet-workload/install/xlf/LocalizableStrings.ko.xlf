@@ -27,6 +27,11 @@
         <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.  옵션 중 하나를 제거하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <note>--version should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">global.json 파일 {0}에 지정된 버전이 이미 있는 경우 --version 또는 --from-history를 통해 명령줄에서 특정 워크로드 버전을 지정할 수 없습니다. 전역으로 설치된 워크로드 버전을 업데이트하려면 해당 global.json 파일이 포함된 경로 외부에서 명령을 실행하거나 global.json 파일에 지정된 버전을 업데이트하고 "dotnet 워크로드 업데이트"를 실행합니다.</target>
