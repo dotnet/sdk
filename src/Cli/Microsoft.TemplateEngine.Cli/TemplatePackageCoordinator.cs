@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -436,7 +437,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, includeNuGetFeed: PathUtility.CheckForNuGetInNuGetConfig());
 
                 nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
                 if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Equals(NugetOrgFeed))

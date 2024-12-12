@@ -47,6 +47,11 @@
         <target state="translated">Nejnovější verze</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="NeedNuGetInConfig">
+        <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.</source>
+        <target state="new">The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.</target>
+        <note>Do not translate 'dotnet tool search' or 'nuget.config'</note>
+      </trans-unit>
       <trans-unit id="NoResult">
         <source>Could not find any results.</source>
         <target state="translated">Nenašly se žádné výsledky.</target>
