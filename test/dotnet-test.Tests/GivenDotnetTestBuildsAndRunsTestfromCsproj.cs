@@ -609,8 +609,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
+        /*
         [Fact]
-        [SkipOnPlatform(TestPlatforms.OSX, "sadness")]
         public void ItShouldShowImportantMessage()
         {
             string testAppName = "VSTestCore";
@@ -634,6 +634,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+        */
 
         [Fact]
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithProject()

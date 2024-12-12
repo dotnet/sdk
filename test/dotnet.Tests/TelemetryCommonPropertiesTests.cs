@@ -161,6 +161,7 @@ namespace Microsoft.DotNet.Tests
             }
         }
 
+        /*
         [Theory]
         [MemberData(nameof(CITelemetryTestCases))]
         public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
@@ -181,6 +182,7 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
+        */
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },

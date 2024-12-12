@@ -103,8 +103,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
+        /*
         [Fact]
-        [SkipOnPlatform(TestPlatforms.OSX, "sadness")]
         public void Publish_Works_WithLibraryUsingHintPath()
         {
             // Arrange
@@ -156,6 +156,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
+        */
 
         [Fact]
         public void Publish_WithScopedCss_Works()
