@@ -177,10 +177,8 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
-  # Must be a path under $(sourcesPath). Inside the docker container, we mount $(sourcesPath) to /vmr
-  # and can't write outside of that folder.
   - name: artifactsStagingDir
-    value: $(sourcesPath)/artifacts/staging
+    value: $(Build.ArtifactStagingDirectory)/artifacts
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -421,6 +419,7 @@ jobs:
         fi
 
         extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+        extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
@@ -455,6 +454,7 @@ jobs:
           customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
+          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }}"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
@@ -484,6 +484,7 @@ jobs:
           fi
 
           extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+          extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
