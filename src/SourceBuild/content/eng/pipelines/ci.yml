@@ -82,10 +82,10 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
         options: --privileged
       alpineLatestContainer:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
         options: --privileged
       alpinePreviousContainer:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
         options: --privileged
       centOSStreamContainer:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
