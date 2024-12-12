@@ -590,6 +590,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     GetEnvironmentVariable,
                     // force current executable location to be the mocked dotnet executable location
                     () => ProcessPath,
+                    (x, y) => "mockRuntimeVersion",
                     useAmbientSettings
                         ? VSSettings.Ambient
                         : new VSSettings(VSSettingsFile?.FullName, DisallowPrereleaseByDefault));
