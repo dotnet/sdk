@@ -259,7 +259,7 @@
       </trans-unit>
       <trans-unit id="OciImageMultipleTagsNotSupported">
         <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
+        <target state="translated">No se puede crear un tarball para una imagen oci con varias etiquetas.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
-        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <target state="translated">No se puede crear un tarball para el mediaType "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="_Test">
