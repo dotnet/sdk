@@ -28,6 +28,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
         private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly Func<string>? _getCurrentProcessPath;
+        private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
@@ -35,12 +36,12 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver()
-            : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient)
+            : this(Environment.GetEnvironmentVariable, null, null, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?>? getMsbuildRuntime, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
@@ -52,6 +53,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             {
                 _shouldLog = true;
             }
+
+            _getMsbuildRuntime = getMsbuildRuntime ?? GetMSbuildRuntimeVersion;
         }
 
         private sealed class CachedState
@@ -198,7 +201,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
-                    GetMSbuildRuntimeVersion(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
+                    _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
                     null;
                 if (runtimeVersion != null)
                 {
