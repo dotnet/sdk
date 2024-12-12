@@ -159,6 +159,10 @@
             "defaultRemote": "https://github.com/dotnet/test-templates"
         },
         {
+            "name": "testfx",
+            "defaultRemote": "https://github.com/microsoft/testfx"
+        },
+        {
             "name": "vstest",
             "defaultRemote": "https://github.com/microsoft/vstest",
             "exclude": [
