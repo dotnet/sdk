@@ -359,36 +359,6 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>61be94cbcb4726afaa107f91c349fc4328263b44</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.2.1" Version="1.0.2-beta4.22406.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>0385265f4d0b6413d64aea0223172366a9b9858c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.5.0" Version="1.1.0-rc.23558.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>307b8f538d83a955d8f6dd909eee41a5555f2f4d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.6.0" Version="1.1.0-rc.24069.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.7.0" Version="1.1.0-rc.24069.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.24202.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24576.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>01712257e7ac9363b002637d399206fd93fc724b</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24576.1">
-      <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>01712257e7ac9363b002637d399206fd93fc724b</Sha>
-      <SourceBuild RepoName="test-templates" ManagedOnly="true" />
-    </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-alpha.1.24605.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>

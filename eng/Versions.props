@@ -86,11 +86,6 @@
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.0-alpha.1.24605.2</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Dependency from https://github.com/dotnet/test-templates -->
-    <!-- Supported versions -->
-    <MicrosoftDotNetTestProjectTemplates90PackageVersion>1.1.0-rtm.24576.1</MicrosoftDotNetTestProjectTemplates90PackageVersion>
-  </PropertyGroup>
-  <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24610.2</MicrosoftNETCoreAppRefPackageVersion>
     <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24610.2</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
