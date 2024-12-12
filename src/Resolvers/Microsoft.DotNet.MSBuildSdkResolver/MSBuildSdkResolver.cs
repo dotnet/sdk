@@ -1,7 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
@@ -197,6 +200,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     propertiesToAdd.Add("DOTNET_HOST_PATH", dotnetExe);
                 }
 
+                string? runtimeVersion = dotnetRoot != null ?
+                    GetMSbuildRuntimeVersion(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
+                    null;
+                if (runtimeVersion != null)
+                {
+                    propertiesToAdd ??= new Dictionary<string, string?>();
+                    propertiesToAdd.Add("MSBUILD_NET_TASKHOST_RUNTIME_VERSION", runtimeVersion);
+                }
+
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
                 {
                     logger?.LogMessage($"Could not resolve SDK specified in '{resolverResult.GlobalJsonPath}'. Ignoring global.json for this resolution.");
@@ -261,6 +273,31 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+        }
+
+        private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
+        {
+            // 1. Get the runtime version from the MSBuild.runtimeconfig.json file
+            string runtimeConfigPath = Path.Combine(sdkDirectory, "MSBuild.runtimeconfig.json");
+            if (File.Exists(runtimeConfigPath))
+            {
+                var runtimeConfigJson = JsonNode.Parse(File.ReadAllText(runtimeConfigPath)) as JsonObject;
+                var runtimeOptionsFramework = runtimeConfigJson?["runtimeOptions"]?["framework"];
+                string? runtimeName = runtimeOptionsFramework?["name"]?.ToString();
+                string? runtimeVersion = runtimeOptionsFramework?["version"]?.ToString();
+
+                // 2. Check that the runtime version is installed (in shared folder)
+                if (runtimeName != null && runtimeVersion != null)
+                {
+                    string runtimePath = Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion);
+                    if (Directory.Exists(runtimePath))
+                    {
+                        return runtimeVersion;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static SdkResult Failure(SdkResultFactory factory, ResolverLogger? logger, SdkLogger sdkLogger, string format, params object?[] args)
