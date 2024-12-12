@@ -15,7 +15,9 @@ steps:
 
   - powershell: |
       $branchName = "${{ parameters.vmrBranch }}" -replace "refs/heads/", ""
-      git checkout --track origin/$branchName || exit 1
+      if (-not (git checkout --track origin/$branchName)) {
+          throw "Failed to checkout branch $branchName"
+      }
       echo "##vso[task.setvariable variable=vmrBranch]$branchName"
     displayName: Check out ${{ parameters.vmrBranch }}
     workingDirectory: $(Agent.BuildDirectory)/vmr
