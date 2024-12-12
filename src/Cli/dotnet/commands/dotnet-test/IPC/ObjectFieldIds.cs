@@ -85,11 +85,17 @@ namespace Microsoft.DotNet.Tools.Test
         public const ushort State = 3;
         public const ushort Duration = 4;
         public const ushort Reason = 5;
-        public const ushort ErrorMessage = 6;
-        public const ushort ErrorStackTrace = 7;
-        public const ushort StandardOutput = 8;
-        public const ushort ErrorOutput = 9;
-        public const ushort SessionUid = 10;
+        public const ushort ExceptionMessageList = 6;
+        public const ushort StandardOutput = 7;
+        public const ushort ErrorOutput = 8;
+        public const ushort SessionUid = 9;
+    }
+
+    internal static class ExceptionMessageFieldsId
+    {
+        public const ushort ErrorMessage = 1;
+        public const ushort ErrorType = 2;
+        public const ushort StackTrace = 3;
     }
 
     internal static class FileArtifactMessagesFieldsId
